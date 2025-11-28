@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { CreatePostDialog } from '@/components/posts/create-post-dialog';
+import { UploadFileDialog } from '@/components/files/upload-file-dialog';
 import type { Union, Post, File as FileType, Member } from '@/lib/db/schema';
+import { useRouter } from 'next/navigation';
 
 interface UnionProfileTabsProps {
   union: Union;
@@ -23,7 +26,79 @@ export function UnionProfileTabs({
   isOwner,
   isApprovedMember,
 }: UnionProfileTabsProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'about' | 'posts' | 'files'>('about');
+  const [createPostOpen, setCreatePostOpen] = useState(false);
+  const [uploadFileOpen, setUploadFileOpen] = useState(false);
+  const [deletingPost, setDeletingPost] = useState<number | null>(null);
+  const [deletingFile, setDeletingFile] = useState<number | null>(null);
+
+  const handleDeletePost = async (postId: number) => {
+    if (!confirm('Are you sure you want to delete this post?')) return;
+
+    setDeletingPost(postId);
+    try {
+      const response = await fetch('/api/posts/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete post');
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Failed to delete post');
+    } finally {
+      setDeletingPost(null);
+    }
+  };
+
+  const handleDeleteFile = async (fileId: number) => {
+    if (!confirm('Are you sure you want to delete this file?')) return;
+
+    setDeletingFile(fileId);
+    try {
+      const response = await fetch('/api/files/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete file');
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      alert('Failed to delete file');
+    } finally {
+      setDeletingFile(null);
+    }
+  };
+
+  const handleToggleFilePrivacy = async (fileId: number, isPrivate: boolean) => {
+    try {
+      const response = await fetch('/api/files/toggle-privacy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId, isPrivate }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update file privacy');
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error('Error toggling file privacy:', error);
+      alert('Failed to update file privacy');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -169,7 +244,10 @@ export function UnionProfileTabs({
               {isOwner && (
                 <Card className="shadow-sm">
                   <CardContent className="p-4">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                    <Button
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={() => setCreatePostOpen(true)}
+                    >
                       <Plus className="h-4 w-4 mr-2" />
                       Create Post
                     </Button>
@@ -193,11 +271,27 @@ export function UnionProfileTabs({
                             <h3 className="text-xl font-semibold text-gray-900">
                               {post.title}
                             </h3>
-                            {post.isPrivate && (
-                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                Private
-                              </span>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {post.isPrivate && (
+                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                  Private
+                                </span>
+                              )}
+                              {isOwner && (
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDeletePost(post.id)}
+                                  disabled={deletingPost === post.id}
+                                >
+                                  {deletingPost === post.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              )}
+                            </div>
                           </div>
                           {post.imageUrl && (
                             <img
@@ -241,7 +335,10 @@ export function UnionProfileTabs({
               {isOwner && (
                 <Card className="shadow-sm">
                   <CardContent className="p-4">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                    <Button
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={() => setUploadFileOpen(true)}
+                    >
                       <Plus className="h-4 w-4 mr-2" />
                       Upload File
                     </Button>
@@ -264,30 +361,48 @@ export function UnionProfileTabs({
                         }
 
                         return (
-                          <a
+                          <div
                             key={file.id}
-                            href={file.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
                             className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors border"
                           >
                             <FileText className="h-8 w-8 text-blue-600 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-900 truncate">
+                              <a
+                                href={file.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-gray-900 hover:text-blue-600 truncate block"
+                              >
                                 {file.originalName}
-                              </p>
+                              </a>
                               <p className="text-sm text-gray-500">
                                 Uploaded by {file.createdBy.name} •{' '}
                                 {new Date(file.createdAt).toLocaleDateString()} •{' '}
                                 {(file.fileSize / 1024 / 1024).toFixed(2)} MB
                               </p>
                             </div>
-                            {file.isPrivate && (
-                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                Private
-                              </span>
-                            )}
-                          </a>
+                            <div className="flex items-center gap-2">
+                              {file.isPrivate && (
+                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                  Private
+                                </span>
+                              )}
+                              {isOwner && (
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDeleteFile(file.id)}
+                                  disabled={deletingFile === file.id}
+                                >
+                                  {deletingFile === file.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
@@ -312,6 +427,21 @@ export function UnionProfileTabs({
           )}
         </div>
       </div>
+
+      {/* Dialogs */}
+      <CreatePostDialog
+        open={createPostOpen}
+        onOpenChange={setCreatePostOpen}
+        unionId={union.id}
+        onSuccess={() => router.refresh()}
+      />
+      <UploadFileDialog
+        open={uploadFileOpen}
+        onOpenChange={setUploadFileOpen}
+        unionId={union.id}
+        unionSlug={union.slug}
+        onSuccess={() => router.refresh()}
+      />
     </div>
   );
 }
