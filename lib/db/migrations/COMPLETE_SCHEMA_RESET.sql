@@ -30,7 +30,7 @@ DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
 -- Users are the paying customers/admins who create and manage unions
 
 CREATE TABLE "users" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL DEFAULT auth.uid(),
 	"name" varchar(100) NOT NULL,
 	"email" varchar(255) NOT NULL,
 	"password_hash" text NOT NULL,
@@ -86,7 +86,7 @@ CREATE INDEX IF NOT EXISTS "unions_name_idx" ON "unions"("name");
 
 CREATE TABLE "members" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"user_id" integer NOT NULL,
+	"user_id" uuid NOT NULL,
 	"union_id" integer NOT NULL,
 	"role" varchar(50) NOT NULL,
 	"joined_at" timestamp DEFAULT now() NOT NULL,
@@ -106,7 +106,7 @@ CREATE TABLE "invitations" (
 	"union_id" integer NOT NULL,
 	"email" varchar(255) NOT NULL,
 	"role" varchar(50) NOT NULL,
-	"invited_by" integer NOT NULL,
+	"invited_by" uuid NOT NULL,
 	"invited_at" timestamp DEFAULT now() NOT NULL,
 	"status" varchar(20) NOT NULL DEFAULT 'pending'
 );
@@ -122,7 +122,7 @@ CREATE INDEX IF NOT EXISTS "invitations_email_idx" ON "invitations"("email");
 CREATE TABLE "activity_logs" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"union_id" integer NOT NULL,
-	"user_id" integer,
+	"user_id" uuid,
 	"action" text NOT NULL,
 	"timestamp" timestamp DEFAULT now() NOT NULL,
 	"ip_address" varchar(45)
@@ -151,8 +151,8 @@ CREATE TABLE "union_pages" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"published_at" timestamp,
-	"created_by" integer,
-	"updated_by" integer,
+	"created_by" uuid,
+	"updated_by" uuid,
 	CONSTRAINT "union_pages_union_slug_unique" UNIQUE("union_id", "slug"),
 	CONSTRAINT "union_pages_slug_format" CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' AND length(slug) >= 1)
 );
@@ -278,12 +278,12 @@ ALTER TABLE "activity_logs" ENABLE ROW LEVEL SECURITY;
 -- Users can view their own data
 CREATE POLICY "users_select_self" ON "users"
 	FOR SELECT
-	USING (id = auth.uid()::integer);
+	USING (id = auth.uid());
 
 -- Users can update their own data
 CREATE POLICY "users_update_self" ON "users"
 	FOR UPDATE
-	USING (id = auth.uid()::integer);
+	USING (id = auth.uid());
 
 -- Anyone can insert (signup)
 CREATE POLICY "users_insert_public" ON "users"
@@ -305,7 +305,7 @@ CREATE POLICY "unions_select_members" ON "unions"
 	USING (
 		id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 		)
 	);
 
@@ -315,7 +315,7 @@ CREATE POLICY "unions_update_owner" ON "unions"
 	USING (
 		id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 			AND role = 'owner'
 		)
 	);
@@ -343,7 +343,7 @@ CREATE POLICY "union_pages_select_members" ON "union_pages"
 	USING (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 		)
 	);
 
@@ -353,7 +353,7 @@ CREATE POLICY "union_pages_insert_owner" ON "union_pages"
 	WITH CHECK (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 			AND role = 'owner'
 		)
 	);
@@ -363,7 +363,7 @@ CREATE POLICY "union_pages_update_owner" ON "union_pages"
 	USING (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 			AND role = 'owner'
 		)
 	);
@@ -373,7 +373,7 @@ CREATE POLICY "union_pages_delete_owner" ON "union_pages"
 	USING (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 			AND role = 'owner'
 		)
 	);
@@ -388,14 +388,14 @@ CREATE POLICY "members_select_same_union" ON "members"
 	USING (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 		)
 	);
 
 -- AUTHENTICATED: Can insert themselves as member (signup flow)
 CREATE POLICY "members_insert_self" ON "members"
 	FOR INSERT
-	WITH CHECK (user_id = auth.uid()::integer);
+	WITH CHECK (user_id = auth.uid());
 
 -- OWNERS: Can insert/delete members in their union
 CREATE POLICY "members_insert_owner" ON "members"
@@ -403,7 +403,7 @@ CREATE POLICY "members_insert_owner" ON "members"
 	WITH CHECK (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 			AND role = 'owner'
 		)
 	);
@@ -413,7 +413,7 @@ CREATE POLICY "members_delete_owner" ON "members"
 	USING (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 			AND role = 'owner'
 		)
 	);
@@ -428,7 +428,7 @@ CREATE POLICY "invitations_select_owner" ON "invitations"
 	USING (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 			AND role = 'owner'
 		)
 	);
@@ -438,7 +438,7 @@ CREATE POLICY "invitations_insert_owner" ON "invitations"
 	WITH CHECK (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 			AND role = 'owner'
 		)
 	);
@@ -448,7 +448,7 @@ CREATE POLICY "invitations_delete_owner" ON "invitations"
 	USING (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 			AND role = 'owner'
 		)
 	);
@@ -456,12 +456,12 @@ CREATE POLICY "invitations_delete_owner" ON "invitations"
 -- INVITED USERS: Can view invitations sent to their email
 CREATE POLICY "invitations_select_invited" ON "invitations"
 	FOR SELECT
-	USING (email = (SELECT email FROM users WHERE id = auth.uid()::integer));
+	USING (email = (SELECT email FROM users WHERE id = auth.uid()));
 
 -- INVITED USERS: Can update invitation status (accept/decline)
 CREATE POLICY "invitations_update_invited" ON "invitations"
 	FOR UPDATE
-	USING (email = (SELECT email FROM users WHERE id = auth.uid()::integer));
+	USING (email = (SELECT email FROM users WHERE id = auth.uid()));
 
 -- ============================================================================
 -- STEP 16: RLS Policies for ACTIVITY_LOGS
@@ -473,7 +473,7 @@ CREATE POLICY "activity_logs_select_owner" ON "activity_logs"
 	USING (
 		union_id IN (
 			SELECT union_id FROM members
-			WHERE user_id = auth.uid()::integer
+			WHERE user_id = auth.uid()
 			AND role = 'owner'
 		)
 	);
