@@ -54,6 +54,7 @@ export const members = pgTable('members', {
     .notNull()
     .references(() => unions.id),
   role: varchar('role', { length: 50 }).notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('pending'),
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
 });
 
@@ -103,11 +104,47 @@ export const unionPages = pgTable('union_pages', {
   updatedBy: integer('updated_by').references(() => users.id),
 });
 
+export const posts = pgTable('posts', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  imageUrl: text('image_url'),
+  isPrivate: boolean('is_private').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id),
+  updatedBy: integer('updated_by').references(() => users.id),
+});
+
+export const files = pgTable('files', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id),
+  name: varchar('name', { length: 255 }).notNull(),
+  originalName: varchar('original_name', { length: 255 }).notNull(),
+  fileUrl: text('file_url').notNull(),
+  fileType: varchar('file_type', { length: 100 }).notNull(),
+  fileSize: integer('file_size').notNull(),
+  isPrivate: boolean('is_private').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id),
+});
+
 export const unionsRelations = relations(unions, ({ many }) => ({
   members: many(members),
   activityLogs: many(activityLogs),
   invitations: many(invitations),
   pages: many(unionPages),
+  posts: many(posts),
+  files: many(files),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -163,6 +200,32 @@ export const unionPagesRelations = relations(unionPages, ({ one }) => ({
   }),
 }));
 
+export const postsRelations = relations(posts, ({ one }) => ({
+  union: one(unions, {
+    fields: [posts.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [posts.createdBy],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [posts.updatedBy],
+    references: [users.id],
+  }),
+}));
+
+export const filesRelations = relations(files, ({ one }) => ({
+  union: one(unions, {
+    fields: [files.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [files.createdBy],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Union = typeof unions.$inferSelect;
@@ -175,6 +238,10 @@ export type Invitation = typeof invitations.$inferSelect;
 export type NewInvitation = typeof invitations.$inferInsert;
 export type UnionPage = typeof unionPages.$inferSelect;
 export type NewUnionPage = typeof unionPages.$inferInsert;
+export type Post = typeof posts.$inferSelect;
+export type NewPost = typeof posts.$inferInsert;
+export type File = typeof files.$inferSelect;
+export type NewFile = typeof files.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;

@@ -11,6 +11,8 @@
 -- STEP 1: Drop all existing tables
 -- ============================================================================
 
+DROP TABLE IF EXISTS "files" CASCADE;
+DROP TABLE IF EXISTS "posts" CASCADE;
 DROP TABLE IF EXISTS "union_pages" CASCADE;
 DROP TABLE IF EXISTS "activity_logs" CASCADE;
 DROP TABLE IF EXISTS "invitations" CASCADE;
@@ -77,6 +79,7 @@ CREATE TABLE "members" (
   "user_id" INTEGER NOT NULL UNIQUE REFERENCES "users"("id") ON DELETE CASCADE,
   "union_id" INTEGER NOT NULL REFERENCES "unions"("id") ON DELETE CASCADE,
   "role" VARCHAR(50) NOT NULL,
+  "status" VARCHAR(20) NOT NULL DEFAULT 'pending',
   "joined_at" TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
@@ -142,7 +145,47 @@ CREATE TABLE "union_pages" (
 CREATE INDEX "union_pages_union_id_slug_idx" ON "union_pages"("union_id", "slug");
 
 -- ============================================================================
--- STEP 8: Create auto-update trigger for updated_at columns
+-- STEP 8: Create POSTS table
+-- ============================================================================
+
+CREATE TABLE "posts" (
+  "id" SERIAL PRIMARY KEY,
+  "union_id" INTEGER NOT NULL REFERENCES "unions"("id") ON DELETE CASCADE,
+  "title" VARCHAR(255) NOT NULL,
+  "content" TEXT NOT NULL,
+  "image_url" TEXT,
+  "is_private" BOOLEAN NOT NULL DEFAULT false,
+  "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+  "updated_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+  "created_by" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+  "updated_by" INTEGER REFERENCES "users"("id") ON DELETE SET NULL
+);
+
+CREATE INDEX "posts_union_id_idx" ON "posts"("union_id");
+CREATE INDEX "posts_created_by_idx" ON "posts"("created_by");
+
+-- ============================================================================
+-- STEP 9: Create FILES table
+-- ============================================================================
+
+CREATE TABLE "files" (
+  "id" SERIAL PRIMARY KEY,
+  "union_id" INTEGER NOT NULL REFERENCES "unions"("id") ON DELETE CASCADE,
+  "name" VARCHAR(255) NOT NULL,
+  "original_name" VARCHAR(255) NOT NULL,
+  "file_url" TEXT NOT NULL,
+  "file_type" VARCHAR(100) NOT NULL,
+  "file_size" INTEGER NOT NULL,
+  "is_private" BOOLEAN NOT NULL DEFAULT false,
+  "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+  "created_by" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE CASCADE
+);
+
+CREATE INDEX "files_union_id_idx" ON "files"("union_id");
+CREATE INDEX "files_created_by_idx" ON "files"("created_by");
+
+-- ============================================================================
+-- STEP 10: Create auto-update trigger for updated_at columns
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -168,16 +211,23 @@ CREATE TRIGGER update_union_pages_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_posts_updated_at
+  BEFORE UPDATE ON "posts"
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================================================
 -- ✅ DATABASE RESET COMPLETE
 -- ============================================================================
 -- Tables created:
 -- ✅ users (id: SERIAL, with all required fields)
 -- ✅ unions (id: SERIAL, with public_name column)
--- ✅ members (join table with proper foreign keys)
+-- ✅ members (join table with proper foreign keys and status for approval)
 -- ✅ activity_logs (tracking user actions)
 -- ✅ invitations (team management)
 -- ✅ union_pages (custom content)
+-- ✅ posts (union posts with public/private toggle)
+-- ✅ files (file storage with public/private toggle)
 --
 -- All tables match schema.ts exactly
 -- ============================================================================
