@@ -5,12 +5,13 @@ import {
   text,
   timestamp,
   integer,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  name: varchar('name', { length: 100 }),
+  name: varchar('name', { length: 100 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   role: varchar('role', { length: 20 }).notNull().default('member'),
@@ -80,10 +81,32 @@ export const invitations = pgTable('invitations', {
   status: varchar('status', { length: 20 }).notNull().default('pending'),
 });
 
+export const unionPages = pgTable('union_pages', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id),
+  title: varchar('title', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 100 }).notNull(),
+  content: text('content'),
+  excerpt: text('excerpt'),
+  isPublished: boolean('is_published').notNull().default(false),
+  isMembersOnly: boolean('is_members_only').notNull().default(false),
+  sortOrder: integer('sort_order').default(0),
+  metaTitle: varchar('meta_title', { length: 255 }),
+  metaDescription: text('meta_description'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  publishedAt: timestamp('published_at'),
+  createdBy: integer('created_by').references(() => users.id),
+  updatedBy: integer('updated_by').references(() => users.id),
+});
+
 export const unionsRelations = relations(unions, ({ many }) => ({
   members: many(members),
   activityLogs: many(activityLogs),
   invitations: many(invitations),
+  pages: many(unionPages),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -124,6 +147,21 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   }),
 }));
 
+export const unionPagesRelations = relations(unionPages, ({ one }) => ({
+  union: one(unions, {
+    fields: [unionPages.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [unionPages.createdBy],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [unionPages.updatedBy],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Union = typeof unions.$inferSelect;
@@ -134,6 +172,8 @@ export type ActivityLog = typeof activityLogs.$inferSelect;
 export type NewActivityLog = typeof activityLogs.$inferInsert;
 export type Invitation = typeof invitations.$inferSelect;
 export type NewInvitation = typeof invitations.$inferInsert;
+export type UnionPage = typeof unionPages.$inferSelect;
+export type NewUnionPage = typeof unionPages.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;
