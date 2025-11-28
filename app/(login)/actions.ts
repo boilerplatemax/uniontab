@@ -111,11 +111,12 @@ const signUpSchema = z.object({
   password: z.string().min(8),
   inviteId: z.string().optional(),
   unionName: z.string().min(1, 'Union name is required'),
-  localNumber: z.string().optional()
+  localNumber: z.string().optional(),
+  publicName: z.string().optional()
 });
 
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
-  const { name, email, password, inviteId, unionName, localNumber } = data;
+  const { name, email, password, inviteId, unionName, localNumber, publicName } = data;
 
   const existingUser = await db
     .select()
@@ -246,7 +247,8 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     const newUnion: NewUnion = {
       name: finalUnionName,
       slug: finalSlug,
-      localNumber: localNumber
+      localNumber: localNumber,
+      publicName: publicName || null
     };
 
     [createdUnion] = await db.insert(unions).values(newUnion).returning();

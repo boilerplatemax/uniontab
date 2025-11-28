@@ -35,6 +35,7 @@ export default function OnboardingPage() {
 
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('welcome');
   const [formData, setFormData] = useState({
+    publicName: '',
     logoUrl: '',
     coverPhotoUrl: '',
     email: '',
@@ -49,6 +50,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (union) {
       setFormData({
+        publicName: union.publicName || '',
         logoUrl: union.logoUrl || '',
         coverPhotoUrl: union.coverPhotoUrl || '',
         email: union.email || '',
@@ -174,20 +176,41 @@ export default function OnboardingPage() {
           <CardContent className="p-8">
             {/* Welcome Step */}
             {currentStep === 'welcome' && (
-              <div className="space-y-6 text-center">
-                <div className="space-y-2">
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
                   <h2 className="text-2xl font-bold text-gray-900">
-                    {union.name}
+                    Welcome {union.name}!
                   </h2>
                   {union.localNumber && (
-                    <p className="text-gray-600">{union.localNumber}</p>
+                    <p className="text-gray-600">Local {union.localNumber}</p>
                   )}
                 </div>
-                <p className="text-lg text-gray-700">
+                <p className="text-lg text-gray-700 text-center">
                   Let's make your union's website look great! We'll guide you
                   through adding your logo, cover photo, contact information,
                   and more.
                 </p>
+
+                <div className="space-y-4 max-w-md mx-auto">
+                  <div>
+                    <Label htmlFor="publicName">
+                      Public Display Name (optional)
+                    </Label>
+                    <Input
+                      id="publicName"
+                      placeholder="e.g., Barrie Transit Union"
+                      value={formData.publicName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, publicName: e.target.value })
+                      }
+                      maxLength={255}
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      This is the friendly name shown on your public page. Leave blank to use "{union.name}" instead.
+                    </p>
+                  </div>
+                </div>
+
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
                     <strong>Note:</strong> You can skip any step and come back to
@@ -460,9 +483,9 @@ export default function OnboardingPage() {
                         </div>
                       )}
                       <div>
-                        <h3 className="text-xl font-bold">{union.name}</h3>
+                        <h3 className="text-xl font-bold">{formData.publicName || union.name}</h3>
                         {union.localNumber && (
-                          <p className="text-gray-600">{union.localNumber}</p>
+                          <p className="text-gray-600">Local {union.localNumber}</p>
                         )}
                       </div>
                     </div>
