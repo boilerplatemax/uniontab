@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,19 +16,27 @@ import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
 import { Loader2 } from 'lucide-react';
 
-interface CreatePostDialogProps {
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+  imageUrl: string | null;
+  isPrivate: boolean;
+}
+
+interface EditPostDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  unionId: number;
+  post: Post | null;
   onSuccess: () => void;
 }
 
-export function CreatePostDialog({
+export function EditPostDialog({
   open,
   onOpenChange,
-  unionId,
+  post,
   onSuccess,
-}: CreatePostDialogProps) {
+}: EditPostDialogProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -36,17 +44,28 @@ export function CreatePostDialog({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (post) {
+      setTitle(post.title);
+      setContent(post.content);
+      setImageUrl(post.imageUrl || '');
+      setIsPrivate(post.isPrivate);
+    }
+  }, [post]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!post) return;
+
     setLoading(true);
     setError('');
 
     try {
-      const response = await fetch('/api/posts/create', {
-        method: 'POST',
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          unionId,
           title,
           content,
           imageUrl: imageUrl || null,
@@ -56,14 +75,9 @@ export function CreatePostDialog({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to create post');
+        throw new Error(data.error || 'Failed to update post');
       }
 
-      // Reset form
-      setTitle('');
-      setContent('');
-      setImageUrl('');
-      setIsPrivate(false);
       onOpenChange(false);
       onSuccess();
     } catch (err: any) {
@@ -77,7 +91,7 @@ export function CreatePostDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Create New Post</DialogTitle>
+          <DialogTitle>Edit Post</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
@@ -114,6 +128,7 @@ export function CreatePostDialog({
               <FileUpload
                 onFileSelect={(file, url) => {
                   if (url) setImageUrl(url);
+                  if (file === null) setImageUrl('');
                 }}
                 accept="image/*"
                 maxSize={10}
@@ -155,10 +170,10 @@ export function CreatePostDialog({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
+                  Saving...
                 </>
               ) : (
-                'Create Post'
+                'Save Changes'
               )}
             </Button>
           </DialogFooter>

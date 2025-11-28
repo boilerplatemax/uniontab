@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { FileUpload } from '@/components/ui/file-upload';
 import { Loader2 } from 'lucide-react';
 
 interface UploadFileDialogProps {
@@ -29,32 +30,35 @@ export function UploadFileDialog({
   unionSlug,
   onSuccess,
 }: UploadFileDialogProps) {
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState('');
   const [fileName, setFileName] = useState('');
-  const [fileType, setFileType] = useState('');
-  const [fileSize, setFileSize] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!uploadedFile || !fileUrl) {
+      setError('Please upload a file');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
-      const fileSizeBytes = parseInt(fileSize) * 1024 * 1024; // Convert MB to bytes
-
       const response = await fetch('/api/files/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           unionId,
-          name: `${unionSlug}/${Date.now()}_${fileName}`,
-          originalName: fileName,
+          name: `${unionSlug}/${Date.now()}_${fileName || uploadedFile.name}`,
+          originalName: fileName || uploadedFile.name,
           fileUrl,
-          fileType: fileType || 'application/octet-stream',
-          fileSize: fileSizeBytes,
+          fileType: uploadedFile.type || 'application/octet-stream',
+          fileSize: uploadedFile.size,
           isPrivate,
         }),
       });
@@ -65,10 +69,9 @@ export function UploadFileDialog({
       }
 
       // Reset form
+      setUploadedFile(null);
       setFileUrl('');
       setFileName('');
-      setFileType('');
-      setFileSize('');
       setIsPrivate(false);
       onOpenChange(false);
       onSuccess();
@@ -93,64 +96,28 @@ export function UploadFileDialog({
               </div>
             )}
 
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-              <p className="text-sm text-blue-800 font-medium mb-2">
-                📋 How to upload files to Supabase Storage:
-              </p>
-              <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-                <li>Go to your Supabase project dashboard</li>
-                <li>Navigate to Storage → union-files bucket</li>
-                <li>Upload your file and copy the public URL</li>
-                <li>Paste the URL below</li>
-              </ol>
-            </div>
+            <FileUpload
+              onFileSelect={(file, url) => {
+                setUploadedFile(file);
+                if (url) setFileUrl(url);
+                if (file) setFileName(file.name);
+              }}
+              accept="*"
+              maxSize={50}
+              label="Select File"
+              hint="Click to browse or drag and drop any file"
+              bucket="union-files"
+              path={`files/${unionSlug}`}
+            />
 
             <div>
-              <Label htmlFor="fileName">File Name *</Label>
+              <Label htmlFor="fileName">Display Name (Optional)</Label>
               <Input
                 id="fileName"
                 value={fileName}
                 onChange={(e) => setFileName(e.target.value)}
-                placeholder="document.pdf"
-                required
+                placeholder="Leave blank to use original filename"
               />
-            </div>
-
-            <div>
-              <Label htmlFor="fileUrl">File URL *</Label>
-              <Input
-                id="fileUrl"
-                type="url"
-                value={fileUrl}
-                onChange={(e) => setFileUrl(e.target.value)}
-                placeholder="https://your-project.supabase.co/storage/..."
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="fileType">File Type</Label>
-                <Input
-                  id="fileType"
-                  value={fileType}
-                  onChange={(e) => setFileType(e.target.value)}
-                  placeholder="application/pdf"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="fileSize">File Size (MB) *</Label>
-                <Input
-                  id="fileSize"
-                  type="number"
-                  step="0.01"
-                  value={fileSize}
-                  onChange={(e) => setFileSize(e.target.value)}
-                  placeholder="2.5"
-                  required
-                />
-              </div>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">

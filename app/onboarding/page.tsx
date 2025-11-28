@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { FileUpload } from '@/components/ui/file-upload';
 import {
   ArrowRight,
   ArrowLeft,
@@ -233,36 +234,23 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <Label htmlFor="logoUrl">Logo URL</Label>
-                  <Input
-                    id="logoUrl"
-                    placeholder="https://example.com/logo.png"
-                    value={formData.logoUrl}
-                    onChange={(e) =>
-                      setFormData({ ...formData, logoUrl: e.target.value })
-                    }
+                  <FileUpload
+                    onFileSelect={(file, url) => {
+                      if (url) {
+                        setFormData({ ...formData, logoUrl: url });
+                      }
+                    }}
+                    accept="image/*"
+                    maxSize={5}
+                    currentUrl={formData.logoUrl}
+                    label="Logo Image"
+                    hint="Click to browse or drag and drop your logo"
+                    bucket="union-files"
+                    path="logos"
                   />
                   <p className="text-sm text-gray-500">
-                    For now, paste the URL of your logo image. File upload
-                    coming soon!
+                    Recommended: Square image (e.g., 400x400 pixels)
                   </p>
-
-                  {formData.logoUrl && (
-                    <div className="mt-4">
-                      <p className="text-sm font-medium text-gray-700 mb-2">
-                        Preview:
-                      </p>
-                      <img
-                        src={formData.logoUrl}
-                        alt="Logo preview"
-                        className="h-32 w-32 object-cover rounded-lg border-2 border-gray-200"
-                        onError={(e) => {
-                          e.currentTarget.src = '';
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -280,35 +268,23 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <Label htmlFor="coverPhotoUrl">Cover Photo URL</Label>
-                  <Input
-                    id="coverPhotoUrl"
-                    placeholder="https://example.com/cover.jpg"
-                    value={formData.coverPhotoUrl}
-                    onChange={(e) =>
-                      setFormData({ ...formData, coverPhotoUrl: e.target.value })
-                    }
+                  <FileUpload
+                    onFileSelect={(file, url) => {
+                      if (url) {
+                        setFormData({ ...formData, coverPhotoUrl: url });
+                      }
+                    }}
+                    accept="image/*"
+                    maxSize={10}
+                    currentUrl={formData.coverPhotoUrl}
+                    label="Cover Photo"
+                    hint="Click to browse or drag and drop your cover image"
+                    bucket="union-files"
+                    path="covers"
                   />
                   <p className="text-sm text-gray-500">
-                    Recommended size: 1200x400 pixels
+                    Recommended size: 1200x400 pixels or wider
                   </p>
-
-                  {formData.coverPhotoUrl && (
-                    <div className="mt-4">
-                      <p className="text-sm font-medium text-gray-700 mb-2">
-                        Preview:
-                      </p>
-                      <img
-                        src={formData.coverPhotoUrl}
-                        alt="Cover preview"
-                        className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
-                        onError={(e) => {
-                          e.currentTarget.src = '';
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
             )}
