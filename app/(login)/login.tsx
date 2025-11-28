@@ -23,6 +23,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   // Get union details from session storage if coming from homepage
   const [unionName, setUnionName] = useState('');
   const [localNumber, setLocalNumber] = useState('');
+  const [publicName, setPublicName] = useState('');
 
   useEffect(() => {
     if (mode === 'signup' && typeof window !== 'undefined') {
@@ -103,11 +104,18 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                     required
                     maxLength={255}
                     value={unionName}
-                    onChange={(e) => setUnionName(e.target.value)}
+                    onChange={(e) => {
+                      // Remove spaces from union name
+                      const value = e.target.value.replace(/\s/g, '');
+                      setUnionName(value);
+                    }}
                     className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                     placeholder="e.g., ATU"
                   />
                 </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  No spaces allowed. Used for URL generation.
+                </p>
               </div>
 
               <div>
@@ -121,16 +129,52 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                   <Input
                     id="localNumber"
                     name="localNumber"
-                    type="text"
+                    type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     maxLength={50}
                     value={localNumber}
-                    onChange={(e) => setLocalNumber(e.target.value)}
+                    onChange={(e) => {
+                      // Remove spaces and non-numeric characters
+                      const value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+                      setLocalNumber(value);
+                    }}
+                    onKeyDown={(e) => {
+                      // Prevent space key
+                      if (e.key === ' ') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                     placeholder="e.g., 123"
                   />
                 </div>
                 <p className="mt-1 text-xs text-gray-500">
-                  Your page URL will be: {unionName.toLowerCase().replace(/[^a-z0-9]+/g, '')}{localNumber ? localNumber.toLowerCase().replace(/[^a-z0-9]+/g, '') : ''}
+                  Numbers only. Your page URL will be: {unionName.toLowerCase().replace(/[^a-z0-9]+/g, '')}{localNumber ? localNumber.toLowerCase().replace(/[^a-z0-9]+/g, '') : ''}
+                </p>
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="publicName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Public Display Name (optional)
+                </Label>
+                <div className="mt-1">
+                  <Input
+                    id="publicName"
+                    name="publicName"
+                    type="text"
+                    maxLength={255}
+                    value={publicName}
+                    onChange={(e) => setPublicName(e.target.value)}
+                    className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    placeholder="e.g., Barrie Transit Union"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Friendly name shown on your public page. Does not affect your URL.
                 </p>
               </div>
             </>

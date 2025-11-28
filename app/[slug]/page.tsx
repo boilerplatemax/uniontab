@@ -66,8 +66,8 @@ export default async function PublicUnionPage({
       {/* Navigation Bar */}
       <UnionNavbar
         slug={slug}
-        unionName={union.name}
-        localNumber={union.localNumber}
+        unionName={union.publicName || union.name}
+        localNumber={union.publicName ? null : union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}
       />
@@ -127,8 +127,8 @@ export default async function PublicUnionPage({
             {/* Name and Local Number */}
             <div className="flex-1 text-center sm:text-left pb-4">
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                {union.name.toUpperCase()}
-                {union.localNumber && ` ${union.localNumber}`}
+                {(union.publicName || union.name).toUpperCase()}
+                {union.localNumber && !union.publicName && ` ${union.localNumber}`}
               </h1>
             </div>
           </div>
@@ -243,7 +243,7 @@ export default async function PublicUnionPage({
                 <CardContent className="p-12 text-center">
                   <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Welcome to {union.name}
+                    Welcome to {union.publicName || union.name}
                   </h3>
                   <p className="text-gray-500">
                     More content coming soon...

@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     await db
       .update(unions)
       .set({
+        publicName: data.publicName || null,
         logoUrl: data.logoUrl || null,
         coverPhotoUrl: data.coverPhotoUrl || null,
         email: data.email || null,

@@ -25,6 +25,7 @@ export const unions = pgTable('unions', {
   name: varchar('name', { length: 255 }).notNull(),
   slug: varchar('slug', { length: 100 }).notNull().unique(),
   localNumber: varchar('local_number', { length: 50 }),
+  publicName: varchar('public_name', { length: 255 }),
   logoUrl: text('logo_url'),
   coverPhotoUrl: text('cover_photo_url'),
   email: varchar('email', { length: 255 }),
