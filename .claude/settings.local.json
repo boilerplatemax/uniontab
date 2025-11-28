@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(tail:*)",
+      "Bash(move page.tsx dashboard-content.tsx)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

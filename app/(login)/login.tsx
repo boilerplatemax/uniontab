@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CircleIcon, Loader2 } from 'lucide-react';
+import { CircleIcon, Loader2, Users } from 'lucide-react';
 import { signIn, signUp } from './actions';
 import { ActionState } from '@/lib/auth/middleware';
 
@@ -20,17 +20,41 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
     { error: '' }
   );
 
+  // Get union details from session storage if coming from homepage
+  const [unionName, setUnionName] = useState('');
+  const [localNumber, setLocalNumber] = useState('');
+
+  useEffect(() => {
+    if (mode === 'signup' && typeof window !== 'undefined') {
+      const storedUnionName = sessionStorage.getItem('unionName');
+      const storedLocalNumber = sessionStorage.getItem('localNumber');
+      if (storedUnionName) {
+        setUnionName(storedUnionName);
+        sessionStorage.removeItem('unionName');
+      }
+      if (storedLocalNumber) {
+        setLocalNumber(storedLocalNumber);
+        sessionStorage.removeItem('localNumber');
+      }
+    }
+  }, [mode]);
+
   return (
     <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <CircleIcon className="h-12 w-12 text-orange-500" />
+          <Users className="h-12 w-12 text-blue-600" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           {mode === 'signin'
             ? 'Sign in to your account'
-            : 'Create your account'}
+            : 'Create your union website'}
         </h2>
+        {mode === 'signup' && (
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Start your free 7-day trial
+          </p>
+        )}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -38,6 +62,54 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
           <input type="hidden" name="redirect" value={redirect || ''} />
           <input type="hidden" name="priceId" value={priceId || ''} />
           <input type="hidden" name="inviteId" value={inviteId || ''} />
+
+          {mode === 'signup' && !inviteId && (
+            <>
+              <div>
+                <Label
+                  htmlFor="unionName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Union Name *
+                </Label>
+                <div className="mt-1">
+                  <Input
+                    id="unionName"
+                    name="unionName"
+                    type="text"
+                    required
+                    maxLength={255}
+                    value={unionName}
+                    onChange={(e) => setUnionName(e.target.value)}
+                    className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    placeholder="e.g., United Workers"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="localNumber"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Local Number
+                </Label>
+                <div className="mt-1">
+                  <Input
+                    id="localNumber"
+                    name="localNumber"
+                    type="text"
+                    maxLength={50}
+                    value={localNumber}
+                    onChange={(e) => setLocalNumber(e.target.value)}
+                    className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    placeholder="e.g., Local 123 (optional)"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           <div>
             <Label
               htmlFor="email"
@@ -54,7 +126,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 defaultValue={state.email}
                 required
                 maxLength={50}
-                className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Enter your email"
               />
             </div>
@@ -79,7 +151,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 required
                 minLength={8}
                 maxLength={100}
-                className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Enter your password"
               />
             </div>
@@ -92,7 +164,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
           <div>
             <Button
               type="submit"
-              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               disabled={pending}
             >
               {pending ? (
@@ -103,7 +175,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
               ) : mode === 'signin' ? (
                 'Sign in'
               ) : (
-                'Sign up'
+                'Create my website'
               )}
             </Button>
           </div>
@@ -128,7 +200,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
               href={`${mode === 'signin' ? '/sign-up' : '/sign-in'}${
                 redirect ? `?redirect=${redirect}` : ''
               }${priceId ? `&priceId=${priceId}` : ''}`}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               {mode === 'signin'
                 ? 'Create an account'

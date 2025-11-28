@@ -6,12 +6,12 @@ import { db } from '@/lib/db/drizzle';
 import {
   User,
   users,
-  teams,
-  teamMembers,
+  unions,
+  members,
   activityLogs,
   type NewUser,
-  type NewTeam,
-  type NewTeamMember,
+  type NewUnion,
+  type NewMember,
   type NewActivityLog,
   ActivityType,
   invitations
@@ -27,16 +27,16 @@ import {
 } from '@/lib/auth/middleware';
 
 async function logActivity(
-  teamId: number | null | undefined,
+  unionId: number | null | undefined,
   userId: number,
   type: ActivityType,
   ipAddress?: string
 ) {
-  if (teamId === null || teamId === undefined) {
+  if (unionId === null || unionId === undefined) {
     return;
   }
   const newActivity: NewActivityLog = {
-    teamId,
+    unionId,
     userId,
     action: type,
     ipAddress: ipAddress || ''
@@ -52,18 +52,18 @@ const signInSchema = z.object({
 export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const { email, password } = data;
 
-  const userWithTeam = await db
+  const userWithUnion = await db
     .select({
       user: users,
-      team: teams
+      union: unions
     })
     .from(users)
-    .leftJoin(teamMembers, eq(users.id, teamMembers.userId))
-    .leftJoin(teams, eq(teamMembers.teamId, teams.id))
+    .leftJoin(members, eq(users.id, members.userId))
+    .leftJoin(unions, eq(members.unionId, unions.id))
     .where(eq(users.email, email))
     .limit(1);
 
-  if (userWithTeam.length === 0) {
+  if (userWithUnion.length === 0) {
     return {
       error: 'Invalid email or password. Please try again.',
       email,
@@ -71,7 +71,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     };
   }
 
-  const { user: foundUser, team: foundTeam } = userWithTeam[0];
+  const { user: foundUser, union: foundUnion } = userWithUnion[0];
 
   const isPasswordValid = await comparePasswords(
     password,
@@ -88,26 +88,33 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
   await Promise.all([
     setSession(foundUser),
-    logActivity(foundTeam?.id, foundUser.id, ActivityType.SIGN_IN)
+    logActivity(foundUnion?.id, foundUser.id, ActivityType.SIGN_IN)
   ]);
 
   const redirectTo = formData.get('redirect') as string | null;
   if (redirectTo === 'checkout') {
     const priceId = formData.get('priceId') as string;
-    return createCheckoutSession({ team: foundTeam, priceId });
+    return createCheckoutSession({ team: foundUnion, priceId });
   }
 
-  redirect('/dashboard');
+  // Redirect to union public page
+  if (foundUnion?.slug) {
+    redirect(`/${foundUnion.slug}`);
+  }
+
+  redirect('/sign-in');
 });
 
 const signUpSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  inviteId: z.string().optional()
+  inviteId: z.string().optional(),
+  unionName: z.string().min(1, 'Union name is required'),
+  localNumber: z.string().min(1, 'Local number is required')
 });
 
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
-  const { email, password, inviteId } = data;
+  const { email, password, inviteId, unionName, localNumber } = data;
 
   const existingUser = await db
     .select()
@@ -141,9 +148,9 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     };
   }
 
-  let teamId: number;
+  let unionId: number;
   let userRole: string;
-  let createdTeam: typeof teams.$inferSelect | null = null;
+  let createdUnion: typeof unions.$inferSelect | null = null;
 
   if (inviteId) {
     // Check if there's a valid invitation
@@ -160,7 +167,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
       .limit(1);
 
     if (invitation) {
-      teamId = invitation.teamId;
+      unionId = invitation.unionId;
       userRole = invitation.role;
 
       await db
@@ -168,54 +175,104 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
         .set({ status: 'accepted' })
         .where(eq(invitations.id, invitation.id));
 
-      await logActivity(teamId, createdUser.id, ActivityType.ACCEPT_INVITATION);
+      await logActivity(unionId, createdUser.id, ActivityType.ACCEPT_INVITATION);
 
-      [createdTeam] = await db
+      [createdUnion] = await db
         .select()
-        .from(teams)
-        .where(eq(teams.id, teamId))
+        .from(unions)
+        .where(eq(unions.id, unionId))
         .limit(1);
     } else {
       return { error: 'Invalid or expired invitation.', email, password };
     }
   } else {
-    // Create a new team if there's no invitation
-    const newTeam: NewTeam = {
-      name: `${email}'s Team`
-    };
+    // Create a new union if there's no invitation
+    const finalUnionName = unionName;
 
-    [createdTeam] = await db.insert(teams).values(newTeam).returning();
+    // Concatenate union name and local number for slug
+    const slugParts = [
+      unionName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      localNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    ];
+    let baseSlug = slugParts.join('-').replace(/^-+|-+$/g, '');
 
-    if (!createdTeam) {
+    // Reserved slugs that cannot be used
+    const reservedSlugs = [
+      'dashboard', 'sign-in', 'sign-up', 'onboarding', 'api', 'pricing',
+      'about', 'contact', 'terms', 'privacy', 'admin', 'settings', 'help',
+      'support', 'billing', 'account', 'profile', 'login', 'logout', 'register',
+      'signin', 'signup', 'auth', 'oauth', 'callback', 'verify', 'reset'
+    ];
+
+    // Check if slug is reserved
+    if (reservedSlugs.includes(baseSlug)) {
       return {
-        error: 'Failed to create team. Please try again.',
+        error: `The combination "${unionName} ${localNumber}" creates a reserved slug. Please choose a different name or local number.`,
         email,
         password
       };
     }
 
-    teamId = createdTeam.id;
+    // Check if slug already exists and append number if needed
+    let finalSlug = baseSlug;
+    let counter = 2;
+
+    while (true) {
+      const [existingUnion] = await db
+        .select()
+        .from(unions)
+        .where(eq(unions.slug, finalSlug))
+        .limit(1);
+
+      if (!existingUnion) break;
+
+      finalSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    const newUnion: NewUnion = {
+      name: finalUnionName,
+      slug: finalSlug,
+      localNumber: localNumber
+    };
+
+    [createdUnion] = await db.insert(unions).values(newUnion).returning();
+
+    if (!createdUnion) {
+      return {
+        error: 'Failed to create union. Please try again.',
+        email,
+        password
+      };
+    }
+
+    unionId = createdUnion.id;
     userRole = 'owner';
 
-    await logActivity(teamId, createdUser.id, ActivityType.CREATE_TEAM);
+    await logActivity(unionId, createdUser.id, ActivityType.CREATE_TEAM);
   }
 
-  const newTeamMember: NewTeamMember = {
+  const newMember: NewMember = {
     userId: createdUser.id,
-    teamId: teamId,
+    unionId: unionId,
     role: userRole
   };
 
   await Promise.all([
-    db.insert(teamMembers).values(newTeamMember),
-    logActivity(teamId, createdUser.id, ActivityType.SIGN_UP),
+    db.insert(members).values(newMember),
+    logActivity(unionId, createdUser.id, ActivityType.SIGN_UP),
     setSession(createdUser)
   ]);
 
   const redirectTo = formData.get('redirect') as string | null;
   if (redirectTo === 'checkout') {
     const priceId = formData.get('priceId') as string;
-    return createCheckoutSession({ team: createdTeam, priceId });
+    return createCheckoutSession({ team: createdUnion, priceId });
+  }
+
+  // Redirect to onboarding for new sign-ups
+  if (!inviteId) {
+    redirect('/onboarding');
   }
 
   redirect('/dashboard');
@@ -224,7 +281,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 export async function signOut() {
   const user = (await getUser()) as User;
   const userWithTeam = await getUserWithTeam(user.id);
-  await logActivity(userWithTeam?.teamId, user.id, ActivityType.SIGN_OUT);
+  await logActivity(userWithTeam?.unionId, user.id, ActivityType.SIGN_OUT);
   (await cookies()).delete('session');
 }
 
@@ -279,7 +336,7 @@ export const updatePassword = validatedActionWithUser(
         .update(users)
         .set({ passwordHash: newPasswordHash })
         .where(eq(users.id, user.id)),
-      logActivity(userWithTeam?.teamId, user.id, ActivityType.UPDATE_PASSWORD)
+      logActivity(userWithTeam?.unionId, user.id, ActivityType.UPDATE_PASSWORD)
     ]);
 
     return {
@@ -308,7 +365,7 @@ export const deleteAccount = validatedActionWithUser(
     const userWithTeam = await getUserWithTeam(user.id);
 
     await logActivity(
-      userWithTeam?.teamId,
+      userWithTeam?.unionId,
       user.id,
       ActivityType.DELETE_ACCOUNT
     );
@@ -322,13 +379,13 @@ export const deleteAccount = validatedActionWithUser(
       })
       .where(eq(users.id, user.id));
 
-    if (userWithTeam?.teamId) {
+    if (userWithTeam?.unionId) {
       await db
-        .delete(teamMembers)
+        .delete(members)
         .where(
           and(
-            eq(teamMembers.userId, user.id),
-            eq(teamMembers.teamId, userWithTeam.teamId)
+            eq(members.userId, user.id),
+            eq(members.unionId, userWithTeam.unionId)
           )
         );
     }
@@ -351,7 +408,7 @@ export const updateAccount = validatedActionWithUser(
 
     await Promise.all([
       db.update(users).set({ name, email }).where(eq(users.id, user.id)),
-      logActivity(userWithTeam?.teamId, user.id, ActivityType.UPDATE_ACCOUNT)
+      logActivity(userWithTeam?.unionId, user.id, ActivityType.UPDATE_ACCOUNT)
     ]);
 
     return { name, success: 'Account updated successfully.' };
@@ -368,21 +425,21 @@ export const removeTeamMember = validatedActionWithUser(
     const { memberId } = data;
     const userWithTeam = await getUserWithTeam(user.id);
 
-    if (!userWithTeam?.teamId) {
-      return { error: 'User is not part of a team' };
+    if (!userWithTeam?.unionId) {
+      return { error: 'User is not part of a union' };
     }
 
     await db
-      .delete(teamMembers)
+      .delete(members)
       .where(
         and(
-          eq(teamMembers.id, memberId),
-          eq(teamMembers.teamId, userWithTeam.teamId)
+          eq(members.id, memberId),
+          eq(members.unionId, userWithTeam.unionId)
         )
       );
 
     await logActivity(
-      userWithTeam.teamId,
+      userWithTeam.unionId,
       user.id,
       ActivityType.REMOVE_TEAM_MEMBER
     );
@@ -402,21 +459,21 @@ export const inviteTeamMember = validatedActionWithUser(
     const { email, role } = data;
     const userWithTeam = await getUserWithTeam(user.id);
 
-    if (!userWithTeam?.teamId) {
-      return { error: 'User is not part of a team' };
+    if (!userWithTeam?.unionId) {
+      return { error: 'User is not part of a union' };
     }
 
     const existingMember = await db
       .select()
       .from(users)
-      .leftJoin(teamMembers, eq(users.id, teamMembers.userId))
+      .leftJoin(members, eq(users.id, members.userId))
       .where(
-        and(eq(users.email, email), eq(teamMembers.teamId, userWithTeam.teamId))
+        and(eq(users.email, email), eq(members.unionId, userWithTeam.unionId))
       )
       .limit(1);
 
     if (existingMember.length > 0) {
-      return { error: 'User is already a member of this team' };
+      return { error: 'User is already a member of this union' };
     }
 
     // Check if there's an existing invitation
@@ -426,7 +483,7 @@ export const inviteTeamMember = validatedActionWithUser(
       .where(
         and(
           eq(invitations.email, email),
-          eq(invitations.teamId, userWithTeam.teamId),
+          eq(invitations.unionId, userWithTeam.unionId),
           eq(invitations.status, 'pending')
         )
       )
@@ -438,7 +495,7 @@ export const inviteTeamMember = validatedActionWithUser(
 
     // Create a new invitation
     await db.insert(invitations).values({
-      teamId: userWithTeam.teamId,
+      unionId: userWithTeam.unionId,
       email,
       role,
       invitedBy: user.id,
@@ -446,13 +503,13 @@ export const inviteTeamMember = validatedActionWithUser(
     });
 
     await logActivity(
-      userWithTeam.teamId,
+      userWithTeam.unionId,
       user.id,
       ActivityType.INVITE_TEAM_MEMBER
     );
 
     // TODO: Send invitation email and include ?inviteId={id} to sign-up URL
-    // await sendInvitationEmail(email, userWithTeam.team.name, role)
+    // await sendInvitationEmail(email, userWithTeam.union.name, role)
 
     return { success: 'Invitation sent successfully' };
   }

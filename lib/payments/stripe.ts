@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { redirect } from 'next/navigation';
-import { Team } from '@/lib/db/schema';
+import { Union } from '@/lib/db/schema';
 import {
   getTeamByStripeCustomerId,
   getUser,
@@ -15,7 +15,7 @@ export async function createCheckoutSession({
   team,
   priceId
 }: {
-  team: Team | null;
+  team: Union | null;
   priceId: string;
 }) {
   const user = await getUser();
@@ -46,8 +46,8 @@ export async function createCheckoutSession({
   redirect(session.url!);
 }
 
-export async function createCustomerPortalSession(team: Team) {
-  if (!team.stripeCustomerId || !team.stripeProductId) {
+export async function createCustomerPortalSession(union: Union) {
+  if (!union.stripeCustomerId || !union.stripeProductId) {
     redirect('/pricing');
   }
 
@@ -57,9 +57,9 @@ export async function createCustomerPortalSession(team: Team) {
   if (configurations.data.length > 0) {
     configuration = configurations.data[0];
   } else {
-    const product = await stripe.products.retrieve(team.stripeProductId);
+    const product = await stripe.products.retrieve(union.stripeProductId);
     if (!product.active) {
-      throw new Error("Team's product is not active in Stripe");
+      throw new Error("Union's product is not active in Stripe");
     }
 
     const prices = await stripe.prices.list({
@@ -67,7 +67,7 @@ export async function createCustomerPortalSession(team: Team) {
       active: true
     });
     if (prices.data.length === 0) {
-      throw new Error("No active prices found for the team's product");
+      throw new Error("No active prices found for the union's product");
     }
 
     configuration = await stripe.billingPortal.configurations.create({
@@ -108,7 +108,7 @@ export async function createCustomerPortalSession(team: Team) {
   }
 
   return stripe.billingPortal.sessions.create({
-    customer: team.stripeCustomerId,
+    customer: union.stripeCustomerId,
     return_url: `${process.env.BASE_URL}/dashboard`,
     configuration: configuration.id
   });
@@ -121,23 +121,23 @@ export async function handleSubscriptionChange(
   const subscriptionId = subscription.id;
   const status = subscription.status;
 
-  const team = await getTeamByStripeCustomerId(customerId);
+  const union = await getTeamByStripeCustomerId(customerId);
 
-  if (!team) {
-    console.error('Team not found for Stripe customer:', customerId);
+  if (!union) {
+    console.error('Union not found for Stripe customer:', customerId);
     return;
   }
 
   if (status === 'active' || status === 'trialing') {
     const plan = subscription.items.data[0]?.plan;
-    await updateTeamSubscription(team.id, {
+    await updateTeamSubscription(union.id, {
       stripeSubscriptionId: subscriptionId,
       stripeProductId: plan?.product as string,
       planName: (plan?.product as Stripe.Product).name,
       subscriptionStatus: status
     });
   } else if (status === 'canceled' || status === 'unpaid') {
-    await updateTeamSubscription(team.id, {
+    await updateTeamSubscription(union.id, {
       stripeSubscriptionId: null,
       stripeProductId: null,
       planName: null,

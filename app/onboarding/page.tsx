@@ -1,0 +1,572 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import {
+  ArrowRight,
+  ArrowLeft,
+  Upload,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  Eye,
+  Check,
+  Users
+} from 'lucide-react';
+import useSWR from 'swr';
+import { UnionDataWithMembers } from '@/lib/db/schema';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+type OnboardingStep = 'welcome' | 'logo' | 'cover' | 'contact' | 'about' | 'preview';
+
+const steps: OnboardingStep[] = ['welcome', 'logo', 'cover', 'contact', 'about', 'preview'];
+
+export default function OnboardingPage() {
+  const router = useRouter();
+  const { data: union, mutate } = useSWR<UnionDataWithMembers>('/api/team', fetcher);
+
+  const [currentStep, setCurrentStep] = useState<OnboardingStep>('welcome');
+  const [formData, setFormData] = useState({
+    logoUrl: '',
+    coverPhotoUrl: '',
+    email: '',
+    phone: '',
+    address: '',
+    website: '',
+    description: '',
+    about: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (union) {
+      setFormData({
+        logoUrl: union.logoUrl || '',
+        coverPhotoUrl: union.coverPhotoUrl || '',
+        email: union.email || '',
+        phone: union.phone || '',
+        address: union.address || '',
+        website: union.website || '',
+        description: union.description || '',
+        about: union.about || ''
+      });
+    }
+  }, [union]);
+
+  const currentStepIndex = steps.indexOf(currentStep);
+  const progress = ((currentStepIndex + 1) / steps.length) * 100;
+
+  const handleNext = () => {
+    if (currentStepIndex < steps.length - 1) {
+      setCurrentStep(steps[currentStepIndex + 1]);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStepIndex > 0) {
+      setCurrentStep(steps[currentStepIndex - 1]);
+    }
+  };
+
+  const handleSkip = () => {
+    handleNext();
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save');
+      }
+
+      await mutate();
+
+      // Auto-advance if not on preview
+      if (currentStep !== 'preview') {
+        handleNext();
+      }
+    } catch (error) {
+      console.error('Error saving:', error);
+      alert('Failed to save changes. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/onboarding/publish', {
+        method: 'POST'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to publish');
+      }
+
+      // Redirect to the union's public page
+      if (union?.slug) {
+        router.push(`/${union.slug}`);
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      console.error('Error publishing:', error);
+      alert('Failed to publish site. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!union) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <Users className="h-12 w-12 text-blue-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Welcome to UnionWeb
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Let's set up your union's website in a few simple steps
+          </p>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-700">
+              Step {currentStepIndex + 1} of {steps.length}
+            </span>
+            <span className="text-sm text-gray-500">
+              {Math.round(progress)}% Complete
+            </span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
+
+        {/* Content Card */}
+        <Card className="shadow-xl">
+          <CardContent className="p-8">
+            {/* Welcome Step */}
+            {currentStep === 'welcome' && (
+              <div className="space-y-6 text-center">
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {union.name}
+                  </h2>
+                  {union.localNumber && (
+                    <p className="text-gray-600">{union.localNumber}</p>
+                  )}
+                </div>
+                <p className="text-lg text-gray-700">
+                  Let's make your union's website look great! We'll guide you
+                  through adding your logo, cover photo, contact information,
+                  and more.
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-900">
+                    <strong>Note:</strong> You can skip any step and come back to
+                    complete it later from your dashboard settings.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Logo Step */}
+            {currentStep === 'logo' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Upload Your Logo
+                  </h2>
+                  <p className="text-gray-600">
+                    Add your union's logo to make your site recognizable
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <Label htmlFor="logoUrl">Logo URL</Label>
+                  <Input
+                    id="logoUrl"
+                    placeholder="https://example.com/logo.png"
+                    value={formData.logoUrl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, logoUrl: e.target.value })
+                    }
+                  />
+                  <p className="text-sm text-gray-500">
+                    For now, paste the URL of your logo image. File upload
+                    coming soon!
+                  </p>
+
+                  {formData.logoUrl && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-gray-700 mb-2">
+                        Preview:
+                      </p>
+                      <img
+                        src={formData.logoUrl}
+                        alt="Logo preview"
+                        className="h-32 w-32 object-cover rounded-lg border-2 border-gray-200"
+                        onError={(e) => {
+                          e.currentTarget.src = '';
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Cover Photo Step */}
+            {currentStep === 'cover' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Add a Cover Photo
+                  </h2>
+                  <p className="text-gray-600">
+                    Choose a banner image for the top of your page
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <Label htmlFor="coverPhotoUrl">Cover Photo URL</Label>
+                  <Input
+                    id="coverPhotoUrl"
+                    placeholder="https://example.com/cover.jpg"
+                    value={formData.coverPhotoUrl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, coverPhotoUrl: e.target.value })
+                    }
+                  />
+                  <p className="text-sm text-gray-500">
+                    Recommended size: 1200x400 pixels
+                  </p>
+
+                  {formData.coverPhotoUrl && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-gray-700 mb-2">
+                        Preview:
+                      </p>
+                      <img
+                        src={formData.coverPhotoUrl}
+                        alt="Cover preview"
+                        className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+                        onError={(e) => {
+                          e.currentTarget.src = '';
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Contact Info Step */}
+            {currentStep === 'contact' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Contact Information
+                  </h2>
+                  <p className="text-gray-600">
+                    Help members and visitors get in touch
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="contact@union.org"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="phone" className="flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Phone
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="(555) 123-4567"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="address" className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Address
+                    </Label>
+                    <Textarea
+                      id="address"
+                      placeholder="123 Union St, City, State 12345"
+                      value={formData.address}
+                      onChange={(e) =>
+                        setFormData({ ...formData, address: e.target.value })
+                      }
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="website" className="flex items-center gap-2">
+                      <Globe className="h-4 w-4" />
+                      Website
+                    </Label>
+                    <Input
+                      id="website"
+                      type="url"
+                      placeholder="https://www.union.org"
+                      value={formData.website}
+                      onChange={(e) =>
+                        setFormData({ ...formData, website: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* About Step */}
+            {currentStep === 'about' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Tell Your Story
+                  </h2>
+                  <p className="text-gray-600">
+                    Share what makes your union special
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="description">
+                      Short Description (One-liner)
+                    </Label>
+                    <Input
+                      id="description"
+                      placeholder="A brief description of your union..."
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData({ ...formData, description: e.target.value })
+                      }
+                      maxLength={200}
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      {formData.description.length}/200 characters
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="about">About Your Union</Label>
+                    <Textarea
+                      id="about"
+                      placeholder="Tell visitors about your union's history, mission, and values..."
+                      value={formData.about}
+                      onChange={(e) =>
+                        setFormData({ ...formData, about: e.target.value })
+                      }
+                      rows={8}
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Share your union's story, accomplishments, and goals
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Preview Step */}
+            {currentStep === 'preview' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Preview Your Site
+                  </h2>
+                  <p className="text-gray-600">
+                    Here's how your union website will look
+                  </p>
+                </div>
+
+                {/* Mini Preview */}
+                <div className="border-2 border-gray-200 rounded-lg overflow-hidden">
+                  {/* Cover Photo Preview */}
+                  <div className="relative h-32 bg-gradient-to-r from-blue-600 to-blue-700">
+                    {formData.coverPhotoUrl && (
+                      <img
+                        src={formData.coverPhotoUrl}
+                        alt="Cover"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+
+                  <div className="p-6 space-y-4">
+                    {/* Logo & Name */}
+                    <div className="flex items-center gap-4">
+                      {formData.logoUrl ? (
+                        <img
+                          src={formData.logoUrl}
+                          alt="Logo"
+                          className="h-16 w-16 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="h-16 w-16 rounded-lg bg-blue-600 flex items-center justify-center">
+                          <Users className="h-8 w-8 text-white" />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="text-xl font-bold">{union.name}</h3>
+                        {union.localNumber && (
+                          <p className="text-gray-600">{union.localNumber}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    {formData.description && (
+                      <p className="text-gray-700">{formData.description}</p>
+                    )}
+
+                    {/* Contact Info Grid */}
+                    {(formData.email || formData.phone) && (
+                      <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                        {formData.email && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Mail className="h-4 w-4 text-blue-600" />
+                            <span className="text-gray-700 truncate">
+                              {formData.email}
+                            </span>
+                          </div>
+                        )}
+                        {formData.phone && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-4 w-4 text-blue-600" />
+                            <span className="text-gray-700">{formData.phone}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-green-900">
+                    <strong>Ready to go live?</strong> Click "Publish Site" below
+                    to make your union website public!
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Navigation Buttons */}
+        <div className="mt-8 flex justify-between items-center">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStepIndex === 0 || loading}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Previous
+          </Button>
+
+          <div className="flex gap-3">
+            {currentStep !== 'welcome' && currentStep !== 'preview' && (
+              <Button
+                variant="ghost"
+                onClick={handleSkip}
+                disabled={loading}
+              >
+                Skip
+              </Button>
+            )}
+
+            {currentStep === 'preview' ? (
+              <Button
+                onClick={handlePublish}
+                disabled={loading}
+                className="bg-green-600 hover:bg-green-700 gap-2"
+              >
+                {loading ? (
+                  'Publishing...'
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Publish Site
+                  </>
+                )}
+              </Button>
+            ) : (
+              <>
+                {currentStep !== 'welcome' && (
+                  <Button
+                    onClick={handleSave}
+                    disabled={loading}
+                    variant="outline"
+                  >
+                    {loading ? 'Saving...' : 'Save & Continue'}
+                  </Button>
+                )}
+                <Button
+                  onClick={currentStep === 'welcome' ? handleNext : handleSave}
+                  disabled={loading}
+                  className="gap-2"
+                >
+                  {loading ? 'Saving...' : 'Continue'}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

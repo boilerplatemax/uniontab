@@ -1,0 +1,31 @@
+Project Overview
+
+Prompt: “Here is my current Next.js + Supabase + Stripe app. I want to turn it into a multi-tenant union website builder. Read the full plan and suggest a high-level architecture, folder structure, and database changes.”
+
+Database & Supabase Schema
+
+Prompt: “Based on my plan, generate SQL files for Supabase: union table, user table, members table, single-union-per-email restriction, slug logic, etc. Include comments explaining each change.”
+
+Homepage / Landing Page
+
+Prompt: “Design the homepage with input fields for Union Name and Local Number. Include navbar with a CTA ‘Create my website.’ Provide the Next.js component code with Tailwind/React design.”
+
+Sign-up & Onboarding Wizard
+
+Prompt: “Create sign-up forms and onboarding wizard steps: union name, logo, cover photo, contact info, preview. Include progress storage in Supabase. Allow optional skips.”
+
+Slug & Dynamic Page Generation
+
+Prompt: “Generate logic for dynamic union pages with slugs (like /atu123). Handle name changes, vacancy checks, and reserved slugs (contact, about, pricing).”
+
+Member Access & Multi-Tenant Logic
+
+Prompt: “Ensure member access is restricted to their union local. Provide authentication and session management. Include code snippets for protecting union pages.”
+
+UI/UX Styling
+
+Prompt: “Style the union page to mimic Facebook: cover photo, logo, contact info section. Provide clean, modern, responsive CSS/React code.”
+
+Optional Enhancements / Future Features
+
+Prompt: “Suggest optional improvements for email notifications, subscription tiers, or additional admin features.”

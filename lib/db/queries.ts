@@ -1,6 +1,6 @@
 import { desc, and, eq, isNull } from 'drizzle-orm';
 import { db } from './drizzle';
-import { activityLogs, teamMembers, teams, users } from './schema';
+import { activityLogs, members, unions, users } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
 
@@ -39,15 +39,15 @@ export async function getUser() {
 export async function getTeamByStripeCustomerId(customerId: string) {
   const result = await db
     .select()
-    .from(teams)
-    .where(eq(teams.stripeCustomerId, customerId))
+    .from(unions)
+    .where(eq(unions.stripeCustomerId, customerId))
     .limit(1);
 
   return result.length > 0 ? result[0] : null;
 }
 
 export async function updateTeamSubscription(
-  teamId: number,
+  unionId: number,
   subscriptionData: {
     stripeSubscriptionId: string | null;
     stripeProductId: string | null;
@@ -56,22 +56,22 @@ export async function updateTeamSubscription(
   }
 ) {
   await db
-    .update(teams)
+    .update(unions)
     .set({
       ...subscriptionData,
       updatedAt: new Date()
     })
-    .where(eq(teams.id, teamId));
+    .where(eq(unions.id, unionId));
 }
 
 export async function getUserWithTeam(userId: number) {
   const result = await db
     .select({
       user: users,
-      teamId: teamMembers.teamId
+      unionId: members.unionId
     })
     .from(users)
-    .leftJoin(teamMembers, eq(users.id, teamMembers.userId))
+    .leftJoin(members, eq(users.id, members.userId))
     .where(eq(users.id, userId))
     .limit(1);
 
@@ -105,12 +105,12 @@ export async function getTeamForUser() {
     return null;
   }
 
-  const result = await db.query.teamMembers.findFirst({
-    where: eq(teamMembers.userId, user.id),
+  const result = await db.query.members.findFirst({
+    where: eq(members.userId, user.id),
     with: {
-      team: {
+      union: {
         with: {
-          teamMembers: {
+          members: {
             with: {
               user: {
                 columns: {
@@ -126,5 +126,29 @@ export async function getTeamForUser() {
     }
   });
 
-  return result?.team || null;
+  return result?.union || null;
+}
+
+export async function getUserMembership() {
+  const user = await getUser();
+  if (!user) {
+    return null;
+  }
+
+  const [membership] = await db
+    .select({
+      member: members,
+      union: unions
+    })
+    .from(members)
+    .innerJoin(unions, eq(members.unionId, unions.id))
+    .where(eq(members.userId, user.id))
+    .limit(1);
+
+  return membership || null;
+}
+
+export async function isUserOwner(): Promise<boolean> {
+  const membership = await getUserMembership();
+  return membership?.member.role === 'owner';
 }

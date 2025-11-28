@@ -19,11 +19,22 @@ export const users = pgTable('users', {
   deletedAt: timestamp('deleted_at'),
 });
 
-export const teams = pgTable('teams', {
+export const unions = pgTable('unions', {
   id: serial('id').primaryKey(),
-  name: varchar('name', { length: 100 }).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 100 }).notNull().unique(),
+  localNumber: varchar('local_number', { length: 50 }),
+  logoUrl: text('logo_url'),
+  coverPhotoUrl: text('cover_photo_url'),
+  email: varchar('email', { length: 255 }),
+  phone: varchar('phone', { length: 50 }),
+  address: text('address'),
+  website: varchar('website', { length: 255 }),
+  description: text('description'),
+  about: text('about'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  publishedAt: timestamp('published_at'),
   stripeCustomerId: text('stripe_customer_id').unique(),
   stripeSubscriptionId: text('stripe_subscription_id').unique(),
   stripeProductId: text('stripe_product_id'),
@@ -31,23 +42,24 @@ export const teams = pgTable('teams', {
   subscriptionStatus: varchar('subscription_status', { length: 20 }),
 });
 
-export const teamMembers = pgTable('team_members', {
+export const members = pgTable('members', {
   id: serial('id').primaryKey(),
   userId: integer('user_id')
     .notNull()
+    .unique()
     .references(() => users.id),
-  teamId: integer('team_id')
+  unionId: integer('union_id')
     .notNull()
-    .references(() => teams.id),
+    .references(() => unions.id),
   role: varchar('role', { length: 50 }).notNull(),
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
 });
 
 export const activityLogs = pgTable('activity_logs', {
   id: serial('id').primaryKey(),
-  teamId: integer('team_id')
+  unionId: integer('union_id')
     .notNull()
-    .references(() => teams.id),
+    .references(() => unions.id),
   userId: integer('user_id').references(() => users.id),
   action: text('action').notNull(),
   timestamp: timestamp('timestamp').notNull().defaultNow(),
@@ -56,9 +68,9 @@ export const activityLogs = pgTable('activity_logs', {
 
 export const invitations = pgTable('invitations', {
   id: serial('id').primaryKey(),
-  teamId: integer('team_id')
+  unionId: integer('union_id')
     .notNull()
-    .references(() => teams.id),
+    .references(() => unions.id),
   email: varchar('email', { length: 255 }).notNull(),
   role: varchar('role', { length: 50 }).notNull(),
   invitedBy: integer('invited_by')
@@ -68,21 +80,21 @@ export const invitations = pgTable('invitations', {
   status: varchar('status', { length: 20 }).notNull().default('pending'),
 });
 
-export const teamsRelations = relations(teams, ({ many }) => ({
-  teamMembers: many(teamMembers),
+export const unionsRelations = relations(unions, ({ many }) => ({
+  members: many(members),
   activityLogs: many(activityLogs),
   invitations: many(invitations),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
-  teamMembers: many(teamMembers),
+  members: many(members),
   invitationsSent: many(invitations),
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
-  team: one(teams, {
-    fields: [invitations.teamId],
-    references: [teams.id],
+  union: one(unions, {
+    fields: [invitations.unionId],
+    references: [unions.id],
   }),
   invitedBy: one(users, {
     fields: [invitations.invitedBy],
@@ -90,21 +102,21 @@ export const invitationsRelations = relations(invitations, ({ one }) => ({
   }),
 }));
 
-export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
+export const membersRelations = relations(members, ({ one }) => ({
   user: one(users, {
-    fields: [teamMembers.userId],
+    fields: [members.userId],
     references: [users.id],
   }),
-  team: one(teams, {
-    fields: [teamMembers.teamId],
-    references: [teams.id],
+  union: one(unions, {
+    fields: [members.unionId],
+    references: [unions.id],
   }),
 }));
 
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
-  team: one(teams, {
-    fields: [activityLogs.teamId],
-    references: [teams.id],
+  union: one(unions, {
+    fields: [activityLogs.unionId],
+    references: [unions.id],
   }),
   user: one(users, {
     fields: [activityLogs.userId],
@@ -114,16 +126,16 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
-export type Team = typeof teams.$inferSelect;
-export type NewTeam = typeof teams.$inferInsert;
-export type TeamMember = typeof teamMembers.$inferSelect;
-export type NewTeamMember = typeof teamMembers.$inferInsert;
+export type Union = typeof unions.$inferSelect;
+export type NewUnion = typeof unions.$inferInsert;
+export type Member = typeof members.$inferSelect;
+export type NewMember = typeof members.$inferInsert;
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type NewActivityLog = typeof activityLogs.$inferInsert;
 export type Invitation = typeof invitations.$inferSelect;
 export type NewInvitation = typeof invitations.$inferInsert;
-export type TeamDataWithMembers = Team & {
-  teamMembers: (TeamMember & {
+export type UnionDataWithMembers = Union & {
+  members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;
   })[];
 };

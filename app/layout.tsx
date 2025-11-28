@@ -5,8 +5,8 @@ import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
 
 export const metadata: Metadata = {
-  title: 'Next.js SaaS Starter',
-  description: 'Get started quickly with Next.js, Postgres, and Stripe.'
+  title: 'UnionWeb - Build Your Union Website',
+  description: 'Create a professional website for your union in minutes. Engage members, share updates, and strengthen your community.'
 };
 
 export const viewport: Viewport = {
