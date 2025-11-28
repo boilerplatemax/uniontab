@@ -63,6 +63,29 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
           <input type="hidden" name="priceId" value={priceId || ''} />
           <input type="hidden" name="inviteId" value={inviteId || ''} />
 
+          {mode === 'signup' && (
+            <div>
+              <Label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Your Name *
+              </Label>
+              <div className="mt-1">
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  maxLength={100}
+                  className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  placeholder="Enter your full name"
+                />
+              </div>
+            </div>
+          )}
+
           {mode === 'signup' && !inviteId && (
             <>
               <div>
@@ -82,7 +105,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                     value={unionName}
                     onChange={(e) => setUnionName(e.target.value)}
                     className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                    placeholder="e.g., United Workers"
+                    placeholder="e.g., ATU"
                   />
                 </div>
               </div>
@@ -92,7 +115,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                   htmlFor="localNumber"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Local Number
+                  Local Number (optional)
                 </Label>
                 <div className="mt-1">
                   <Input
@@ -103,9 +126,12 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                     value={localNumber}
                     onChange={(e) => setLocalNumber(e.target.value)}
                     className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                    placeholder="e.g., Local 123 (optional)"
+                    placeholder="e.g., 123"
                   />
                 </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Your page URL will be: {unionName.toLowerCase().replace(/[^a-z0-9]+/g, '')}{localNumber ? localNumber.toLowerCase().replace(/[^a-z0-9]+/g, '') : ''}
+                </p>
               </div>
             </>
           )}

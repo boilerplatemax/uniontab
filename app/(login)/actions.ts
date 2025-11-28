@@ -106,15 +106,16 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 });
 
 const signUpSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
   email: z.string().email(),
   password: z.string().min(8),
   inviteId: z.string().optional(),
   unionName: z.string().min(1, 'Union name is required'),
-  localNumber: z.string().min(1, 'Local number is required')
+  localNumber: z.string().optional()
 });
 
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
-  const { email, password, inviteId, unionName, localNumber } = data;
+  const { name, email, password, inviteId, unionName, localNumber } = data;
 
   const existingUser = await db
     .select()
@@ -133,6 +134,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const passwordHash = await hashPassword(password);
 
   const newUser: NewUser = {
+    name,
     email,
     passwordHash,
     role: 'owner' // Default role, will be overridden if there's an invitation
@@ -189,12 +191,23 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     // Create a new union if there's no invitation
     const finalUnionName = unionName;
 
-    // Concatenate union name and local number for slug
-    const slugParts = [
-      unionName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      localNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-    ];
-    let baseSlug = slugParts.join('-').replace(/^-+|-+$/g, '');
+    // Generate slug from union name and local number
+    // Format: {unionname}{localnumber} (e.g., "atu123")
+    // If no local number, just use union name (e.g., "atu")
+    const unionNameSlug = unionName.toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const localNumberSlug = localNumber
+      ? localNumber.toLowerCase().replace(/[^a-z0-9]+/g, '')
+      : '';
+    let baseSlug = unionNameSlug + localNumberSlug;
+
+    // Ensure slug meets minimum length requirement (3 characters)
+    if (baseSlug.length < 3) {
+      return {
+        error: 'Union name and local number combination must be at least 3 characters long.',
+        email,
+        password
+      };
+    }
 
     // Reserved slugs that cannot be used
     const reservedSlugs = [
@@ -207,28 +220,28 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     // Check if slug is reserved
     if (reservedSlugs.includes(baseSlug)) {
       return {
-        error: `The combination "${unionName} ${localNumber}" creates a reserved slug. Please choose a different name or local number.`,
+        error: `The combination "${unionName}${localNumber ? ' ' + localNumber : ''}" creates a reserved slug. Please choose a different name${localNumber ? ' or local number' : ''}.`,
         email,
         password
       };
     }
 
-    // Check if slug already exists and append number if needed
-    let finalSlug = baseSlug;
-    let counter = 2;
+    // Check if slug already exists - if so, prevent creation
+    const [existingUnion] = await db
+      .select()
+      .from(unions)
+      .where(eq(unions.slug, baseSlug))
+      .limit(1);
 
-    while (true) {
-      const [existingUnion] = await db
-        .select()
-        .from(unions)
-        .where(eq(unions.slug, finalSlug))
-        .limit(1);
-
-      if (!existingUnion) break;
-
-      finalSlug = `${baseSlug}-${counter}`;
-      counter++;
+    if (existingUnion) {
+      return {
+        error: `A union with the name "${unionName}"${localNumber ? ` and local number "${localNumber}"` : ''} already exists. Please choose a different combination.`,
+        email,
+        password
+      };
     }
+
+    const finalSlug = baseSlug;
 
     const newUnion: NewUnion = {
       name: finalUnionName,
