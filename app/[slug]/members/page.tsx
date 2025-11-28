@@ -68,5 +68,5 @@ export default async function MembersPage({
 
   const unionMembers = await getUnionMembers(union.id);
 
-  return <MembersContent slug={slug} union={union} members={unionMembers} />;
+  return <MembersContent slug={slug} union={union} members={unionMembers} isOwner={isOwner} />;
 }

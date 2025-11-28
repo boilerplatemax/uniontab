@@ -1,13 +1,12 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, members } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
-import { Users, Mail, Phone, MapPin, Globe, Camera } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import Link from 'next/link';
+import { unions, users, members, posts, files } from '@/lib/db/schema';
+import { eq, and, desc } from 'drizzle-orm';
+import { Users, Camera } from 'lucide-react';
 import { getUser } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
 import { UnionNavbar } from './union-navbar';
+import { UnionProfileTabs } from './union-profile-tabs';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -36,6 +35,53 @@ async function checkMembership(unionId: number) {
   return membership;
 }
 
+async function getUnionPosts(unionId: number) {
+  const postsWithCreator = await db
+    .select({
+      id: posts.id,
+      unionId: posts.unionId,
+      title: posts.title,
+      content: posts.content,
+      imageUrl: posts.imageUrl,
+      isPrivate: posts.isPrivate,
+      createdAt: posts.createdAt,
+      updatedAt: posts.updatedAt,
+      createdBy: {
+        name: users.name,
+      },
+    })
+    .from(posts)
+    .innerJoin(users, eq(posts.createdBy, users.id))
+    .where(eq(posts.unionId, unionId))
+    .orderBy(desc(posts.createdAt));
+
+  return postsWithCreator;
+}
+
+async function getUnionFiles(unionId: number) {
+  const filesWithCreator = await db
+    .select({
+      id: files.id,
+      unionId: files.unionId,
+      name: files.name,
+      originalName: files.originalName,
+      fileUrl: files.fileUrl,
+      fileType: files.fileType,
+      fileSize: files.fileSize,
+      isPrivate: files.isPrivate,
+      createdAt: files.createdAt,
+      createdBy: {
+        name: users.name,
+      },
+    })
+    .from(files)
+    .innerJoin(users, eq(files.createdBy, users.id))
+    .where(eq(files.unionId, unionId))
+    .orderBy(desc(files.createdAt));
+
+  return filesWithCreator;
+}
+
 async function handleSignOut() {
   'use server';
   (await cookies()).delete('session');
@@ -60,6 +106,11 @@ export default async function PublicUnionPage({
 
   const membership = await checkMembership(union.id);
   const isOwner = membership?.member.role === 'owner';
+  const isApprovedMember = membership?.member.status === 'approved' || isOwner;
+
+  // Fetch posts and files
+  const unionPosts = await getUnionPosts(union.id);
+  const unionFiles = await getUnionFiles(union.id);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -133,126 +184,19 @@ export default async function PublicUnionPage({
             </div>
           </div>
 
-          {/* Tabs/Navigation */}
-          <div className="border-t mt-4">
-            <div className="flex gap-2 px-6 pt-2">
-              <button className="px-4 py-2 text-blue-600 border-b-2 border-blue-600 font-semibold">
-                About
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* Content Area - Facebook style two-column layout */}
+      {/* Content Area with Tabs */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-[380px_1fr] gap-4">
-          {/* Left Column - Info Card */}
-          <div className="space-y-4">
-            {/* Description Card */}
-            {union.description && (
-              <Card className="shadow-sm">
-                <CardContent className="p-4">
-                  <h2 className="font-semibold text-gray-900 mb-3">
-                    Introduction
-                  </h2>
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    {union.description}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Contact Information Card */}
-            {(union.email || union.phone || union.address || union.website) && (
-              <Card className="shadow-sm">
-                <CardContent className="p-4">
-                  <h2 className="font-semibold text-gray-900 mb-3">
-                    Contact Information
-                  </h2>
-                  <div className="space-y-3">
-                    {union.email && (
-                      <a
-                        href={`mailto:${union.email}`}
-                        className="flex items-center gap-3 text-sm hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                      >
-                        <Mail className="h-5 w-5 text-gray-600 flex-shrink-0" />
-                        <span className="text-gray-900 break-all">
-                          {union.email}
-                        </span>
-                      </a>
-                    )}
-
-                    {union.phone && (
-                      <a
-                        href={`tel:${union.phone}`}
-                        className="flex items-center gap-3 text-sm hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                      >
-                        <Phone className="h-5 w-5 text-gray-600 flex-shrink-0" />
-                        <span className="text-gray-900">{union.phone}</span>
-                      </a>
-                    )}
-
-                    {union.address && (
-                      <div className="flex items-start gap-3 text-sm p-2">
-                        <MapPin className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-900">{union.address}</span>
-                      </div>
-                    )}
-
-                    {union.website && (
-                      <a
-                        href={union.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 text-sm hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                      >
-                        <Globe className="h-5 w-5 text-gray-600 flex-shrink-0" />
-                        <span className="text-blue-600 hover:underline break-all">
-                          {union.website.replace(/^https?:\/\//, '')}
-                        </span>
-                      </a>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Right Column - Main Content */}
-          <div className="space-y-4">
-            {/* About Section */}
-            {union.about && (
-              <Card className="shadow-sm">
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                    About
-                  </h2>
-                  <div className="text-gray-700 leading-relaxed space-y-4">
-                    {union.about.split('\n').map((paragraph, i) => (
-                      <p key={i}>{paragraph}</p>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Placeholder for future content (posts, events, etc.) */}
-            {!union.about && !union.description && (
-              <Card className="shadow-sm">
-                <CardContent className="p-12 text-center">
-                  <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Welcome to {union.publicName || union.name}
-                  </h3>
-                  <p className="text-gray-500">
-                    More content coming soon...
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
+        <UnionProfileTabs
+          union={union}
+          posts={unionPosts}
+          files={unionFiles}
+          membership={membership}
+          isOwner={isOwner}
+          isApprovedMember={isApprovedMember}
+        />
       </div>
 
       {/* Footer */}
