@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
+import { EditPostDialog } from '@/components/posts/edit-post-dialog';
 import { UploadFileDialog } from '@/components/files/upload-file-dialog';
+import { EditFileDialog } from '@/components/files/edit-file-dialog';
 import type { Union, Post, File as FileType, Member } from '@/lib/db/schema';
 import { useRouter } from 'next/navigation';
 
@@ -30,6 +32,10 @@ export function UnionProfileTabs({
   const [activeTab, setActiveTab] = useState<'about' | 'posts' | 'files'>('about');
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [uploadFileOpen, setUploadFileOpen] = useState(false);
+  const [editPostOpen, setEditPostOpen] = useState(false);
+  const [editFileOpen, setEditFileOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post & { createdBy: { name: string } } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<FileType & { createdBy: { name: string } } | null>(null);
   const [deletingPost, setDeletingPost] = useState<number | null>(null);
   const [deletingFile, setDeletingFile] = useState<number | null>(null);
 
@@ -278,18 +284,30 @@ export function UnionProfileTabs({
                                 </span>
                               )}
                               {isOwner && (
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => handleDeletePost(post.id)}
-                                  disabled={deletingPost === post.id}
-                                >
-                                  {deletingPost === post.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedPost(post);
+                                      setEditPostOpen(true);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleDeletePost(post.id)}
+                                    disabled={deletingPost === post.id}
+                                  >
+                                    {deletingPost === post.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </>
                               )}
                             </div>
                           </div>
@@ -367,14 +385,9 @@ export function UnionProfileTabs({
                           >
                             <FileText className="h-8 w-8 text-blue-600 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <a
-                                href={file.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-medium text-gray-900 hover:text-blue-600 truncate block"
-                              >
+                              <p className="font-medium text-gray-900 truncate">
                                 {file.originalName}
-                              </a>
+                              </p>
                               <p className="text-sm text-gray-500">
                                 Uploaded by {file.createdBy.name} •{' '}
                                 {new Date(file.createdAt).toLocaleDateString()} •{' '}
@@ -387,19 +400,56 @@ export function UnionProfileTabs({
                                   Private
                                 </span>
                               )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.open(file.fileUrl, '_blank')}
+                                title="Preview/Open"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const a = document.createElement('a');
+                                  a.href = file.fileUrl;
+                                  a.download = file.originalName;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  document.body.removeChild(a);
+                                }}
+                                title="Download"
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
                               {isOwner && (
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => handleDeleteFile(file.id)}
-                                  disabled={deletingFile === file.id}
-                                >
-                                  {deletingFile === file.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedFile(file);
+                                      setEditFileOpen(true);
+                                    }}
+                                    title="Edit"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleDeleteFile(file.id)}
+                                    disabled={deletingFile === file.id}
+                                    title="Delete"
+                                  >
+                                    {deletingFile === file.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </>
                               )}
                             </div>
                           </div>
@@ -435,11 +485,23 @@ export function UnionProfileTabs({
         unionId={union.id}
         onSuccess={() => router.refresh()}
       />
+      <EditPostDialog
+        open={editPostOpen}
+        onOpenChange={setEditPostOpen}
+        post={selectedPost}
+        onSuccess={() => router.refresh()}
+      />
       <UploadFileDialog
         open={uploadFileOpen}
         onOpenChange={setUploadFileOpen}
         unionId={union.id}
         unionSlug={union.slug}
+        onSuccess={() => router.refresh()}
+      />
+      <EditFileDialog
+        open={editFileOpen}
+        onOpenChange={setEditFileOpen}
+        file={selectedFile}
         onSuccess={() => router.refresh()}
       />
     </div>

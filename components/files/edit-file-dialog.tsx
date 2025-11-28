@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,59 +11,63 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { FileUpload } from '@/components/ui/file-upload';
 import { Loader2 } from 'lucide-react';
 
-interface CreatePostDialogProps {
+interface FileData {
+  id: number;
+  originalName: string;
+  isPrivate: boolean;
+}
+
+interface EditFileDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  unionId: number;
+  file: FileData | null;
   onSuccess: () => void;
 }
 
-export function CreatePostDialog({
+export function EditFileDialog({
   open,
   onOpenChange,
-  unionId,
+  file,
   onSuccess,
-}: CreatePostDialogProps) {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+}: EditFileDialogProps) {
+  const [fileName, setFileName] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (file) {
+      setFileName(file.originalName);
+      setIsPrivate(file.isPrivate);
+    }
+  }, [file]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!file) return;
+
     setLoading(true);
     setError('');
 
     try {
-      const response = await fetch('/api/posts/create', {
-        method: 'POST',
+      const response = await fetch(`/api/files/${file.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          unionId,
-          title,
-          content,
-          imageUrl: imageUrl || null,
+          originalName: fileName,
           isPrivate,
         }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to create post');
+        throw new Error(data.error || 'Failed to update file');
       }
 
-      // Reset form
-      setTitle('');
-      setContent('');
-      setImageUrl('');
-      setIsPrivate(false);
       onOpenChange(false);
       onSuccess();
     } catch (err: any) {
@@ -75,9 +79,9 @@ export function CreatePostDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Post</DialogTitle>
+          <DialogTitle>Edit File Details</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
@@ -88,50 +92,23 @@ export function CreatePostDialog({
             )}
 
             <div>
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="fileName">File Name *</Label>
               <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter post title"
+                id="fileName"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+                placeholder="document.pdf"
                 required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="content">Content *</Label>
-              <Textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your post content..."
-                rows={6}
-                required
-              />
-            </div>
-
-            <div>
-              <FileUpload
-                onFileSelect={(file, url) => {
-                  if (url) setImageUrl(url);
-                }}
-                accept="image/*"
-                maxSize={10}
-                currentUrl={imageUrl}
-                label="Post Image (optional)"
-                hint="Click to browse or drag and drop an image"
-                bucket="union-files"
-                path="posts"
               />
             </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
                 <Label htmlFor="isPrivate" className="text-base">
-                  Private Post
+                  Private File
                 </Label>
                 <p className="text-sm text-gray-600">
-                  Only approved members can see this post
+                  Only approved members can access this file
                 </p>
               </div>
               <Switch
@@ -155,10 +132,10 @@ export function CreatePostDialog({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
+                  Saving...
                 </>
               ) : (
-                'Create Post'
+                'Save Changes'
               )}
             </Button>
           </DialogFooter>
