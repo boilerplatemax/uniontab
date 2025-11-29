@@ -9,6 +9,7 @@ import { RichTextContent } from '@/components/ui/rich-text-content';
 import { ArrowLeft, Calendar, Clock, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
+import { formatDate as formatSimpleDate } from '@/lib/utils/date';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -206,7 +207,7 @@ export default async function EventPage({
 
             <div className="border-t pt-4 text-sm text-gray-500">
               Created by {event.createdBy.name} •{' '}
-              {new Date(event.createdAt).toLocaleDateString()}
+              {formatSimpleDate(event.createdAt)}
             </div>
           </CardContent>
         </Card>
