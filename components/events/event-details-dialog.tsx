@@ -160,9 +160,10 @@ export function EventDetailsDialog({
           {event.description && (
             <div className="border-t pt-4">
               <h3 className="font-semibold text-gray-900 mb-2">About this event</h3>
-              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {event.description}
-              </p>
+              <div
+                className="prose prose-sm max-w-none text-gray-700"
+                dangerouslySetInnerHTML={{ __html: event.description }}
+              />
             </div>
           )}
         </div>

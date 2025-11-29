@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, PinOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -49,10 +49,33 @@ export function UnionProfileTabs({
   const [selectedEvent, setSelectedEvent] = useState<Event & { createdBy: { name: string } } | null>(null);
   const [deletingPost, setDeletingPost] = useState<number | null>(null);
   const [deletingFile, setDeletingFile] = useState<number | null>(null);
+  const [pinningPost, setPinningPost] = useState<number | null>(null);
   const [confirmDeletePostOpen, setConfirmDeletePostOpen] = useState(false);
   const [confirmDeleteFileOpen, setConfirmDeleteFileOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
   const [fileToDelete, setFileToDelete] = useState<number | null>(null);
+
+  const handleTogglePin = async (postId: number, currentPinStatus: boolean) => {
+    setPinningPost(postId);
+    try {
+      const response = await fetch('/api/posts/toggle-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId, isPinned: !currentPinStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to toggle pin');
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+      alert('Failed to toggle pin');
+    } finally {
+      setPinningPost(null);
+    }
+  };
 
   const handleDeletePostClick = (postId: number) => {
     setPostToDelete(postId);
@@ -332,9 +355,14 @@ export function UnionProfileTabs({
                       <Card key={post.id} className="shadow-sm">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-2">
-                            <h3 className="text-xl font-semibold text-gray-900">
-                              {post.title}
-                            </h3>
+                            <div className="flex items-start gap-2">
+                              <h3 className="text-xl font-semibold text-gray-900">
+                                {post.title}
+                              </h3>
+                              {post.isPinned && (
+                                <Pin className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                              )}
+                            </div>
                             <div className="flex items-center gap-2">
                               {post.isPrivate && (
                                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
@@ -343,6 +371,21 @@ export function UnionProfileTabs({
                               )}
                               {isOwner && (
                                 <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleTogglePin(post.id, post.isPinned)}
+                                    disabled={pinningPost === post.id}
+                                    title={post.isPinned ? 'Unpin post' : 'Pin post'}
+                                  >
+                                    {pinningPost === post.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : post.isPinned ? (
+                                      <PinOff className="h-4 w-4" />
+                                    ) : (
+                                      <Pin className="h-4 w-4" />
+                                    )}
+                                  </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -376,9 +419,10 @@ export function UnionProfileTabs({
                               className="w-full rounded-lg mb-4 max-h-96 object-cover"
                             />
                           )}
-                          <p className="text-gray-700 mb-4 whitespace-pre-wrap">
-                            {post.content}
-                          </p>
+                          <div
+                            className="prose prose-sm max-w-none text-gray-700 mb-4"
+                            dangerouslySetInnerHTML={{ __html: post.content }}
+                          />
                           <div className="text-sm text-gray-500">
                             Posted by {post.createdBy.name} •{' '}
                             {new Date(post.createdAt).toLocaleDateString()}

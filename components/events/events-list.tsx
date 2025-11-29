@@ -170,9 +170,10 @@ export function EventsList({ events, isOwner, onEdit, onDelete }: EventsListProp
                             </div>
 
                             {event.description && (
-                              <p className="mt-2 text-sm text-gray-700 line-clamp-2">
-                                {event.description}
-                              </p>
+                              <div
+                                className="mt-2 text-sm text-gray-700 line-clamp-2 prose prose-sm max-w-none"
+                                dangerouslySetInnerHTML={{ __html: event.description }}
+                              />
                             )}
                           </div>
 

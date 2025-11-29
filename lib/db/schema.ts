@@ -113,6 +113,7 @@ export const posts = pgTable('posts', {
   content: text('content').notNull(),
   imageUrl: text('image_url'),
   isPrivate: boolean('is_private').notNull().default(false),
+  isPinned: boolean('is_pinned').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   createdBy: integer('created_by')
