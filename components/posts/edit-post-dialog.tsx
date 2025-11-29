@@ -11,9 +11,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Loader2 } from 'lucide-react';
 
 interface Post {
@@ -113,14 +113,11 @@ export function EditPostDialog({
             </div>
 
             <div>
-              <Label htmlFor="content">Content *</Label>
-              <Textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+              <Label>Content *</Label>
+              <RichTextEditor
+                content={content}
+                onChange={setContent}
                 placeholder="Write your post content..."
-                rows={6}
-                required
               />
             </div>
 

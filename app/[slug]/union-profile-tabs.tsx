@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
 import { UploadFileDialog } from '@/components/files/upload-file-dialog';
 import { EditFileDialog } from '@/components/files/edit-file-dialog';
 import { CreateEventDialog } from '@/components/events/create-event-dialog';
+import { EditEventDialog } from '@/components/events/edit-event-dialog';
 import { EventsCalendar } from '@/components/events/events-calendar';
 import { EventsList } from '@/components/events/events-list';
+import { EventDetailsDialog } from '@/components/events/event-details-dialog';
+import { RichTextContent } from '@/components/ui/rich-text-content';
 import type { Union, Post, File as FileType, Event, Member } from '@/lib/db/schema';
 import { useRouter } from 'next/navigation';
 
@@ -41,10 +44,32 @@ export function UnionProfileTabs({
   const [createEventOpen, setCreateEventOpen] = useState(false);
   const [editPostOpen, setEditPostOpen] = useState(false);
   const [editFileOpen, setEditFileOpen] = useState(false);
+  const [editEventOpen, setEditEventOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post & { createdBy: { name: string } } | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileType & { createdBy: { name: string } } | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event & { createdBy: { name: string } } | null>(null);
+  const [eventDetailsOpen, setEventDetailsOpen] = useState(false);
   const [deletingPost, setDeletingPost] = useState<number | null>(null);
   const [deletingFile, setDeletingFile] = useState<number | null>(null);
+
+  const handleTogglePin = async (postId: number, isPinned: boolean) => {
+    try {
+      const response = await fetch('/api/posts/toggle-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId, isPinned: !isPinned }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to toggle pin');
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+      alert('Failed to toggle pin');
+    }
+  };
 
   const handleDeletePost = async (postId: number) => {
     if (!confirm('Are you sure you want to delete this post?')) return;
@@ -111,6 +136,16 @@ export function UnionProfileTabs({
       console.error('Error toggling file privacy:', error);
       alert('Failed to update file privacy');
     }
+  };
+
+  const handleEventClick = (event: Event & { createdBy: { name: string } }) => {
+    setSelectedEvent(event);
+    setEventDetailsOpen(true);
+  };
+
+  const handleEditEvent = (event: Event & { createdBy: { name: string } }) => {
+    setSelectedEvent(event);
+    setEditEventOpen(true);
   };
 
   const handleDeleteEvent = async (eventId: number) => {
@@ -310,9 +345,17 @@ export function UnionProfileTabs({
                       <Card key={post.id} className="shadow-sm">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-2">
-                            <h3 className="text-xl font-semibold text-gray-900">
-                              {post.title}
-                            </h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-xl font-semibold text-gray-900">
+                                {post.title}
+                              </h3>
+                              {(post as any).isPinned && (
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1">
+                                  <Pin className="h-3 w-3" />
+                                  Pinned
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-2">
                               {post.isPrivate && (
                                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
@@ -321,6 +364,14 @@ export function UnionProfileTabs({
                               )}
                               {isOwner && (
                                 <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)}
+                                    title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}
+                                  >
+                                    <Pin className={`h-4 w-4 ${(post as any).isPinned ? 'fill-current' : ''}`} />
+                                  </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -354,9 +405,10 @@ export function UnionProfileTabs({
                               className="w-full rounded-lg mb-4 max-h-96 object-cover"
                             />
                           )}
-                          <p className="text-gray-700 mb-4 whitespace-pre-wrap">
-                            {post.content}
-                          </p>
+                          <RichTextContent
+                            content={post.content}
+                            className="mb-4"
+                          />
                           <div className="text-sm text-gray-500">
                             Posted by {post.createdBy.name} •{' '}
                             {new Date(post.createdAt).toLocaleDateString()}
@@ -553,11 +605,14 @@ export function UnionProfileTabs({
               {eventsView === 'calendar' ? (
                 <EventsCalendar
                   events={events.filter((e) => !e.isPrivate || isApprovedMember)}
+                  onEventClick={handleEventClick}
                 />
               ) : (
                 <EventsList
                   events={events.filter((e) => !e.isPrivate || isApprovedMember)}
                   isOwner={isOwner}
+                  onEventClick={handleEventClick}
+                  onEdit={handleEditEvent}
                   onDelete={handleDeleteEvent}
                 />
               )}
@@ -596,6 +651,20 @@ export function UnionProfileTabs({
         open={createEventOpen}
         onOpenChange={setCreateEventOpen}
         unionId={union.id}
+        onSuccess={() => router.refresh()}
+      />
+      <EventDetailsDialog
+        event={selectedEvent}
+        open={eventDetailsOpen}
+        onOpenChange={setEventDetailsOpen}
+        isOwner={isOwner}
+        onEdit={handleEditEvent}
+        onDelete={handleDeleteEvent}
+      />
+      <EditEventDialog
+        open={editEventOpen}
+        onOpenChange={setEditEventOpen}
+        event={selectedEvent}
         onSuccess={() => router.refresh()}
       />
     </div>
