@@ -9,8 +9,10 @@ import { EditPostDialog } from '@/components/posts/edit-post-dialog';
 import { UploadFileDialog } from '@/components/files/upload-file-dialog';
 import { EditFileDialog } from '@/components/files/edit-file-dialog';
 import { CreateEventDialog } from '@/components/events/create-event-dialog';
+import { EditEventDialog } from '@/components/events/edit-event-dialog';
 import { EventsCalendar } from '@/components/events/events-calendar';
 import { EventsList } from '@/components/events/events-list';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import type { Union, Post, File as FileType, Event, Member } from '@/lib/db/schema';
 import { useRouter } from 'next/navigation';
 
@@ -41,20 +43,32 @@ export function UnionProfileTabs({
   const [createEventOpen, setCreateEventOpen] = useState(false);
   const [editPostOpen, setEditPostOpen] = useState(false);
   const [editFileOpen, setEditFileOpen] = useState(false);
+  const [editEventOpen, setEditEventOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post & { createdBy: { name: string } } | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileType & { createdBy: { name: string } } | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event & { createdBy: { name: string } } | null>(null);
   const [deletingPost, setDeletingPost] = useState<number | null>(null);
   const [deletingFile, setDeletingFile] = useState<number | null>(null);
+  const [confirmDeletePostOpen, setConfirmDeletePostOpen] = useState(false);
+  const [confirmDeleteFileOpen, setConfirmDeleteFileOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<number | null>(null);
+  const [fileToDelete, setFileToDelete] = useState<number | null>(null);
 
-  const handleDeletePost = async (postId: number) => {
-    if (!confirm('Are you sure you want to delete this post?')) return;
+  const handleDeletePostClick = (postId: number) => {
+    setPostToDelete(postId);
+    setConfirmDeletePostOpen(true);
+  };
 
-    setDeletingPost(postId);
+  const handleConfirmDeletePost = async () => {
+    if (postToDelete === null) return;
+
+    setDeletingPost(postToDelete);
+    setConfirmDeletePostOpen(false);
     try {
       const response = await fetch('/api/posts/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId }),
+        body: JSON.stringify({ postId: postToDelete }),
       });
 
       if (!response.ok) {
@@ -67,18 +81,25 @@ export function UnionProfileTabs({
       alert('Failed to delete post');
     } finally {
       setDeletingPost(null);
+      setPostToDelete(null);
     }
   };
 
-  const handleDeleteFile = async (fileId: number) => {
-    if (!confirm('Are you sure you want to delete this file?')) return;
+  const handleDeleteFileClick = (fileId: number) => {
+    setFileToDelete(fileId);
+    setConfirmDeleteFileOpen(true);
+  };
 
-    setDeletingFile(fileId);
+  const handleConfirmDeleteFile = async () => {
+    if (fileToDelete === null) return;
+
+    setDeletingFile(fileToDelete);
+    setConfirmDeleteFileOpen(false);
     try {
       const response = await fetch('/api/files/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileId }),
+        body: JSON.stringify({ fileId: fileToDelete }),
       });
 
       if (!response.ok) {
@@ -91,6 +112,7 @@ export function UnionProfileTabs({
       alert('Failed to delete file');
     } finally {
       setDeletingFile(null);
+      setFileToDelete(null);
     }
   };
 
@@ -334,7 +356,7 @@ export function UnionProfileTabs({
                                   <Button
                                     variant="destructive"
                                     size="sm"
-                                    onClick={() => handleDeletePost(post.id)}
+                                    onClick={() => handleDeletePostClick(post.id)}
                                     disabled={deletingPost === post.id}
                                   >
                                     {deletingPost === post.id ? (
@@ -475,7 +497,7 @@ export function UnionProfileTabs({
                                   <Button
                                     variant="destructive"
                                     size="sm"
-                                    onClick={() => handleDeleteFile(file.id)}
+                                    onClick={() => handleDeleteFileClick(file.id)}
                                     disabled={deletingFile === file.id}
                                     title="Delete"
                                   >
@@ -558,6 +580,10 @@ export function UnionProfileTabs({
                 <EventsList
                   events={events.filter((e) => !e.isPrivate || isApprovedMember)}
                   isOwner={isOwner}
+                  onEdit={(event) => {
+                    setSelectedEvent(event);
+                    setEditEventOpen(true);
+                  }}
                   onDelete={handleDeleteEvent}
                 />
               )}
@@ -597,6 +623,34 @@ export function UnionProfileTabs({
         onOpenChange={setCreateEventOpen}
         unionId={union.id}
         onSuccess={() => router.refresh()}
+      />
+      <EditEventDialog
+        open={editEventOpen}
+        onOpenChange={setEditEventOpen}
+        event={selectedEvent}
+        onSuccess={() => router.refresh()}
+      />
+
+      {/* Confirm Delete Dialogs */}
+      <ConfirmDialog
+        open={confirmDeletePostOpen}
+        onOpenChange={setConfirmDeletePostOpen}
+        title="Delete Post"
+        description="Are you sure you want to delete this post? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDeletePost}
+        variant="destructive"
+      />
+      <ConfirmDialog
+        open={confirmDeleteFileOpen}
+        onOpenChange={setConfirmDeleteFileOpen}
+        title="Delete File"
+        description="Are you sure you want to delete this file? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDeleteFile}
+        variant="destructive"
       />
     </div>
   );

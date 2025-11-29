@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Calendar, Edit, Trash2, Loader2 } from 'lucide-react';
 import type { Event } from '@/lib/db/schema';
 import { useState } from 'react';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { EventDetailsDialog } from './event-details-dialog';
 
 interface EventsListProps {
   events: (Event & { createdBy: { name: string } })[];
@@ -15,16 +17,32 @@ interface EventsListProps {
 
 export function EventsList({ events, isOwner, onEdit, onDelete }: EventsListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<number | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<(Event & { createdBy: { name: string } }) | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
-  const handleDelete = async (eventId: number) => {
-    if (!confirm('Are you sure you want to delete this event?')) return;
+  const handleDeleteClick = (eventId: number) => {
+    setEventToDelete(eventId);
+    setConfirmDeleteOpen(true);
+  };
 
-    setDeletingId(eventId);
+  const handleConfirmDelete = async () => {
+    if (eventToDelete === null) return;
+
+    setDeletingId(eventToDelete);
+    setConfirmDeleteOpen(false);
     try {
-      await onDelete?.(eventId);
+      await onDelete?.(eventToDelete);
     } finally {
       setDeletingId(null);
+      setEventToDelete(null);
     }
+  };
+
+  const handleEventClick = (event: Event & { createdBy: { name: string } }) => {
+    setSelectedEvent(event);
+    setDetailsOpen(true);
   };
 
   const formatDate = (date: Date) => {
@@ -94,7 +112,7 @@ export function EventsList({ events, isOwner, onEdit, onDelete }: EventsListProp
                 endDate.getFullYear() !== startDate.getFullYear();
 
               return (
-                <Card key={event.id} className="hover:shadow-md transition-shadow">
+                <Card key={event.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleEventClick(event)}>
                   <CardContent className="p-4">
                     <div className="flex gap-4">
                       {/* Date Badge */}
@@ -164,14 +182,20 @@ export function EventsList({ events, isOwner, onEdit, onDelete }: EventsListProp
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => onEdit?.(event)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEdit?.(event);
+                                }}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={() => handleDelete(event.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(event.id);
+                                }}
                                 disabled={deletingId === event.id}
                               >
                                 {deletingId === event.id ? (
@@ -203,6 +227,35 @@ export function EventsList({ events, isOwner, onEdit, onDelete }: EventsListProp
           </div>
         </div>
       ))}
+
+      {/* Dialogs */}
+      <EventDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        event={selectedEvent}
+        isOwner={isOwner}
+        onEdit={() => {
+          if (selectedEvent) {
+            onEdit?.(selectedEvent);
+          }
+        }}
+        onDelete={() => {
+          if (selectedEvent) {
+            handleDeleteClick(selectedEvent.id);
+          }
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title="Delete Event"
+        description="Are you sure you want to delete this event? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        variant="destructive"
+      />
     </div>
   );
 }
