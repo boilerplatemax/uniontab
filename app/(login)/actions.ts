@@ -270,7 +270,9 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const newMember: NewMember = {
     userId: createdUser.id,
     unionId: unionId,
-    role: userRole
+    role: userRole,
+    // Auto-approve owners, pending for regular members
+    status: userRole === 'owner' ? 'approved' : 'pending'
   };
 
   await Promise.all([

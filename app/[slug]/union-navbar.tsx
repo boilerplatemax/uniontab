@@ -44,7 +44,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     {membership.user.name}
                   </span>
                   <div className="hidden sm:flex items-center gap-2">
-                    <Link href={`/${slug}/profile`}>
+                    <Link href={`/${slug}/profile`} prefetch={true}>
                       <Button variant="ghost" size="sm" className="gap-2">
                         <UserCircle className="h-4 w-4" />
                         <span className="hidden md:inline">Profile</span>
@@ -52,19 +52,19 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     </Link>
                     {isOwner && (
                       <>
-                        <Link href={`/${slug}/members`}>
+                        <Link href={`/${slug}/members`} prefetch={true}>
                           <Button variant="ghost" size="sm" className="gap-2">
                             <Users className="h-4 w-4" />
                             <span className="hidden md:inline">Members</span>
                           </Button>
                         </Link>
-                        <Link href={`/${slug}/settings`}>
+                        <Link href={`/${slug}/settings`} prefetch={true}>
                           <Button variant="ghost" size="sm" className="gap-2">
                             <Settings className="h-4 w-4" />
                             <span className="hidden md:inline">Settings</span>
                           </Button>
                         </Link>
-                        <Link href={`/${slug}/billing`}>
+                        <Link href={`/${slug}/billing`} prefetch={true}>
                           <Button variant="ghost" size="sm" className="gap-2">
                             <CreditCard className="h-4 w-4" />
                             <span className="hidden md:inline">Billing</span>
@@ -100,12 +100,12 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </>
               ) : (
                 <>
-                  <Link href={`/${slug}/sign-in`}>
+                  <Link href={`/${slug}/sign-in`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
                       Member Login
                     </Button>
                   </Link>
-                  <Link href={`/${slug}/sign-up`}>
+                  <Link href={`/${slug}/sign-up`} prefetch={true}>
                     <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                       <span className="hidden sm:inline">Join Union</span>
                       <span className="sm:hidden">Join</span>
@@ -123,6 +123,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
             <div className="px-4 py-4 space-y-2">
               <Link
                 href={`/${slug}/profile`}
+                prefetch={true}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Button variant="ghost" className="w-full justify-start gap-2">
@@ -134,6 +135,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 <>
                   <Link
                     href={`/${slug}/members`}
+                    prefetch={true}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <Button variant="ghost" className="w-full justify-start gap-2">
@@ -143,6 +145,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   </Link>
                   <Link
                     href={`/${slug}/settings`}
+                    prefetch={true}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <Button variant="ghost" className="w-full justify-start gap-2">
@@ -152,6 +155,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   </Link>
                   <Link
                     href={`/${slug}/billing`}
+                    prefetch={true}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <Button variant="ghost" className="w-full justify-start gap-2">

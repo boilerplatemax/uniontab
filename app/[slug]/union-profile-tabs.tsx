@@ -2,19 +2,23 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
 import { UploadFileDialog } from '@/components/files/upload-file-dialog';
 import { EditFileDialog } from '@/components/files/edit-file-dialog';
-import type { Union, Post, File as FileType, Member } from '@/lib/db/schema';
+import { CreateEventDialog } from '@/components/events/create-event-dialog';
+import { EventsCalendar } from '@/components/events/events-calendar';
+import { EventsList } from '@/components/events/events-list';
+import type { Union, Post, File as FileType, Event, Member } from '@/lib/db/schema';
 import { useRouter } from 'next/navigation';
 
 interface UnionProfileTabsProps {
   union: Union;
   posts: (Post & { createdBy: { name: string } })[];
   files: (FileType & { createdBy: { name: string } })[];
+  events: (Event & { createdBy: { name: string } })[];
   membership: any;
   isOwner: boolean;
   isApprovedMember: boolean;
@@ -24,14 +28,17 @@ export function UnionProfileTabs({
   union,
   posts,
   files,
+  events,
   membership,
   isOwner,
   isApprovedMember,
 }: UnionProfileTabsProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'about' | 'posts' | 'files'>('about');
+  const [activeTab, setActiveTab] = useState<'about' | 'posts' | 'files' | 'events'>('about');
+  const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [uploadFileOpen, setUploadFileOpen] = useState(false);
+  const [createEventOpen, setCreateEventOpen] = useState(false);
   const [editPostOpen, setEditPostOpen] = useState(false);
   const [editFileOpen, setEditFileOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post & { createdBy: { name: string } } | null>(null);
@@ -106,6 +113,25 @@ export function UnionProfileTabs({
     }
   };
 
+  const handleDeleteEvent = async (eventId: number) => {
+    try {
+      const response = await fetch('/api/events/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete event');
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      alert('Failed to delete event');
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Tabs Navigation */}
@@ -140,6 +166,16 @@ export function UnionProfileTabs({
             }`}
           >
             Files
+          </button>
+          <button
+            onClick={() => setActiveTab('events')}
+            className={`px-4 py-2 font-semibold transition-colors ${
+              activeTab === 'events'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Events
           </button>
         </div>
       </div>
@@ -475,6 +511,58 @@ export function UnionProfileTabs({
               )}
             </>
           )}
+
+          {/* Events Tab */}
+          {activeTab === 'events' && (
+            <>
+              {/* Create Event Button & View Toggle (Admin only) */}
+              {isOwner && (
+                <Card className="shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <Button
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={() => setCreateEventOpen(true)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Event
+                      </Button>
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant={eventsView === 'list' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setEventsView('list')}
+                        >
+                          List
+                        </Button>
+                        <Button
+                          variant={eventsView === 'calendar' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setEventsView('calendar')}
+                        >
+                          Calendar
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Events View */}
+              {eventsView === 'calendar' ? (
+                <EventsCalendar
+                  events={events.filter((e) => !e.isPrivate || isApprovedMember)}
+                />
+              ) : (
+                <EventsList
+                  events={events.filter((e) => !e.isPrivate || isApprovedMember)}
+                  isOwner={isOwner}
+                  onDelete={handleDeleteEvent}
+                />
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -502,6 +590,12 @@ export function UnionProfileTabs({
         open={editFileOpen}
         onOpenChange={setEditFileOpen}
         file={selectedFile}
+        onSuccess={() => router.refresh()}
+      />
+      <CreateEventDialog
+        open={createEventOpen}
+        onOpenChange={setCreateEventOpen}
+        unionId={union.id}
         onSuccess={() => router.refresh()}
       />
     </div>
