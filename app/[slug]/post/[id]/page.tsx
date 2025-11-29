@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, posts } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { unions, users, posts, members } from '@/lib/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { UnionNavbar } from '../../union-navbar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -51,9 +51,13 @@ async function checkMembership(unionId: number) {
   if (!user) return null;
 
   const [membership] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, user.id))
+    .select({
+      user: users,
+      member: members
+    })
+    .from(members)
+    .innerJoin(users, eq(members.userId, users.id))
+    .where(and(eq(members.unionId, unionId), eq(members.userId, user.id)))
     .limit(1);
 
   return membership;
