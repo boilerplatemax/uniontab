@@ -163,6 +163,17 @@ export const events = pgTable('events', {
   updatedBy: integer('updated_by').references(() => users.id),
 });
 
+export const postLikes = pgTable('post_likes', {
+  id: serial('id').primaryKey(),
+  postId: integer('post_id')
+    .notNull()
+    .references(() => posts.id),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 export const unionsRelations = relations(unions, ({ many }) => ({
   members: many(members),
   activityLogs: many(activityLogs),
@@ -226,7 +237,7 @@ export const unionPagesRelations = relations(unionPages, ({ one }) => ({
   }),
 }));
 
-export const postsRelations = relations(posts, ({ one }) => ({
+export const postsRelations = relations(posts, ({ one, many }) => ({
   union: one(unions, {
     fields: [posts.unionId],
     references: [unions.id],
@@ -239,6 +250,7 @@ export const postsRelations = relations(posts, ({ one }) => ({
     fields: [posts.updatedBy],
     references: [users.id],
   }),
+  likes: many(postLikes),
 }));
 
 export const filesRelations = relations(files, ({ one }) => ({
@@ -267,6 +279,17 @@ export const eventsRelations = relations(events, ({ one }) => ({
   }),
 }));
 
+export const postLikesRelations = relations(postLikes, ({ one }) => ({
+  post: one(posts, {
+    fields: [postLikes.postId],
+    references: [posts.id],
+  }),
+  user: one(users, {
+    fields: [postLikes.userId],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Union = typeof unions.$inferSelect;
@@ -285,6 +308,8 @@ export type File = typeof files.$inferSelect;
 export type NewFile = typeof files.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
+export type PostLike = typeof postLikes.$inferSelect;
+export type NewPostLike = typeof postLikes.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;

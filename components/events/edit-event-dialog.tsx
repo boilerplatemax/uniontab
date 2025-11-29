@@ -66,17 +66,19 @@ export function EditEventDialog({
 
     if (!event) return;
 
-    if (!title || !startDate || !endDate) {
+    if (!title || !startDate) {
       setError('Please fill in all required fields');
       return;
     }
 
     // Validate dates
     const start = new Date(startDate + (startTime ? `T${startTime}` : ''));
-    const end = new Date(endDate + (endTime ? `T${endTime}` : ''));
+    // If no end date provided, use start date (one-day event)
+    const effectiveEndDate = endDate || startDate;
+    const end = new Date(effectiveEndDate + (endTime ? `T${endTime}` : ''));
 
     if (end < start) {
-      setError('End date must be after start date');
+      setError('End date cannot be before start date');
       return;
     }
 
@@ -192,14 +194,13 @@ export function EditEventDialog({
 
             <div>
               <Label htmlFor="endDate">
-                End Date <span className="text-red-500">*</span>
+                End Date (Optional - defaults to start date)
               </Label>
               <Input
                 id="endDate"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                required
               />
             </div>
           </div>

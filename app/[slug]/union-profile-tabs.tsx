@@ -14,8 +14,10 @@ import { EventsCalendar } from '@/components/events/events-calendar';
 import { EventsList } from '@/components/events/events-list';
 import { EventDetailsDialog } from '@/components/events/event-details-dialog';
 import { RichTextContent } from '@/components/ui/rich-text-content';
+import { LikeButton } from '@/components/posts/like-button';
 import type { Union, Post, File as FileType, Event, Member } from '@/lib/db/schema';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 interface UnionProfileTabsProps {
   union: Union;
@@ -25,6 +27,7 @@ interface UnionProfileTabsProps {
   membership: any;
   isOwner: boolean;
   isApprovedMember: boolean;
+  userId?: number | null;
 }
 
 export function UnionProfileTabs({
@@ -35,10 +38,24 @@ export function UnionProfileTabs({
   membership,
   isOwner,
   isApprovedMember,
+  userId,
 }: UnionProfileTabsProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'about' | 'posts' | 'files' | 'events'>('about');
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events') || 'about';
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
+
+  const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events') => {
+    const params = new URLSearchParams(searchParams);
+    if (tab === 'about') {
+      params.delete('tab');
+    } else {
+      params.set('tab', tab);
+    }
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl);
+  };
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [uploadFileOpen, setUploadFileOpen] = useState(false);
   const [createEventOpen, setCreateEventOpen] = useState(false);
@@ -139,8 +156,7 @@ export function UnionProfileTabs({
   };
 
   const handleEventClick = (event: Event & { createdBy: { name: string } }) => {
-    setSelectedEvent(event);
-    setEventDetailsOpen(true);
+    router.push(`/${union.slug}/event/${event.id}`);
   };
 
   const handleEditEvent = (event: Event & { createdBy: { name: string } }) => {
@@ -346,9 +362,11 @@ export function UnionProfileTabs({
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <h3 className="text-xl font-semibold text-gray-900">
-                                {post.title}
-                              </h3>
+                              <Link href={`/${union.slug}/post/${post.id}`}>
+                                <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors">
+                                  {post.title}
+                                </h3>
+                              </Link>
                               {(post as any).isPinned && (
                                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1">
                                   <Pin className="h-3 w-3" />
@@ -409,9 +427,17 @@ export function UnionProfileTabs({
                             content={post.content}
                             className="mb-4"
                           />
-                          <div className="text-sm text-gray-500">
-                            Posted by {post.createdBy.name} •{' '}
-                            {new Date(post.createdAt).toLocaleDateString()}
+                          <div className="flex items-center justify-between border-t pt-3">
+                            <LikeButton
+                              postId={post.id}
+                              initialLiked={false}
+                              initialCount={0}
+                              userId={userId || null}
+                            />
+                            <div className="text-sm text-gray-500">
+                              Posted by {post.createdBy.name} •{' '}
+                              {new Date(post.createdAt).toLocaleDateString()}
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
