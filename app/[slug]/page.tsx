@@ -139,6 +139,9 @@ export default async function PublicUnionPage({
   const isOwner = membership?.member.role === 'owner';
   const isApprovedMember = membership?.member.status === 'approved' || isOwner;
 
+  // Get current user
+  const currentUser = await getUser();
+
   // Fetch posts, files, and events
   const unionPosts = await getUnionPosts(union.id);
   const unionFiles = await getUnionFiles(union.id);
@@ -229,6 +232,7 @@ export default async function PublicUnionPage({
           membership={membership}
           isOwner={isOwner}
           isApprovedMember={isApprovedMember}
+          userId={currentUser?.id || null}
         />
       </div>
 
