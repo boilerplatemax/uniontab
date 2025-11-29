@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,20 +9,21 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
 import { Loader2 } from 'lucide-react';
+import type { Event } from '@/lib/db/schema';
 
-interface CreateEventDialogProps {
+interface EditEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  unionId: number;
+  event: (Event & { createdBy: { name: string } }) | null;
   onSuccess: () => void;
 }
 
-export function CreateEventDialog({
+export function EditEventDialog({
   open,
   onOpenChange,
-  unionId,
+  event,
   onSuccess,
-}: CreateEventDialogProps) {
+}: EditEventDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
@@ -36,6 +37,28 @@ export function CreateEventDialog({
   const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Populate form when event changes
+  useEffect(() => {
+    if (event) {
+      setTitle(event.title || '');
+      setDescription(event.description || '');
+      setLocation(event.location || '');
+      setMediaUrl(event.mediaUrl || '');
+
+      // Format dates for input fields
+      const start = new Date(event.startDate);
+      const end = new Date(event.endDate);
+      setStartDate(start.toISOString().split('T')[0]);
+      setEndDate(end.toISOString().split('T')[0]);
+
+      setStartTime(event.startTime || '');
+      setEndTime(event.endTime || '');
+      setIsAllDay(event.isAllDay || false);
+      setIsPrivate(event.isPrivate || false);
+      setCategory(event.category || '');
+    }
+  }, [event]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,11 +81,11 @@ export function CreateEventDialog({
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/events/create', {
+      const response = await fetch('/api/events/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          unionId,
+          eventId: event?.id,
           title,
           description,
           location,
@@ -78,36 +101,25 @@ export function CreateEventDialog({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create event');
+        throw new Error('Failed to update event');
       }
-
-      // Reset form
-      setTitle('');
-      setDescription('');
-      setLocation('');
-      setMediaUrl('');
-      setStartDate('');
-      setEndDate('');
-      setStartTime('');
-      setEndTime('');
-      setIsAllDay(false);
-      setIsPrivate(false);
-      setCategory('');
 
       onSuccess();
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create event');
+      setError(err instanceof Error ? err.message : 'Failed to update event');
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (!event) return null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Event</DialogTitle>
+          <DialogTitle>Edit Event</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -261,10 +273,10 @@ export function CreateEventDialog({
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
+                  Updating...
                 </>
               ) : (
-                'Create Event'
+                'Update Event'
               )}
             </Button>
           </div>
