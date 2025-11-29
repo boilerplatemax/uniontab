@@ -44,6 +44,7 @@ async function getUnionPosts(unionId: number) {
       content: posts.content,
       imageUrl: posts.imageUrl,
       isPrivate: posts.isPrivate,
+      isPinned: posts.isPinned,
       createdAt: posts.createdAt,
       updatedAt: posts.updatedAt,
       createdBy: {
@@ -53,7 +54,7 @@ async function getUnionPosts(unionId: number) {
     .from(posts)
     .innerJoin(users, eq(posts.createdBy, users.id))
     .where(eq(posts.unionId, unionId))
-    .orderBy(desc(posts.createdAt));
+    .orderBy(desc(posts.isPinned), desc(posts.createdAt));
 
   return postsWithCreator;
 }

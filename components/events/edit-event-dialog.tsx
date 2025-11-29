@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,20 +9,21 @@ import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Loader2 } from 'lucide-react';
+import type { Event } from '@/lib/db/schema';
 
-interface CreateEventDialogProps {
+interface EditEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  unionId: number;
+  event: (Event & { createdBy: { name: string } }) | null;
   onSuccess: () => void;
 }
 
-export function CreateEventDialog({
+export function EditEventDialog({
   open,
   onOpenChange,
-  unionId,
+  event,
   onSuccess,
-}: CreateEventDialogProps) {
+}: EditEventDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
@@ -37,9 +38,33 @@ export function CreateEventDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Populate form when event changes
+  useEffect(() => {
+    if (event) {
+      setTitle(event.title);
+      setDescription(event.description || '');
+      setLocation(event.location || '');
+      setMediaUrl(event.mediaUrl || '');
+
+      // Convert dates to YYYY-MM-DD format for date inputs
+      const start = new Date(event.startDate);
+      const end = new Date(event.endDate);
+      setStartDate(start.toISOString().split('T')[0]);
+      setEndDate(end.toISOString().split('T')[0]);
+
+      setStartTime(event.startTime || '');
+      setEndTime(event.endTime || '');
+      setIsAllDay(event.isAllDay);
+      setIsPrivate(event.isPrivate);
+      setCategory(event.category || '');
+    }
+  }, [event]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!event) return;
 
     if (!title || !startDate || !endDate) {
       setError('Please fill in all required fields');
@@ -58,11 +83,10 @@ export function CreateEventDialog({
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/events/create', {
-        method: 'POST',
+      const response = await fetch(`/api/events/${event.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          unionId,
           title,
           description,
           location,
@@ -78,26 +102,13 @@ export function CreateEventDialog({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create event');
+        throw new Error('Failed to update event');
       }
-
-      // Reset form
-      setTitle('');
-      setDescription('');
-      setLocation('');
-      setMediaUrl('');
-      setStartDate('');
-      setEndDate('');
-      setStartTime('');
-      setEndTime('');
-      setIsAllDay(false);
-      setIsPrivate(false);
-      setCategory('');
 
       onSuccess();
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create event');
+      setError(err instanceof Error ? err.message : 'Failed to update event');
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +118,7 @@ export function CreateEventDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Event</DialogTitle>
+          <DialogTitle>Edit Event</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -154,11 +165,14 @@ export function CreateEventDialog({
             <FileUpload
               onFileSelect={(file, url) => {
                 if (url) setMediaUrl(url);
+                if (file === null) setMediaUrl('');
               }}
               accept="image/*"
               maxSize={5}
               currentUrl={mediaUrl}
               hint="Upload event image"
+              bucket="union-files"
+              path="events"
             />
           </div>
 
@@ -259,10 +273,10 @@ export function CreateEventDialog({
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
+                  Saving...
                 </>
               ) : (
-                'Create Event'
+                'Save Changes'
               )}
             </Button>
           </div>
