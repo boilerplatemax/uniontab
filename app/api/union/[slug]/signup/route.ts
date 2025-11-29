@@ -74,11 +74,12 @@ export async function POST(
       );
     }
 
-    // Add user as member of this union
+    // Add user as member of this union (pending approval)
     await db.insert(members).values({
       userId: newUser.id,
       unionId: union.id,
-      role: 'member'
+      role: 'member',
+      status: 'pending'
     });
 
     // Set session

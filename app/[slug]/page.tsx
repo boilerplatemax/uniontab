@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, members, posts, files } from '@/lib/db/schema';
+import { unions, users, members, posts, files, events } from '@/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { Users, Camera } from 'lucide-react';
 import { getUser } from '@/lib/db/queries';
@@ -82,6 +82,36 @@ async function getUnionFiles(unionId: number) {
   return filesWithCreator;
 }
 
+async function getUnionEvents(unionId: number) {
+  const eventsWithCreator = await db
+    .select({
+      id: events.id,
+      unionId: events.unionId,
+      title: events.title,
+      description: events.description,
+      location: events.location,
+      mediaUrl: events.mediaUrl,
+      startDate: events.startDate,
+      endDate: events.endDate,
+      startTime: events.startTime,
+      endTime: events.endTime,
+      isAllDay: events.isAllDay,
+      isPrivate: events.isPrivate,
+      category: events.category,
+      createdAt: events.createdAt,
+      updatedAt: events.updatedAt,
+      createdBy: {
+        name: users.name,
+      },
+    })
+    .from(events)
+    .innerJoin(users, eq(events.createdBy, users.id))
+    .where(eq(events.unionId, unionId))
+    .orderBy(events.startDate);
+
+  return eventsWithCreator;
+}
+
 async function handleSignOut() {
   'use server';
   (await cookies()).delete('session');
@@ -108,9 +138,10 @@ export default async function PublicUnionPage({
   const isOwner = membership?.member.role === 'owner';
   const isApprovedMember = membership?.member.status === 'approved' || isOwner;
 
-  // Fetch posts and files
+  // Fetch posts, files, and events
   const unionPosts = await getUnionPosts(union.id);
   const unionFiles = await getUnionFiles(union.id);
+  const unionEvents = await getUnionEvents(union.id);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -193,6 +224,7 @@ export default async function PublicUnionPage({
           union={union}
           posts={unionPosts}
           files={unionFiles}
+          events={unionEvents}
           membership={membership}
           isOwner={isOwner}
           isApprovedMember={isApprovedMember}

@@ -138,6 +138,30 @@ export const files = pgTable('files', {
     .references(() => users.id),
 });
 
+export const events = pgTable('events', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  location: text('location'),
+  mediaUrl: text('media_url'),
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date').notNull(),
+  startTime: varchar('start_time', { length: 10 }), // e.g., "09:00"
+  endTime: varchar('end_time', { length: 10 }), // e.g., "17:00"
+  isAllDay: boolean('is_all_day').notNull().default(false),
+  isPrivate: boolean('is_private').notNull().default(false),
+  category: varchar('category', { length: 100 }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id),
+  updatedBy: integer('updated_by').references(() => users.id),
+});
+
 export const unionsRelations = relations(unions, ({ many }) => ({
   members: many(members),
   activityLogs: many(activityLogs),
@@ -145,6 +169,7 @@ export const unionsRelations = relations(unions, ({ many }) => ({
   pages: many(unionPages),
   posts: many(posts),
   files: many(files),
+  events: many(events),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -226,6 +251,21 @@ export const filesRelations = relations(files, ({ one }) => ({
   }),
 }));
 
+export const eventsRelations = relations(events, ({ one }) => ({
+  union: one(unions, {
+    fields: [events.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [events.createdBy],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [events.updatedBy],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Union = typeof unions.$inferSelect;
@@ -242,6 +282,8 @@ export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 export type File = typeof files.$inferSelect;
 export type NewFile = typeof files.$inferInsert;
+export type Event = typeof events.$inferSelect;
+export type NewEvent = typeof events.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;
