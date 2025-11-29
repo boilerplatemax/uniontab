@@ -11,6 +11,7 @@
 -- STEP 1: Drop all existing tables
 -- ============================================================================
 
+DROP TABLE IF EXISTS "events" CASCADE;
 DROP TABLE IF EXISTS "files" CASCADE;
 DROP TABLE IF EXISTS "posts" CASCADE;
 DROP TABLE IF EXISTS "union_pages" CASCADE;
@@ -185,7 +186,36 @@ CREATE INDEX "files_union_id_idx" ON "files"("union_id");
 CREATE INDEX "files_created_by_idx" ON "files"("created_by");
 
 -- ============================================================================
--- STEP 10: Create auto-update trigger for updated_at columns
+-- STEP 10: Create EVENTS table
+-- ============================================================================
+
+CREATE TABLE "events" (
+  "id" SERIAL PRIMARY KEY,
+  "union_id" INTEGER NOT NULL REFERENCES "unions"("id") ON DELETE CASCADE,
+  "title" VARCHAR(255) NOT NULL,
+  "description" TEXT,
+  "location" TEXT,
+  "media_url" TEXT,
+  "start_date" TIMESTAMP NOT NULL,
+  "end_date" TIMESTAMP NOT NULL,
+  "start_time" VARCHAR(10),
+  "end_time" VARCHAR(10),
+  "is_all_day" BOOLEAN NOT NULL DEFAULT false,
+  "is_private" BOOLEAN NOT NULL DEFAULT false,
+  "category" VARCHAR(100),
+  "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+  "updated_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+  "created_by" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+  "updated_by" INTEGER REFERENCES "users"("id") ON DELETE SET NULL
+);
+
+CREATE INDEX "events_union_id_idx" ON "events"("union_id");
+CREATE INDEX "events_start_date_idx" ON "events"("start_date");
+CREATE INDEX "events_end_date_idx" ON "events"("end_date");
+CREATE INDEX "events_is_private_idx" ON "events"("is_private");
+
+-- ============================================================================
+-- STEP 11: Create auto-update trigger for updated_at columns
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -216,6 +246,11 @@ CREATE TRIGGER update_posts_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_events_updated_at
+  BEFORE UPDATE ON "events"
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================================================
 -- ✅ DATABASE RESET COMPLETE
 -- ============================================================================
@@ -228,6 +263,7 @@ CREATE TRIGGER update_posts_updated_at
 -- ✅ union_pages (custom content)
 -- ✅ posts (union posts with public/private toggle)
 -- ✅ files (file storage with public/private toggle)
+-- ✅ events (union events with calendar information)
 --
 -- All tables match schema.ts exactly
 -- ============================================================================
