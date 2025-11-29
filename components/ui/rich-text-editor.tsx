@@ -16,7 +16,16 @@ import {
   Heading2,
 } from 'lucide-react'
 import { Button } from './button'
-import { useCallback } from 'react'
+import { Input } from './input'
+import { Label } from './label'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from './dialog'
+import { useCallback, useState } from 'react'
 
 interface RichTextEditorProps {
   content: string
@@ -31,9 +40,30 @@ export function RichTextEditor({
   placeholder = 'Write something...',
   className = '',
 }: RichTextEditorProps) {
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false)
+  const [linkUrl, setLinkUrl] = useState('')
+  const [linkText, setLinkText] = useState('')
+
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        heading: {
+          levels: [2, 3],
+        },
+        bulletList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        orderedList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        blockquote: {
+          HTMLAttributes: {
+            class: 'border-l-4 border-gray-300 pl-4 italic',
+          },
+        },
+      }),
       Placeholder.configure({
         placeholder,
       }),
@@ -56,35 +86,44 @@ export function RichTextEditor({
     },
   })
 
-  const setLink = useCallback(() => {
+  const openLinkDialog = useCallback(() => {
     if (!editor) return
 
     const previousUrl = editor.getAttributes('link').href
-    const url = window.prompt('URL', previousUrl)
+    const { from, to } = editor.state.selection
+    const text = editor.state.doc.textBetween(from, to, '')
 
-    // cancelled
-    if (url === null) {
-      return
-    }
+    setLinkUrl(previousUrl || '')
+    setLinkText(text)
+    setLinkDialogOpen(true)
+  }, [editor])
+
+  const handleSetLink = useCallback(() => {
+    if (!editor) return
 
     // empty
-    if (url === '') {
+    if (linkUrl === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run()
+      setLinkDialogOpen(false)
       return
     }
 
     // update link
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-  }, [editor])
+    editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run()
+    setLinkDialogOpen(false)
+    setLinkUrl('')
+    setLinkText('')
+  }, [editor, linkUrl])
 
   if (!editor) {
     return null
   }
 
   return (
-    <div className={`border rounded-lg overflow-hidden ${className}`}>
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-1 p-2 border-b bg-gray-50">
+    <>
+      <div className={`border rounded-lg overflow-hidden ${className}`}>
+        {/* Toolbar */}
+        <div className="flex flex-wrap gap-1 p-2 border-b bg-gray-50">
         <Button
           type="button"
           variant="ghost"
@@ -143,7 +182,7 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={setLink}
+          onClick={openLinkDialog}
           className={editor.isActive('link') ? 'bg-gray-200' : ''}
         >
           <LinkIcon className="h-4 w-4" />
@@ -169,8 +208,66 @@ export function RichTextEditor({
         </Button>
       </div>
 
-      {/* Editor Content */}
-      <EditorContent editor={editor} />
-    </div>
+        {/* Editor Content */}
+        <EditorContent editor={editor} />
+      </div>
+
+      {/* Link Dialog */}
+      <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Link</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {linkText && (
+              <div>
+                <Label htmlFor="link-text">Selected Text</Label>
+                <Input
+                  id="link-text"
+                  value={linkText}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
+            )}
+            <div>
+              <Label htmlFor="link-url">URL *</Label>
+              <Input
+                id="link-url"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                placeholder="https://example.com"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleSetLink()
+                  }
+                }}
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Leave empty to remove the link
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setLinkDialogOpen(false)
+                setLinkUrl('')
+                setLinkText('')
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleSetLink}>
+              {linkUrl ? 'Set Link' : 'Remove Link'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
