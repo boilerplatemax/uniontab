@@ -79,7 +79,7 @@ export function EditFileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit File Details</DialogTitle>
         </DialogHeader>

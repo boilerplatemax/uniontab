@@ -18,6 +18,7 @@ import { LikeButton } from '@/components/posts/like-button';
 import type { Union, Post, File as FileType, Event, Member } from '@/lib/db/schema';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { formatDate } from '@/lib/utils/date';
 
 interface UnionProfileTabsProps {
   union: Union;
@@ -436,7 +437,7 @@ export function UnionProfileTabs({
                             />
                             <div className="text-sm text-gray-500">
                               Posted by {post.createdBy.name} •{' '}
-                              {new Date(post.createdAt).toLocaleDateString()}
+                              {formatDate(post.createdAt)}
                             </div>
                           </div>
                         </CardContent>
@@ -504,7 +505,7 @@ export function UnionProfileTabs({
                               </p>
                               <p className="text-sm text-gray-500">
                                 Uploaded by {file.createdBy.name} •{' '}
-                                {new Date(file.createdAt).toLocaleDateString()} •{' '}
+                                {formatDate(file.createdAt)} •{' '}
                                 {(file.fileSize / 1024 / 1024).toFixed(2)} MB
                               </p>
                             </div>

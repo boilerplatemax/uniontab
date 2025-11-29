@@ -10,6 +10,7 @@ import { LikeButton } from '@/components/posts/like-button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
+import { formatDate } from '@/lib/utils/date';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -146,7 +147,7 @@ export default async function PostPage({
                 />
                 <div className="text-sm text-gray-500">
                   Posted by {post.createdBy.name} •{' '}
-                  {new Date(post.createdAt).toLocaleDateString()}
+                  {formatDate(post.createdAt)}
                 </div>
               </div>
             </div>
