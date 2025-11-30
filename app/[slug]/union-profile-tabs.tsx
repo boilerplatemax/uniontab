@@ -8,6 +8,7 @@ import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
 import { UploadFileDialog } from '@/components/files/upload-file-dialog';
 import { EditFileDialog } from '@/components/files/edit-file-dialog';
+import { CategorizedFilesList } from '@/components/files/categorized-files-list';
 import { CreateEventDialog } from '@/components/events/create-event-dialog';
 import { EditEventDialog } from '@/components/events/edit-event-dialog';
 import { EventsCalendar } from '@/components/events/events-calendar';
@@ -462,98 +463,17 @@ export function UnionProfileTabs({
 
               {/* Files List */}
               {files.length > 0 ? (
-                <Card className="shadow-sm">
-                  <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                      Files & Documents
-                    </h2>
-                    <div className="space-y-3">
-                      {files.map((file) => {
-                        // Hide private files from non-approved members
-                        if (file.isPrivate && !isApprovedMember) {
-                          return null;
-                        }
-
-                        return (
-                          <div
-                            key={file.id}
-                            className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors border"
-                          >
-                            <FileText className="h-8 w-8 text-blue-600 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-900 truncate">
-                                {file.originalName}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                Uploaded by {file.createdBy.name} •{' '}
-                                {formatDate(file.createdAt)} •{' '}
-                                {(file.fileSize / 1024 / 1024).toFixed(2)} MB
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {file.isPrivate && (
-                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                  Private
-                                </span>
-                              )}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => window.open(file.fileUrl, '_blank')}
-                                title="Preview/Open"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  const a = document.createElement('a');
-                                  a.href = file.fileUrl;
-                                  a.download = file.originalName;
-                                  document.body.appendChild(a);
-                                  a.click();
-                                  document.body.removeChild(a);
-                                }}
-                                title="Download"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              {isOwner && (
-                                <>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedFile(file);
-                                      setEditFileOpen(true);
-                                    }}
-                                    title="Edit"
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleDeleteFile(file.id)}
-                                    disabled={deletingFile === file.id}
-                                    title="Delete"
-                                  >
-                                    {deletingFile === file.id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <Trash2 className="h-4 w-4" />
-                                    )}
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
+                <CategorizedFilesList
+                  files={files}
+                  isOwner={isOwner}
+                  isApprovedMember={isApprovedMember}
+                  onEdit={(file) => {
+                    setSelectedFile(file);
+                    setEditFileOpen(true);
+                  }}
+                  onDelete={handleDeleteFile}
+                  deletingFile={deletingFile}
+                />
               ) : (
                 <Card className="shadow-sm">
                   <CardContent className="p-12 text-center">

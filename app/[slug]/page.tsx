@@ -1,12 +1,15 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, members, posts, files, events, postLikes, postAttachments } from '@/lib/db/schema';
+import { unions, users, members, posts, files, events, postLikes, postAttachments, announcements, announcementAttachments, dismissedAnnouncements } from '@/lib/db/schema';
 import { eq, and, desc, count, sql } from 'drizzle-orm';
 import { Users, Camera, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { getUser } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
 import { UnionNavbar } from './union-navbar';
 import { UnionProfileTabs } from './union-profile-tabs';
+import { AnnouncementBanner } from '@/components/announcements/announcement-banner';
+import { AnnouncementPopup } from '@/components/announcements/announcement-popup';
+import { AnnouncementClient } from './announcement-client';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -176,6 +179,55 @@ async function getUnionEvents(unionId: number) {
   return eventsWithCreator;
 }
 
+async function getActiveAnnouncements(unionId: number, userId?: number, isOwner: boolean = false) {
+  // Owners don't see auto-popups, but we still fetch for the banner
+  const activeAnnouncementsData = await db
+    .select()
+    .from(announcements)
+    .where(and(
+      eq(announcements.unionId, unionId),
+      eq(announcements.isActive, true)
+    ))
+    .orderBy(desc(announcements.createdAt));
+
+  if (activeAnnouncementsData.length === 0) {
+    return { popup: null, banner: null };
+  }
+
+  // Get the most recent active popup (not dismissed by user)
+  let popup = null;
+  if (!isOwner && userId) {
+    const popupAnnouncements = activeAnnouncementsData.filter(a => a.type === 'popup');
+    if (popupAnnouncements.length > 0) {
+      // Check if user has dismissed any popups
+      const dismissedIds = await db
+        .select({ announcementId: dismissedAnnouncements.announcementId })
+        .from(dismissedAnnouncements)
+        .where(eq(dismissedAnnouncements.userId, userId));
+
+      const dismissedSet = new Set(dismissedIds.map(d => d.announcementId));
+
+      // Find first non-dismissed popup
+      const activePopup = popupAnnouncements.find(p => !dismissedSet.has(p.id));
+
+      if (activePopup) {
+        const attachments = await db
+          .select()
+          .from(announcementAttachments)
+          .where(eq(announcementAttachments.announcementId, activePopup.id));
+
+        popup = { ...activePopup, attachments };
+      }
+    }
+  }
+
+  // Get the most recent active banner
+  const bannerAnnouncements = activeAnnouncementsData.filter(a => a.type === 'banner');
+  const banner = bannerAnnouncements.length > 0 ? bannerAnnouncements[0] : null;
+
+  return { popup, banner };
+}
+
 async function handleSignOut() {
   'use server';
   (await cookies()).delete('session');
@@ -213,6 +265,9 @@ export default async function PublicUnionPage({
   const unionFiles = await getUnionFiles(union.id);
   const unionEvents = await getUnionEvents(union.id);
 
+  // Fetch active announcements
+  const activeAnnouncements = await getActiveAnnouncements(union.id, currentUser?.id, isOwner);
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navigation Bar */}
@@ -223,6 +278,12 @@ export default async function PublicUnionPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+      />
+
+      {/* Announcement Banner */}
+      <AnnouncementClient
+        popup={activeAnnouncements.popup}
+        banner={activeAnnouncements.banner}
       />
 
       {/* Unapproved User Alert Banner */}
