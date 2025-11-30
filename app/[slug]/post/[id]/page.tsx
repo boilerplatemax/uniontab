@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, posts, members } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { unions, users, posts, members, postLikes } from '@/lib/db/schema';
+import { eq, and, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { UnionNavbar } from '../../union-navbar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,7 +22,7 @@ async function getUnionBySlug(slug: string) {
   return union;
 }
 
-async function getPost(postId: number) {
+async function getPost(postId: number, userId?: number) {
   const [post] = await db
     .select({
       id: posts.id,
@@ -44,7 +44,30 @@ async function getPost(postId: number) {
     .where(eq(posts.id, postId))
     .limit(1);
 
-  return post;
+  if (!post) return null;
+
+  // Get like count
+  const [{ value: likeCount }] = await db
+    .select({ value: count() })
+    .from(postLikes)
+    .where(eq(postLikes.postId, postId));
+
+  // Check if user has liked the post
+  let isLikedByUser = false;
+  if (userId) {
+    const [userLike] = await db
+      .select()
+      .from(postLikes)
+      .where(and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)))
+      .limit(1);
+    isLikedByUser = !!userLike;
+  }
+
+  return {
+    ...post,
+    likeCount: Number(likeCount),
+    isLikedByUser,
+  };
 }
 
 async function checkMembership(unionId: number) {
@@ -86,7 +109,8 @@ export default async function PostPage({
     notFound();
   }
 
-  const post = await getPost(postId);
+  const currentUser = await getUser();
+  const post = await getPost(postId, currentUser?.id);
   if (!post || post.unionId !== union.id) {
     notFound();
   }
@@ -95,12 +119,17 @@ export default async function PostPage({
   if (post.isPrivate) {
     const membership = await checkMembership(union.id);
     if (!membership) {
-      redirect(`/login?redirect=/${slug}/post/${id}`);
+      redirect(`/${slug}/sign-in?redirect=/${slug}/post/${id}`);
+    }
+    // Check if user is approved
+    const isOwner = membership?.member.role === 'owner';
+    const isApprovedMember = membership?.member.status === 'approved' || isOwner;
+    if (!isApprovedMember) {
+      redirect(`/${slug}`);
     }
   }
 
   const membership = await checkMembership(union.id);
-  const currentUser = await getUser();
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -141,8 +170,8 @@ export default async function PostPage({
               <div className="flex items-center justify-between">
                 <LikeButton
                   postId={post.id}
-                  initialLiked={false}
-                  initialCount={0}
+                  initialLiked={post.isLikedByUser}
+                  initialCount={post.likeCount}
                   userId={currentUser?.id || null}
                 />
                 <div className="text-sm text-gray-500">

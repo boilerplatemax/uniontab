@@ -23,8 +23,12 @@ export function LikeButton({
 
   const handleLike = async () => {
     if (!userId) {
-      // Redirect to login if not authenticated
-      window.location.href = `/login?redirect=${window.location.pathname}`;
+      // Redirect to union-specific sign-in if not authenticated
+      // Extract union slug from pathname (format: /{slug}/...)
+      const pathParts = window.location.pathname.split('/');
+      const slug = pathParts[1]; // Get the first part after /
+      const redirectUrl = `/${slug}/sign-in?redirect=${window.location.pathname}`;
+      window.location.href = redirectUrl;
       return;
     }
 
