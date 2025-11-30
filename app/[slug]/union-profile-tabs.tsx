@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -44,10 +44,10 @@ export function UnionProfileTabs({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events') || 'about';
+  const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections') || 'about';
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
 
-  const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events') => {
+  const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events' | 'elections') => {
     const params = new URLSearchParams(searchParams);
     if (tab === 'about') {
       params.delete('tab');
@@ -228,6 +228,16 @@ export function UnionProfileTabs({
             }`}
           >
             Events
+          </button>
+          <button
+            onClick={() => setActiveTab('elections')}
+            className={`px-4 py-2 font-semibold transition-colors ${
+              activeTab === 'elections'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Elections
           </button>
         </div>
       </div>
@@ -644,6 +654,28 @@ export function UnionProfileTabs({
                 />
               )}
             </>
+          )}
+
+          {/* Elections Tab */}
+          {activeTab === 'elections' && (
+            <Card className="shadow-sm">
+              <CardContent className="p-12 text-center">
+                <Vote className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Elections & Voting
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  View and participate in union elections and voting
+                </p>
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => router.push(`/${union.slug}/elections`)}
+                >
+                  <Vote className="h-4 w-4 mr-2" />
+                  Go to Elections
+                </Button>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
