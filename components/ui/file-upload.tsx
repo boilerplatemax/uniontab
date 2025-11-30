@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { Upload, X, File, Image as ImageIcon } from "lucide-react"
+import { Upload, X, File, Image as ImageIcon, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
+import { resizeImage, smartCropImage, getImageDimensions, blobToFile } from "@/lib/utils/image"
 
 interface FileUploadProps {
   onFileSelect: (file: File | null, url?: string) => void
@@ -16,6 +17,12 @@ interface FileUploadProps {
   className?: string
   bucket?: string
   path?: string
+  recommendedDimensions?: {
+    width: number
+    height: number
+  }
+  autoResize?: boolean
+  smartCrop?: boolean
 }
 
 export function FileUpload({
@@ -27,7 +34,10 @@ export function FileUpload({
   hint = "Click to browse or drag and drop",
   className,
   bucket = "union-files",
-  path = ""
+  path = "",
+  recommendedDimensions,
+  autoResize = false,
+  smartCrop = false
 }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [preview, setPreview] = useState<string | null>(currentUrl || null)
@@ -88,13 +98,46 @@ export function FileUpload({
       return
     }
 
+    let processedFile = file
+
+    // Process images with resize or smart crop if enabled
+    if (file.type.startsWith("image/") && (autoResize || smartCrop) && recommendedDimensions) {
+      setIsUploading(true)
+      try {
+        const dimensions = await getImageDimensions(file)
+        const { width, height } = recommendedDimensions
+
+        let processedBlob: Blob
+
+        if (smartCrop) {
+          // Use smart crop for exact dimensions
+          processedBlob = await smartCropImage(file, width, height, 0.9)
+        } else if (autoResize) {
+          // Use resize to fit within dimensions
+          processedBlob = await resizeImage(file, {
+            maxWidth: width,
+            maxHeight: height,
+            quality: 0.9,
+            maintainAspectRatio: true
+          })
+        } else {
+          processedBlob = file
+        }
+
+        processedFile = blobToFile(processedBlob, file.name)
+      } catch (err) {
+        console.error('Image processing error:', err)
+        // Continue with original file if processing fails
+      }
+    }
+
     // Show preview for images
-    if (file.type.startsWith("image/")) {
+    if (processedFile.type.startsWith("image/")) {
       const reader = new FileReader()
       reader.onloadend = () => {
         setPreview(reader.result as string)
       }
-      reader.readAsDataURL(file)
+      reader.readAsDataURL(processedFile)
     } else {
       setPreview(null)
     }
@@ -102,8 +145,8 @@ export function FileUpload({
     // Upload to Supabase
     setIsUploading(true)
     try {
-      const url = await uploadToSupabase(file)
-      onFileSelect(file, url)
+      const url = await uploadToSupabase(processedFile)
+      onFileSelect(processedFile, url)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to upload file")
       setPreview(null)
@@ -160,6 +203,23 @@ export function FileUpload({
         <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           {label}
         </label>
+      )}
+
+      {recommendedDimensions && (
+        <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+          <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="text-blue-800">
+            <span className="font-medium">Recommended size:</span>{' '}
+            {recommendedDimensions.width} × {recommendedDimensions.height} pixels
+            {(autoResize || smartCrop) && (
+              <span className="block text-xs mt-1 text-blue-600">
+                {smartCrop
+                  ? '✓ Images will be automatically cropped to fit perfectly'
+                  : '✓ Images will be automatically resized to fit'}
+              </span>
+            )}
+          </div>
+        </div>
       )}
 
       <div
