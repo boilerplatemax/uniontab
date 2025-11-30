@@ -118,8 +118,7 @@ export function ElectionsContent({ slug }: { slug: string }) {
         <div className="grid gap-4">
           {elections.map((election: any) => (
             <Card key={election.id} className="p-6 hover:shadow-lg transition">
-              <Link href={`/${slug}/elections/${election.slug}`}>
-                <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <h3 className="text-xl font-semibold">
@@ -176,7 +175,6 @@ export function ElectionsContent({ slug }: { slug: string }) {
                       )}
                   </div>
                 </div>
-              </Link>
             </Card>
           ))}
         </div>
