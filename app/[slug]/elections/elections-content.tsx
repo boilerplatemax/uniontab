@@ -84,6 +84,15 @@ export function ElectionsContent({ slug }: { slug: string }) {
 
   return (
     <div className="space-y-6">
+      <div>
+        <Link
+          href={`/${slug}`}
+          className="text-sm text-blue-600 hover:underline"
+        >
+          ← Back to Union
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Elections & Voting</h1>
         {isAdmin && (

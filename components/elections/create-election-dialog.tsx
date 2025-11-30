@@ -208,6 +208,10 @@ export function CreateElectionDialog({
         }
       }
 
+      // Convert datetime-local format to ISO 8601
+      const openTimeISO = new Date(openTime).toISOString();
+      const closeTimeISO = new Date(closeTime).toISOString();
+
       const response = await fetch('/api/elections/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -216,8 +220,8 @@ export function CreateElectionDialog({
           title,
           description,
           slug,
-          openTime,
-          closeTime,
+          openTime: openTimeISO,
+          closeTime: closeTimeISO,
           timezone,
           allowRevotes,
           resultsVisibility,
