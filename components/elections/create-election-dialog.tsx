@@ -332,6 +332,7 @@ export function CreateElectionDialog({
                   type="datetime-local"
                   value={openTime}
                   onChange={(e) => setOpenTime(e.target.value)}
+                  step="900"
                   required
                 />
               </div>
@@ -342,6 +343,7 @@ export function CreateElectionDialog({
                   type="datetime-local"
                   value={closeTime}
                   onChange={(e) => setCloseTime(e.target.value)}
+                  step="900"
                   required
                 />
               </div>

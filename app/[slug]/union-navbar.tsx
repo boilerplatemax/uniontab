@@ -30,7 +30,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             <div className="flex items-center gap-2">
               <Users className="h-6 w-6 text-blue-600" />
