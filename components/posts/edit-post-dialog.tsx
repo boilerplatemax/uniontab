@@ -134,6 +134,8 @@ export function EditPostDialog({
                 hint="Click to browse or drag and drop an image"
                 bucket="union-files"
                 path="posts"
+                recommendedDimensions={{ width: 1200, height: 800 }}
+                autoResize={true}
               />
             </div>
 

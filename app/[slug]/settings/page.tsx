@@ -244,10 +244,9 @@ export default function UnionSettingsPage() {
                 hint="Click to browse or drag and drop your logo"
                 bucket="union-files"
                 path="logos"
+                recommendedDimensions={{ width: 400, height: 400 }}
+                autoResize={true}
               />
-              <p className="text-sm text-gray-500">
-                Recommended: Square image (e.g., 400x400 pixels)
-              </p>
 
               <FileUpload
                 onFileSelect={(file, url) => {
@@ -258,14 +257,13 @@ export default function UnionSettingsPage() {
                 accept="image/*"
                 maxSize={10}
                 currentUrl={formData.coverPhotoUrl}
-                label="Cover Photo"
+                label="Cover Photo / Banner"
                 hint="Click to browse or drag and drop your cover image"
                 bucket="union-files"
                 path="covers"
+                recommendedDimensions={{ width: 1500, height: 500 }}
+                autoResize={true}
               />
-              <p className="text-sm text-gray-500">
-                Recommended size: 1200x400 pixels or wider
-              </p>
             </CardContent>
           </Card>
 

@@ -176,6 +176,18 @@ export const postLikes = pgTable('post_likes', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+export const postAttachments = pgTable('post_attachments', {
+  id: serial('id').primaryKey(),
+  postId: integer('post_id')
+    .notNull()
+    .references(() => posts.id, { onDelete: 'cascade' }),
+  fileName: varchar('file_name', { length: 255 }).notNull(),
+  fileUrl: text('file_url').notNull(),
+  fileType: varchar('file_type', { length: 100 }).notNull(),
+  fileSize: integer('file_size').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 // Election/Voting System Tables
 export const elections = pgTable('elections', {
   id: serial('id').primaryKey(),
@@ -348,6 +360,7 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
     references: [users.id],
   }),
   likes: many(postLikes),
+  attachments: many(postAttachments),
 }));
 
 export const filesRelations = relations(files, ({ one }) => ({
@@ -384,6 +397,13 @@ export const postLikesRelations = relations(postLikes, ({ one }) => ({
   user: one(users, {
     fields: [postLikes.userId],
     references: [users.id],
+  }),
+}));
+
+export const postAttachmentsRelations = relations(postAttachments, ({ one }) => ({
+  post: one(posts, {
+    fields: [postAttachments.postId],
+    references: [posts.id],
   }),
 }));
 
@@ -476,6 +496,8 @@ export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type PostLike = typeof postLikes.$inferSelect;
 export type NewPostLike = typeof postLikes.$inferInsert;
+export type PostAttachment = typeof postAttachments.$inferSelect;
+export type NewPostAttachment = typeof postAttachments.$inferInsert;
 export type Election = typeof elections.$inferSelect;
 export type NewElection = typeof elections.$inferInsert;
 export type ElectionQuestion = typeof electionQuestions.$inferSelect;

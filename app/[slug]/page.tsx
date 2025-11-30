@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, members, posts, files, events, postLikes } from '@/lib/db/schema';
+import { unions, users, members, posts, files, events, postLikes, postAttachments } from '@/lib/db/schema';
 import { eq, and, desc, count, sql } from 'drizzle-orm';
 import { Users, Camera, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { getUser } from '@/lib/db/queries';
@@ -65,8 +65,24 @@ async function getUnionPosts(unionId: number, userId?: number) {
     .where(eq(posts.unionId, unionId))
     .orderBy(desc(posts.isPinned), desc(posts.createdAt));
 
-  // Get like counts and user's like status for all posts
+  // Get attachments for all posts
   const postIds = postsWithCreator.map(p => p.id);
+  const attachmentsData = postIds.length > 0
+    ? await db
+        .select()
+        .from(postAttachments)
+        .where(sql`${postAttachments.postId} IN ${sql`(${sql.join(postIds.map(id => sql`${id}`), sql`, `)})`}`)
+    : [];
+
+  const attachmentsByPost = attachmentsData.reduce((acc, attachment) => {
+    if (!acc[attachment.postId]) {
+      acc[attachment.postId] = [];
+    }
+    acc[attachment.postId].push(attachment);
+    return acc;
+  }, {} as Record<number, typeof attachmentsData>);
+
+  // Get like counts and user's like status for all posts
 
   // Get like counts
   const likeCounts = await db
@@ -102,6 +118,7 @@ async function getUnionPosts(unionId: number, userId?: number) {
     ...post,
     likeCount: likeCountMap[post.id] || 0,
     isLikedByUser: userLikes.includes(post.id),
+    attachments: attachmentsByPost[post.id] || [],
   }));
 }
 
@@ -228,7 +245,7 @@ export default async function PublicUnionPage({
 
       {/* Cover Photo - Facebook style */}
       <div className="relative bg-white">
-        <div className="relative h-[300px] sm:h-[400px] bg-gradient-to-r from-blue-600 to-blue-700 overflow-hidden group">
+        <div className="relative h-[300px] sm:h-[400px] bg-gradient-to-r from-blue-600 to-blue-700 overflow-hidden">
           {union.coverPhotoUrl ? (
             <img
               src={union.coverPhotoUrl}
@@ -240,13 +257,6 @@ export default async function PublicUnionPage({
               <Users className="h-32 w-32 text-white/30" />
             </div>
           )}
-          {/* Admin edit button for cover photo */}
-          {isOwner && (
-            <button className="absolute bottom-4 right-4 bg-white hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg shadow-md flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera className="h-4 w-4" />
-              <span className="text-sm font-medium">Edit Cover Photo</span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -255,24 +265,20 @@ export default async function PublicUnionPage({
         <div className="bg-white rounded-lg shadow-sm pb-4">
           {/* Logo and Name */}
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 px-6 pt-6">
-            {/* Logo - Overlapping cover photo */}
-            <div className="flex-shrink-0 -mt-8 sm:-mt-16 relative z-20 group">
+            {/* Logo - Overlapping cover photo with flexible sizing */}
+            <div className="flex-shrink-0 -mt-8 sm:-mt-16 relative z-20">
               {union.logoUrl ? (
-                <img
-                  src={union.logoUrl}
-                  alt={`${union.name} logo`}
-                  className="h-32 w-32 sm:h-40 sm:w-40 rounded-full object-cover border-4 border-white shadow-xl bg-white"
-                />
+                <div className="relative h-32 sm:h-40 bg-white rounded-xl border-4 border-white shadow-xl overflow-hidden">
+                  <img
+                    src={union.logoUrl}
+                    alt={`${union.name} logo`}
+                    className="h-full w-auto max-w-[200px] object-contain"
+                  />
+                </div>
               ) : (
-                <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-full bg-blue-600 flex items-center justify-center border-4 border-white shadow-xl">
+                <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-xl bg-blue-600 flex items-center justify-center border-4 border-white shadow-xl">
                   <Users className="h-16 w-16 sm:h-20 sm:w-20 text-white" />
                 </div>
-              )}
-              {/* Admin camera icon for profile photo */}
-              {isOwner && (
-                <button className="absolute bottom-1 right-1 bg-white hover:bg-gray-100 text-gray-700 p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="h-4 w-4" />
-                </button>
               )}
             </div>
 

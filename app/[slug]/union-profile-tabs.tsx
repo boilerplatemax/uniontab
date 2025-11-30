@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -15,14 +15,14 @@ import { EventsList } from '@/components/events/events-list';
 import { EventDetailsDialog } from '@/components/events/event-details-dialog';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { LikeButton } from '@/components/posts/like-button';
-import type { Union, Post, File as FileType, Event, Member } from '@/lib/db/schema';
+import type { Union, Post, File as FileType, Event, Member, PostAttachment } from '@/lib/db/schema';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils/date';
 
 interface UnionProfileTabsProps {
   union: Union;
-  posts: (Post & { createdBy: { name: string } })[];
+  posts: (Post & { createdBy: { name: string }; attachments?: PostAttachment[] })[];
   files: (FileType & { createdBy: { name: string } })[];
   events: (Event & { createdBy: { name: string } })[];
   membership: any;
@@ -296,23 +296,23 @@ export function UnionProfileTabs({
                     }
 
                     return (
-                      <Card key={post.id} className="shadow-sm">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Link href={`/${union.slug}/post/${post.id}`}>
-                                <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors">
+                      <Card key={post.id} className="shadow-sm hover:shadow-md transition-shadow">
+                        <CardContent className="p-4 sm:p-6">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <Link href={`/${union.slug}/post/${post.id}`} className="flex-1 min-w-0">
+                                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate">
                                   {post.title}
                                 </h3>
                               </Link>
                               {(post as any).isPinned && (
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1">
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1 flex-shrink-0">
                                   <Pin className="h-3 w-3" />
                                   Pinned
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                               {post.isPrivate && (
                                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
                                   Private
@@ -355,24 +355,70 @@ export function UnionProfileTabs({
                             </div>
                           </div>
                           {post.imageUrl && (
-                            <img
-                              src={post.imageUrl}
-                              alt={post.title}
-                              className="w-full rounded-lg mb-4 max-h-96 object-cover"
-                            />
+                            <div className="relative w-full mb-4 rounded-lg overflow-hidden bg-gray-100">
+                              <img
+                                src={post.imageUrl}
+                                alt={post.title}
+                                className="w-full h-auto max-h-[400px] object-contain"
+                                loading="lazy"
+                              />
+                            </div>
                           )}
                           <RichTextContent
                             content={post.content}
-                            className="mb-4"
+                            className="mb-4 text-sm sm:text-base line-clamp-6"
                           />
-                          <div className="flex items-center justify-between border-t pt-3">
+
+                          {/* Post Attachments */}
+                          {post.attachments && post.attachments.length > 0 && (
+                            <div className="mb-4 space-y-2">
+                              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                <Paperclip className="h-4 w-4" />
+                                <span>Attachments ({post.attachments.length})</span>
+                              </div>
+                              <div className="space-y-2">
+                                {post.attachments.map((attachment) => (
+                                  <div
+                                    key={attachment.id}
+                                    className="flex items-center gap-3 p-2 bg-gray-50 hover:bg-gray-100 rounded border border-gray-200 transition-colors"
+                                  >
+                                    <FileText className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-gray-900 truncate">
+                                        {attachment.fileName}
+                                      </p>
+                                      <p className="text-xs text-gray-500">
+                                        {(attachment.fileSize / 1024 / 1024).toFixed(2)} MB
+                                      </p>
+                                    </div>
+                                    <a
+                                      href={attachment.fileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex-shrink-0"
+                                    >
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        title="Download"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </a>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between border-t pt-3 mt-3">
                             <LikeButton
                               postId={post.id}
                               initialLiked={(post as any).isLikedByUser || false}
                               initialCount={(post as any).likeCount || 0}
                               userId={userId || null}
                             />
-                            <div className="text-sm text-gray-500">
+                            <div className="text-xs sm:text-sm text-gray-500">
                               Posted by {post.createdBy.name} •{' '}
                               {formatDate(post.createdAt)}
                             </div>

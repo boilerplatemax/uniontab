@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { posts, members } from '@/lib/db/schema';
+import { posts, members, postAttachments } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
+
+interface PostAttachment {
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+}
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { unionId, title, content, imageUrl, isPrivate } = await request.json();
+    const { unionId, title, content, imageUrl, isPrivate, attachments } = await request.json();
 
     if (!unionId || !title || !content) {
       return NextResponse.json(
@@ -47,6 +54,19 @@ export async function POST(request: Request) {
         createdBy: user.id,
       })
       .returning();
+
+    // Create post attachments if any
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      await db.insert(postAttachments).values(
+        attachments.map((attachment: PostAttachment) => ({
+          postId: newPost.id,
+          fileName: attachment.fileName,
+          fileUrl: attachment.fileUrl,
+          fileType: attachment.fileType,
+          fileSize: attachment.fileSize,
+        }))
+      );
+    }
 
     return NextResponse.json({ success: true, post: newPost });
   } catch (error) {
