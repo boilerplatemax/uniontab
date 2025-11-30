@@ -22,8 +22,8 @@ type Question = {
 const QUESTION_TYPES = [
   { value: 'text_short', label: 'Short Text' },
   { value: 'text_long', label: 'Long Text (Paragraph)' },
-  { value: 'multiple_choice', label: 'Multiple Choice (Single Answer)' },
-  { value: 'multiple_answer', label: 'Multiple Answer (Checkboxes)' },
+  { value: 'multiple_choice', label: 'Single Choice (Radio Buttons)' },
+  { value: 'multiple_answer', label: 'Multiple Choice (Checkboxes)' },
   { value: 'ranking', label: 'Ranking' },
   { value: 'scale', label: 'Scale (1-10)' },
   { value: 'yes_no', label: 'Yes/No' },

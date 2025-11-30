@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, members, posts, files, events } from '@/lib/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { unions, users, members, posts, files, events, postLikes } from '@/lib/db/schema';
+import { eq, and, desc, count, sql } from 'drizzle-orm';
 import { Users, Camera } from 'lucide-react';
 import { getUser } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
@@ -35,7 +35,16 @@ async function checkMembership(unionId: number) {
   return membership;
 }
 
-async function getUnionPosts(unionId: number) {
+async function getPendingMembersCount(unionId: number) {
+  const [result] = await db
+    .select({ value: count() })
+    .from(members)
+    .where(and(eq(members.unionId, unionId), eq(members.status, 'pending')));
+
+  return Number(result.value);
+}
+
+async function getUnionPosts(unionId: number, userId?: number) {
   const postsWithCreator = await db
     .select({
       id: posts.id,
@@ -56,7 +65,44 @@ async function getUnionPosts(unionId: number) {
     .where(eq(posts.unionId, unionId))
     .orderBy(desc(posts.isPinned), desc(posts.createdAt));
 
-  return postsWithCreator;
+  // Get like counts and user's like status for all posts
+  const postIds = postsWithCreator.map(p => p.id);
+
+  // Get like counts
+  const likeCounts = await db
+    .select({
+      postId: postLikes.postId,
+      count: count(),
+    })
+    .from(postLikes)
+    .where(sql`${postLikes.postId} IN ${postIds.length > 0 ? sql`(${sql.join(postIds.map(id => sql`${id}`), sql`, `)})` : sql`(NULL)`}`)
+    .groupBy(postLikes.postId);
+
+  const likeCountMap = Object.fromEntries(
+    likeCounts.map(({ postId, count }) => [postId, Number(count)])
+  );
+
+  // Get user's likes if logged in
+  let userLikes: number[] = [];
+  if (userId) {
+    const userLikeRecords = await db
+      .select({ postId: postLikes.postId })
+      .from(postLikes)
+      .where(
+        and(
+          eq(postLikes.userId, userId),
+          sql`${postLikes.postId} IN ${postIds.length > 0 ? sql`(${sql.join(postIds.map(id => sql`${id}`), sql`, `)})` : sql`(NULL)`}`
+        )
+      );
+    userLikes = userLikeRecords.map(l => l.postId);
+  }
+
+  // Combine data
+  return postsWithCreator.map(post => ({
+    ...post,
+    likeCount: likeCountMap[post.id] || 0,
+    isLikedByUser: userLikes.includes(post.id),
+  }));
 }
 
 async function getUnionFiles(unionId: number) {
@@ -142,8 +188,11 @@ export default async function PublicUnionPage({
   // Get current user
   const currentUser = await getUser();
 
+  // Get pending members count for owners
+  const pendingMembersCount = isOwner ? await getPendingMembersCount(union.id) : 0;
+
   // Fetch posts, files, and events
-  const unionPosts = await getUnionPosts(union.id);
+  const unionPosts = await getUnionPosts(union.id, currentUser?.id);
   const unionFiles = await getUnionFiles(union.id);
   const unionEvents = await getUnionEvents(union.id);
 
@@ -156,7 +205,26 @@ export default async function PublicUnionPage({
         localNumber={union.publicName ? null : union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}
+        pendingMembersCount={pendingMembersCount}
       />
+
+      {/* Unapproved User Alert Banner */}
+      {membership && membership.member.status === 'pending' && (
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="max-w-7xl mx-auto px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <p className="text-sm text-yellow-800 font-medium">
+                Your account has not been approved yet - some content may not be visible until an admin approves your membership.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Cover Photo - Facebook style */}
       <div className="relative bg-white">

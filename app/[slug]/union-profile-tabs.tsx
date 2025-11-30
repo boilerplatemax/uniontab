@@ -441,8 +441,8 @@ export function UnionProfileTabs({
                           <div className="flex items-center justify-between border-t pt-3">
                             <LikeButton
                               postId={post.id}
-                              initialLiked={false}
-                              initialCount={0}
+                              initialLiked={(post as any).isLikedByUser || false}
+                              initialCount={(post as any).likeCount || 0}
                               userId={userId || null}
                             />
                             <div className="text-sm text-gray-500">

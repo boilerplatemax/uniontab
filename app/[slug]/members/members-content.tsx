@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff } from 'lucide-react';
 import Link from 'next/link';
 
 interface Member {
@@ -82,6 +82,65 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
     } catch (error) {
       console.error('Error updating member status:', error);
       alert('Failed to update member status');
+    } finally {
+      setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
+    }
+  };
+
+  const handleDeleteMember = async (memberId: number, memberName: string) => {
+    if (!confirm(`Are you sure you want to delete ${memberName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    setLoadingMembers((prev) => ({ ...prev, [memberId]: true }));
+
+    try {
+      const response = await fetch('/api/members/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete member');
+      }
+
+      // Remove from local state
+      setMembersList((prev) => prev.filter((m) => m.member.id !== memberId));
+    } catch (error) {
+      console.error('Error deleting member:', error);
+      alert('Failed to delete member');
+    } finally {
+      setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
+    }
+  };
+
+  const handleToggleAdmin = async (memberId: number, currentRole: string) => {
+    const newRole = currentRole === 'admin' ? 'member' : 'admin';
+    setLoadingMembers((prev) => ({ ...prev, [memberId]: true }));
+
+    try {
+      const response = await fetch('/api/members/toggle-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId, role: newRole }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update member role');
+      }
+
+      // Update local state
+      setMembersList((prev) =>
+        prev.map((m) =>
+          m.member.id === memberId
+            ? { ...m, member: { ...m.member, role: newRole } }
+            : m
+        )
+      );
+    } catch (error) {
+      console.error('Error updating member role:', error);
+      alert('Failed to update member role');
     } finally {
       setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
     }
@@ -222,6 +281,8 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                           className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                             member.member.role === 'owner'
                               ? 'bg-blue-100 text-blue-700'
+                              : member.member.role === 'admin'
+                              ? 'bg-purple-100 text-purple-700'
                               : 'bg-gray-200 text-gray-700'
                           }`}
                         >
@@ -249,6 +310,7 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                             onClick={() => handleApproval(member.member.id, 'approved')}
                             disabled={loadingMembers[member.member.id]}
                             className="bg-green-600 hover:bg-green-700"
+                            title="Approve member"
                           >
                             {loadingMembers[member.member.id] ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -261,11 +323,47 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                             variant="destructive"
                             onClick={() => handleApproval(member.member.id, 'rejected')}
                             disabled={loadingMembers[member.member.id]}
+                            title="Reject member"
                           >
                             {loadingMembers[member.member.id] ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <XCircle className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                      {/* Admin controls for approved/rejected members (owners only, can't modify owners) */}
+                      {isOwner && member.member.role !== 'owner' && member.member.status !== 'pending' && (
+                        <div className="flex items-center gap-2">
+                          {member.member.status === 'approved' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleToggleAdmin(member.member.id, member.member.role)}
+                              disabled={loadingMembers[member.member.id]}
+                              title={member.member.role === 'admin' ? 'Remove admin privileges' : 'Grant admin privileges'}
+                            >
+                              {loadingMembers[member.member.id] ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : member.member.role === 'admin' ? (
+                                <ShieldOff className="h-4 w-4" />
+                              ) : (
+                                <Shield className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteMember(member.member.id, getUserDisplayName(member.user))}
+                            disabled={loadingMembers[member.member.id]}
+                            title="Delete member"
+                          >
+                            {loadingMembers[member.member.id] ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
                             )}
                           </Button>
                         </div>

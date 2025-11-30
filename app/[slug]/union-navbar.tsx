@@ -14,9 +14,10 @@ interface UnionNavbarProps {
     member: { role: string };
   } | null;
   handleSignOut: () => Promise<void>;
+  pendingMembersCount?: number;
 }
 
-export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut }: UnionNavbarProps) {
+export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0 }: UnionNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isOwner = membership?.member.role === 'owner';
 
@@ -53,9 +54,14 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     {isOwner && (
                       <>
                         <Link href={`/${slug}/members`} prefetch={true}>
-                          <Button variant="ghost" size="sm" className="gap-2">
+                          <Button variant="ghost" size="sm" className="gap-2 relative">
                             <Users className="h-4 w-4" />
                             <span className="hidden md:inline">Members</span>
+                            {pendingMembersCount > 0 && (
+                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                {pendingMembersCount}
+                              </span>
+                            )}
                           </Button>
                         </Link>
                         <Link href={`/${slug}/settings`} prefetch={true}>
@@ -138,9 +144,14 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     prefetch={true}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <Button variant="ghost" className="w-full justify-start gap-2">
+                    <Button variant="ghost" className="w-full justify-start gap-2 relative">
                       <Users className="h-4 w-4" />
                       Members
+                      {pendingMembersCount > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                          {pendingMembersCount}
+                        </span>
+                      )}
                     </Button>
                   </Link>
                   <Link

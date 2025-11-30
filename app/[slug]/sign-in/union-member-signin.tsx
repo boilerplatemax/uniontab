@@ -8,13 +8,17 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import type { Union } from '@/lib/db/schema';
 
 export function UnionMemberSignIn({
-  params
+  params,
+  union
 }: {
   params: Promise<{ slug: string }>;
+  union: Union;
 }) {
   const { slug } = use(params);
+  const unionDisplayName = union.publicName || union.name;
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -59,17 +63,25 @@ export function UnionMemberSignIn({
           className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to {slug}
+          Back to {unionDisplayName}
         </Link>
 
         <Card className="shadow-xl">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <Users className="h-12 w-12 text-blue-600" />
+              {union.logoUrl ? (
+                <img
+                  src={union.logoUrl}
+                  alt={`${unionDisplayName} logo`}
+                  className="h-20 w-20 rounded-full object-cover border-2 border-blue-600"
+                />
+              ) : (
+                <Users className="h-12 w-12 text-blue-600" />
+              )}
             </div>
             <CardTitle className="text-2xl">Member Login</CardTitle>
             <p className="text-gray-600 mt-2">
-              Sign in to your {slug} member account
+              Sign in to your {unionDisplayName} member account
             </p>
           </CardHeader>
           <CardContent>
