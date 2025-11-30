@@ -9,6 +9,7 @@
     "db:seed": "npx tsx lib/db/seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:elections": "npx tsx lib/db/migrate-elections.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
