@@ -13,8 +13,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
+import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Loader2 } from 'lucide-react';
+
+interface PostAttachment {
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+}
 
 interface Post {
   id: number;
@@ -22,6 +30,7 @@ interface Post {
   content: string;
   imageUrl: string | null;
   isPrivate: boolean;
+  attachments?: PostAttachment[];
 }
 
 interface EditPostDialogProps {
@@ -40,6 +49,7 @@ export function EditPostDialog({
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [attachments, setAttachments] = useState<PostAttachment[]>([]);
   const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -49,6 +59,7 @@ export function EditPostDialog({
       setTitle(post.title);
       setContent(post.content);
       setImageUrl(post.imageUrl || '');
+      setAttachments(post.attachments || []);
       setIsPrivate(post.isPrivate);
     }
   }, [post]);
@@ -70,6 +81,7 @@ export function EditPostDialog({
           content,
           imageUrl: imageUrl || null,
           isPrivate,
+          attachments,
         }),
       });
 
@@ -137,6 +149,26 @@ export function EditPostDialog({
                 recommendedDimensions={{ width: 1200, height: 800 }}
                 autoResize={true}
               />
+            </div>
+
+            <div>
+              <MultiFileUpload
+                onFilesChange={(files) => {
+                  setAttachments(prev => [...prev, ...files]);
+                }}
+                accept="*"
+                maxSize={50}
+                maxFiles={5}
+                bucket="union-files"
+                path="post-attachments"
+                label="File Attachments (optional)"
+                hint="Attach documents, PDFs, or other files to this post"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                {isPrivate
+                  ? 'Files will be accessible only to approved members (private post)'
+                  : 'Files will be publicly accessible (public post)'}
+              </p>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
