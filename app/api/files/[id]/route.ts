@@ -51,13 +51,14 @@ export async function PUT(
 
     // Update the file
     const body = await request.json();
-    const { originalName, isPrivate } = body;
+    const { originalName, isPrivate, category } = body;
 
     await db
       .update(files)
       .set({
         originalName,
         isPrivate,
+        category: category || null,
       })
       .where(eq(files.id, fileId));
 

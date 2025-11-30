@@ -135,6 +135,8 @@ export const files = pgTable('files', {
   fileType: varchar('file_type', { length: 100 }).notNull(),
   fileSize: integer('file_size').notNull(),
   isPrivate: boolean('is_private').notNull().default(false),
+  category: varchar('category', { length: 100 }),
+  sortOrder: integer('sort_order').default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   createdBy: integer('created_by')
     .notNull()
@@ -282,6 +284,49 @@ export const electionResponses = pgTable('election_responses', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// Announcements System Tables
+export const announcements = pgTable('announcements', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id),
+  type: varchar('type', { length: 20 }).notNull(), // 'popup' or 'banner'
+  title: varchar('title', { length: 255 }), // Optional for banners
+  content: text('content').notNull(),
+  imageUrl: text('image_url'),
+  isPrivate: boolean('is_private').notNull().default(false),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id),
+  updatedBy: integer('updated_by').references(() => users.id),
+});
+
+export const announcementAttachments = pgTable('announcement_attachments', {
+  id: serial('id').primaryKey(),
+  announcementId: integer('announcement_id')
+    .notNull()
+    .references(() => announcements.id, { onDelete: 'cascade' }),
+  fileName: varchar('file_name', { length: 255 }).notNull(),
+  fileUrl: text('file_url').notNull(),
+  fileType: varchar('file_type', { length: 100 }).notNull(),
+  fileSize: integer('file_size').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const dismissedAnnouncements = pgTable('dismissed_announcements', {
+  id: serial('id').primaryKey(),
+  announcementId: integer('announcement_id')
+    .notNull()
+    .references(() => announcements.id, { onDelete: 'cascade' }),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  dismissedAt: timestamp('dismissed_at').notNull().defaultNow(),
+});
+
 export const unionsRelations = relations(unions, ({ many }) => ({
   members: many(members),
   activityLogs: many(activityLogs),
@@ -291,6 +336,7 @@ export const unionsRelations = relations(unions, ({ many }) => ({
   files: many(files),
   events: many(events),
   elections: many(elections),
+  announcements: many(announcements),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -476,6 +522,41 @@ export const electionResponsesRelations = relations(
   })
 );
 
+export const announcementsRelations = relations(announcements, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [announcements.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [announcements.createdBy],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [announcements.updatedBy],
+    references: [users.id],
+  }),
+  attachments: many(announcementAttachments),
+  dismissals: many(dismissedAnnouncements),
+}));
+
+export const announcementAttachmentsRelations = relations(announcementAttachments, ({ one }) => ({
+  announcement: one(announcements, {
+    fields: [announcementAttachments.announcementId],
+    references: [announcements.id],
+  }),
+}));
+
+export const dismissedAnnouncementsRelations = relations(dismissedAnnouncements, ({ one }) => ({
+  announcement: one(announcements, {
+    fields: [dismissedAnnouncements.announcementId],
+    references: [announcements.id],
+  }),
+  user: one(users, {
+    fields: [dismissedAnnouncements.userId],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Union = typeof unions.$inferSelect;
@@ -508,6 +589,12 @@ export type ElectionVote = typeof electionVotes.$inferSelect;
 export type NewElectionVote = typeof electionVotes.$inferInsert;
 export type ElectionResponse = typeof electionResponses.$inferSelect;
 export type NewElectionResponse = typeof electionResponses.$inferInsert;
+export type Announcement = typeof announcements.$inferSelect;
+export type NewAnnouncement = typeof announcements.$inferInsert;
+export type AnnouncementAttachment = typeof announcementAttachments.$inferSelect;
+export type NewAnnouncementAttachment = typeof announcementAttachments.$inferInsert;
+export type DismissedAnnouncement = typeof dismissedAnnouncements.$inferSelect;
+export type NewDismissedAnnouncement = typeof dismissedAnnouncements.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;

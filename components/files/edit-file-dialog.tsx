@@ -18,6 +18,7 @@ interface FileData {
   id: number;
   originalName: string;
   isPrivate: boolean;
+  category?: string | null;
 }
 
 interface EditFileDialogProps {
@@ -35,6 +36,7 @@ export function EditFileDialog({
 }: EditFileDialogProps) {
   const [fileName, setFileName] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
+  const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -42,6 +44,7 @@ export function EditFileDialog({
     if (file) {
       setFileName(file.originalName);
       setIsPrivate(file.isPrivate);
+      setCategory(file.category || '');
     }
   }, [file]);
 
@@ -60,6 +63,7 @@ export function EditFileDialog({
         body: JSON.stringify({
           originalName: fileName,
           isPrivate,
+          category: category || null,
         }),
       });
 
@@ -100,6 +104,19 @@ export function EditFileDialog({
                 placeholder="document.pdf"
                 required
               />
+            </div>
+
+            <div>
+              <Label htmlFor="category">Category (Optional)</Label>
+              <Input
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="e.g., Bylaws, Contracts, Meeting Minutes"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Group files into categories for better organization
+              </p>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
