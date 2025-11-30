@@ -77,9 +77,13 @@ export default function UnionSettingsPage() {
 
       await mutate();
       setSuccess(true);
+      // Scroll to top to show success message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
       setError(err.message);
+      // Scroll to top to show error message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
@@ -115,6 +119,53 @@ export default function UnionSettingsPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Sticky Save Button */}
+          <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-200 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-6">
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                {error && (
+                  <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">
+                    {error}
+                  </div>
+                )}
+                {success && (
+                  <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm">
+                    Successfully updated union information!
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-3 ml-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push(`/${union.slug}`)}
+                  disabled={loading}
+                  size="sm"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-blue-600 hover:bg-blue-700"
+                  size="sm"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+
           {error && (
             <div className="bg-red-50 text-red-700 p-4 rounded-lg">
               {error}

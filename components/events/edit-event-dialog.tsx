@@ -225,6 +225,8 @@ export function EditEventDialog({
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
+                  step="900"
+                  className="cursor-pointer"
                 />
               </div>
 
@@ -235,6 +237,8 @@ export function EditEventDialog({
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
+                  step="900"
+                  className="cursor-pointer"
                 />
               </div>
             </div>
