@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { FileUpload } from '@/components/ui/file-upload';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import {
   ArrowRight,
   ArrowLeft,
@@ -402,14 +403,12 @@ export default function OnboardingPage() {
 
                   <div>
                     <Label htmlFor="about">About Your Union</Label>
-                    <Textarea
-                      id="about"
-                      placeholder="Tell visitors about your union's history, mission, and values..."
-                      value={formData.about}
-                      onChange={(e) =>
-                        setFormData({ ...formData, about: e.target.value })
+                    <RichTextEditor
+                      content={formData.about}
+                      onChange={(value) =>
+                        setFormData({ ...formData, about: value })
                       }
-                      rows={8}
+                      placeholder="Tell visitors about your union's history, mission, and values..."
                     />
                     <p className="text-sm text-gray-500 mt-1">
                       Share your union's story, accomplishments, and goals

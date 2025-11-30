@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, users, members, posts, files, events, postLikes } from '@/lib/db/schema';
 import { eq, and, desc, count, sql } from 'drizzle-orm';
-import { Users, Camera } from 'lucide-react';
+import { Users, Camera, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { getUser } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
 import { UnionNavbar } from './union-navbar';
@@ -211,7 +211,7 @@ export default async function PublicUnionPage({
       {/* Unapproved User Alert Banner */}
       {membership && membership.member.status === 'pending' && (
         <div className="bg-yellow-50 border-b border-yellow-200">
-          <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
@@ -228,32 +228,30 @@ export default async function PublicUnionPage({
 
       {/* Cover Photo - Facebook style */}
       <div className="relative bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative h-[300px] sm:h-[400px] bg-gradient-to-r from-blue-600 to-blue-700 rounded-b-lg overflow-hidden group">
-            {union.coverPhotoUrl ? (
-              <img
-                src={union.coverPhotoUrl}
-                alt={`${union.name} cover`}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <Users className="h-32 w-32 text-white/30" />
-              </div>
-            )}
-            {/* Admin edit button for cover photo */}
-            {isOwner && (
-              <button className="absolute bottom-4 right-4 bg-white hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg shadow-md flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera className="h-4 w-4" />
-                <span className="text-sm font-medium">Edit Cover Photo</span>
-              </button>
-            )}
-          </div>
+        <div className="relative h-[300px] sm:h-[400px] bg-gradient-to-r from-blue-600 to-blue-700 overflow-hidden group">
+          {union.coverPhotoUrl ? (
+            <img
+              src={union.coverPhotoUrl}
+              alt={`${union.name} cover`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <Users className="h-32 w-32 text-white/30" />
+            </div>
+          )}
+          {/* Admin edit button for cover photo */}
+          {isOwner && (
+            <button className="absolute bottom-4 right-4 bg-white hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg shadow-md flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera className="h-4 w-4" />
+              <span className="text-sm font-medium">Edit Cover Photo</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Profile Section - Facebook style */}
-      <div className="max-w-7xl mx-auto px-4 -mt-20 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
         <div className="bg-white rounded-lg shadow-sm pb-4">
           {/* Logo and Name */}
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 px-6 pt-6">
@@ -284,14 +282,64 @@ export default async function PublicUnionPage({
                 {(union.publicName || union.name).toUpperCase()}
                 {union.localNumber && !union.publicName && ` ${union.localNumber}`}
               </h1>
+              {union.description && (
+                <p className="text-gray-600 mt-2 text-sm sm:text-base">
+                  {union.description}
+                </p>
+              )}
             </div>
           </div>
+
+          {/* Contact Information Bar */}
+          {(union.email || union.phone || union.address || union.website) && (
+            <div className="px-6 pb-4 border-t pt-4">
+              <div className="flex flex-wrap gap-4 text-sm">
+                {union.email && (
+                  <a
+                    href={`mailto:${union.email}`}
+                    className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    <Mail className="h-4 w-4" />
+                    <span>{union.email}</span>
+                  </a>
+                )}
+                {union.phone && (
+                  <a
+                    href={`tel:${union.phone}`}
+                    className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    <Phone className="h-4 w-4" />
+                    <span>{union.phone}</span>
+                  </a>
+                )}
+                {union.address && (
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <MapPin className="h-4 w-4" />
+                    <span>{union.address}</span>
+                  </div>
+                )}
+                {union.website && (
+                  <a
+                    href={union.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    <Globe className="h-4 w-4" />
+                    <span className="hover:underline">
+                      {union.website.replace(/^https?:\/\//, '')}
+                    </span>
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
 
       {/* Content Area with Tabs */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <UnionProfileTabs
           union={union}
           posts={unionPosts}
@@ -306,7 +354,7 @@ export default async function PublicUnionPage({
 
       {/* Footer */}
       <div className="bg-white border-t mt-8">
-        <div className="max-w-7xl mx-auto px-4 py-6 text-center text-gray-500 text-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-gray-500 text-sm">
           <p>
             Powered by{' '}
             <a

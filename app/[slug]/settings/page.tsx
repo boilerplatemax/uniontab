@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileUpload } from '@/components/ui/file-upload';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import {
   ArrowLeft,
   Mail,
@@ -166,18 +167,6 @@ export default function UnionSettingsPage() {
             </div>
           </div>
 
-          {error && (
-            <div className="bg-red-50 text-red-700 p-4 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="bg-green-50 text-green-700 p-4 rounded-lg">
-              Successfully updated union information!
-            </div>
-          )}
-
           {/* Basic Information */}
           <Card className="shadow-xl">
             <CardHeader>
@@ -222,14 +211,12 @@ export default function UnionSettingsPage() {
 
               <div>
                 <Label htmlFor="about">About Your Union</Label>
-                <Textarea
-                  id="about"
-                  placeholder="Tell visitors about your union's history, mission, and values..."
-                  value={formData.about}
-                  onChange={(e) =>
-                    setFormData({ ...formData, about: e.target.value })
+                <RichTextEditor
+                  content={formData.about}
+                  onChange={(value) =>
+                    setFormData({ ...formData, about: value })
                   }
-                  rows={8}
+                  placeholder="Tell visitors about your union's history, mission, and values..."
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   Share your union's story, accomplishments, and goals

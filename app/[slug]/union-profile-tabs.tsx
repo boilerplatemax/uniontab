@@ -44,12 +44,12 @@ export function UnionProfileTabs({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections') || 'about';
+  const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections') || 'posts';
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
 
   const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events' | 'elections') => {
     const params = new URLSearchParams(searchParams);
-    if (tab === 'about') {
+    if (tab === 'posts') {
       params.delete('tab');
     } else {
       params.set('tab', tab);
@@ -190,16 +190,6 @@ export function UnionProfileTabs({
       <div className="border-b bg-white rounded-t-lg">
         <div className="flex gap-2 px-6 pt-2">
           <button
-            onClick={() => setActiveTab('about')}
-            className={`px-4 py-2 font-semibold transition-colors ${
-              activeTab === 'about'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            About
-          </button>
-          <button
             onClick={() => setActiveTab('posts')}
             className={`px-4 py-2 font-semibold transition-colors ${
               activeTab === 'posts'
@@ -208,6 +198,16 @@ export function UnionProfileTabs({
             }`}
           >
             Posts
+          </button>
+          <button
+            onClick={() => setActiveTab('about')}
+            className={`px-4 py-2 font-semibold transition-colors ${
+              activeTab === 'about'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            About
           </button>
           <button
             onClick={() => setActiveTab('files')}
@@ -243,77 +243,7 @@ export function UnionProfileTabs({
       </div>
 
       {/* Tab Content */}
-      <div className="grid lg:grid-cols-[380px_1fr] gap-4">
-        {/* Left Column - Info Card (visible on all tabs) */}
-        <div className="space-y-4">
-          {/* Description Card */}
-          {union.description && (
-            <Card className="shadow-sm">
-              <CardContent className="p-4">
-                <h2 className="font-semibold text-gray-900 mb-3">Introduction</h2>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  {union.description}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Contact Information Card */}
-          {(union.email || union.phone || union.address || union.website) && (
-            <Card className="shadow-sm">
-              <CardContent className="p-4">
-                <h2 className="font-semibold text-gray-900 mb-3">
-                  Contact Information
-                </h2>
-                <div className="space-y-3">
-                  {union.email && (
-                    <a
-                      href={`mailto:${union.email}`}
-                      className="flex items-center gap-3 text-sm hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                    >
-                      <Mail className="h-5 w-5 text-gray-600 flex-shrink-0" />
-                      <span className="text-gray-900 break-all">{union.email}</span>
-                    </a>
-                  )}
-
-                  {union.phone && (
-                    <a
-                      href={`tel:${union.phone}`}
-                      className="flex items-center gap-3 text-sm hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                    >
-                      <Phone className="h-5 w-5 text-gray-600 flex-shrink-0" />
-                      <span className="text-gray-900">{union.phone}</span>
-                    </a>
-                  )}
-
-                  {union.address && (
-                    <div className="flex items-start gap-3 text-sm p-2">
-                      <MapPin className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-900">{union.address}</span>
-                    </div>
-                  )}
-
-                  {union.website && (
-                    <a
-                      href={union.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-sm hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                    >
-                      <Globe className="h-5 w-5 text-gray-600 flex-shrink-0" />
-                      <span className="text-blue-600 hover:underline break-all">
-                        {union.website.replace(/^https?:\/\//, '')}
-                      </span>
-                    </a>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Right Column - Tab Content */}
-        <div className="space-y-4">
+      <div className="space-y-4">
           {/* About Tab */}
           {activeTab === 'about' && (
             <>
@@ -321,11 +251,10 @@ export function UnionProfileTabs({
                 <Card className="shadow-sm">
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold text-gray-900 mb-4">About</h2>
-                    <div className="text-gray-700 leading-relaxed space-y-4">
-                      {union.about.split('\n').map((paragraph, i) => (
-                        <p key={i}>{paragraph}</p>
-                      ))}
-                    </div>
+                    <RichTextContent
+                      content={union.about}
+                      className="text-gray-700 leading-relaxed"
+                    />
                   </CardContent>
                 </Card>
               ) : (
@@ -346,17 +275,15 @@ export function UnionProfileTabs({
             <>
               {/* Create Post Button (Admin only) */}
               {isOwner && (
-                <Card className="shadow-sm">
-                  <CardContent className="p-4">
-                    <Button
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                      onClick={() => setCreatePostOpen(true)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Post
-                    </Button>
-                  </CardContent>
-                </Card>
+                <div className="flex justify-start">
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => setCreatePostOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Post
+                  </Button>
+                </div>
               )}
 
               {/* Posts List */}
@@ -476,17 +403,15 @@ export function UnionProfileTabs({
             <>
               {/* Upload File Button (Admin only) */}
               {isOwner && (
-                <Card className="shadow-sm">
-                  <CardContent className="p-4">
-                    <Button
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                      onClick={() => setUploadFileOpen(true)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Upload File
-                    </Button>
-                  </CardContent>
-                </Card>
+                <div className="flex justify-start">
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => setUploadFileOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Upload File
+                  </Button>
+                </div>
               )}
 
               {/* Files List */}
@@ -606,36 +531,32 @@ export function UnionProfileTabs({
             <>
               {/* Create Event Button & View Toggle (Admin only) */}
               {isOwner && (
-                <Card className="shadow-sm">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <Button
-                        className="bg-blue-600 hover:bg-blue-700"
-                        onClick={() => setCreateEventOpen(true)}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Event
-                      </Button>
+                <div className="flex items-center justify-between">
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => setCreateEventOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Event
+                  </Button>
 
-                      <div className="flex gap-2">
-                        <Button
-                          variant={eventsView === 'list' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setEventsView('list')}
-                        >
-                          List
-                        </Button>
-                        <Button
-                          variant={eventsView === 'calendar' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setEventsView('calendar')}
-                        >
-                          Calendar
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={eventsView === 'list' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setEventsView('list')}
+                    >
+                      List
+                    </Button>
+                    <Button
+                      variant={eventsView === 'calendar' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setEventsView('calendar')}
+                    >
+                      Calendar
+                    </Button>
+                  </div>
+                </div>
               )}
 
               {/* Events View */}
@@ -677,7 +598,6 @@ export function UnionProfileTabs({
               </CardContent>
             </Card>
           )}
-        </div>
       </div>
 
       {/* Dialogs */}
