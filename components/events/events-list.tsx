@@ -211,7 +211,7 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete }: 
                             <img
                               src={event.mediaUrl}
                               alt={event.title}
-                              className="w-full h-48 object-cover rounded-lg"
+                              className="w-full max-h-96 object-contain rounded-lg bg-gray-100"
                             />
                           </div>
                         )}
