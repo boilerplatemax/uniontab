@@ -138,7 +138,7 @@ The UnionTab Team
       <p>You requested to reset your password for your UnionTab account.</p>
       <p>Click the button below to reset your password:</p>
       <center>
-        <a href="${resetUrl}" class="button">Reset Password</a>
+        <a href="${resetUrl}" class="button" style="display: inline-block; padding: 12px 30px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin: 20px 0;">Reset Password</a>
       </center>
       <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
         Or copy and paste this link into your browser:<br>
@@ -248,7 +248,7 @@ The UnionTab Team
       <p>Thank you for signing up for UnionTab! We're excited to have you on board.</p>
       <p>Please click the button below to verify your email address and complete your registration:</p>
       <center>
-        <a href="${verificationUrl}" class="button">Verify Email Address</a>
+        <a href="${verificationUrl}" class="button" style="display: inline-block; padding: 12px 30px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin: 20px 0;">Verify Email Address</a>
       </center>
       <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
         Or copy and paste this link into your browser:<br>

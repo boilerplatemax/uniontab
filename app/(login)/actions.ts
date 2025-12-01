@@ -258,7 +258,8 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
       name: finalUnionName,
       slug: finalSlug,
       localNumber: localNumber,
-      publicName: publicName || null
+      publicName: publicName || null,
+      publishedAt: new Date() // Publish the union immediately upon creation
     };
 
     [createdUnion] = await db.insert(unions).values(newUnion).returning();
