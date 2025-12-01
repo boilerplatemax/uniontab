@@ -5,7 +5,7 @@ import { eq, and, desc, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { AnnouncementsContent } from './announcements-content';
 import { UnionNavbar } from '../union-navbar';
-import { signOut } from '@/app/auth-actions';
+import { signOut } from '@/app/(login)/actions';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
