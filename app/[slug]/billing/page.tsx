@@ -1,9 +1,11 @@
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, members } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { unions, members, users } from '@/lib/db/schema';
+import { eq, and, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { BillingContent } from './billing-content';
+import { UnionNavbar } from '../union-navbar';
+import { signOut } from '@/app/auth-actions';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -15,14 +17,30 @@ async function getUnionBySlug(slug: string) {
   return union;
 }
 
-async function checkOwnership(unionId: number, userId: number) {
+async function getMembership(unionId: number, userId: number) {
   const [membership] = await db
-    .select()
+    .select({
+      member: members,
+      user: {
+        id: users.id,
+        name: users.name,
+      },
+    })
     .from(members)
+    .innerJoin(users, eq(members.userId, users.id))
     .where(and(eq(members.unionId, unionId), eq(members.userId, userId)))
     .limit(1);
 
-  return membership?.role === 'owner';
+  return membership;
+}
+
+async function getPendingMembersCount(unionId: number) {
+  const [result] = await db
+    .select({ value: count() })
+    .from(members)
+    .where(and(eq(members.unionId, unionId), eq(members.status, 'pending')));
+
+  return Number(result.value);
 }
 
 export default async function BillingPage({
@@ -43,11 +61,30 @@ export default async function BillingPage({
     notFound();
   }
 
-  const isOwner = await checkOwnership(union.id, user.id);
+  const membership = await getMembership(union.id, user.id);
 
-  if (!isOwner) {
+  if (!membership || membership.member.role !== 'owner') {
     redirect(`/${slug}`);
   }
 
-  return <BillingContent slug={slug} union={union} />;
+  const pendingMembersCount = await getPendingMembersCount(union.id);
+
+  async function handleSignOut() {
+    'use server';
+    await signOut();
+  }
+
+  return (
+    <>
+      <UnionNavbar
+        slug={slug}
+        unionName={union.name}
+        localNumber={union.localNumber}
+        membership={membership}
+        handleSignOut={handleSignOut}
+        pendingMembersCount={pendingMembersCount}
+      />
+      <BillingContent slug={slug} union={union} />
+    </>
+  );
 }

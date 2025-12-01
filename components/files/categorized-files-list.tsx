@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Eye, Edit, Trash2, Loader2, ChevronDown, ChevronRight, FolderOpen, GripVertical } from 'lucide-react';
+import { FileText, Download, Eye, Edit, Trash2, Loader2, ChevronDown, ChevronRight, FolderOpen, GripVertical, Pencil } from 'lucide-react';
 import type { File as FileType, FileCategory } from '@/lib/db/schema';
 import { formatDate } from '@/lib/utils/date';
 import {
@@ -14,6 +14,7 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -23,6 +24,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { RenameCategoryDialog } from './rename-category-dialog';
 
 interface CategorizedFilesListProps {
   files: (FileType & { createdBy: { name: string } })[];
@@ -62,14 +64,18 @@ function SortableFileItem({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.3 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+      className={`flex items-center gap-4 p-4 transition-all ${
+        isDragging
+          ? 'bg-blue-50 border-2 border-blue-400 border-dashed rounded-lg scale-105 shadow-lg'
+          : 'hover:bg-gray-50 border-2 border-transparent'
+      }`}
     >
       {isOwner && (
         <button
@@ -162,6 +168,7 @@ function SortableCategory({
   onDelete,
   deletingFile,
   onReorderFiles,
+  onRenameCategory,
 }: {
   category: string;
   categoryFiles: (FileType & { createdBy: { name: string } })[];
@@ -173,6 +180,7 @@ function SortableCategory({
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
   onReorderFiles: (category: string, files: (FileType & { createdBy: { name: string } })[]) => void;
+  onRenameCategory: (category: string) => void;
 }) {
   const {
     attributes,
@@ -186,7 +194,6 @@ function SortableCategory({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
   };
 
   const sensors = useSensors(
@@ -209,7 +216,15 @@ function SortableCategory({
   };
 
   return (
-    <Card ref={setNodeRef} style={style} className="shadow-sm">
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={`transition-all ${
+        isDragging
+          ? 'shadow-2xl scale-105 opacity-90 ring-4 ring-blue-400 ring-offset-2'
+          : 'shadow-sm hover:shadow-md'
+      }`}
+    >
       <CardContent className="p-0">
         {/* Category Header */}
         <div className="flex items-center gap-3 p-4 border-b">
@@ -239,6 +254,20 @@ function SortableCategory({
               {categoryFiles.length} {categoryFiles.length === 1 ? 'file' : 'files'}
             </span>
           </button>
+          {isOwner && category !== 'Uncategorized' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRenameCategory(category);
+              }}
+              title="Rename category"
+              className="h-8 w-8 p-0"
+            >
+              <Pencil className="h-4 w-4 text-gray-600" />
+            </Button>
+          )}
         </div>
 
         {/* Category Files */}
@@ -284,6 +313,8 @@ export function CategorizedFilesList({
 }: CategorizedFilesListProps) {
   const [categoryOrders, setCategoryOrders] = useState<FileCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [renameCategoryDialog, setRenameCategoryDialog] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch and sync category orders
   useEffect(() => {
@@ -307,7 +338,13 @@ export function CategorizedFilesList({
     };
 
     syncCategories();
-  }, [unionId]);
+  }, [unionId, refreshKey]);
+
+  const handleRenameSuccess = () => {
+    setRefreshKey((prev) => prev + 1);
+    // Trigger a refresh in the parent component
+    window.location.reload();
+  };
 
   // Group files by category
   const categorizedFiles = files.reduce((acc, file) => {
@@ -478,11 +515,19 @@ export function CategorizedFilesList({
                 onDelete={onDelete}
                 deletingFile={deletingFile}
                 onReorderFiles={handleFileReorder}
+                onRenameCategory={(cat) => setRenameCategoryDialog(cat)}
               />
             );
           })}
         </div>
       </SortableContext>
+      <RenameCategoryDialog
+        open={renameCategoryDialog !== null}
+        onOpenChange={(open) => !open && setRenameCategoryDialog(null)}
+        category={renameCategoryDialog}
+        unionId={unionId}
+        onSuccess={handleRenameSuccess}
+      />
     </DndContext>
   );
 }
