@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -33,9 +33,31 @@ export function UploadFileDialog({
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState('');
   const [fileName, setFileName] = useState('');
+  const [category, setCategory] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
+
+  // Fetch existing categories when dialog opens
+  useEffect(() => {
+    if (open && unionId) {
+      fetch('/api/files/categories/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unionId }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.categories) {
+            setCategories(data.categories.map((c: any) => c.name));
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching categories:', error);
+        });
+    }
+  }, [open, unionId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +82,7 @@ export function UploadFileDialog({
           fileType: uploadedFile.type || 'application/octet-stream',
           fileSize: uploadedFile.size,
           isPrivate,
+          category: category || null,
         }),
       });
 
@@ -72,6 +95,7 @@ export function UploadFileDialog({
       setUploadedFile(null);
       setFileUrl('');
       setFileName('');
+      setCategory('');
       setIsPrivate(false);
       onOpenChange(false);
       onSuccess();
@@ -118,6 +142,27 @@ export function UploadFileDialog({
                 onChange={(e) => setFileName(e.target.value)}
                 placeholder="Leave blank to use original filename"
               />
+            </div>
+
+            <div>
+              <Label htmlFor="category">Category (Optional)</Label>
+              <Input
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="e.g., Bylaws, Contracts, Meeting Minutes"
+                list="category-suggestions"
+              />
+              {categories.length > 0 && (
+                <datalist id="category-suggestions">
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
+              )}
+              <p className="text-sm text-gray-500 mt-1">
+                Group files into categories for better organization
+              </p>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
