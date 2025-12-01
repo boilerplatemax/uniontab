@@ -495,15 +495,18 @@ export default function OnboardingPage() {
             Previous
           </Button>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             {currentStep !== 'welcome' && currentStep !== 'preview' && (
-              <Button
-                variant="ghost"
-                onClick={handleSkip}
+              <button
+                onClick={() => {
+                  // Skip all remaining steps and go to preview
+                  setCurrentStep('preview');
+                }}
                 disabled={loading}
+                className="text-sm text-gray-500 hover:text-gray-700 underline"
               >
-                Skip
-              </Button>
+                Skip all
+              </button>
             )}
 
             {currentStep === 'preview' ? (
@@ -522,25 +525,14 @@ export default function OnboardingPage() {
                 )}
               </Button>
             ) : (
-              <>
-                {currentStep !== 'welcome' && (
-                  <Button
-                    onClick={handleSave}
-                    disabled={loading}
-                    variant="outline"
-                  >
-                    {loading ? 'Saving...' : 'Save & Continue'}
-                  </Button>
-                )}
-                <Button
-                  onClick={currentStep === 'welcome' ? handleNext : handleSave}
-                  disabled={loading}
-                  className="gap-2"
-                >
-                  {loading ? 'Saving...' : 'Continue'}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </>
+              <Button
+                onClick={currentStep === 'welcome' ? handleNext : handleSave}
+                disabled={loading}
+                className="gap-2"
+              >
+                {loading ? 'Saving...' : 'Next'}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
             )}
           </div>
         </div>
