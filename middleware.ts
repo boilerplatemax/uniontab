@@ -1,13 +1,29 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { signToken, verifyToken } from '@/lib/auth/session';
+import { db } from '@/lib/db/drizzle';
+import { users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 const protectedRoutes = '/dashboard';
+const emailVerificationExemptRoutes = [
+  '/auth/verify-email',
+  '/auth/verify-pending',
+  '/auth/resend-verification',
+  '/sign-in',
+  '/sign-up',
+  '/api/auth/verify-email',
+  '/api/auth/resend-verification',
+  '/api/user',
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
-  const isProtectedRoute = pathname.startsWith(protectedRoutes);
+  const isProtectedRoute = pathname.startsWith(protectedRoutes) || pathname === '/onboarding';
+  const isEmailVerificationExempt = emailVerificationExemptRoutes.some(route =>
+    pathname.startsWith(route)
+  );
 
   if (isProtectedRoute && !sessionCookie) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
@@ -31,6 +47,21 @@ export async function middleware(request: NextRequest) {
         sameSite: 'lax',
         expires: expiresInOneDay
       });
+
+      // Check email verification for protected routes (except exempted routes)
+      if (isProtectedRoute && !isEmailVerificationExempt) {
+        const userId = parsed.user.id;
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+
+        // Only require email verification for owners
+        if (user && user.role === 'owner' && !user.emailVerified) {
+          return NextResponse.redirect(new URL('/auth/verify-pending', request.url));
+        }
+      }
     } catch (error) {
       console.error('Error updating session:', error);
       res.cookies.delete('session');

@@ -25,6 +25,8 @@ import {
   validatedAction,
   validatedActionWithUser
 } from '@/lib/auth/middleware';
+import { sendEmailVerification } from '@/lib/email/sendgrid';
+import crypto from 'crypto';
 
 async function logActivity(
   unionId: number | null | undefined,
@@ -134,11 +136,19 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
   const passwordHash = await hashPassword(password);
 
+  // Generate email verification token (24 hours expiry)
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationExpiry = new Date();
+  verificationExpiry.setHours(verificationExpiry.getHours() + 24);
+
   const newUser: NewUser = {
     name,
     email,
     passwordHash,
-    role: 'owner' // Default role, will be overridden if there's an invitation
+    role: 'owner', // Default role, will be overridden if there's an invitation
+    emailVerified: false,
+    emailVerificationToken: verificationToken,
+    emailVerificationExpiry: verificationExpiry,
   };
 
   const [createdUser] = await db.insert(users).values(newUser).returning();
@@ -281,10 +291,25 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     setSession(createdUser)
   ]);
 
+  // Send verification email for owners (new signups without invitation)
+  if (!inviteId && userRole === 'owner') {
+    try {
+      await sendEmailVerification(createdUser.email, verificationToken, createdUser.name);
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      // Continue with signup even if email fails
+    }
+  }
+
   const redirectTo = formData.get('redirect') as string | null;
   if (redirectTo === 'checkout') {
     const priceId = formData.get('priceId') as string;
     return createCheckoutSession({ team: createdUnion, priceId });
+  }
+
+  // Redirect to verification pending page for new owners
+  if (!inviteId && userRole === 'owner') {
+    redirect('/auth/verify-pending');
   }
 
   // Redirect to onboarding for new sign-ups

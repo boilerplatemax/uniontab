@@ -161,3 +161,113 @@ The UnionTab Team
 
   await sendEmail({ to: email, subject, text, html });
 }
+
+export async function sendEmailVerification(
+  email: string,
+  verificationToken: string,
+  name: string
+) {
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  const verificationUrl = `${baseUrl}/auth/verify-email?token=${verificationToken}`;
+
+  const subject = 'Verify Your Email - UnionTab';
+
+  const text = `
+Hi ${name},
+
+Thank you for signing up for UnionTab!
+
+Please verify your email address by clicking the link below:
+${verificationUrl}
+
+This link will expire in 24 hours.
+
+If you didn't create an account with UnionTab, please ignore this email.
+
+Thanks,
+The UnionTab Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .container {
+      background-color: #f9fafb;
+      border-radius: 8px;
+      padding: 30px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #2563eb;
+      margin: 0;
+    }
+    .content {
+      background-color: white;
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 30px;
+      background-color: #2563eb;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>UnionTab</h1>
+    </div>
+    <div class="content">
+      <h2>Verify Your Email Address</h2>
+      <p>Hi ${name},</p>
+      <p>Thank you for signing up for UnionTab! We're excited to have you on board.</p>
+      <p>Please click the button below to verify your email address and complete your registration:</p>
+      <center>
+        <a href="${verificationUrl}" class="button">Verify Email Address</a>
+      </center>
+      <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
+        Or copy and paste this link into your browser:<br>
+        <a href="${verificationUrl}" style="word-break: break-all;">${verificationUrl}</a>
+      </p>
+      <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
+        This link will expire in 24 hours.
+      </p>
+      <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
+        If you didn't create an account with UnionTab, please ignore this email.
+      </p>
+    </div>
+    <div class="footer">
+      <p>© ${new Date().getFullYear()} UnionTab. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  await sendEmail({ to: email, subject, text, html });
+}

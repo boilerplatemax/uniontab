@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Mail, ArrowLeft } from 'lucide-react';
 
-export default function ForgotPasswordPage() {
+export default function ResendVerificationPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/forgot-password', {
+      const response = await fetch('/api/auth/resend-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to send reset email');
+        throw new Error(data.error || 'Failed to send verification email');
       }
 
       setSuccess(true);
@@ -52,10 +52,10 @@ export default function ForgotPasswordPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-center text-gray-600">
-              If an account exists with the email <strong>{email}</strong>, you will receive a password reset link shortly.
+              If an account exists with the email <strong>{email}</strong>, you will receive a verification link shortly.
             </p>
             <p className="text-center text-sm text-gray-500">
-              The link will expire in 1 hour.
+              The link will expire in 24 hours.
             </p>
             <div className="pt-4">
               <Link href="/sign-in">
@@ -75,9 +75,9 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Forgot Password?</CardTitle>
+          <CardTitle className="text-2xl">Resend Verification Email</CardTitle>
           <p className="text-gray-600 mt-2">
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we'll send you a new verification link.
           </p>
         </CardHeader>
         <CardContent>
@@ -114,7 +114,7 @@ export default function ForgotPasswordPage() {
               ) : (
                 <>
                   <Mail className="mr-2 h-4 w-4" />
-                  Send Reset Link
+                  Send Verification Link
                 </>
               )}
             </Button>
