@@ -32,7 +32,7 @@ export function BillingContent({ slug, union }: BillingContentProps) {
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to {union.name}
+            Back to {union.publicName || `${union.name}${union.localNumber ? ` ${union.localNumber}` : ''}`}
           </Link>
         </div>
       </div>

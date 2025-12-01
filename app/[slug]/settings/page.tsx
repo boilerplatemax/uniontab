@@ -109,7 +109,7 @@ export default function UnionSettingsPage() {
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Union Page
+            Back to {union.publicName || `${union.name}${union.localNumber ? ` ${union.localNumber}` : ''}`}
           </Button>
           <h1 className="text-3xl font-bold text-gray-900">
             Edit Union Information
