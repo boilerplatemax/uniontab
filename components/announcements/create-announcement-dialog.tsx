@@ -45,7 +45,7 @@ export function CreateAnnouncementDialog({
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [attachments, setAttachments] = useState<AnnouncementAttachment[]>([]);
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -96,7 +96,7 @@ export function CreateAnnouncementDialog({
       setContent('');
       setImageUrl('');
       setAttachments([]);
-      setIsPrivate(false);
+      setIsPrivate(true);
       onOpenChange(false);
       onSuccess();
     } catch (err: any) {
