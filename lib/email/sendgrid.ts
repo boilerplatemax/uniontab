@@ -9,6 +9,14 @@ if (apiKey) {
 const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'noreply@uniontab.com';
 const FROM_NAME = process.env.SENDGRID_FROM_NAME || 'UnionTab';
 
+// Validate SendGrid configuration
+if (apiKey && !process.env.SENDGRID_FROM_EMAIL) {
+  console.warn(
+    'Warning: SENDGRID_FROM_EMAIL not set. Using default. ' +
+    'Make sure to verify this email in SendGrid: https://sendgrid.com/docs/for-developers/sending-email/sender-identity/'
+  );
+}
+
 interface SendEmailOptions {
   to: string;
   subject: string;
