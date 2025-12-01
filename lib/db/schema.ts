@@ -50,7 +50,6 @@ export const members = pgTable('members', {
   id: serial('id').primaryKey(),
   userId: integer('user_id')
     .notNull()
-    .unique()
     .references(() => users.id),
   unionId: integer('union_id')
     .notNull()
@@ -58,7 +57,9 @@ export const members = pgTable('members', {
   role: varchar('role', { length: 50 }).notNull(),
   status: varchar('status', { length: 20 }).notNull().default('pending'),
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
-});
+}, (table) => ({
+  uniqueUserUnion: unique('idx_members_unique_user_union').on(table.unionId, table.userId),
+}));
 
 export const activityLogs = pgTable('activity_logs', {
   id: serial('id').primaryKey(),

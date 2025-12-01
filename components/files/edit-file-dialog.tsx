@@ -16,6 +16,7 @@ import { Loader2 } from 'lucide-react';
 
 interface FileData {
   id: number;
+  unionId: number;
   originalName: string;
   isPrivate: boolean;
   category?: string | null;
@@ -39,6 +40,7 @@ export function EditFileDialog({
   const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
     if (file) {
@@ -47,6 +49,26 @@ export function EditFileDialog({
       setCategory(file.category || '');
     }
   }, [file]);
+
+  // Fetch existing categories when dialog opens
+  useEffect(() => {
+    if (open && file) {
+      fetch('/api/files/categories/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unionId: file.unionId }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.categories) {
+            setCategories(data.categories.map((c: any) => c.name));
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching categories:', error);
+        });
+    }
+  }, [open, file]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +135,15 @@ export function EditFileDialog({
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="e.g., Bylaws, Contracts, Meeting Minutes"
+                list="category-suggestions"
               />
+              {categories.length > 0 && (
+                <datalist id="category-suggestions">
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
+              )}
               <p className="text-sm text-gray-500 mt-1">
                 Group files into categories for better organization
               </p>
