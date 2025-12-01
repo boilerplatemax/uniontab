@@ -143,6 +143,18 @@ export const files = pgTable('files', {
     .references(() => users.id),
 });
 
+export const fileCategories = pgTable('file_categories', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id),
+  name: varchar('name', { length: 100 }).notNull(),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  uniqueUnionCategory: unique().on(table.unionId, table.name),
+}));
+
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
@@ -420,6 +432,13 @@ export const filesRelations = relations(files, ({ one }) => ({
   }),
 }));
 
+export const fileCategoriesRelations = relations(fileCategories, ({ one }) => ({
+  union: one(unions, {
+    fields: [fileCategories.unionId],
+    references: [unions.id],
+  }),
+}));
+
 export const eventsRelations = relations(events, ({ one }) => ({
   union: one(unions, {
     fields: [events.unionId],
@@ -573,6 +592,8 @@ export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 export type File = typeof files.$inferSelect;
 export type NewFile = typeof files.$inferInsert;
+export type FileCategory = typeof fileCategories.$inferSelect;
+export type NewFileCategory = typeof fileCategories.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type PostLike = typeof postLikes.$inferSelect;

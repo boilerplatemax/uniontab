@@ -473,6 +473,7 @@ export function UnionProfileTabs({
                   }}
                   onDelete={handleDeleteFile}
                   deletingFile={deletingFile}
+                  unionId={union.id}
                 />
               ) : (
                 <Card className="shadow-sm">

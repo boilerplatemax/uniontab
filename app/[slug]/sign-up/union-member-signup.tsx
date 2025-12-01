@@ -72,11 +72,13 @@ export function UnionMemberSignUp({
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               {union.logoUrl ? (
-                <img
-                  src={union.logoUrl}
-                  alt={`${unionDisplayName} logo`}
-                  className="h-20 w-20 rounded-full object-cover border-2 border-blue-600"
-                />
+                <div className="h-24 max-w-xs flex items-center justify-center">
+                  <img
+                    src={union.logoUrl}
+                    alt={`${unionDisplayName} logo`}
+                    className="max-h-24 max-w-full w-auto h-auto object-contain"
+                  />
+                </div>
               ) : (
                 <Users className="h-12 w-12 text-blue-600" />
               )}

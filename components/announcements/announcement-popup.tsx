@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, Download, FileText } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import type { Announcement, AnnouncementAttachment } from '@/lib/db/schema';
 
@@ -43,20 +43,13 @@ export function AnnouncementPopup({ announcement, onDismiss }: AnnouncementPopup
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl pr-8">{announcement.title}</DialogTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute right-4 top-4"
-            onClick={handleClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+      <DialogContent className="max-w-3xl w-[95vw] sm:w-full max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-0">
+          <DialogTitle className="text-xl sm:text-2xl pr-8">{announcement.title}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="overflow-y-auto flex-1 px-4 sm:px-6 py-4">
+          <div className="space-y-4">
           {/* Featured Image */}
           {announcement.imageUrl && (
             <div className="rounded-lg overflow-hidden">
@@ -103,15 +96,17 @@ export function AnnouncementPopup({ announcement, onDismiss }: AnnouncementPopup
             </div>
           )}
 
-          {/* Close Button */}
-          <div className="border-t pt-4">
-            <Button
-              onClick={handleClose}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              Got it, thanks!
-            </Button>
           </div>
+        </div>
+
+        {/* Close Button */}
+        <div className="border-t px-4 sm:px-6 py-4">
+          <Button
+            onClick={handleClose}
+            className="w-full bg-blue-600 hover:bg-blue-700"
+          >
+            Got it, thanks!
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

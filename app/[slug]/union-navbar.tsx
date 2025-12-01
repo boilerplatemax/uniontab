@@ -32,12 +32,16 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
       <nav className="sticky top-0 z-50 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
-            <div className="flex items-center gap-2">
+            <Link
+              href={`/${slug}`}
+              prefetch={true}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+            >
               <Users className="h-6 w-6 text-blue-600" />
               <span className="font-semibold text-gray-900 text-lg">
                 {displayName}
               </span>
-            </div>
+            </Link>
             <div className="flex items-center gap-2">
               {membership ? (
                 <>
