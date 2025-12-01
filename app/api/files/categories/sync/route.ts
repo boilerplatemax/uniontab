@@ -14,6 +14,8 @@ export async function POST(request: Request) {
 
     const { unionId } = await request.json();
 
+    console.log('[Categories Sync] Request for unionId:', unionId, 'by user:', user.id);
+
     if (!unionId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -68,6 +70,9 @@ export async function POST(request: Request) {
       .from(fileCategories)
       .where(eq(fileCategories.unionId, unionId))
       .orderBy(fileCategories.sortOrder);
+
+    console.log('[Categories Sync] Returning', allCategories.length, 'categories for unionId:', unionId,
+                'Categories:', allCategories.map(c => `${c.name} (unionId: ${c.unionId})`).join(', '));
 
     return NextResponse.json({ success: true, categories: allCategories });
   } catch (error) {

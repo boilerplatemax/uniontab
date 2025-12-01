@@ -3,27 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Eye, Edit, Trash2, Loader2, ChevronDown, ChevronRight, FolderOpen, GripVertical, Pencil } from 'lucide-react';
+import { FileText, Download, Eye, Edit, Trash2, Loader2, ChevronDown, ChevronRight, FolderOpen, Pencil, ArrowUp, ArrowDown } from 'lucide-react';
 import type { File as FileType, FileCategory } from '@/lib/db/schema';
 import { formatDate } from '@/lib/utils/date';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-  DragOverlay,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { RenameCategoryDialog } from './rename-category-dialog';
 
 interface CategorizedFilesListProps {
@@ -36,14 +18,18 @@ interface CategorizedFilesListProps {
   unionId: number;
 }
 
-// Sortable File Item Component
-function SortableFileItem({
+// File Item Component with Arrow Controls
+function FileItem({
   file,
   isOwner,
   isApprovedMember,
   onEdit,
   onDelete,
   deletingFile,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
 }: {
   file: FileType & { createdBy: { name: string } };
   isOwner: boolean;
@@ -51,40 +37,36 @@ function SortableFileItem({
   onEdit: (file: FileType & { createdBy: { name: string } }) => void;
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  isFirst: boolean;
+  isLast: boolean;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: file.id.toString() });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.3 : 1,
-  };
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`flex items-center gap-4 p-4 transition-all ${
-        isDragging
-          ? 'bg-blue-50 border-2 border-blue-400 border-dashed rounded-lg scale-105 shadow-lg'
-          : 'hover:bg-gray-50 border-2 border-transparent'
-      }`}
-    >
+    <div className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
       {isOwner && (
-        <button
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
-        >
-          <GripVertical className="h-5 w-5" />
-        </button>
+        <div className="flex flex-col gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onMoveUp}
+            disabled={isFirst}
+            className="h-6 w-6 p-0"
+            title="Move up"
+          >
+            <ArrowUp className={`h-4 w-4 ${isFirst ? 'text-gray-300' : 'text-gray-600'}`} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onMoveDown}
+            disabled={isLast}
+            className="h-6 w-6 p-0"
+            title="Move down"
+          >
+            <ArrowDown className={`h-4 w-4 ${isLast ? 'text-gray-300' : 'text-gray-600'}`} />
+          </Button>
+        </div>
       )}
       <FileText className="h-8 w-8 text-blue-600 flex-shrink-0" />
       <div className="flex-1 min-w-0">
@@ -156,8 +138,8 @@ function SortableFileItem({
   );
 }
 
-// Sortable Category Component
-function SortableCategory({
+// Category Component with Arrow Controls
+function CategorySection({
   category,
   categoryFiles,
   isExpanded,
@@ -167,8 +149,13 @@ function SortableCategory({
   onEdit,
   onDelete,
   deletingFile,
-  onReorderFiles,
+  onMoveFileUp,
+  onMoveFileDown,
   onRenameCategory,
+  onMoveCategoryUp,
+  onMoveCategoryDown,
+  isFirstCategory,
+  isLastCategory,
 }: {
   category: string;
   categoryFiles: (FileType & { createdBy: { name: string } })[];
@@ -179,63 +166,42 @@ function SortableCategory({
   onEdit: (file: FileType & { createdBy: { name: string } }) => void;
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
-  onReorderFiles: (category: string, files: (FileType & { createdBy: { name: string } })[]) => void;
+  onMoveFileUp: (fileId: number) => void;
+  onMoveFileDown: (fileId: number) => void;
   onRenameCategory: (category: string) => void;
+  onMoveCategoryUp: () => void;
+  onMoveCategoryDown: () => void;
+  isFirstCategory: boolean;
+  isLastCategory: boolean;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: category });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const oldIndex = categoryFiles.findIndex((f) => f.id.toString() === active.id);
-      const newIndex = categoryFiles.findIndex((f) => f.id.toString() === over.id);
-
-      const reorderedFiles = arrayMove(categoryFiles, oldIndex, newIndex);
-      onReorderFiles(category, reorderedFiles);
-    }
-  };
-
   return (
-    <Card
-      ref={setNodeRef}
-      style={style}
-      className={`transition-all ${
-        isDragging
-          ? 'shadow-2xl scale-105 opacity-90 ring-4 ring-blue-400 ring-offset-2'
-          : 'shadow-sm hover:shadow-md'
-      }`}
-    >
+    <Card className="shadow-sm hover:shadow-md transition-all">
       <CardContent className="p-0">
         {/* Category Header */}
         <div className="flex items-center gap-3 p-4 border-b">
-          {isOwner && (
-            <button
-              {...attributes}
-              {...listeners}
-              className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
-            >
-              <GripVertical className="h-5 w-5" />
-            </button>
+          {isOwner && category !== 'Uncategorized' && (
+            <div className="flex flex-col gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onMoveCategoryUp}
+                disabled={isFirstCategory}
+                className="h-6 w-6 p-0"
+                title="Move category up"
+              >
+                <ArrowUp className={`h-4 w-4 ${isFirstCategory ? 'text-gray-300' : 'text-gray-600'}`} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onMoveCategoryDown}
+                disabled={isLastCategory}
+                className="h-6 w-6 p-0"
+                title="Move category down"
+              >
+                <ArrowDown className={`h-4 w-4 ${isLastCategory ? 'text-gray-300' : 'text-gray-600'}`} />
+              </Button>
+            </div>
           )}
           <button
             onClick={onToggle}
@@ -272,30 +238,23 @@ function SortableCategory({
 
         {/* Category Files */}
         {isExpanded && (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={categoryFiles.map((f) => f.id.toString())}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="divide-y">
-                {categoryFiles.map((file) => (
-                  <SortableFileItem
-                    key={file.id}
-                    file={file}
-                    isOwner={isOwner}
-                    isApprovedMember={isApprovedMember}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                    deletingFile={deletingFile}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+          <div className="divide-y">
+            {categoryFiles.map((file, index) => (
+              <FileItem
+                key={file.id}
+                file={file}
+                isOwner={isOwner}
+                isApprovedMember={isApprovedMember}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                deletingFile={deletingFile}
+                onMoveUp={() => onMoveFileUp(file.id)}
+                onMoveDown={() => onMoveFileDown(file.id)}
+                isFirst={index === 0}
+                isLast={index === categoryFiles.length - 1}
+              />
+            ))}
+          </div>
         )}
       </CardContent>
     </Card>
@@ -400,58 +359,93 @@ export function CategorizedFilesList({
     return !isApprovedMember && categoryFiles.every((file) => file.isPrivate);
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  const handleMoveCategoryUp = async (category: string) => {
+    const currentIndex = sortedCategories.indexOf(category);
+    if (currentIndex <= 0) return;
 
-  const handleCategoryDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
+    const newCategories = [...sortedCategories];
+    [newCategories[currentIndex - 1], newCategories[currentIndex]] =
+      [newCategories[currentIndex], newCategories[currentIndex - 1]];
 
-    if (over && active.id !== over.id) {
-      const oldIndex = sortedCategories.findIndex((c) => c === active.id);
-      const newIndex = sortedCategories.findIndex((c) => c === over.id);
+    const categoryOrders = newCategories.map((name, index) => ({
+      name,
+      sortOrder: index,
+    }));
 
-      const reorderedCategories = arrayMove(sortedCategories, oldIndex, newIndex);
+    try {
+      await fetch('/api/files/categories/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unionId, categoryOrders }),
+      });
 
-      // Update category orders in database
-      const categoryOrders = reorderedCategories.map((name, index) => ({
-        name,
-        sortOrder: index,
-      }));
+      // Refresh category orders
+      const response = await fetch('/api/files/categories/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unionId }),
+      });
 
-      try {
-        await fetch('/api/files/categories/reorder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ unionId, categoryOrders }),
-        });
-
-        // Refresh category orders
-        const response = await fetch('/api/files/categories/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ unionId }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCategoryOrders(data.categories || []);
-        }
-      } catch (error) {
-        console.error('Error reordering categories:', error);
+      if (response.ok) {
+        const data = await response.json();
+        setCategoryOrders(data.categories || []);
       }
+    } catch (error) {
+      console.error('Error reordering categories:', error);
     }
   };
 
-  const handleFileReorder = async (
-    category: string,
-    reorderedFiles: (FileType & { createdBy: { name: string } })[]
-  ) => {
-    // Update file sort orders in database
-    const fileUpdates = reorderedFiles.map((file, index) => ({
+  const handleMoveCategoryDown = async (category: string) => {
+    const currentIndex = sortedCategories.indexOf(category);
+    if (currentIndex < 0 || currentIndex >= sortedCategories.length - 1) return;
+
+    const newCategories = [...sortedCategories];
+    [newCategories[currentIndex], newCategories[currentIndex + 1]] =
+      [newCategories[currentIndex + 1], newCategories[currentIndex]];
+
+    const categoryOrders = newCategories.map((name, index) => ({
+      name,
+      sortOrder: index,
+    }));
+
+    try {
+      await fetch('/api/files/categories/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unionId, categoryOrders }),
+      });
+
+      // Refresh category orders
+      const response = await fetch('/api/files/categories/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unionId }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCategoryOrders(data.categories || []);
+      }
+    } catch (error) {
+      console.error('Error reordering categories:', error);
+    }
+  };
+
+  const handleMoveFileUp = async (fileId: number) => {
+    const file = files.find((f) => f.id === fileId);
+    if (!file) return;
+
+    const category = file.category || 'Uncategorized';
+    const categoryFiles = categorizedFiles[category];
+    const currentIndex = categoryFiles.findIndex((f) => f.id === fileId);
+
+    if (currentIndex <= 0) return;
+
+    const newFiles = [...categoryFiles];
+    [newFiles[currentIndex - 1], newFiles[currentIndex]] =
+      [newFiles[currentIndex], newFiles[currentIndex - 1]];
+
+    const fileUpdates = newFiles.map((file, index) => ({
       fileId: file.id,
       sortOrder: index,
     }));
@@ -464,7 +458,44 @@ export function CategorizedFilesList({
       });
 
       // Update local state
-      categorizedFiles[category] = reorderedFiles;
+      categorizedFiles[category] = newFiles;
+      // Force re-render
+      setRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      console.error('Error reordering files:', error);
+    }
+  };
+
+  const handleMoveFileDown = async (fileId: number) => {
+    const file = files.find((f) => f.id === fileId);
+    if (!file) return;
+
+    const category = file.category || 'Uncategorized';
+    const categoryFiles = categorizedFiles[category];
+    const currentIndex = categoryFiles.findIndex((f) => f.id === fileId);
+
+    if (currentIndex < 0 || currentIndex >= categoryFiles.length - 1) return;
+
+    const newFiles = [...categoryFiles];
+    [newFiles[currentIndex], newFiles[currentIndex + 1]] =
+      [newFiles[currentIndex + 1], newFiles[currentIndex]];
+
+    const fileUpdates = newFiles.map((file, index) => ({
+      fileId: file.id,
+      sortOrder: index,
+    }));
+
+    try {
+      await fetch('/api/files/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileUpdates }),
+      });
+
+      // Update local state
+      categorizedFiles[category] = newFiles;
+      // Force re-render
+      setRefreshKey((prev) => prev + 1);
     } catch (error) {
       console.error('Error reordering files:', error);
     }
@@ -482,45 +513,49 @@ export function CategorizedFilesList({
     return null;
   }
 
+  // Filter out "Uncategorized" for first/last checks
+  const reorderableCategories = sortedCategories.filter((c) => c !== 'Uncategorized');
+
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleCategoryDragEnd}
-    >
-      <SortableContext
-        items={sortedCategories}
-        strategy={verticalListSortingStrategy}
-      >
-        <div className="space-y-4">
-          {sortedCategories.map((category) => {
-            // Skip hidden categories
-            if (isCategoryHidden(category)) {
-              return null;
-            }
+    <>
+      <div className="space-y-4">
+        {sortedCategories.map((category) => {
+          // Skip hidden categories
+          if (isCategoryHidden(category)) {
+            return null;
+          }
 
-            const categoryFiles = categorizedFiles[category];
-            const isExpanded = expandedCategories.has(category);
+          const categoryFiles = categorizedFiles[category];
+          const isExpanded = expandedCategories.has(category);
 
-            return (
-              <SortableCategory
-                key={category}
-                category={category}
-                categoryFiles={categoryFiles}
-                isExpanded={isExpanded}
-                onToggle={() => toggleCategory(category)}
-                isOwner={isOwner}
-                isApprovedMember={isApprovedMember}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                deletingFile={deletingFile}
-                onReorderFiles={handleFileReorder}
-                onRenameCategory={(cat) => setRenameCategoryDialog(cat)}
-              />
-            );
-          })}
-        </div>
-      </SortableContext>
+          // Calculate if this category is first or last (excluding Uncategorized)
+          const reorderableIndex = reorderableCategories.indexOf(category);
+          const isFirstCategory = reorderableIndex === 0;
+          const isLastCategory = reorderableIndex === reorderableCategories.length - 1;
+
+          return (
+            <CategorySection
+              key={category}
+              category={category}
+              categoryFiles={categoryFiles}
+              isExpanded={isExpanded}
+              onToggle={() => toggleCategory(category)}
+              isOwner={isOwner}
+              isApprovedMember={isApprovedMember}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              deletingFile={deletingFile}
+              onMoveFileUp={handleMoveFileUp}
+              onMoveFileDown={handleMoveFileDown}
+              onRenameCategory={(cat) => setRenameCategoryDialog(cat)}
+              onMoveCategoryUp={() => handleMoveCategoryUp(category)}
+              onMoveCategoryDown={() => handleMoveCategoryDown(category)}
+              isFirstCategory={isFirstCategory}
+              isLastCategory={isLastCategory}
+            />
+          );
+        })}
+      </div>
       <RenameCategoryDialog
         open={renameCategoryDialog !== null}
         onOpenChange={(open) => !open && setRenameCategoryDialog(null)}
@@ -528,6 +563,6 @@ export function CategorizedFilesList({
         unionId={unionId}
         onSuccess={handleRenameSuccess}
       />
-    </DndContext>
+    </>
   );
 }

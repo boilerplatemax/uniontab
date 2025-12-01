@@ -53,6 +53,7 @@ export function EditFileDialog({
   // Fetch existing categories when dialog opens
   useEffect(() => {
     if (open && file) {
+      console.log('[EditFileDialog] Fetching categories for unionId:', file.unionId);
       fetch('/api/files/categories/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -61,7 +62,9 @@ export function EditFileDialog({
         .then((res) => res.json())
         .then((data) => {
           if (data.categories) {
-            setCategories(data.categories.map((c: any) => c.name));
+            const categoryNames = data.categories.map((c: any) => c.name);
+            console.log('[EditFileDialog] Received categories:', categoryNames, 'for unionId:', file.unionId);
+            setCategories(categoryNames);
           }
         })
         .catch((error) => {
