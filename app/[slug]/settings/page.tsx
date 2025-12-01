@@ -4,7 +4,7 @@ import { unions, members, users } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { UnionNavbar } from '../union-navbar';
-import { signOut } from '@/app/auth-actions';
+import { signOut } from '@/app/(login)/actions';
 import { SettingsContent } from './settings-content';
 
 async function getUnionBySlug(slug: string) {
