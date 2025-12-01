@@ -17,52 +17,60 @@ import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { LimitedRichTextEditor } from '@/components/ui/limited-rich-text-editor';
 import { Loader2, AlertCircle } from 'lucide-react';
+import type { Announcement, AnnouncementAttachment } from '@/lib/db/schema';
 
-interface CreateAnnouncementDialogProps {
+interface AnnouncementWithDetails extends Announcement {
+  attachments: AnnouncementAttachment[];
+}
+
+interface EditAnnouncementDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  unionId: number;
-  initialType?: 'popup' | 'banner';
+  announcement: AnnouncementWithDetails | null;
   onSuccess: () => void;
 }
 
-interface AnnouncementAttachment {
+interface AnnouncementAttachmentData {
   fileName: string;
   fileUrl: string;
   fileType: string;
   fileSize: number;
 }
 
-export function CreateAnnouncementDialog({
+export function EditAnnouncementDialog({
   open,
   onOpenChange,
-  unionId,
-  initialType = 'popup',
+  announcement,
   onSuccess,
-}: CreateAnnouncementDialogProps) {
-  const [type, setType] = useState<'popup' | 'banner'>('popup');
+}: EditAnnouncementDialogProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [attachments, setAttachments] = useState<AnnouncementAttachment[]>([]);
+  const [attachments, setAttachments] = useState<AnnouncementAttachmentData[]>([]);
   const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Set initial type when dialog opens
   useEffect(() => {
-    if (open) {
-      setType(initialType);
+    if (announcement) {
+      setTitle(announcement.title || '');
+      setContent(announcement.content || '');
+      setImageUrl(announcement.imageUrl || '');
+      setIsPrivate(announcement.isPrivate);
+      setAttachments(announcement.attachments || []);
     }
-  }, [open, initialType]);
+  }, [announcement]);
 
-  const contentLength = content.replace(/<[^>]*>/g, '').length; // Strip HTML tags for count
+  if (!announcement) return null;
+
+  const contentLength = content.replace(/<[^>]*>/g, '').length;
+  const isBanner = announcement.type === 'banner';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate banner content length
-    if (type === 'banner' && contentLength > 300) {
+    if (isBanner && contentLength > 300) {
       setError('Banner content must be 300 characters or less');
       return;
     }
@@ -71,32 +79,24 @@ export function CreateAnnouncementDialog({
     setError('');
 
     try {
-      const response = await fetch('/api/announcements/create', {
+      const response = await fetch('/api/announcements/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          unionId,
-          type,
-          title: type === 'popup' ? title : null,
+          announcementId: announcement.id,
+          title: isBanner ? null : title,
           content,
-          imageUrl: type === 'popup' && imageUrl ? imageUrl : null,
+          imageUrl: !isBanner && imageUrl ? imageUrl : null,
           isPrivate,
-          attachments: type === 'popup' ? attachments : [],
+          attachments: !isBanner ? attachments : [],
         }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to create announcement');
+        throw new Error(data.error || 'Failed to update announcement');
       }
 
-      // Reset form
-      setType('popup');
-      setTitle('');
-      setContent('');
-      setImageUrl('');
-      setAttachments([]);
-      setIsPrivate(false);
       onOpenChange(false);
       onSuccess();
     } catch (err: any) {
@@ -110,7 +110,7 @@ export function CreateAnnouncementDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Announcement</DialogTitle>
+          <DialogTitle>Edit {isBanner ? 'Banner' : 'Popup'} Announcement</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
@@ -121,43 +121,8 @@ export function CreateAnnouncementDialog({
               </div>
             )}
 
-            {/* Type Selection */}
-            <div>
-              <Label>Announcement Type *</Label>
-              <div className="grid grid-cols-2 gap-4 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setType('popup')}
-                  className={`p-4 border-2 rounded-lg text-left transition-all ${
-                    type === 'popup'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="font-semibold text-gray-900">Popup</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Full modal announcement with title, rich content, images, and attachments
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setType('banner')}
-                  className={`p-4 border-2 rounded-lg text-left transition-all ${
-                    type === 'banner'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="font-semibold text-gray-900">Banner</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Top-of-page banner with limited content (300 chars max)
-                  </div>
-                </button>
-              </div>
-            </div>
-
             {/* Title (Popup only) */}
-            {type === 'popup' && (
+            {!isBanner && (
               <div>
                 <Label htmlFor="title">Title *</Label>
                 <Input
@@ -174,13 +139,13 @@ export function CreateAnnouncementDialog({
             <div>
               <Label htmlFor="content">
                 Content *
-                {type === 'banner' && (
+                {isBanner && (
                   <span className="ml-2 text-sm font-normal text-gray-500">
                     ({contentLength}/300 characters)
                   </span>
                 )}
               </Label>
-              {type === 'popup' ? (
+              {!isBanner ? (
                 <RichTextEditor
                   content={content}
                   onChange={setContent}
@@ -197,7 +162,7 @@ export function CreateAnnouncementDialog({
             </div>
 
             {/* Featured Image (Popup only) */}
-            {type === 'popup' && (
+            {!isBanner && (
               <div>
                 <Label htmlFor="image">Featured Image (Optional)</Label>
                 <FileUpload
@@ -218,7 +183,7 @@ export function CreateAnnouncementDialog({
             )}
 
             {/* File Attachments (Popup only) */}
-            {type === 'popup' && (
+            {!isBanner && (
               <div>
                 <Label>File Attachments (Optional)</Label>
                 <MultiFileUpload
@@ -226,6 +191,7 @@ export function CreateAnnouncementDialog({
                   folder="announcement-attachments"
                   onFilesChange={setAttachments}
                   maxFiles={5}
+                  initialFiles={attachments}
                 />
               </div>
             )}
@@ -261,10 +227,10 @@ export function CreateAnnouncementDialog({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
+                  Saving...
                 </>
               ) : (
-                'Create Announcement'
+                'Save Changes'
               )}
             </Button>
           </DialogFooter>

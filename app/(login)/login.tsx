@@ -24,6 +24,9 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const [unionName, setUnionName] = useState('');
   const [localNumber, setLocalNumber] = useState('');
   const [publicName, setPublicName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     if (mode === 'signup' && typeof window !== 'undefined') {
@@ -59,7 +62,17 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <form className="space-y-6" action={formAction}>
+        <form
+          className="space-y-6"
+          action={formAction}
+          onSubmit={(e) => {
+            if (mode === 'signup' && password !== confirmPassword) {
+              e.preventDefault();
+              setPasswordError('Passwords do not match');
+              return;
+            }
+          }}
+        >
           <input type="hidden" name="redirect" value={redirect || ''} />
           <input type="hidden" name="priceId" value={priceId || ''} />
           <input type="hidden" name="inviteId" value={inviteId || ''} />
@@ -217,7 +230,12 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 autoComplete={
                   mode === 'signin' ? 'current-password' : 'new-password'
                 }
-                defaultValue={state.password}
+                value={mode === 'signup' ? password : undefined}
+                defaultValue={mode === 'signin' ? state.password : undefined}
+                onChange={mode === 'signup' ? (e) => {
+                  setPassword(e.target.value);
+                  setPasswordError('');
+                } : undefined}
                 required
                 minLength={8}
                 maxLength={100}
@@ -226,6 +244,39 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
               />
             </div>
           </div>
+
+          {mode === 'signup' && (
+            <div>
+              <Label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Confirm Password
+              </Label>
+              <div className="mt-1">
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setPasswordError('');
+                  }}
+                  required
+                  minLength={8}
+                  maxLength={100}
+                  className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  placeholder="Confirm your password"
+                />
+              </div>
+            </div>
+          )}
+
+          {passwordError && (
+            <div className="text-red-500 text-sm">{passwordError}</div>
+          )}
 
           {state?.error && (
             <div className="text-red-500 text-sm">{state.error}</div>

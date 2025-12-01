@@ -136,6 +136,7 @@ async function getUnionFiles(unionId: number) {
       fileType: files.fileType,
       fileSize: files.fileSize,
       isPrivate: files.isPrivate,
+      category: files.category,
       createdAt: files.createdAt,
       createdBy: {
         name: users.name,

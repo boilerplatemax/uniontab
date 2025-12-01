@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit, Trash2, Eye, Megaphone, AlertCircle, Loader2 } from 'lucide-react';
 import { CreateAnnouncementDialog } from '@/components/announcements/create-announcement-dialog';
+import { EditAnnouncementDialog } from '@/components/announcements/edit-announcement-dialog';
 import { formatDate } from '@/lib/utils/date';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -30,6 +31,8 @@ export function AnnouncementsContent({
 }: AnnouncementsContentProps) {
   const router = useRouter();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [initialType, setInitialType] = useState<'popup' | 'banner'>('popup');
+  const [editingAnnouncement, setEditingAnnouncement] = useState<AnnouncementWithDetails | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const handleDelete = async (announcementId: number) => {
@@ -89,7 +92,7 @@ export function AnnouncementsContent({
                 href={`/${slug}`}
                 className="text-sm text-blue-600 hover:text-blue-700 mb-2 inline-block"
               >
-                ← Back to {union.publicName || union.name}
+                ← Back to {union.publicName || `${union.name}${union.localNumber ? ` ${union.localNumber}` : ''}`}
               </Link>
               <h1 className="text-3xl font-bold text-gray-900">Manage Announcements</h1>
               <p className="text-gray-600 mt-1">
@@ -174,6 +177,14 @@ export function AnnouncementsContent({
                           {announcement.isActive ? 'Deactivate' : 'Activate'}
                         </Button>
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingAnnouncement(announcement)}
+                          title="Edit"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDelete(announcement.id)}
@@ -198,7 +209,10 @@ export function AnnouncementsContent({
                 <Megaphone className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No popup announcements yet</h3>
                 <p className="text-gray-500 mb-4">Create your first popup announcement to notify members</p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
+                <Button onClick={() => {
+                  setInitialType('popup');
+                  setCreateDialogOpen(true);
+                }}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Popup
                 </Button>
@@ -250,6 +264,14 @@ export function AnnouncementsContent({
                           {announcement.isActive ? 'Deactivate' : 'Activate'}
                         </Button>
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingAnnouncement(announcement)}
+                          title="Edit"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDelete(announcement.id)}
@@ -274,7 +296,10 @@ export function AnnouncementsContent({
                 <AlertCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No banner announcements yet</h3>
                 <p className="text-gray-500 mb-4">Create a banner to display at the top of your union page</p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
+                <Button onClick={() => {
+                  setInitialType('banner');
+                  setCreateDialogOpen(true);
+                }}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Banner
                 </Button>
@@ -288,7 +313,17 @@ export function AnnouncementsContent({
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         unionId={union.id}
+        initialType={initialType}
         onSuccess={() => router.refresh()}
+      />
+      <EditAnnouncementDialog
+        open={!!editingAnnouncement}
+        onOpenChange={(open) => !open && setEditingAnnouncement(null)}
+        announcement={editingAnnouncement}
+        onSuccess={() => {
+          setEditingAnnouncement(null);
+          router.refresh();
+        }}
       />
     </div>
   );

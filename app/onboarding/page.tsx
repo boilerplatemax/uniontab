@@ -181,7 +181,7 @@ export default function OnboardingPage() {
               <div className="space-y-6">
                 <div className="text-center space-y-2">
                   <h2 className="text-2xl font-bold text-gray-900">
-                    Welcome {union.name}!
+                    Welcome {union.publicName || union.name}!
                   </h2>
                   {union.localNumber && (
                     <p className="text-gray-600">Local {union.localNumber}</p>
@@ -192,26 +192,6 @@ export default function OnboardingPage() {
                   through adding your logo, cover photo, contact information,
                   and more.
                 </p>
-
-                <div className="space-y-4 max-w-md mx-auto">
-                  <div>
-                    <Label htmlFor="publicName">
-                      Public Display Name (optional)
-                    </Label>
-                    <Input
-                      id="publicName"
-                      placeholder="e.g., Barrie Transit Union"
-                      value={formData.publicName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, publicName: e.target.value })
-                      }
-                      maxLength={255}
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
-                      This is the friendly name shown on your public page. Leave blank to use "{union.name}" instead.
-                    </p>
-                  </div>
-                </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
