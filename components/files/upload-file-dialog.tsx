@@ -42,6 +42,7 @@ export function UploadFileDialog({
   // Fetch existing categories when dialog opens
   useEffect(() => {
     if (open && unionId) {
+      console.log('[UploadFileDialog] Fetching categories for unionId:', unionId);
       fetch('/api/files/categories/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,7 +51,9 @@ export function UploadFileDialog({
         .then((res) => res.json())
         .then((data) => {
           if (data.categories) {
-            setCategories(data.categories.map((c: any) => c.name));
+            const categoryNames = data.categories.map((c: any) => c.name);
+            console.log('[UploadFileDialog] Received categories:', categoryNames, 'for unionId:', unionId);
+            setCategories(categoryNames);
           }
         })
         .catch((error) => {
