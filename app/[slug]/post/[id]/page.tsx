@@ -135,7 +135,7 @@ export default async function PostPage({
     <div className="min-h-screen bg-gray-100">
       <UnionNavbar
         slug={slug}
-        unionName={union.publicName || union.name}
+        unionName={union.publicName || union.name || 'Union'}
         localNumber={union.publicName ? null : union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}

@@ -104,7 +104,7 @@ export default async function MembersPage({
     <>
       <UnionNavbar
         slug={slug}
-        unionName={union.publicName || union.name}
+        unionName={union.publicName || union.name || 'Union'}
         localNumber={union.publicName ? null : union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}

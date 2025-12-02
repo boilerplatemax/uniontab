@@ -25,7 +25,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const displayName = `${unionName.toUpperCase()}${localNumber ? ` ${localNumber}` : ''}`;
+  const displayName = `${(unionName || '').toUpperCase()}${localNumber ? ` ${localNumber}` : ''}`;
 
   return (
     <>

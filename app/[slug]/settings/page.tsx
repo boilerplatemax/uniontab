@@ -78,7 +78,7 @@ export default async function SettingsPage({
     <>
       <UnionNavbar
         slug={slug}
-        unionName={union.name}
+        unionName={union.name || 'Union'}
         localNumber={union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}
