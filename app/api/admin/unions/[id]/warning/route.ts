@@ -69,6 +69,11 @@ export async function POST(
       day: 'numeric',
     });
 
+    // Format union display name with local number if available
+    const unionDisplayName = union.localNumber
+      ? `${union.publicName || union.name} (Local ${union.localNumber})`
+      : union.publicName || union.name;
+
     // Send warning emails
     const emailPromises = [];
 
@@ -76,12 +81,12 @@ export async function POST(
     emailPromises.push(
       sendEmail({
         to: union.email,
-        subject: `Action Required: ${union.publicName || union.name} Account Suspension Notice`,
-        text: `Dear ${union.publicName || union.name} Team,
+        subject: `Action Required: ${unionDisplayName} Account Suspension Notice`,
+        text: `Dear ${unionDisplayName} Team,
 
 This is an important notice regarding your union account on UnionTab.
 
-Due to recent inactivity on your account, your union "${union.publicName || union.name}" is scheduled to be suspended on ${formattedDate} (in 2 weeks).
+Due to recent inactivity on your account, your union "${unionDisplayName}" is scheduled to be suspended on ${formattedDate} (in 2 weeks).
 
 To prevent suspension of your account, please log in and show activity on your union page. This can include:
 - Creating or updating posts
@@ -103,13 +108,13 @@ The UnionTab Team`,
               <h2 style="color: #92400E; margin: 0 0 8px 0;">⚠️ Action Required: Account Suspension Notice</h2>
             </div>
 
-            <p>Dear ${union.publicName || union.name} Team,</p>
+            <p>Dear ${unionDisplayName} Team,</p>
 
             <p>This is an important notice regarding your union account on UnionTab.</p>
 
             <div style="background-color: #FEE2E2; border: 1px solid #FCA5A5; border-radius: 8px; padding: 16px; margin: 20px 0;">
               <p style="margin: 0; font-weight: bold; color: #991B1B;">
-                Your union "${union.publicName || union.name}" is scheduled to be suspended on <strong>${formattedDate}</strong> (in 2 weeks).
+                Your union "${unionDisplayName}" is scheduled to be suspended on <strong>${formattedDate}</strong> (in 2 weeks).
               </p>
             </div>
 
@@ -143,12 +148,12 @@ The UnionTab Team`,
       emailPromises.push(
         sendEmail({
           to: owner.userEmail,
-          subject: `Action Required: ${union.publicName || union.name} Account Suspension Notice`,
+          subject: `Action Required: ${unionDisplayName} Account Suspension Notice`,
           text: `Dear ${owner.userName},
 
 This is an important notice regarding your union account on UnionTab.
 
-Due to recent inactivity on your account, your union "${union.publicName || union.name}" is scheduled to be suspended on ${formattedDate} (in 2 weeks).
+Due to recent inactivity on your account, your union "${unionDisplayName}" is scheduled to be suspended on ${formattedDate} (in 2 weeks).
 
 To prevent suspension of your account, please log in and show activity on your union page. This can include:
 - Creating or updating posts
@@ -176,7 +181,7 @@ The UnionTab Team`,
 
               <div style="background-color: #FEE2E2; border: 1px solid #FCA5A5; border-radius: 8px; padding: 16px; margin: 20px 0;">
                 <p style="margin: 0; font-weight: bold; color: #991B1B;">
-                  Your union "${union.publicName || union.name}" is scheduled to be suspended on <strong>${formattedDate}</strong> (in 2 weeks).
+                  Your union "${unionDisplayName}" is scheduled to be suspended on <strong>${formattedDate}</strong> (in 2 weeks).
                 </p>
               </div>
 
