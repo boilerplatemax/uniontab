@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     let deletedCount = 0;
     let userAccountsDeleted = 0;
 
-    // Delete each member
+    // Delete each member in a transaction
     for (const memberToDelete of membersToDelete) {
       // Check if the user has memberships in other unions
       const otherMemberships = await db
@@ -76,27 +76,30 @@ export async function POST(request: Request) {
           )
         );
 
-      // Delete email logs associated with this member first
-      await db
-        .delete(emailLogs)
-        .where(eq(emailLogs.memberId, memberToDelete.id));
+      // Use a transaction to ensure all deletes happen atomically
+      await db.transaction(async (tx) => {
+        // Delete email logs associated with this member first
+        await tx
+          .delete(emailLogs)
+          .where(eq(emailLogs.memberId, memberToDelete.id));
 
-      // Delete the member record
-      await db
-        .delete(members)
-        .where(eq(members.id, memberToDelete.id));
+        // Delete the member record
+        await tx
+          .delete(members)
+          .where(eq(members.id, memberToDelete.id));
+
+        // If the user has no other union memberships, delete the user account
+        if (otherMemberships.length === 0) {
+          await tx
+            .delete(users)
+            .where(eq(users.id, memberToDelete.userId));
+
+          userAccountsDeleted++;
+          console.log(`Deleted user account ${memberToDelete.userId} (no other union memberships)`);
+        }
+      });
 
       deletedCount++;
-
-      // If the user has no other union memberships, delete the user account
-      if (otherMemberships.length === 0) {
-        await db
-          .delete(users)
-          .where(eq(users.id, memberToDelete.userId));
-
-        userAccountsDeleted++;
-        console.log(`Deleted user account ${memberToDelete.userId} (no other union memberships)`);
-      }
     }
 
     return NextResponse.json({

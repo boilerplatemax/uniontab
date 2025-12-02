@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus } from 'lucide-react';
 import Link from 'next/link';
 
 interface Member {
@@ -296,6 +296,55 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
       } finally {
         setIsBulkActionLoading(false);
       }
+    } else if (bulkAction === 'approve' || bulkAction === 'pending' || bulkAction === 'reject') {
+      const statusMap = {
+        approve: 'approved',
+        pending: 'pending',
+        reject: 'rejected'
+      } as const;
+
+      const status = statusMap[bulkAction];
+      const actionLabel = bulkAction === 'approve' ? 'approve' : bulkAction === 'pending' ? 'mark as pending' : 'reject';
+
+      const confirmMessage = `Are you sure you want to ${actionLabel} ${memberIds.length} ${memberIds.length === 1 ? 'member' : 'members'}?`;
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      setIsBulkActionLoading(true);
+
+      try {
+        const response = await fetch('/api/members/bulk-approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberIds, status }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || `Failed to ${actionLabel} members`);
+        }
+
+        const result = await response.json();
+
+        // Update local state
+        setMembersList((prev) =>
+          prev.map((m) =>
+            memberIds.includes(m.member.id)
+              ? { ...m, member: { ...m.member, status } }
+              : m
+          )
+        );
+        setSelectedMembers(new Set());
+        setBulkAction('');
+
+        alert(`Successfully ${actionLabel}d ${result.updatedCount} ${result.updatedCount === 1 ? 'member' : 'members'}`);
+      } catch (error) {
+        console.error(`Error bulk ${actionLabel}ing members:`, error);
+        alert(error instanceof Error ? error.message : `Failed to ${actionLabel} members`);
+      } finally {
+        setIsBulkActionLoading(false);
+      }
     }
   };
 
@@ -435,6 +484,24 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                       <SelectValue placeholder="Choose action..." />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="approve">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span>Approve Members</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="pending">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-yellow-600" />
+                          <span>Mark as Pending</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="reject">
+                        <div className="flex items-center gap-2">
+                          <UserMinus className="h-4 w-4 text-orange-600" />
+                          <span>Reject Members</span>
+                        </div>
+                      </SelectItem>
                       <SelectItem value="delete">
                         <div className="flex items-center gap-2">
                           <Trash2 className="h-4 w-4 text-red-600" />

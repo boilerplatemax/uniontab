@@ -70,26 +70,29 @@ export async function POST(request: Request) {
         )
       );
 
-    // Delete email logs associated with this member first
-    await db
-      .delete(emailLogs)
-      .where(eq(emailLogs.memberId, memberId));
+    // Use a transaction to ensure all deletes happen atomically
+    await db.transaction(async (tx) => {
+      // Delete email logs associated with this member first
+      await tx
+        .delete(emailLogs)
+        .where(eq(emailLogs.memberId, memberId));
 
-    // Delete the member record
-    await db
-      .delete(members)
-      .where(eq(members.id, memberId));
+      // Delete the member record
+      await tx
+        .delete(members)
+        .where(eq(members.id, memberId));
 
-    // If the user has no other union memberships, delete the user account
-    // The cascade deletes in the schema will handle cleaning up related data
-    // (election votes, post likes, dismissed announcements, etc.)
-    if (otherMemberships.length === 0) {
-      await db
-        .delete(users)
-        .where(eq(users.id, memberToDelete.userId));
+      // If the user has no other union memberships, delete the user account
+      // The cascade deletes in the schema will handle cleaning up related data
+      // (election votes, post likes, dismissed announcements, etc.)
+      if (otherMemberships.length === 0) {
+        await tx
+          .delete(users)
+          .where(eq(users.id, memberToDelete.userId));
 
-      console.log(`Deleted user account ${memberToDelete.userId} (no other union memberships)`);
-    }
+        console.log(`Deleted user account ${memberToDelete.userId} (no other union memberships)`);
+      }
+    });
 
     return NextResponse.json({
       success: true,
