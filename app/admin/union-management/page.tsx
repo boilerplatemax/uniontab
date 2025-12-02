@@ -34,6 +34,7 @@ interface UnionStats {
   id: number;
   name: string;
   slug: string;
+  localNumber: string | null;
   publicName: string | null;
   email: string | null;
   createdAt: Date;
@@ -49,6 +50,9 @@ interface UnionStats {
   pagesCount: number;
   onboardingCompletion: number;
   lastActivityAt: Date | null;
+  ownerName?: string;
+  ownerEmail?: string;
+  lastLoginAt: Date | null;
 }
 
 export default function UnionManagementPage() {
@@ -205,6 +209,7 @@ export default function UnionManagementPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Union</TableHead>
+                    <TableHead>Owner</TableHead>
                     <TableHead>Members</TableHead>
                     <TableHead>Activity</TableHead>
                     <TableHead>Onboarding</TableHead>
@@ -234,6 +239,26 @@ export default function UnionManagementPage() {
                               </a>
                             </div>
                             <span className="text-xs text-gray-500">/{union.slug}</span>
+                            {union.localNumber && (
+                              <span className="text-xs text-gray-500">Local: {union.localNumber}</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            {union.ownerName ? (
+                              <>
+                                <span className="text-sm font-medium">{union.ownerName}</span>
+                                <span className="text-xs text-gray-500">{union.ownerEmail}</span>
+                                {union.lastLoginAt && (
+                                  <span className="text-xs text-gray-400">
+                                    Last login: {new Date(union.lastLoginAt).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-xs text-gray-400">No owner</span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>{union.memberCount}</TableCell>
@@ -327,23 +352,27 @@ export default function UnionManagementPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Union</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{selectedUnion?.publicName || selectedUnion?.name}"?
-              This will permanently delete:
-              <ul className="list-disc list-inside mt-2">
-                <li>All {selectedUnion?.memberCount} members</li>
-                <li>All {selectedUnion?.postsCount} posts</li>
-                <li>All {selectedUnion?.eventsCount} events</li>
-                <li>All {selectedUnion?.filesCount} files</li>
-                <li>All {selectedUnion?.pagesCount} pages</li>
-                <li>All activity logs and other related data</li>
-              </ul>
-              <p className="mt-2 font-semibold">
-                A deletion notification will be sent to {selectedUnion?.email || 'the union contact'}.
-              </p>
-              <p className="mt-2 text-red-600 font-semibold">
-                This action cannot be undone!
-              </p>
+            <AlertDialogDescription asChild>
+              <div>
+                <p>
+                  Are you sure you want to delete "{selectedUnion?.publicName || selectedUnion?.name}"?
+                  This will permanently delete:
+                </p>
+                <ul className="list-disc list-inside mt-2">
+                  <li>All {selectedUnion?.memberCount} members</li>
+                  <li>All {selectedUnion?.postsCount} posts</li>
+                  <li>All {selectedUnion?.eventsCount} events</li>
+                  <li>All {selectedUnion?.filesCount} files</li>
+                  <li>All {selectedUnion?.pagesCount} pages</li>
+                  <li>All activity logs and other related data</li>
+                </ul>
+                <p className="mt-2 font-semibold">
+                  A deletion notification will be sent to {selectedUnion?.email || 'the union contact'}.
+                </p>
+                <p className="mt-2 text-red-600 font-semibold">
+                  This action cannot be undone!
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

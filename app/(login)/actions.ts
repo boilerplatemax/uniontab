@@ -99,6 +99,11 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     return createCheckoutSession({ team: foundUnion, priceId });
   }
 
+  // Redirect webmaster to admin union management dashboard
+  if (foundUser.role === 'webmaster') {
+    redirect('/admin/union-management');
+  }
+
   // Redirect to union public page
   if (foundUnion?.slug) {
     redirect(`/${foundUnion.slug}`);

@@ -41,6 +41,7 @@ export async function GET(request: Request) {
         id: unions.id,
         name: unions.name,
         slug: unions.slug,
+        localNumber: unions.localNumber,
         publicName: unions.publicName,
         email: unions.email,
         createdAt: unions.createdAt,
@@ -112,6 +113,29 @@ export async function GET(request: Request) {
           .orderBy(desc(activityLogs.timestamp))
           .limit(1);
 
+        // Get owner information
+        const [ownerInfo] = await db
+          .select({
+            ownerName: users.name,
+            ownerEmail: users.email,
+          })
+          .from(members)
+          .innerJoin(users, eq(members.userId, users.id))
+          .where(
+            sql`${members.unionId} = ${union.id} AND ${members.role} = 'owner'`
+          )
+          .limit(1);
+
+        // Get last login date (last SIGN_IN activity)
+        const [lastLogin] = await db
+          .select({ timestamp: activityLogs.timestamp })
+          .from(activityLogs)
+          .where(
+            sql`${activityLogs.unionId} = ${union.id} AND ${activityLogs.action} = 'SIGN_IN'`
+          )
+          .orderBy(desc(activityLogs.timestamp))
+          .limit(1);
+
         return {
           ...union,
           memberCount: memberCountResult.count,
@@ -122,6 +146,9 @@ export async function GET(request: Request) {
           pagesCount: pagesCount.count,
           onboardingCompletion,
           lastActivityAt: lastActivity?.timestamp,
+          ownerName: ownerInfo?.ownerName,
+          ownerEmail: ownerInfo?.ownerEmail,
+          lastLoginAt: lastLogin?.timestamp,
         };
       })
     );
