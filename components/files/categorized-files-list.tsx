@@ -7,6 +7,7 @@ import { FileText, Download, Eye, Edit, Trash2, Loader2, ChevronDown, ChevronRig
 import type { File as FileType, FileCategory } from '@/lib/db/schema';
 import { formatDate } from '@/lib/utils/date';
 import { RenameCategoryDialog } from './rename-category-dialog';
+import { useRouter } from 'next/navigation';
 
 interface CategorizedFilesListProps {
   files: (FileType & { createdBy: { name: string } })[];
@@ -270,6 +271,7 @@ export function CategorizedFilesList({
   deletingFile,
   unionId,
 }: CategorizedFilesListProps) {
+  const router = useRouter();
   const [categoryOrders, setCategoryOrders] = useState<FileCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [renameCategoryDialog, setRenameCategoryDialog] = useState<string | null>(null);
@@ -458,8 +460,8 @@ export function CategorizedFilesList({
       });
 
       if (response.ok) {
-        // Reload page to show updated order
-        window.location.reload();
+        // Trigger a Next.js refresh to show updated order
+        router.refresh();
       }
     } catch (error) {
       console.error('Error reordering files:', error);
@@ -493,8 +495,8 @@ export function CategorizedFilesList({
       });
 
       if (response.ok) {
-        // Reload page to show updated order
-        window.location.reload();
+        // Trigger a Next.js refresh to show updated order
+        router.refresh();
       }
     } catch (error) {
       console.error('Error reordering files:', error);

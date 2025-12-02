@@ -111,10 +111,8 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
         matchesFilter = m.member.status === 'pending';
       } else if (recipientFilter === 'rejected') {
         matchesFilter = m.member.status === 'rejected';
-      } else if (recipientFilter === 'custom') {
-        matchesFilter = selectedMembers.has(m.member.id);
       }
-      // 'all' means no filter
+      // For 'custom' and 'all', show all members (no filter)
 
       // Search filter
       const searchLower = searchQuery.toLowerCase();
