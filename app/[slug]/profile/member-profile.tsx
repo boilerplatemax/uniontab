@@ -98,19 +98,6 @@ export function MemberProfile({ slug, user, userWithUnion }: MemberProfileProps)
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link
-            href={`/${slug}`}
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to {slug}
-          </Link>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6">

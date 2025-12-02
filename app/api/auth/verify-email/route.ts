@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
 import { users } from '@/lib/db/schema';
 import { eq, and, gt } from 'drizzle-orm';
+import { signToken } from '@/lib/auth/session';
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,10 +44,34 @@ export async function POST(request: NextRequest) {
       })
       .where(eq(users.id, user.id));
 
-    return NextResponse.json({
+    // Auto-login: Create session for the user
+    const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const sessionToken = await signToken({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+      expires: expiresInOneDay.toISOString(),
+    });
+
+    const response = NextResponse.json({
       success: true,
       message: 'Email verified successfully',
     });
+
+    // Set session cookie
+    response.cookies.set({
+      name: 'session',
+      value: sessionToken,
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      expires: expiresInOneDay,
+    });
+
+    return response;
   } catch (error) {
     console.error('Error verifying email:', error);
     return NextResponse.json(

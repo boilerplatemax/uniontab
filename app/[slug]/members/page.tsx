@@ -1,9 +1,11 @@
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, users } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { MembersContent } from './members-content';
+import { UnionNavbar } from '../union-navbar';
+import { cookies } from 'next/headers';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -42,6 +44,34 @@ async function getUnionMembers(unionId: number) {
   return unionMembers;
 }
 
+async function getMembership(unionId: number, userId: number) {
+  const [membership] = await db
+    .select({
+      user: users,
+      member: members
+    })
+    .from(members)
+    .innerJoin(users, eq(members.userId, users.id))
+    .where(and(eq(members.unionId, unionId), eq(members.userId, userId)))
+    .limit(1);
+
+  return membership;
+}
+
+async function getPendingMembersCount(unionId: number) {
+  const [result] = await db
+    .select({ value: count() })
+    .from(members)
+    .where(and(eq(members.unionId, unionId), eq(members.status, 'pending')));
+
+  return Number(result.value);
+}
+
+async function handleSignOut() {
+  'use server';
+  (await cookies()).delete('session');
+}
+
 export default async function MembersPage({
   params
 }: {
@@ -67,6 +97,20 @@ export default async function MembersPage({
   }
 
   const unionMembers = await getUnionMembers(union.id);
+  const membership = await getMembership(union.id, user.id);
+  const pendingMembersCount = await getPendingMembersCount(union.id);
 
-  return <MembersContent slug={slug} union={union} members={unionMembers} isOwner={isOwner} />;
+  return (
+    <>
+      <UnionNavbar
+        slug={slug}
+        unionName={union.publicName || union.name}
+        localNumber={union.publicName ? null : union.localNumber}
+        membership={membership}
+        handleSignOut={handleSignOut}
+        pendingMembersCount={pendingMembersCount}
+      />
+      <MembersContent slug={slug} union={union} members={unionMembers} isOwner={isOwner} />
+    </>
+  );
 }

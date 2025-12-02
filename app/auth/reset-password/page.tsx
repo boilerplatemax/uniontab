@@ -62,10 +62,10 @@ function ResetPasswordForm() {
 
       setSuccess(true);
 
-      // Redirect to login after 3 seconds
+      // Redirect to dashboard after 2 seconds (user is now logged in)
       setTimeout(() => {
-        router.push('/sign-in');
-      }, 3000);
+        router.push('/dashboard');
+      }, 2000);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -85,15 +85,15 @@ function ResetPasswordForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-center text-gray-600">
-              Your password has been reset successfully. You can now log in with your new password.
+              Your password has been reset successfully and you're now signed in!
             </p>
             <p className="text-center text-sm text-gray-500">
-              Redirecting to login page...
+              Redirecting to dashboard...
             </p>
             <div className="pt-4">
-              <Link href="/sign-in">
+              <Link href="/dashboard">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                  Go to Login
+                  Go to Dashboard
                 </Button>
               </Link>
             </div>

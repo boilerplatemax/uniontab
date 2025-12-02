@@ -55,17 +55,20 @@ export async function sendEmail({ to, subject, text, html }: SendEmailOptions) {
 export async function sendPasswordResetEmail(
   email: string,
   resetToken: string,
-  name: string
+  name: string,
+  unionInfo?: { name: string; localNumber: string | null } | null
 ) {
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const resetUrl = `${baseUrl}/auth/reset-password?token=${resetToken}`;
 
-  const subject = 'Reset Your Password - UnionTab';
+  // Include union info in subject line for better UX
+  const unionName = unionInfo ? `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}` : 'UnionTab';
+  const subject = `Reset Your Password - ${unionName}`;
 
   const text = `
 Hi ${name},
 
-You requested to reset your password for your UnionTab account.
+You requested to reset your password for your ${unionInfo ? unionName : 'UnionTab'} account.
 
 Click the link below to reset your password:
 ${resetUrl}
@@ -75,7 +78,7 @@ This link will expire in 1 hour.
 If you didn't request this password reset, please ignore this email.
 
 Thanks,
-The UnionTab Team
+${unionInfo ? `The ${unionName} Team` : 'The UnionTab Team'}
   `.trim();
 
   const html = `
@@ -130,12 +133,12 @@ The UnionTab Team
 <body>
   <div class="container">
     <div class="header">
-      <h1>UnionTab</h1>
+      <h1>${unionInfo ? unionName : 'UnionTab'}</h1>
     </div>
     <div class="content">
       <h2>Reset Your Password</h2>
       <p>Hi ${name},</p>
-      <p>You requested to reset your password for your UnionTab account.</p>
+      <p>You requested to reset your password for your ${unionInfo ? unionName : 'UnionTab'} account.</p>
       <p>Click the button below to reset your password:</p>
       <center>
         <a href="${resetUrl}" class="button" style="display: inline-block; padding: 12px 30px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin: 20px 0;">Reset Password</a>
@@ -152,7 +155,7 @@ The UnionTab Team
       </p>
     </div>
     <div class="footer">
-      <p>© ${new Date().getFullYear()} UnionTab. All rights reserved.</p>
+      <p>© ${new Date().getFullYear()} ${unionInfo ? unionName : 'UnionTab'}. All rights reserved.</p>
     </div>
   </div>
 </body>
