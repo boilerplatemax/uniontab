@@ -17,7 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Loader2, MoreVertical, Download, Trash2, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Loader2, MoreVertical, Download, Trash2, AlertTriangle, ExternalLink, Mail } from 'lucide-react';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -198,10 +199,20 @@ export default function UnionManagementPage() {
       <div className="max-w-7xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Union Management Dashboard</CardTitle>
-            <p className="text-sm text-gray-600">
-              View and manage all unions on the platform
-            </p>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="text-2xl">Union Management Dashboard</CardTitle>
+                <p className="text-sm text-gray-600">
+                  View and manage all unions on the platform
+                </p>
+              </div>
+              <Link href="/admin/mass-email">
+                <Button className="gap-2">
+                  <Mail className="h-4 w-4" />
+                  Mass Email
+                </Button>
+              </Link>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
