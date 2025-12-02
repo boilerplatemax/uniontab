@@ -345,6 +345,44 @@ export const dismissedAnnouncements = pgTable('dismissed_announcements', {
   dismissedAt: timestamp('dismissed_at').notNull().defaultNow(),
 });
 
+// Mass Email System Tables
+export const massEmails = pgTable('mass_emails', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id),
+  subject: varchar('subject', { length: 255 }).notNull(),
+  htmlContent: text('html_content').notNull(),
+  textContent: text('text_content').notNull(),
+  recipientFilter: varchar('recipient_filter', { length: 50 }).notNull(), // 'all', 'approved', 'admin', 'pending', 'rejected', 'custom'
+  customRecipientIds: json('custom_recipient_ids'), // Array of member IDs for custom selection
+  attachments: json('attachments'), // Array of attachment URLs/names
+  status: varchar('status', { length: 20 }).notNull().default('draft'), // draft, sending, sent, failed
+  totalRecipients: integer('total_recipients'),
+  successCount: integer('success_count').default(0),
+  failureCount: integer('failure_count').default(0),
+  sentAt: timestamp('sent_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const emailLogs = pgTable('email_logs', {
+  id: serial('id').primaryKey(),
+  massEmailId: integer('mass_email_id')
+    .notNull()
+    .references(() => massEmails.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id),
+  email: varchar('email', { length: 255 }).notNull(),
+  status: varchar('status', { length: 20 }).notNull(), // sent, failed, bounced
+  errorMessage: text('error_message'),
+  sentAt: timestamp('sent_at').notNull().defaultNow(),
+});
+
 export const unionsRelations = relations(unions, ({ many }) => ({
   members: many(members),
   activityLogs: many(activityLogs),
@@ -355,6 +393,7 @@ export const unionsRelations = relations(unions, ({ many }) => ({
   events: many(events),
   elections: many(elections),
   announcements: many(announcements),
+  massEmails: many(massEmails),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -582,6 +621,29 @@ export const dismissedAnnouncementsRelations = relations(dismissedAnnouncements,
   }),
 }));
 
+export const massEmailsRelations = relations(massEmails, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [massEmails.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [massEmails.createdBy],
+    references: [users.id],
+  }),
+  logs: many(emailLogs),
+}));
+
+export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
+  massEmail: one(massEmails, {
+    fields: [emailLogs.massEmailId],
+    references: [massEmails.id],
+  }),
+  member: one(members, {
+    fields: [emailLogs.memberId],
+    references: [members.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Union = typeof unions.$inferSelect;
@@ -622,6 +684,10 @@ export type AnnouncementAttachment = typeof announcementAttachments.$inferSelect
 export type NewAnnouncementAttachment = typeof announcementAttachments.$inferInsert;
 export type DismissedAnnouncement = typeof dismissedAnnouncements.$inferSelect;
 export type NewDismissedAnnouncement = typeof dismissedAnnouncements.$inferInsert;
+export type MassEmail = typeof massEmails.$inferSelect;
+export type NewMassEmail = typeof massEmails.$inferInsert;
+export type EmailLog = typeof emailLogs.$inferSelect;
+export type NewEmailLog = typeof emailLogs.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;

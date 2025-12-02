@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone } from 'lucide-react';
+import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -20,6 +20,7 @@ interface UnionNavbarProps {
 export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0 }: UnionNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isOwner = membership?.member.role === 'owner';
+  const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -68,6 +69,20 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                             )}
                           </Button>
                         </Link>
+                      </>
+                    )}
+                    {isOwnerOrAdmin && (
+                      <>
+                        <Link href={`/${slug}/mass-email`} prefetch={true}>
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <Mail className="h-4 w-4" />
+                            <span className="hidden md:inline">Mass Email</span>
+                          </Button>
+                        </Link>
+                      </>
+                    )}
+                    {isOwner && (
+                      <>
                         <Link href={`/${slug}/announcements`} prefetch={true}>
                           <Button variant="ghost" size="sm" className="gap-2">
                             <Megaphone className="h-4 w-4" />
@@ -164,6 +179,24 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                       )}
                     </Button>
                   </Link>
+                </>
+              )}
+              {isOwnerOrAdmin && (
+                <>
+                  <Link
+                    href={`/${slug}/mass-email`}
+                    prefetch={true}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Button variant="ghost" className="w-full justify-start gap-2">
+                      <Mail className="h-4 w-4" />
+                      Mass Email
+                    </Button>
+                  </Link>
+                </>
+              )}
+              {isOwner && (
+                <>
                   <Link
                     href={`/${slug}/announcements`}
                     prefetch={true}

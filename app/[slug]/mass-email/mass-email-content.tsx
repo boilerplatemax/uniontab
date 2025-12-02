@@ -1,0 +1,544 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  ArrowLeft,
+  Mail,
+  Send,
+  Users as UsersIcon,
+  Search,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Eye,
+  Filter,
+} from 'lucide-react';
+import Link from 'next/link';
+
+interface Member {
+  member: {
+    id: number;
+    userId: number;
+    unionId: number;
+    role: string;
+    status: string;
+    joinedAt: Date;
+  };
+  user: {
+    id: number;
+    name: string | null;
+    email: string;
+  };
+}
+
+interface MassEmailContentProps {
+  slug: string;
+  union: {
+    id: number;
+    name: string;
+    localNumber: string | null;
+  };
+  members: Member[];
+}
+
+export function MassEmailContent({ slug, union, members }: MassEmailContentProps) {
+  const [subject, setSubject] = useState('');
+  const [htmlContent, setHtmlContent] = useState('');
+  const [recipientFilter, setRecipientFilter] = useState<'all' | 'approved' | 'admin' | 'pending' | 'rejected' | 'custom'>('approved');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMembers, setSelectedMembers] = useState<Set<number>>(new Set());
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [sendResult, setSendResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: any;
+  } | null>(null);
+
+  const getUserDisplayName = (user: { name: string | null; email: string }) => {
+    return user.name || user.email;
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Filter members based on recipient filter and search
+  const filteredMembers = useMemo(() => {
+    let filtered = members.filter((m) => {
+      // Recipient filter
+      let matchesFilter = true;
+      if (recipientFilter === 'approved') {
+        matchesFilter = m.member.status === 'approved';
+      } else if (recipientFilter === 'admin') {
+        matchesFilter = m.member.role === 'admin';
+      } else if (recipientFilter === 'pending') {
+        matchesFilter = m.member.status === 'pending';
+      } else if (recipientFilter === 'rejected') {
+        matchesFilter = m.member.status === 'rejected';
+      } else if (recipientFilter === 'custom') {
+        matchesFilter = selectedMembers.has(m.member.id);
+      }
+      // 'all' means no filter
+
+      // Search filter
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch =
+        !searchQuery ||
+        getUserDisplayName(m.user).toLowerCase().includes(searchLower) ||
+        m.user.email.toLowerCase().includes(searchLower);
+
+      return matchesFilter && matchesSearch;
+    });
+
+    return filtered;
+  }, [members, recipientFilter, searchQuery, selectedMembers]);
+
+  const toggleSelectAll = () => {
+    if (selectedMembers.size === filteredMembers.length && filteredMembers.length > 0) {
+      setSelectedMembers(new Set());
+    } else {
+      setSelectedMembers(new Set(filteredMembers.map((m) => m.member.id)));
+    }
+  };
+
+  const toggleMemberSelection = (memberId: number) => {
+    const newSelection = new Set(selectedMembers);
+    if (newSelection.has(memberId)) {
+      newSelection.delete(memberId);
+    } else {
+      newSelection.add(memberId);
+    }
+    setSelectedMembers(newSelection);
+  };
+
+  // Get actual recipients that will receive the email
+  const actualRecipients = useMemo(() => {
+    if (recipientFilter === 'custom') {
+      return members.filter((m) => selectedMembers.has(m.member.id));
+    }
+    return filteredMembers;
+  }, [members, filteredMembers, recipientFilter, selectedMembers]);
+
+  const handlePreview = () => {
+    setShowPreviewDialog(true);
+  };
+
+  const handleConfirmSend = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const handleSend = async () => {
+    setIsSending(true);
+    setSendResult(null);
+
+    // Convert HTML to plain text for text content
+    const textContent = htmlContent
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .trim();
+
+    try {
+      const response = await fetch('/api/mass-email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          unionId: union.id,
+          subject,
+          htmlContent,
+          textContent,
+          recipientFilter,
+          customRecipientIds: recipientFilter === 'custom' ? Array.from(selectedMembers) : null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSendResult({
+          success: true,
+          message: `Email sent successfully to ${data.successCount} of ${data.totalRecipients} recipients!`,
+          details: data,
+        });
+        // Reset form after successful send
+        setSubject('');
+        setHtmlContent('');
+        setSelectedMembers(new Set());
+      } else {
+        setSendResult({
+          success: false,
+          message: data.error || 'Failed to send email',
+        });
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      setSendResult({
+        success: false,
+        message: 'An error occurred while sending the email',
+      });
+    } finally {
+      setIsSending(false);
+      setShowConfirmDialog(false);
+    }
+  };
+
+  const isFormValid = subject.trim() !== '' && htmlContent.trim() !== '' && actualRecipients.length > 0;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="mb-6">
+          <Link
+            href={`/${slug}`}
+            className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Union
+          </Link>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Mail className="h-8 w-8" />
+            Mass Email
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Send an email to multiple members at once
+          </p>
+        </div>
+
+        {/* Send Result Alert */}
+        {sendResult && (
+          <Card className={`mb-6 ${sendResult.success ? 'border-green-500' : 'border-red-500'}`}>
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                {sendResult.success ? (
+                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                )}
+                <div>
+                  <p className={`font-semibold ${sendResult.success ? 'text-green-900' : 'text-red-900'}`}>
+                    {sendResult.message}
+                  </p>
+                  {sendResult.details && sendResult.details.failureCount > 0 && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {sendResult.details.failureCount} emails failed to send. Check the logs for details.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content - Email Composer */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Compose Email</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Subject */}
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Subject *</Label>
+                  <Input
+                    id="subject"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    placeholder="Enter email subject"
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Message */}
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message *</Label>
+                  <div className="border rounded-lg overflow-hidden">
+                    <RichTextEditor
+                      content={htmlContent}
+                      onChange={setHtmlContent}
+                      placeholder="Compose your message..."
+                      className="min-h-[300px]"
+                    />
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Your message will be automatically wrapped in your union's branded email template.
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3 pt-4">
+                  <Button
+                    onClick={handlePreview}
+                    variant="outline"
+                    disabled={!isFormValid}
+                    className="flex items-center gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Preview Recipients
+                  </Button>
+                  <Button
+                    onClick={handleConfirmSend}
+                    disabled={!isFormValid || isSending}
+                    className="flex items-center gap-2"
+                  >
+                    {isSending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Send Email
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - Recipients */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UsersIcon className="h-5 w-5" />
+                  Recipients
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Recipient Filter */}
+                <div className="space-y-2">
+                  <Label htmlFor="filter">Send to:</Label>
+                  <Select value={recipientFilter} onValueChange={(value: any) => {
+                    setRecipientFilter(value);
+                    if (value !== 'custom') {
+                      setSelectedMembers(new Set());
+                    }
+                  }}>
+                    <SelectTrigger id="filter">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Members ({members.length})</SelectItem>
+                      <SelectItem value="approved">
+                        Approved Members ({members.filter((m) => m.member.status === 'approved').length})
+                      </SelectItem>
+                      <SelectItem value="admin">
+                        Admins Only ({members.filter((m) => m.member.role === 'admin').length})
+                      </SelectItem>
+                      <SelectItem value="pending">
+                        Pending Members ({members.filter((m) => m.member.status === 'pending').length})
+                      </SelectItem>
+                      <SelectItem value="rejected">
+                        Rejected Members ({members.filter((m) => m.member.status === 'rejected').length})
+                      </SelectItem>
+                      <SelectItem value="custom">Custom Selection</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Recipient Count */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm font-medium text-blue-900">
+                    {actualRecipients.length} {actualRecipients.length === 1 ? 'recipient' : 'recipients'}
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    {actualRecipients.length === 0
+                      ? 'No recipients selected'
+                      : `Email will be sent to ${actualRecipients.length} member${actualRecipients.length !== 1 ? 's' : ''}`}
+                  </p>
+                </div>
+
+                {/* Custom Selection */}
+                {recipientFilter === 'custom' && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Select Members:</Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={toggleSelectAll}
+                        className="text-xs"
+                      >
+                        {selectedMembers.size === filteredMembers.length && filteredMembers.length > 0
+                          ? 'Deselect All'
+                          : 'Select All'}
+                      </Button>
+                    </div>
+
+                    {/* Search */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        placeholder="Search members..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+
+                    {/* Member List */}
+                    <div className="max-h-[400px] overflow-y-auto space-y-2 border rounded-lg p-2">
+                      {filteredMembers.map((member) => (
+                        <div
+                          key={member.member.id}
+                          className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                          onClick={() => toggleMemberSelection(member.member.id)}
+                        >
+                          <Checkbox
+                            checked={selectedMembers.has(member.member.id)}
+                            onCheckedChange={() => toggleMemberSelection(member.member.id)}
+                          />
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="text-xs">
+                              {getInitials(getUserDisplayName(member.user))}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {getUserDisplayName(member.user)}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">{member.user.email}</p>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredMembers.length === 0 && (
+                        <p className="text-sm text-gray-500 text-center py-4">No members found</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Preview Dialog */}
+        <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Preview Recipients</DialogTitle>
+              <DialogDescription>
+                The following {actualRecipients.length} member{actualRecipients.length !== 1 ? 's' : ''} will receive this email:
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2 mt-4">
+              {actualRecipients.map((member) => (
+                <div
+                  key={member.member.id}
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback>
+                      {getInitials(getUserDisplayName(member.user))}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-medium">{getUserDisplayName(member.user)}</p>
+                    <p className="text-sm text-gray-600">{member.user.email}</p>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {member.member.role === 'admin' && (
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">Admin</span>
+                    )}
+                    {member.member.role === 'owner' && (
+                      <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">Owner</span>
+                    )}
+                    {member.member.status === 'pending' && (
+                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Pending</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowPreviewDialog(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Confirmation Dialog */}
+        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Send</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to send this email?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Subject:</p>
+                  <p className="text-sm text-gray-900">{subject}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Recipients:</p>
+                  <p className="text-sm text-gray-900">
+                    {actualRecipients.length} member{actualRecipients.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600">
+                Each recipient will receive an individual email with your union's branding.
+                This action cannot be undone.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmDialog(false)}
+                disabled={isSending}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleSend} disabled={isSending}>
+                {isSending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Send Email
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+}
