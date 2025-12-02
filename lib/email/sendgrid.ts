@@ -274,3 +274,148 @@ The UnionTab Team
 
   await sendEmail({ to: email, subject, text, html });
 }
+
+interface SendMassEmailOptions {
+  to: string;
+  subject: string;
+  htmlContent: string;
+  textContent: string;
+  unionInfo: {
+    name: string;
+    localNumber: string | null;
+    logoUrl?: string | null;
+  };
+  attachments?: Array<{
+    content?: string;
+    filename: string;
+    type?: string;
+    disposition?: string;
+    contentId?: string;
+    url?: string;
+  }>;
+}
+
+export async function sendMassEmail({
+  to,
+  subject,
+  htmlContent,
+  textContent,
+  unionInfo,
+  attachments,
+}: SendMassEmailOptions) {
+  if (!apiKey) {
+    console.error('SendGrid API key not configured');
+    throw new Error('Email service not configured');
+  }
+
+  const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
+
+  // Wrap the user's HTML content in a branded email template
+  const brandedHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f9fafb;
+    }
+    .email-container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .email-header {
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .email-header img {
+      max-width: 150px;
+      max-height: 80px;
+      margin-bottom: 15px;
+    }
+    .email-header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .email-body {
+      padding: 30px;
+    }
+    .email-body img {
+      max-width: 100%;
+      height: auto;
+    }
+    .email-body a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .email-body a:hover {
+      text-decoration: underline;
+    }
+    .email-footer {
+      background-color: #f9fafb;
+      padding: 20px 30px;
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      border-top: 1px solid #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="email-header">
+      ${unionInfo.logoUrl ? `<img src="${unionInfo.logoUrl}" alt="${unionName} Logo">` : ''}
+      <h1>${unionName}</h1>
+    </div>
+    <div class="email-body">
+      ${htmlContent}
+    </div>
+    <div class="email-footer">
+      <p>This email was sent by ${unionName}</p>
+      <p>© ${new Date().getFullYear()} ${unionName}. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  try {
+    await sgMail.send({
+      to,
+      from: {
+        email: FROM_EMAIL,
+        name: unionName,
+      },
+      subject,
+      text: textContent,
+      html: brandedHtml,
+      attachments: attachments?.map((att) => ({
+        ...att,
+        content: att.content,
+        filename: att.filename,
+        type: att.type,
+        disposition: att.disposition || 'attachment',
+      })),
+    });
+
+    console.log(`Mass email sent successfully to ${to}`);
+  } catch (error: any) {
+    console.error('Error sending mass email:', error);
+    if (error.response) {
+      console.error('SendGrid error response:', error.response.body);
+    }
+    throw new Error(`Failed to send email to ${to}: ${error.message}`);
+  }
+}
