@@ -19,7 +19,14 @@ export async function POST(
 
     const session = await verifyToken(sessionCookie);
 
-    if (session.user.role !== 'webmaster') {
+    // Get user to check role
+    const [currentUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, session.user.id))
+      .limit(1);
+
+    if (!currentUser || currentUser.role !== 'webmaster') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
