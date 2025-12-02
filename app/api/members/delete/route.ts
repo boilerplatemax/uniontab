@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { members, users } from '@/lib/db/schema';
+import { members, users, emailLogs } from '@/lib/db/schema';
 import { eq, and, ne } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 
@@ -69,6 +69,11 @@ export async function POST(request: Request) {
           ne(members.id, memberId)
         )
       );
+
+    // Delete email logs associated with this member first
+    await db
+      .delete(emailLogs)
+      .where(eq(emailLogs.memberId, memberId));
 
     // Delete the member record
     await db

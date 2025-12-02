@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 interface Member {
@@ -46,6 +46,8 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
   const [selectedMembers, setSelectedMembers] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [bulkAction, setBulkAction] = useState<string>('');
+  const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
 
   const getUserDisplayName = (user: { name: string | null; email: string }) => {
     return user.name || user.email;
@@ -115,6 +117,8 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
   const handleFilterChange = (newFilter: typeof statusFilter) => {
     setStatusFilter(newFilter);
     setCurrentPage(1);
+    setSelectedMembers(new Set()); // Clear selections when filter changes
+    setBulkAction('');
   };
 
   const handleSortChange = (newSort: typeof sortBy) => {
@@ -125,14 +129,27 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
+    setSelectedMembers(new Set()); // Clear selections when search changes
+    setBulkAction('');
   };
 
   // Bulk selection handlers
   const toggleSelectAll = () => {
-    if (selectedMembers.size === paginatedMembers.length) {
-      setSelectedMembers(new Set());
+    // Only select members who are not owners
+    const selectableMembers = paginatedMembers.filter(m => m.member.role !== 'owner');
+    const selectableMemberIds = selectableMembers.map(m => m.member.id);
+
+    // Check if all selectable members on current page are selected
+    const allSelectableSelected = selectableMemberIds.every(id => selectedMembers.has(id));
+
+    if (allSelectableSelected) {
+      // Deselect all members on current page
+      const newSelected = new Set(selectedMembers);
+      selectableMemberIds.forEach(id => newSelected.delete(id));
+      setSelectedMembers(newSelected);
     } else {
-      setSelectedMembers(new Set(paginatedMembers.map(m => m.member.id)));
+      // Select all selectable members on current page
+      setSelectedMembers(new Set([...selectedMembers, ...selectableMemberIds]));
     }
   };
 
@@ -232,6 +249,53 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
       alert('Failed to update member role');
     } finally {
       setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
+    }
+  };
+
+  const handleBulkAction = async () => {
+    if (!bulkAction || selectedMembers.size === 0) {
+      return;
+    }
+
+    const memberIds = Array.from(selectedMembers);
+
+    // Get member names for confirmation
+    const selectedMembersList = membersList.filter(m => memberIds.includes(m.member.id));
+
+    if (bulkAction === 'delete') {
+      const confirmMessage = `Are you sure you want to delete ${memberIds.length} ${memberIds.length === 1 ? 'member' : 'members'}? This action cannot be undone.`;
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      setIsBulkActionLoading(true);
+
+      try {
+        const response = await fetch('/api/members/bulk-delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberIds }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to delete members');
+        }
+
+        const result = await response.json();
+
+        // Remove deleted members from local state
+        setMembersList((prev) => prev.filter((m) => !memberIds.includes(m.member.id)));
+        setSelectedMembers(new Set());
+        setBulkAction('');
+
+        alert(`Successfully deleted ${result.deletedCount} ${result.deletedCount === 1 ? 'member' : 'members'}`);
+      } catch (error) {
+        console.error('Error bulk deleting members:', error);
+        alert(error instanceof Error ? error.message : 'Failed to delete members');
+      } finally {
+        setIsBulkActionLoading(false);
+      }
     }
   };
 
@@ -347,6 +411,68 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
           </Select>
         </div>
 
+        {/* Bulk Actions Bar */}
+        {isOwner && selectedMembers.size > 0 && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <AlertCircle className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {selectedMembers.size} {selectedMembers.size === 1 ? 'member' : 'members'} selected
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Choose an action to perform on selected members
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Select value={bulkAction} onValueChange={setBulkAction}>
+                    <SelectTrigger className="w-[200px] bg-white">
+                      <SelectValue placeholder="Choose action..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="delete">
+                        <div className="flex items-center gap-2">
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                          <span>Delete Members</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={handleBulkAction}
+                    disabled={!bulkAction || isBulkActionLoading}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isBulkActionLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      'Apply Action'
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedMembers(new Set());
+                      setBulkAction('');
+                    }}
+                    disabled={isBulkActionLoading}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Rejected Members Card (if any exist and owner) */}
         {isOwner && rejectedCount > 0 && (
           <Card className="mb-6 border-red-200 bg-red-50">
@@ -389,14 +515,17 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                 {statusFilter === 'admin' && 'Admin Members'}
                 {filteredMembers.length > 0 && ` (${filteredMembers.length})`}
               </CardTitle>
-              {isOwner && paginatedMembers.length > 0 && (
+              {isOwner && paginatedMembers.some(m => m.member.role !== 'owner') && (
                 <div className="flex items-center gap-2">
                   <Checkbox
-                    checked={selectedMembers.size === paginatedMembers.length && paginatedMembers.length > 0}
+                    checked={
+                      paginatedMembers.filter(m => m.member.role !== 'owner').length > 0 &&
+                      paginatedMembers.filter(m => m.member.role !== 'owner').every(m => selectedMembers.has(m.member.id))
+                    }
                     onCheckedChange={toggleSelectAll}
                   />
                   <span className="text-sm text-gray-600">
-                    Select all ({selectedMembers.size} selected)
+                    Select all on page ({selectedMembers.size} selected)
                   </span>
                 </div>
               )}
