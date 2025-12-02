@@ -98,7 +98,7 @@ export default async function MassEmailPage({
   }
 
   const unionMembers = await getUnionMembers(union.id);
-  const membership = await getMembership(union.id, user.id);
+  const membership = (await getMembership(union.id, user.id)) || null;
   const pendingMembersCount = await getPendingMembersCount(union.id);
 
   return (
