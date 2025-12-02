@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus } from 'lucide-react';
 import Link from 'next/link';
 
@@ -48,6 +49,14 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
   const itemsPerPage = 10;
   const [bulkAction, setBulkAction] = useState<string>('');
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
+
+  // Delete confirmation dialog states
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [pendingBulkAction, setPendingBulkAction] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const getUserDisplayName = (user: { name: string | null; email: string }) => {
     return user.name || user.email;
@@ -185,26 +194,33 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
             : m
         )
       );
+      setSuccessMessage(`Member ${action === 'approved' ? 'approved' : 'rejected'} successfully`);
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error('Error updating member status:', error);
-      alert('Failed to update member status');
+      setErrorMessage('Failed to update member status. Please try again.');
+      setTimeout(() => setErrorMessage(''), 3000);
     } finally {
       setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
     }
   };
 
-  const handleDeleteMember = async (memberId: number, memberName: string) => {
-    if (!confirm(`Are you sure you want to delete ${memberName}? This action cannot be undone.`)) {
-      return;
-    }
+  const handleDeleteMember = (memberId: number, memberName: string) => {
+    setMemberToDelete({ id: memberId, name: memberName });
+    setDeleteDialogOpen(true);
+  };
 
-    setLoadingMembers((prev) => ({ ...prev, [memberId]: true }));
+  const confirmDeleteMember = async () => {
+    if (!memberToDelete) return;
+
+    setLoadingMembers((prev) => ({ ...prev, [memberToDelete.id]: true }));
+    setDeleteDialogOpen(false);
 
     try {
       const response = await fetch('/api/members/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memberId }),
+        body: JSON.stringify({ memberId: memberToDelete.id }),
       });
 
       if (!response.ok) {
@@ -212,12 +228,16 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
       }
 
       // Remove from local state
-      setMembersList((prev) => prev.filter((m) => m.member.id !== memberId));
+      setMembersList((prev) => prev.filter((m) => m.member.id !== memberToDelete.id));
+      setSuccessMessage(`Successfully deleted ${memberToDelete.name}`);
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error('Error deleting member:', error);
-      alert('Failed to delete member');
+      setErrorMessage('Failed to delete member. Please try again.');
+      setTimeout(() => setErrorMessage(''), 3000);
     } finally {
-      setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
+      setLoadingMembers((prev) => ({ ...prev, [memberToDelete.id]: false }));
+      setMemberToDelete(null);
     }
   };
 
@@ -244,30 +264,31 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
             : m
         )
       );
+      setSuccessMessage(`Member role updated to ${newRole} successfully`);
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error('Error updating member role:', error);
-      alert('Failed to update member role');
+      setErrorMessage('Failed to update member role. Please try again.');
+      setTimeout(() => setErrorMessage(''), 3000);
     } finally {
       setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
     }
   };
 
-  const handleBulkAction = async () => {
+  const handleBulkAction = () => {
     if (!bulkAction || selectedMembers.size === 0) {
       return;
     }
 
+    setPendingBulkAction(bulkAction);
+    setBulkDeleteDialogOpen(true);
+  };
+
+  const confirmBulkAction = async () => {
     const memberIds = Array.from(selectedMembers);
+    setBulkDeleteDialogOpen(false);
 
-    // Get member names for confirmation
-    const selectedMembersList = membersList.filter(m => memberIds.includes(m.member.id));
-
-    if (bulkAction === 'delete') {
-      const confirmMessage = `Are you sure you want to delete ${memberIds.length} ${memberIds.length === 1 ? 'member' : 'members'}? This action cannot be undone.`;
-      if (!confirm(confirmMessage)) {
-        return;
-      }
-
+    if (pendingBulkAction === 'delete') {
       setIsBulkActionLoading(true);
 
       try {
@@ -288,28 +309,26 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
         setMembersList((prev) => prev.filter((m) => !memberIds.includes(m.member.id)));
         setSelectedMembers(new Set());
         setBulkAction('');
+        setPendingBulkAction('');
 
-        alert(`Successfully deleted ${result.deletedCount} ${result.deletedCount === 1 ? 'member' : 'members'}`);
+        setSuccessMessage(`Successfully deleted ${result.deletedCount} ${result.deletedCount === 1 ? 'member' : 'members'}`);
+        setTimeout(() => setSuccessMessage(''), 3000);
       } catch (error) {
         console.error('Error bulk deleting members:', error);
-        alert(error instanceof Error ? error.message : 'Failed to delete members');
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to delete members');
+        setTimeout(() => setErrorMessage(''), 3000);
       } finally {
         setIsBulkActionLoading(false);
       }
-    } else if (bulkAction === 'approve' || bulkAction === 'pending' || bulkAction === 'reject') {
+    } else if (pendingBulkAction === 'approve' || pendingBulkAction === 'pending' || pendingBulkAction === 'reject') {
       const statusMap = {
         approve: 'approved',
         pending: 'pending',
         reject: 'rejected'
       } as const;
 
-      const status = statusMap[bulkAction];
-      const actionLabel = bulkAction === 'approve' ? 'approve' : bulkAction === 'pending' ? 'mark as pending' : 'reject';
-
-      const confirmMessage = `Are you sure you want to ${actionLabel} ${memberIds.length} ${memberIds.length === 1 ? 'member' : 'members'}?`;
-      if (!confirm(confirmMessage)) {
-        return;
-      }
+      const status = statusMap[pendingBulkAction];
+      const actionLabel = pendingBulkAction === 'approve' ? 'approve' : pendingBulkAction === 'pending' ? 'mark as pending' : 'reject';
 
       setIsBulkActionLoading(true);
 
@@ -337,11 +356,14 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
         );
         setSelectedMembers(new Set());
         setBulkAction('');
+        setPendingBulkAction('');
 
-        alert(`Successfully ${actionLabel}d ${result.updatedCount} ${result.updatedCount === 1 ? 'member' : 'members'}`);
+        setSuccessMessage(`Successfully ${actionLabel}d ${result.updatedCount} ${result.updatedCount === 1 ? 'member' : 'members'}`);
+        setTimeout(() => setSuccessMessage(''), 3000);
       } catch (error) {
         console.error(`Error bulk ${actionLabel}ing members:`, error);
-        alert(error instanceof Error ? error.message : `Failed to ${actionLabel} members`);
+        setErrorMessage(error instanceof Error ? error.message : `Failed to ${actionLabel} members`);
+        setTimeout(() => setErrorMessage(''), 3000);
       } finally {
         setIsBulkActionLoading(false);
       }
@@ -840,6 +862,68 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
           </CardContent>
         </Card>
       </div>
+
+      {/* Success/Error Messages */}
+      {successMessage && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-in slide-in-from-bottom-5">
+          <CheckCircle className="h-5 w-5" />
+          <span>{successMessage}</span>
+        </div>
+      )}
+      {errorMessage && (
+        <div className="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-in slide-in-from-bottom-5">
+          <XCircle className="h-5 w-5" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+      {/* Delete Single Member Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDeleteMember}
+        title="Delete Member"
+        description={`Are you sure you want to delete ${memberToDelete?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+      />
+
+      {/* Bulk Action Confirmation Dialog */}
+      <ConfirmationDialog
+        open={bulkDeleteDialogOpen}
+        onOpenChange={setBulkDeleteDialogOpen}
+        onConfirm={confirmBulkAction}
+        title={
+          pendingBulkAction === 'delete'
+            ? 'Delete Members'
+            : pendingBulkAction === 'approve'
+            ? 'Approve Members'
+            : pendingBulkAction === 'reject'
+            ? 'Reject Members'
+            : 'Mark Members as Pending'
+        }
+        description={
+          pendingBulkAction === 'delete'
+            ? `Are you sure you want to delete ${selectedMembers.size} ${selectedMembers.size === 1 ? 'member' : 'members'}? This action cannot be undone.`
+            : pendingBulkAction === 'approve'
+            ? `Are you sure you want to approve ${selectedMembers.size} ${selectedMembers.size === 1 ? 'member' : 'members'}?`
+            : pendingBulkAction === 'reject'
+            ? `Are you sure you want to reject ${selectedMembers.size} ${selectedMembers.size === 1 ? 'member' : 'members'}?`
+            : `Are you sure you want to mark ${selectedMembers.size} ${selectedMembers.size === 1 ? 'member' : 'members'} as pending?`
+        }
+        confirmText={
+          pendingBulkAction === 'delete'
+            ? 'Delete'
+            : pendingBulkAction === 'approve'
+            ? 'Approve'
+            : pendingBulkAction === 'reject'
+            ? 'Reject'
+            : 'Mark as Pending'
+        }
+        cancelText="Cancel"
+        variant={pendingBulkAction === 'delete' ? 'destructive' : 'default'}
+      />
     </div>
   );
 }

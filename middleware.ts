@@ -11,6 +11,24 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = pathname.startsWith(protectedRoutes) || pathname === '/onboarding';
   const isAdminRoute = pathname.startsWith(adminRoutes);
 
+  // Handle subdomain routing for info.uniontab.com
+  const hostname = request.headers.get('host') || '';
+  const url = request.nextUrl.clone();
+
+  // Check if this is the info subdomain
+  if (hostname.startsWith('info.')) {
+    // Rewrite to /info path
+    if (pathname === '/') {
+      url.pathname = '/info';
+      return NextResponse.rewrite(url);
+    }
+    // For other paths on info subdomain, prefix with /info
+    if (!pathname.startsWith('/info')) {
+      url.pathname = `/info${pathname}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   // Redirect to sign-in if accessing protected routes without session
   if ((isProtectedRoute || isAdminRoute) && !sessionCookie) {
     return NextResponse.redirect(new URL('/sign-in', request.url));

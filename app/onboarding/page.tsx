@@ -153,7 +153,7 @@ export default function OnboardingPage() {
             <Users className="h-12 w-12 text-blue-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome to UnionWeb
+            Welcome to UnionTab
           </h1>
           <p className="mt-2 text-gray-600">
             Let's set up your union's website in a few simple steps
