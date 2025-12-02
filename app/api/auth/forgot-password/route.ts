@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { users } from '@/lib/db/schema';
+import { users, members, unions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { sendPasswordResetEmail } from '@/lib/email/sendgrid';
 import crypto from 'crypto';
@@ -48,9 +48,24 @@ export async function POST(request: Request) {
       })
       .where(eq(users.id, user.id));
 
+    // Get user's union information for the email
+    const [membership] = await db
+      .select({
+        union: unions
+      })
+      .from(members)
+      .innerJoin(unions, eq(members.unionId, unions.id))
+      .where(eq(members.userId, user.id))
+      .limit(1);
+
+    const unionInfo = membership?.union ? {
+      name: membership.union.publicName || membership.union.name,
+      localNumber: membership.union.localNumber
+    } : null;
+
     // Send password reset email
     try {
-      await sendPasswordResetEmail(user.email, resetToken, user.name);
+      await sendPasswordResetEmail(user.email, resetToken, user.name, unionInfo);
       console.log(`Password reset email sent to ${user.email}`);
     } catch (emailError) {
       console.error('Failed to send password reset email:', emailError);

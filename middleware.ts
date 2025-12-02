@@ -12,9 +12,11 @@ const emailVerificationExemptRoutes = [
   '/auth/resend-verification',
   '/sign-in',
   '/sign-up',
+  '/onboarding', // Allow onboarding - users are redirected here after email verification
   '/api/auth/verify-email',
   '/api/auth/resend-verification',
   '/api/user',
+  '/api/onboarding',
 ];
 
 export async function middleware(request: NextRequest) {

@@ -40,10 +40,10 @@ function VerifyEmailForm() {
 
         setSuccess(true);
 
-        // Redirect to sign-in after 3 seconds
+        // Redirect to onboarding/dashboard after 2 seconds (user is now logged in)
         setTimeout(() => {
-          router.push('/sign-in');
-        }, 3000);
+          router.push('/onboarding');
+        }, 2000);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -86,15 +86,15 @@ function VerifyEmailForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-center text-gray-600">
-              Your email has been verified. You can now access all features of UnionTab.
+              Your email has been verified and you're now signed in! Let's set up your union.
             </p>
             <p className="text-center text-sm text-gray-500">
-              Redirecting to login page...
+              Redirecting to onboarding...
             </p>
             <div className="pt-4">
-              <Link href="/sign-in">
+              <Link href="/onboarding">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                  Go to Login
+                  Continue to Setup
                 </Button>
               </Link>
             </div>

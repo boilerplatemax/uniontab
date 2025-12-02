@@ -3,6 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { users } from '@/lib/db/schema';
 import { eq, and, gt } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { signToken } from '@/lib/auth/session';
 
 export async function POST(request: Request) {
   try {
@@ -58,9 +59,33 @@ export async function POST(request: Request) {
 
     console.log(`Password successfully reset for user: ${user.email}`);
 
-    return NextResponse.json({
+    // Auto-login: Create session for the user
+    const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const sessionToken = await signToken({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+      expires: expiresInOneDay.toISOString(),
+    });
+
+    const response = NextResponse.json({
       message: 'Password has been reset successfully',
     });
+
+    // Set session cookie
+    response.cookies.set({
+      name: 'session',
+      value: sessionToken,
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      expires: expiresInOneDay,
+    });
+
+    return response;
   } catch (error) {
     console.error('Error in reset-password:', error);
     return NextResponse.json(
