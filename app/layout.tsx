@@ -5,7 +5,7 @@ import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
 
 export const metadata: Metadata = {
-  title: 'UnionWeb - Build Your Union Website',
+  title: 'UnionTab - Build Your Union Website',
   description: 'Create a professional website for your union in minutes. Engage members, share updates, and strengthen your community.'
 };
 

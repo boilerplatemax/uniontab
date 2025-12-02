@@ -429,7 +429,7 @@ export default async function PublicUnionPage({
               href="/"
               className="text-blue-600 hover:text-blue-700 font-medium"
             >
-              UnionWeb
+              UnionTab
             </a>
           </p>
         </div>
