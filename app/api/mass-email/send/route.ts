@@ -4,6 +4,7 @@ import { members, users, unions, massEmails, emailLogs } from '@/lib/db/schema';
 import { eq, and, inArray, isNull } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { sendMassEmail } from '@/lib/email/sendgrid';
+import { checkEmailLimit, incrementEmailUsage } from '@/lib/email/limits';
 
 export async function POST(request: Request) {
   try {
@@ -95,6 +96,32 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check email limit before sending
+    const emailLimitCheck = await checkEmailLimit(unionId, recipients.length);
+
+    if (!emailLimitCheck.canSend) {
+      const resetDate = new Date(emailLimitCheck.resetDate).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      });
+
+      return NextResponse.json(
+        {
+          error: 'Monthly email limit exceeded',
+          details: {
+            limit: emailLimitCheck.limit,
+            used: emailLimitCheck.used,
+            remaining: emailLimitCheck.remaining,
+            requested: recipients.length,
+            resetDate: resetDate,
+            message: `You have ${emailLimitCheck.remaining} emails remaining this month. You are trying to send ${recipients.length} emails. Your limit will reset on ${resetDate}.`,
+          },
+        },
+        { status: 429 } // 429 Too Many Requests
+      );
+    }
+
     // Create mass email record
     const [massEmailRecord] = await db
       .insert(massEmails)
@@ -171,6 +198,11 @@ export async function POST(request: Request) {
         updatedAt: new Date(),
       })
       .where(eq(massEmails.id, massEmailRecord.id));
+
+    // Increment email usage counter (only count successfully sent emails)
+    if (successCount > 0) {
+      await incrementEmailUsage(unionId, successCount);
+    }
 
     return NextResponse.json({
       success: true,

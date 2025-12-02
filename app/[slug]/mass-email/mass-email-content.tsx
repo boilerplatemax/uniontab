@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import {
   Dialog,
@@ -30,6 +31,7 @@ import {
   Filter,
   ChevronUp,
   ChevronDown,
+  TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -75,6 +77,14 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
   } | null>(null);
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'role' | 'status'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [emailUsage, setEmailUsage] = useState<{
+    limit: number;
+    used: number;
+    remaining: number;
+    percentUsed: number;
+    resetDate: string;
+  } | null>(null);
+  const [isLoadingUsage, setIsLoadingUsage] = useState(true);
 
   const getUserDisplayName = (user: { name: string | null; email: string }) => {
     return user.name || user.email;
@@ -97,6 +107,26 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
       setSortDirection('asc');
     }
   };
+
+  // Fetch email usage on mount and after successful send
+  const fetchEmailUsage = async () => {
+    try {
+      setIsLoadingUsage(true);
+      const response = await fetch(`/api/mass-email/usage?unionId=${union.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setEmailUsage(data.usage);
+      }
+    } catch (error) {
+      console.error('Error fetching email usage:', error);
+    } finally {
+      setIsLoadingUsage(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmailUsage();
+  }, [union.id]);
 
   // Filter members based on recipient filter and search
   const filteredMembers = useMemo(() => {
@@ -216,11 +246,23 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
         setSubject('');
         setHtmlContent('');
         setSelectedMembers(new Set());
+        // Refresh email usage
+        fetchEmailUsage();
       } else {
-        setSendResult({
-          success: false,
-          message: data.error || 'Failed to send email',
-        });
+        // Handle email limit exceeded error with more details
+        if (response.status === 429 && data.details) {
+          setSendResult({
+            success: false,
+            message: data.details.message || data.error,
+            details: data.details,
+          });
+        } else {
+          setSendResult({
+            success: false,
+            message: data.error || 'Failed to send email',
+            details: data.details,
+          });
+        }
       }
     } catch (error) {
       console.error('Error sending email:', error);
@@ -267,7 +309,7 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
                 ) : (
                   <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
                 )}
-                <div>
+                <div className="flex-1">
                   <p className={`font-semibold ${sendResult.success ? 'text-green-900' : 'text-red-900'}`}>
                     {sendResult.message}
                   </p>
@@ -275,6 +317,15 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
                     <p className="text-sm text-gray-600 mt-1">
                       {sendResult.details.failureCount} emails failed to send. Check the logs for details.
                     </p>
+                  )}
+                  {/* Show limit details if provided */}
+                  {sendResult.details && sendResult.details.limit && (
+                    <div className="mt-2 text-sm text-gray-700 bg-gray-50 rounded p-3 border border-gray-200">
+                      <p><strong>Email Limit:</strong> {sendResult.details.limit.toLocaleString()} emails/month</p>
+                      <p><strong>Already Used:</strong> {sendResult.details.used.toLocaleString()} emails</p>
+                      <p><strong>Remaining:</strong> {sendResult.details.remaining.toLocaleString()} emails</p>
+                      <p><strong>Requested:</strong> {sendResult.details.requested.toLocaleString()} emails</p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -517,7 +568,85 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
           </div>
 
           {/* Sidebar - Recipients */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
+            {/* Email Usage Counter */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <TrendingUp className="h-5 w-5" />
+                  Monthly Email Usage
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {isLoadingUsage ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                ) : emailUsage ? (
+                  <>
+                    {/* Progress Bar */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-gray-700">
+                          {emailUsage.used.toLocaleString()} / {emailUsage.limit.toLocaleString()} emails
+                        </span>
+                        <span className="text-gray-500">
+                          {emailUsage.percentUsed}%
+                        </span>
+                      </div>
+                      <Progress
+                        value={emailUsage.percentUsed}
+                        className="h-2"
+                      />
+                    </div>
+
+                    {/* Remaining/Usage Info */}
+                    <div className={`rounded-lg p-3 ${
+                      emailUsage.percentUsed >= 90
+                        ? 'bg-red-50 border border-red-200'
+                        : emailUsage.percentUsed >= 75
+                        ? 'bg-yellow-50 border border-yellow-200'
+                        : 'bg-green-50 border border-green-200'
+                    }`}>
+                      <p className={`text-sm font-medium ${
+                        emailUsage.percentUsed >= 90
+                          ? 'text-red-900'
+                          : emailUsage.percentUsed >= 75
+                          ? 'text-yellow-900'
+                          : 'text-green-900'
+                      }`}>
+                        {emailUsage.remaining.toLocaleString()} emails remaining
+                      </p>
+                      <p className={`text-xs mt-1 ${
+                        emailUsage.percentUsed >= 90
+                          ? 'text-red-700'
+                          : emailUsage.percentUsed >= 75
+                          ? 'text-yellow-700'
+                          : 'text-green-700'
+                      }`}>
+                        Resets on {new Date(emailUsage.resetDate).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+
+                    {/* Upgrade message for free users approaching limit */}
+                    {emailUsage.limit === 500 && emailUsage.percentUsed >= 75 && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p className="text-xs text-blue-900">
+                          <strong>Need more emails?</strong> Upgrade to a paid plan for up to 15,000 emails per month.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">Unable to load usage data</p>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="sticky top-4">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
