@@ -451,16 +451,16 @@ export function CategorizedFilesList({
     }));
 
     try {
-      await fetch('/api/files/reorder', {
+      const response = await fetch('/api/files/reorder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileUpdates }),
       });
 
-      // Update local state
-      categorizedFiles[category] = newFiles;
-      // Force re-render
-      setRefreshKey((prev) => prev + 1);
+      if (response.ok) {
+        // Reload page to show updated order
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Error reordering files:', error);
     }
@@ -486,16 +486,16 @@ export function CategorizedFilesList({
     }));
 
     try {
-      await fetch('/api/files/reorder', {
+      const response = await fetch('/api/files/reorder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileUpdates }),
       });
 
-      // Update local state
-      categorizedFiles[category] = newFiles;
-      // Force re-render
-      setRefreshKey((prev) => prev + 1);
+      if (response.ok) {
+        // Reload page to show updated order
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Error reordering files:', error);
     }

@@ -309,6 +309,7 @@ export async function sendMassEmail({
   }
 
   const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
+  const unionNameUppercase = unionName.toUpperCase();
 
   // Wrap the user's HTML content in a branded email template
   const brandedHtml = `
@@ -376,15 +377,15 @@ export async function sendMassEmail({
 <body>
   <div class="email-container">
     <div class="email-header">
-      ${unionInfo.logoUrl ? `<img src="${unionInfo.logoUrl}" alt="${unionName} Logo">` : ''}
-      <h1>${unionName}</h1>
+      ${unionInfo.logoUrl ? `<img src="${unionInfo.logoUrl}" alt="${unionNameUppercase} Logo">` : ''}
+      <h1>${unionNameUppercase}</h1>
     </div>
     <div class="email-body">
       ${htmlContent}
     </div>
     <div class="email-footer">
-      <p>This email was sent by ${unionName}</p>
-      <p>© ${new Date().getFullYear()} ${unionName}. All rights reserved.</p>
+      <p>This email was sent by ${unionNameUppercase}</p>
+      <p>© ${new Date().getFullYear()} ${unionNameUppercase}. All rights reserved.</p>
     </div>
   </div>
 </body>
@@ -396,7 +397,7 @@ export async function sendMassEmail({
       to,
       from: {
         email: FROM_EMAIL,
-        name: unionName,
+        name: unionNameUppercase,
       },
       subject,
       text: textContent,
