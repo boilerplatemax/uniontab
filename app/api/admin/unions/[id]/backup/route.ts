@@ -19,6 +19,7 @@ import {
   fileCategories,
   postAttachments,
   postLikes,
+  users,
 } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { verifyToken } from '@/lib/auth/session';
@@ -37,7 +38,14 @@ export async function GET(
 
     const session = await verifyToken(sessionCookie);
 
-    if (session.user.role !== 'webmaster') {
+    // Get user to check role
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, session.user.id))
+      .limit(1);
+
+    if (!user || user.role !== 'webmaster') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

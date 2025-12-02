@@ -7,7 +7,8 @@ import {
   events,
   files,
   unionPages,
-  activityLogs
+  activityLogs,
+  users
 } from '@/lib/db/schema';
 import { eq, count, desc, sql } from 'drizzle-orm';
 import { verifyToken } from '@/lib/auth/session';
@@ -23,7 +24,14 @@ export async function GET(request: Request) {
 
     const session = await verifyToken(sessionCookie);
 
-    if (session.user.role !== 'webmaster') {
+    // Get user to check role
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, session.user.id))
+      .limit(1);
+
+    if (!user || user.role !== 'webmaster') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
