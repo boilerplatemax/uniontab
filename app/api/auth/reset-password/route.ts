@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { users } from '@/lib/db/schema';
+import { users, members, unions } from '@/lib/db/schema';
 import { eq, and, gt } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth/session';
@@ -59,6 +59,16 @@ export async function POST(request: Request) {
 
     console.log(`Password successfully reset for user: ${user.email}`);
 
+    // Get the user's union slug for redirect
+    const [membership] = await db
+      .select({
+        unionSlug: unions.slug,
+      })
+      .from(members)
+      .innerJoin(unions, eq(members.unionId, unions.id))
+      .where(eq(members.userId, user.id))
+      .limit(1);
+
     // Auto-login: Create session for the user
     const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const sessionToken = await signToken({
@@ -73,6 +83,7 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({
       message: 'Password has been reset successfully',
+      unionSlug: membership?.unionSlug,
     });
 
     // Set session cookie

@@ -21,6 +21,7 @@ function ResetPasswordForm() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [unionSlug, setUnionSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -61,10 +62,12 @@ function ResetPasswordForm() {
       }
 
       setSuccess(true);
+      setUnionSlug(data.unionSlug);
 
-      // Redirect to dashboard after 2 seconds (user is now logged in)
+      // Redirect to user's union page after 2 seconds (user is now logged in)
+      const redirectPath = data.unionSlug ? `/${data.unionSlug}` : '/onboarding';
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push(redirectPath);
       }, 2000);
     } catch (err: any) {
       setError(err.message);
@@ -88,12 +91,12 @@ function ResetPasswordForm() {
               Your password has been reset successfully and you're now signed in!
             </p>
             <p className="text-center text-sm text-gray-500">
-              Redirecting to dashboard...
+              Redirecting to your union page...
             </p>
             <div className="pt-4">
-              <Link href="/dashboard">
+              <Link href={unionSlug ? `/${unionSlug}` : '/onboarding'}>
                 <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                  Go to Dashboard
+                  Go to Union Page
                 </Button>
               </Link>
             </div>
