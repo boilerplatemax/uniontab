@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +36,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import type { Union } from '@/lib/db/schema';
 
 interface Member {
   memberId: number;
@@ -44,17 +45,6 @@ interface Member {
   email: string;
   role: string;
   status: string;
-  unionName: string;
-  unionId: number;
-  unionSlug: string;
-  unionLogoUrl: string | null;
-  unionCoverPhotoUrl: string | null;
-}
-
-interface Union {
-  id: number;
-  name: string;
-  slug: string;
 }
 
 interface EmailAttachment {
@@ -64,15 +54,17 @@ interface EmailAttachment {
   size: number;
 }
 
-export default function MassEmailClient() {
+interface MassEmailClientProps {
+  slug: string;
+  union: Union;
+  members: Member[];
+}
+
+export function MassEmailClient({ slug, union, members }: MassEmailClientProps) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [unions, setUnions] = useState<Union[]>([]);
 
   // Filters
-  const [selectedUnion, setSelectedUnion] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending'>('approved');
   const [roleFilter, setRoleFilter] = useState<'all' | 'owner' | 'member'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,28 +78,6 @@ export default function MassEmailClient() {
   // Confirmation dialog
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const response = await fetch('/api/admin/mass-email/members');
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch members');
-      }
-
-      setMembers(data.members);
-      setUnions(data.unions);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getUserDisplayName = (member: Member) => {
     return member.name || member.email;
@@ -125,9 +95,6 @@ export default function MassEmailClient() {
   // Filtered members
   const filteredMembers = useMemo(() => {
     return members.filter((m) => {
-      // Union filter
-      const matchesUnion = selectedUnion === 'all' || m.unionId.toString() === selectedUnion;
-
       // Status filter
       const matchesStatus = statusFilter === 'all' || m.status === statusFilter;
 
@@ -139,23 +106,11 @@ export default function MassEmailClient() {
       const matchesSearch =
         !searchQuery ||
         getUserDisplayName(m).toLowerCase().includes(searchLower) ||
-        m.email.toLowerCase().includes(searchLower) ||
-        m.unionName.toLowerCase().includes(searchLower);
+        m.email.toLowerCase().includes(searchLower);
 
-      return matchesUnion && matchesStatus && matchesRole && matchesSearch;
+      return matchesStatus && matchesRole && matchesSearch;
     });
-  }, [members, selectedUnion, statusFilter, roleFilter, searchQuery]);
-
-  // Count by union
-  const recipientsByUnion = useMemo(() => {
-    const counts: Record<string, number> = {};
-    filteredMembers.forEach((m) => {
-      if (selectedMembers.has(m.memberId)) {
-        counts[m.unionSlug] = (counts[m.unionSlug] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [filteredMembers, selectedMembers]);
+  }, [members, statusFilter, roleFilter, searchQuery]);
 
   // Selection handlers
   const toggleSelectAll = () => {
@@ -186,11 +141,11 @@ export default function MassEmailClient() {
         selectedMembers.has(m.memberId)
       );
 
-      const response = await fetch('/api/admin/mass-email/send', {
+      const response = await fetch(`/api/unions/${union.id}/mass-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          members: selectedMembersList,
+          recipients: selectedMembersList,
           subject,
           message,
           attachments
@@ -216,7 +171,7 @@ export default function MassEmailClient() {
     }
   };
 
-  const handleAddAttachment = (file: File | null, url: string | null) => {
+  const handleAddAttachment = (file: File | null, url?: string) => {
     if (file && url) {
       setAttachments([
         ...attachments,
@@ -236,23 +191,18 @@ export default function MassEmailClient() {
 
   const canSend = subject.trim() && message.trim() && selectedMembers.size > 0;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  const unionDisplayName = union.publicName || union.name;
+  const localNumberPart = union.localNumber ? ` Local ${union.localNumber}` : '';
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6">
-          <Link href="/admin/union-management">
+          <Link href={`/${slug}`}>
             <Button variant="ghost" className="gap-2 mb-4">
               <ArrowLeft className="h-4 w-4" />
-              Back to Admin
+              Back to Union
             </Button>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -260,7 +210,7 @@ export default function MassEmailClient() {
             Mass Email
           </h1>
           <p className="text-gray-600 mt-2">
-            Send bulk emails to union members with custom branding
+            Send bulk emails to your union members
           </p>
         </div>
 
@@ -291,6 +241,9 @@ export default function MassEmailClient() {
                     onChange={(e) => setSubject(e.target.value)}
                     className="mt-1"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Subject will be sent as: <span className="font-medium">{unionDisplayName}{localNumberPart} - {subject || '...'}</span>
+                  </p>
                 </div>
 
                 <div>
@@ -303,8 +256,7 @@ export default function MassEmailClient() {
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Each email will be personalized with the recipient's union branding (logo,
-                    colors, etc.)
+                    Each email will include your union's branding (logo, colors, etc.)
                   </p>
                 </div>
 
@@ -337,9 +289,9 @@ export default function MassEmailClient() {
                       accept="*"
                       maxSize={10}
                       label="Add Attachment"
-                      hint="Upload files to include in the email"
+                      hint="Upload files to include in the email (max 10MB)"
                       bucket="union-files"
-                      path="email-attachments"
+                      path={`${slug}/email-attachments`}
                     />
                   </div>
                 </div>
@@ -377,20 +329,10 @@ export default function MassEmailClient() {
                   <div className="space-y-2">
                     <p className="text-sm text-gray-600">
                       {selectedMembers.size} member{selectedMembers.size !== 1 ? 's' : ''} selected
-                      across {Object.keys(recipientsByUnion).length} union
-                      {Object.keys(recipientsByUnion).length !== 1 ? 's' : ''}:
                     </p>
-                    <div className="space-y-1">
-                      {Object.entries(recipientsByUnion).map(([slug, count]) => (
-                        <div
-                          key={slug}
-                          className="text-sm text-gray-700 flex items-center justify-between"
-                        >
-                          <span className="font-medium">{slug}</span>
-                          <span className="text-gray-500">{count}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-xs text-gray-500">
+                      Each member will receive an individual email with your union's branding.
+                    </p>
                   </div>
                 ) : (
                   <p className="text-sm text-gray-500">
@@ -412,24 +354,7 @@ export default function MassEmailClient() {
           </CardHeader>
           <CardContent>
             {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div>
-                <Label htmlFor="union-filter">Union</Label>
-                <Select value={selectedUnion} onValueChange={setSelectedUnion}>
-                  <SelectTrigger id="union-filter">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Unions ({members.length})</SelectItem>
-                    {unions.map((union) => (
-                      <SelectItem key={union.id} value={union.id.toString()}>
-                        {union.name} ({members.filter((m) => m.unionId === union.id).length})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div>
                 <Label htmlFor="status-filter">Status</Label>
                 <Select
@@ -440,9 +365,13 @@ export default function MassEmailClient() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="approved">Approved</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="all">All Status ({members.length})</SelectItem>
+                    <SelectItem value="approved">
+                      Approved ({members.filter((m) => m.status === 'approved').length})
+                    </SelectItem>
+                    <SelectItem value="pending">
+                      Pending ({members.filter((m) => m.status === 'pending').length})
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -455,8 +384,12 @@ export default function MassEmailClient() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="owner">Owners</SelectItem>
-                    <SelectItem value="member">Members</SelectItem>
+                    <SelectItem value="owner">
+                      Owners ({members.filter((m) => m.role === 'owner').length})
+                    </SelectItem>
+                    <SelectItem value="member">
+                      Members ({members.filter((m) => m.role === 'member').length})
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -517,7 +450,6 @@ export default function MassEmailClient() {
                       <p className="text-xs text-gray-500 truncate">{member.email}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-medium text-gray-700">{member.unionName}</p>
                       <p className="text-xs text-gray-500 capitalize">
                         {member.role} · {member.status}
                       </p>
@@ -537,27 +469,21 @@ export default function MassEmailClient() {
             <DialogTitle>Confirm Send</DialogTitle>
             <DialogDescription>
               You are about to send this email to {selectedMembers.size} member
-              {selectedMembers.size !== 1 ? 's' : ''} across{' '}
-              {Object.keys(recipientsByUnion).length} union
-              {Object.keys(recipientsByUnion).length !== 1 ? 's' : ''}.
+              {selectedMembers.size !== 1 ? 's' : ''}.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
             <div>
               <p className="text-sm font-medium text-gray-900">Subject:</p>
-              <p className="text-sm text-gray-700">{subject}</p>
+              <p className="text-sm text-gray-700">{unionDisplayName}{localNumberPart} - {subject}</p>
             </div>
 
             <div>
-              <p className="text-sm font-medium text-gray-900">Recipients by union:</p>
-              <ul className="text-sm text-gray-700 list-disc list-inside">
-                {Object.entries(recipientsByUnion).map(([slug, count]) => (
-                  <li key={slug}>
-                    {slug}: {count} member{count !== 1 ? 's' : ''}
-                  </li>
-                ))}
-              </ul>
+              <p className="text-sm font-medium text-gray-900">Recipients:</p>
+              <p className="text-sm text-gray-700">
+                {selectedMembers.size} member{selectedMembers.size !== 1 ? 's' : ''}
+              </p>
             </div>
 
             {attachments.length > 0 && (
@@ -570,6 +496,12 @@ export default function MassEmailClient() {
                 </ul>
               </div>
             )}
+
+            <div className="bg-blue-50 border border-blue-200 rounded p-3">
+              <p className="text-xs text-blue-900">
+                Each email will be personalized with your union's branding and sent individually to each recipient.
+              </p>
+            </div>
           </div>
 
           <DialogFooter>

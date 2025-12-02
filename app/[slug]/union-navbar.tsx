@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone } from 'lucide-react';
+import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -66,6 +66,12 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                                 {pendingMembersCount}
                               </span>
                             )}
+                          </Button>
+                        </Link>
+                        <Link href={`/${slug}/mass-email`} prefetch={true}>
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <Mail className="h-4 w-4" />
+                            <span className="hidden md:inline">Mass Email</span>
                           </Button>
                         </Link>
                         <Link href={`/${slug}/announcements`} prefetch={true}>
@@ -162,6 +168,16 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                           {pendingMembersCount}
                         </span>
                       )}
+                    </Button>
+                  </Link>
+                  <Link
+                    href={`/${slug}/mass-email`}
+                    prefetch={true}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Button variant="ghost" className="w-full justify-start gap-2">
+                      <Mail className="h-4 w-4" />
+                      Mass Email
                     </Button>
                   </Link>
                   <Link

@@ -199,20 +199,10 @@ export default function UnionManagementPage() {
       <div className="max-w-7xl mx-auto">
         <Card>
           <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-2xl">Union Management Dashboard</CardTitle>
-                <p className="text-sm text-gray-600">
-                  View and manage all unions on the platform
-                </p>
-              </div>
-              <Link href="/admin/mass-email">
-                <Button className="gap-2">
-                  <Mail className="h-4 w-4" />
-                  Mass Email
-                </Button>
-              </Link>
-            </div>
+            <CardTitle className="text-2xl">Union Management Dashboard</CardTitle>
+            <p className="text-sm text-gray-600 mt-2">
+              View and manage all unions on the platform
+            </p>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
