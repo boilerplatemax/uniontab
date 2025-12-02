@@ -3,7 +3,10 @@
 
 -- 1. Fix email_logs to cascade delete when member is deleted
 ALTER TABLE email_logs
-  DROP CONSTRAINT IF EXISTS email_logs_member_id_members_id_fk,
+  DROP CONSTRAINT IF EXISTS email_logs_member_id_fkey,
+  DROP CONSTRAINT IF EXISTS email_logs_member_id_members_id_fk;
+
+ALTER TABLE email_logs
   ADD CONSTRAINT email_logs_member_id_members_id_fk
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE;
 
