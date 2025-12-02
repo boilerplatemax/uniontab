@@ -6,6 +6,7 @@ import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 const protectedRoutes = '/dashboard';
+const adminRoutes = '/admin';
 const emailVerificationExemptRoutes = [
   '/auth/verify-email',
   '/auth/verify-pending',
@@ -23,11 +24,12 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
   const isProtectedRoute = pathname.startsWith(protectedRoutes) || pathname === '/onboarding';
+  const isAdminRoute = pathname.startsWith(adminRoutes);
   const isEmailVerificationExempt = emailVerificationExemptRoutes.some(route =>
     pathname.startsWith(route)
   );
 
-  if (isProtectedRoute && !sessionCookie) {
+  if ((isProtectedRoute || isAdminRoute) && !sessionCookie) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
@@ -62,6 +64,20 @@ export async function middleware(request: NextRequest) {
         // Only require email verification for owners
         if (user && user.role === 'owner' && !user.emailVerified) {
           return NextResponse.redirect(new URL('/auth/verify-pending', request.url));
+        }
+      }
+
+      // Check webmaster role for admin routes
+      if (isAdminRoute) {
+        const userId = parsed.user.id;
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+
+        if (!user || user.role !== 'webmaster') {
+          return NextResponse.redirect(new URL('/', request.url));
         }
       }
     } catch (error) {
