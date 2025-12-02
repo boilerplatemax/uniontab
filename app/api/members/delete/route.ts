@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { members } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { members, users } from '@/lib/db/schema';
+import { eq, and, ne } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 
 export async function POST(request: Request) {
@@ -59,12 +59,37 @@ export async function POST(request: Request) {
       );
     }
 
-    // Delete the member
+    // Check if the user has memberships in other unions
+    const otherMemberships = await db
+      .select()
+      .from(members)
+      .where(
+        and(
+          eq(members.userId, memberToDelete.userId),
+          ne(members.id, memberId)
+        )
+      );
+
+    // Delete the member record
     await db
       .delete(members)
       .where(eq(members.id, memberId));
 
-    return NextResponse.json({ success: true });
+    // If the user has no other union memberships, delete the user account
+    // The cascade deletes in the schema will handle cleaning up related data
+    // (election votes, post likes, dismissed announcements, etc.)
+    if (otherMemberships.length === 0) {
+      await db
+        .delete(users)
+        .where(eq(users.id, memberToDelete.userId));
+
+      console.log(`Deleted user account ${memberToDelete.userId} (no other union memberships)`);
+    }
+
+    return NextResponse.json({
+      success: true,
+      userDeleted: otherMemberships.length === 0
+    });
   } catch (error) {
     console.error('Error deleting member:', error);
     return NextResponse.json(

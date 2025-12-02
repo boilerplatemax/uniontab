@@ -75,6 +75,9 @@ export async function DELETE(
       .innerJoin(users, eq(members.userId, users.id))
       .where(eq(members.unionId, unionId));
 
+    // Get user IDs to check for orphaned accounts later
+    const unionMemberUserIds = unionMembers.map(m => m.userId);
+
     // Get all elections to delete their related data
     const unionElections = await db
       .select()
@@ -221,6 +224,31 @@ export async function DELETE(
     await db.delete(unions).where(eq(unions.id, unionId));
     console.log('Deleted union');
 
+    // 17. Clean up orphaned user accounts
+    // For each user that was a member of this union, check if they have other memberships
+    // If not, delete their user account
+    const orphanedUserIds: number[] = [];
+    for (const userId of unionMemberUserIds) {
+      const otherMemberships = await db
+        .select()
+        .from(members)
+        .where(eq(members.userId, userId))
+        .limit(1);
+
+      // If no other memberships exist, this user account can be deleted
+      if (otherMemberships.length === 0) {
+        orphanedUserIds.push(userId);
+      }
+    }
+
+    // Delete orphaned user accounts (cascade deletes will handle related data)
+    if (orphanedUserIds.length > 0) {
+      await db
+        .delete(users)
+        .where(inArray(users.id, orphanedUserIds));
+      console.log(`Deleted ${orphanedUserIds.length} orphaned user accounts`);
+    }
+
     // Send notification emails to all members
     const emailPromises = unionMembers.map(async (member) => {
       try {
@@ -268,6 +296,7 @@ The UnionTab Team`,
       message: 'Union and all related data deleted successfully',
       deletedUnion: union.name,
       notifiedMembers: unionMembers.length,
+      orphanedUsersDeleted: orphanedUserIds.length,
     });
   } catch (error) {
     console.error('Error deleting union:', error);

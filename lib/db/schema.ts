@@ -57,10 +57,10 @@ export const members = pgTable('members', {
   id: serial('id').primaryKey(),
   userId: integer('user_id')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
   role: varchar('role', { length: 50 }).notNull(),
   status: varchar('status', { length: 20 }).notNull().default('pending'),
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
@@ -72,8 +72,8 @@ export const activityLogs = pgTable('activity_logs', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
-  userId: integer('user_id').references(() => users.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }),
   action: text('action').notNull(),
   timestamp: timestamp('timestamp').notNull().defaultNow(),
   ipAddress: varchar('ip_address', { length: 45 }),
@@ -83,12 +83,12 @@ export const invitations = pgTable('invitations', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
   email: varchar('email', { length: 255 }).notNull(),
   role: varchar('role', { length: 50 }).notNull(),
   invitedBy: integer('invited_by')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'set null' }),
   invitedAt: timestamp('invited_at').notNull().defaultNow(),
   status: varchar('status', { length: 20 }).notNull().default('pending'),
 });
@@ -97,7 +97,7 @@ export const unionPages = pgTable('union_pages', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
   title: varchar('title', { length: 255 }).notNull(),
   slug: varchar('slug', { length: 100 }).notNull(),
   content: text('content'),
@@ -110,15 +110,15 @@ export const unionPages = pgTable('union_pages', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   publishedAt: timestamp('published_at'),
-  createdBy: integer('created_by').references(() => users.id),
-  updatedBy: integer('updated_by').references(() => users.id),
+  createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
 });
 
 export const posts = pgTable('posts', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
   title: varchar('title', { length: 255 }).notNull(),
   content: text('content').notNull(),
   imageUrl: text('image_url'),
@@ -128,15 +128,15 @@ export const posts = pgTable('posts', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   createdBy: integer('created_by')
     .notNull()
-    .references(() => users.id),
-  updatedBy: integer('updated_by').references(() => users.id),
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
 });
 
 export const files = pgTable('files', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   originalName: varchar('original_name', { length: 255 }).notNull(),
   fileUrl: text('file_url').notNull(),
@@ -148,14 +148,14 @@ export const files = pgTable('files', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   createdBy: integer('created_by')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'set null' }),
 });
 
 export const fileCategories = pgTable('file_categories', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 100 }).notNull(),
   sortOrder: integer('sort_order').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -167,7 +167,7 @@ export const events = pgTable('events', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
   location: text('location'),
@@ -183,18 +183,18 @@ export const events = pgTable('events', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   createdBy: integer('created_by')
     .notNull()
-    .references(() => users.id),
-  updatedBy: integer('updated_by').references(() => users.id),
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
 });
 
 export const postLikes = pgTable('post_likes', {
   id: serial('id').primaryKey(),
   postId: integer('post_id')
     .notNull()
-    .references(() => posts.id),
+    .references(() => posts.id, { onDelete: 'cascade' }),
   userId: integer('user_id')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
@@ -215,7 +215,7 @@ export const elections = pgTable('elections', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
   slug: varchar('slug', { length: 255 }).notNull(),
@@ -233,8 +233,8 @@ export const elections = pgTable('elections', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   createdBy: integer('created_by')
     .notNull()
-    .references(() => users.id),
-  updatedBy: integer('updated_by').references(() => users.id),
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
 });
 
 export const electionQuestions = pgTable('election_questions', {
@@ -271,7 +271,7 @@ export const electionVotes = pgTable(
       .references(() => elections.id, { onDelete: 'cascade' }),
     userId: integer('user_id')
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: 'cascade' }),
     votedAt: timestamp('voted_at').notNull().defaultNow(),
     // Store client's claimed timezone to detect manipulation
     clientTimezone: varchar('client_timezone', { length: 100 }),
@@ -309,7 +309,7 @@ export const announcements = pgTable('announcements', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
   type: varchar('type', { length: 20 }).notNull(), // 'popup' or 'banner'
   title: varchar('title', { length: 255 }), // Optional for banners
   content: text('content').notNull(),
@@ -320,8 +320,8 @@ export const announcements = pgTable('announcements', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   createdBy: integer('created_by')
     .notNull()
-    .references(() => users.id),
-  updatedBy: integer('updated_by').references(() => users.id),
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
 });
 
 export const announcementAttachments = pgTable('announcement_attachments', {
@@ -343,7 +343,7 @@ export const dismissedAnnouncements = pgTable('dismissed_announcements', {
     .references(() => announcements.id, { onDelete: 'cascade' }),
   userId: integer('user_id')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
   dismissedAt: timestamp('dismissed_at').notNull().defaultNow(),
 });
 
@@ -352,7 +352,7 @@ export const massEmails = pgTable('mass_emails', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
     .notNull()
-    .references(() => unions.id),
+    .references(() => unions.id, { onDelete: 'cascade' }),
   subject: varchar('subject', { length: 255 }).notNull(),
   htmlContent: text('html_content').notNull(),
   textContent: text('text_content').notNull(),
@@ -367,7 +367,7 @@ export const massEmails = pgTable('mass_emails', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   createdBy: integer('created_by')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'set null' }),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
@@ -378,7 +378,7 @@ export const emailLogs = pgTable('email_logs', {
     .references(() => massEmails.id, { onDelete: 'cascade' }),
   memberId: integer('member_id')
     .notNull()
-    .references(() => members.id),
+    .references(() => members.id, { onDelete: 'cascade' }),
   email: varchar('email', { length: 255 }).notNull(),
   status: varchar('status', { length: 20 }).notNull(), // sent, failed, bounced
   errorMessage: text('error_message'),
