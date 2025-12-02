@@ -11,25 +11,42 @@ export default function HomePage() {
   const [unionName, setUnionName] = useState('');
   const [localNumber, setLocalNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!unionName.trim()) {
-      alert('Please enter your union name');
+      setError('Please enter your union name');
       return;
     }
 
     setIsLoading(true);
+    setError('');
 
     // Create slug from union name and local number
     const slugParts = [unionName.toLowerCase().trim().replace(/\s+/g, '-')];
     if (localNumber.trim()) {
-      slugParts.push(localNumber.toLowerCase().trim().replace(/\s+/g, '-'));
+      slugParts.push(localNumber.toLowerCase().trim().replace(/\s+/g, ''));
     }
-    const slug = slugParts.join('-').replace(/[^a-z0-9-]/g, '');
+    const slug = slugParts.join('').replace(/[^a-z0-9-]/g, '');
 
-    // Redirect to the union's page
-    window.location.href = `/${slug}`;
+    try {
+      // Check if union exists before redirecting
+      const response = await fetch(`/api/check-union?slug=${encodeURIComponent(slug)}`);
+      const data = await response.json();
+
+      if (!response.ok || !data.exists) {
+        setError('Union page not found. Please check your union name and local number.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Redirect to the union's page
+      window.location.href = `/${slug}`;
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,6 +89,13 @@ export default function HomePage() {
           <Card className="shadow-xl border-2 max-w-md mx-auto">
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p className="text-sm text-red-800 text-center font-medium">
+                      {error}
+                    </p>
+                  </div>
+                )}
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Input
