@@ -28,6 +28,8 @@ import {
   AlertCircle,
   Eye,
   Filter,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -71,6 +73,8 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
     message: string;
     details?: any;
   } | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'email' | 'role' | 'status'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const getUserDisplayName = (user: { name: string | null; email: string }) => {
     return user.name || user.email;
@@ -83,6 +87,15 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const handleSort = (column: 'name' | 'email' | 'role' | 'status') => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortDirection('asc');
+    }
   };
 
   // Filter members based on recipient filter and search
@@ -113,8 +126,25 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
       return matchesFilter && matchesSearch;
     });
 
+    // Sort members
+    filtered.sort((a, b) => {
+      let comparison = 0;
+
+      if (sortBy === 'name') {
+        comparison = getUserDisplayName(a.user).localeCompare(getUserDisplayName(b.user));
+      } else if (sortBy === 'email') {
+        comparison = a.user.email.localeCompare(b.user.email);
+      } else if (sortBy === 'role') {
+        comparison = a.member.role.localeCompare(b.member.role);
+      } else if (sortBy === 'status') {
+        comparison = a.member.status.localeCompare(b.member.status);
+      }
+
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
     return filtered;
-  }, [members, recipientFilter, searchQuery, selectedMembers]);
+  }, [members, recipientFilter, searchQuery, selectedMembers, sortBy, sortDirection]);
 
   const toggleSelectAll = () => {
     if (selectedMembers.size === filteredMembers.length && filteredMembers.length > 0) {
@@ -256,7 +286,7 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content - Email Composer */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Compose Email</CardTitle>
@@ -321,6 +351,171 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
                 </div>
               </CardContent>
             </Card>
+
+            {/* Custom Member Selection Table */}
+            {recipientFilter === 'custom' && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <UsersIcon className="h-5 w-5" />
+                      Select Recipients
+                    </CardTitle>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-gray-600">
+                        {selectedMembers.size} of {members.length} selected
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={toggleSelectAll}
+                      >
+                        {selectedMembers.size === filteredMembers.length && filteredMembers.length > 0
+                          ? 'Deselect All'
+                          : 'Select All'}
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {/* Search */}
+                  <div className="mb-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        placeholder="Search members by name or email..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Table */}
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b">
+                          <tr>
+                            <th className="px-4 py-3 text-left w-12">
+                              <Checkbox
+                                checked={selectedMembers.size === filteredMembers.length && filteredMembers.length > 0}
+                                onCheckedChange={toggleSelectAll}
+                              />
+                            </th>
+                            <th className="px-4 py-3 text-left w-16"></th>
+                            <th
+                              className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleSort('name')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Name
+                                {sortBy === 'name' && (
+                                  sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleSort('email')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Email
+                                {sortBy === 'email' && (
+                                  sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleSort('role')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Role
+                                {sortBy === 'role' && (
+                                  sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleSort('status')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Status
+                                {sortBy === 'status' && (
+                                  sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                                )}
+                              </div>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {filteredMembers.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                                No members found
+                              </td>
+                            </tr>
+                          ) : (
+                            filteredMembers.map((member) => (
+                              <tr
+                                key={member.member.id}
+                                className={`hover:bg-gray-50 cursor-pointer transition-colors ${
+                                  selectedMembers.has(member.member.id) ? 'bg-blue-50' : ''
+                                }`}
+                                onClick={() => toggleMemberSelection(member.member.id)}
+                              >
+                                <td className="px-4 py-3">
+                                  <Checkbox
+                                    checked={selectedMembers.has(member.member.id)}
+                                    onCheckedChange={() => toggleMemberSelection(member.member.id)}
+                                  />
+                                </td>
+                                <td className="px-4 py-3">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarFallback>
+                                      {getInitials(getUserDisplayName(member.user))}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <p className="font-medium text-gray-900">
+                                    {getUserDisplayName(member.user)}
+                                  </p>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <p className="text-gray-600">{member.user.email}</p>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                    member.member.role === 'owner' ? 'bg-purple-100 text-purple-800' :
+                                    member.member.role === 'admin' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {member.member.role.charAt(0).toUpperCase() + member.member.role.slice(1)}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                    member.member.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                    member.member.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                  }`}>
+                                    {member.member.status.charAt(0).toUpperCase() + member.member.status.slice(1)}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar - Recipients */}
@@ -376,64 +571,12 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
                   </p>
                 </div>
 
-                {/* Custom Selection */}
+                {/* Custom Selection Note */}
                 {recipientFilter === 'custom' && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label>Select Members:</Label>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={toggleSelectAll}
-                        className="text-xs"
-                      >
-                        {selectedMembers.size === filteredMembers.length && filteredMembers.length > 0
-                          ? 'Deselect All'
-                          : 'Select All'}
-                      </Button>
-                    </div>
-
-                    {/* Search */}
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        type="text"
-                        placeholder="Search members..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-
-                    {/* Member List */}
-                    <div className="max-h-[400px] overflow-y-auto space-y-2 border rounded-lg p-2">
-                      {filteredMembers.map((member) => (
-                        <div
-                          key={member.member.id}
-                          className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
-                          onClick={() => toggleMemberSelection(member.member.id)}
-                        >
-                          <Checkbox
-                            checked={selectedMembers.has(member.member.id)}
-                            onCheckedChange={() => toggleMemberSelection(member.member.id)}
-                          />
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="text-xs">
-                              {getInitials(getUserDisplayName(member.user))}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
-                              {getUserDisplayName(member.user)}
-                            </p>
-                            <p className="text-xs text-gray-500 truncate">{member.user.email}</p>
-                          </div>
-                        </div>
-                      ))}
-                      {filteredMembers.length === 0 && (
-                        <p className="text-sm text-gray-500 text-center py-4">No members found</p>
-                      )}
-                    </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-900">
+                      Use the table below to select individual members
+                    </p>
                   </div>
                 )}
               </CardContent>
