@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
 import { unions, users, members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { hashPassword, setSession } from '@/lib/auth/session';
+import { setSession } from '@/lib/auth/session';
+import { hashPassword } from '@/lib/auth/password';
 
 export async function POST(
   request: NextRequest,
