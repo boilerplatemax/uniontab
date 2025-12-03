@@ -48,6 +48,7 @@ async function seed() {
     .insert(users)
     .values([
       {
+        name: 'Test User',
         email: email,
         passwordHash: passwordHash,
         role: "owner",
