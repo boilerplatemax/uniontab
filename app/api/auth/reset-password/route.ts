@@ -74,9 +74,6 @@ export async function POST(request: Request) {
     const sessionToken = await signToken({
       user: {
         id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
       },
       expires: expiresInOneDay.toISOString(),
     });

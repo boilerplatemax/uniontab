@@ -16,6 +16,7 @@ interface BillingContentProps {
     id: number;
     name: string;
     localNumber: string | null;
+    publicName: string | null;
   };
 }
 

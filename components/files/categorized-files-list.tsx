@@ -10,10 +10,10 @@ import { RenameCategoryDialog } from './rename-category-dialog';
 import { useRouter } from 'next/navigation';
 
 interface CategorizedFilesListProps {
-  files: (FileType & { createdBy: { name: string } })[];
+  files: (Omit<FileType, 'createdBy'> & { createdBy: { name: string } })[];
   isOwner: boolean;
   isApprovedMember: boolean;
-  onEdit: (file: FileType & { createdBy: { name: string } }) => void;
+  onEdit: (file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } }) => void;
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
   unionId: number;
@@ -32,10 +32,10 @@ function FileItem({
   isFirst,
   isLast,
 }: {
-  file: FileType & { createdBy: { name: string } };
+  file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } };
   isOwner: boolean;
   isApprovedMember: boolean;
-  onEdit: (file: FileType & { createdBy: { name: string } }) => void;
+  onEdit: (file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } }) => void;
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
   onMoveUp: () => void;
@@ -159,12 +159,12 @@ function CategorySection({
   isLastCategory,
 }: {
   category: string;
-  categoryFiles: (FileType & { createdBy: { name: string } })[];
+  categoryFiles: (Omit<FileType, 'createdBy'> & { createdBy: { name: string } })[];
   isExpanded: boolean;
   onToggle: () => void;
   isOwner: boolean;
   isApprovedMember: boolean;
-  onEdit: (file: FileType & { createdBy: { name: string } }) => void;
+  onEdit: (file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } }) => void;
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
   onMoveFileUp: (fileId: number) => void;
@@ -320,7 +320,7 @@ export function CategorizedFilesList({
     }
     acc[category].push(file);
     return acc;
-  }, {} as Record<string, (FileType & { createdBy: { name: string } })[]>);
+  }, {} as Record<string, (Omit<FileType, 'createdBy'> & { createdBy: { name: string } })[]>);
 
   // Sort files within each category by sortOrder
   Object.keys(categorizedFiles).forEach((category) => {

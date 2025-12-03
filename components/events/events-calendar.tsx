@@ -7,8 +7,8 @@ import { ChevronLeft, ChevronRight, MapPin, Clock } from 'lucide-react';
 import type { Event } from '@/lib/db/schema';
 
 interface EventsCalendarProps {
-  events: (Event & { createdBy: { name: string } })[];
-  onEventClick?: (event: Event & { createdBy: { name: string } }) => void;
+  events: (Omit<Event, 'createdBy'> & { createdBy: { name: string } })[];
+  onEventClick?: (event: Omit<Event, 'createdBy'> & { createdBy: { name: string } }) => void;
 }
 
 export function EventsCalendar({ events, onEventClick }: EventsCalendarProps) {

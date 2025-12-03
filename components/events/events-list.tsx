@@ -9,10 +9,10 @@ import type { Event } from '@/lib/db/schema';
 import { useState } from 'react';
 
 interface EventsListProps {
-  events: (Event & { createdBy: { name: string } })[];
+  events: (Omit<Event, 'createdBy'> & { createdBy: { name: string } })[];
   isOwner: boolean;
-  onEventClick?: (event: Event & { createdBy: { name: string } }) => void;
-  onEdit?: (event: Event & { createdBy: { name: string } }) => void;
+  onEventClick?: (event: Omit<Event, 'createdBy'> & { createdBy: { name: string } }) => void;
+  onEdit?: (event: Omit<Event, 'createdBy'> & { createdBy: { name: string } }) => void;
   onDelete?: (eventId: number) => void;
 }
 

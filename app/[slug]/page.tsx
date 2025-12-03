@@ -59,6 +59,7 @@ async function getUnionPosts(unionId: number, userId?: number) {
       isPinned: posts.isPinned,
       createdAt: posts.createdAt,
       updatedAt: posts.updatedAt,
+      updatedBy: posts.updatedBy,
       createdBy: {
         name: users.name,
       },
@@ -137,6 +138,7 @@ async function getUnionFiles(unionId: number) {
       fileSize: files.fileSize,
       isPrivate: files.isPrivate,
       category: files.category,
+      sortOrder: files.sortOrder,
       createdAt: files.createdAt,
       createdBy: {
         name: users.name,
@@ -168,6 +170,7 @@ async function getUnionEvents(unionId: number) {
       category: events.category,
       createdAt: events.createdAt,
       updatedAt: events.updatedAt,
+      updatedBy: events.updatedBy,
       createdBy: {
         name: users.name,
       },

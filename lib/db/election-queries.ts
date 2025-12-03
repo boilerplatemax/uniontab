@@ -180,7 +180,7 @@ export async function getUserVote(electionId: number, userId: number) {
 // Cast a vote
 export async function castVote(
   voteData: NewElectionVote,
-  responses: NewElectionResponse[]
+  responses: Omit<NewElectionResponse, 'voteId'>[]
 ) {
   return await db.transaction(async (tx) => {
     // Create the vote record
