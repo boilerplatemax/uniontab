@@ -19,7 +19,8 @@ import { LimitedRichTextEditor } from '@/components/ui/limited-rich-text-editor'
 import { Loader2, AlertCircle } from 'lucide-react';
 import type { Announcement, AnnouncementAttachment } from '@/lib/db/schema';
 
-interface AnnouncementWithDetails extends Announcement {
+interface AnnouncementWithDetails extends Omit<Announcement, 'createdBy'> {
+  createdBy?: { id: number; name: string } | number;
   attachments: AnnouncementAttachment[];
 }
 

@@ -10,10 +10,10 @@ import { RenameCategoryDialog } from './rename-category-dialog';
 import { useRouter } from 'next/navigation';
 
 interface CategorizedFilesListProps {
-  files: (FileType & { createdBy: { name: string } })[];
+  files: (Omit<FileType, 'createdBy'> & { createdBy: { name: string } })[];
   isOwner: boolean;
   isApprovedMember: boolean;
-  onEdit: (file: FileType & { createdBy: { name: string } }) => void;
+  onEdit: (file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } }) => void;
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
   unionId: number;
@@ -32,10 +32,10 @@ function FileItem({
   isFirst,
   isLast,
 }: {
-  file: FileType & { createdBy: { name: string } };
+  file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } };
   isOwner: boolean;
   isApprovedMember: boolean;
-  onEdit: (file: FileType & { createdBy: { name: string } }) => void;
+  onEdit: (file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } }) => void;
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
   onMoveUp: () => void;

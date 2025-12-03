@@ -26,7 +26,7 @@ import { verifyToken } from '@/lib/auth/session';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify user is webmaster
@@ -49,7 +49,8 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const unionId = parseInt(params.id);
+    const { id } = await params;
+    const unionId = parseInt(id);
 
     // Fetch union and all related data
     const [union] = await db
