@@ -12,11 +12,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    console.log('[check-union] Checking slug:', slug);
+    console.log('[check-union] Database connection configured:', !!process.env.POSTGRES_URL);
+
     const [union] = await db
       .select({ id: unions.id, publishedAt: unions.publishedAt })
       .from(unions)
       .where(eq(unions.slug, slug))
       .limit(1);
+
+    console.log('[check-union] Query result:', union ? 'found' : 'not found');
 
     // Check if union exists and is published
     if (!union || !union.publishedAt) {
@@ -25,7 +30,16 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ exists: true }, { status: 200 });
   } catch (error) {
-    console.error('Error checking union:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[check-union] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      type: error?.constructor?.name,
+      hasPostgresUrl: !!process.env.POSTGRES_URL,
+      postgresUrlPrefix: process.env.POSTGRES_URL?.substring(0, 20) + '...',
+    });
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
+    }, { status: 500 });
   }
 }
