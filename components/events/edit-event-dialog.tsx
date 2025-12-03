@@ -14,7 +14,7 @@ import type { Event } from '@/lib/db/schema';
 interface EditEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  event: (Event & { createdBy: { name: string } }) | null;
+  event: (Omit<Event, 'createdBy'> & { createdBy: { name: string } }) | null;
   onSuccess: () => void;
 }
 

@@ -48,6 +48,7 @@ async function seed() {
     .insert(users)
     .values([
       {
+        name: email.split('@')[0], // Use email username as name
         email: email,
         passwordHash: passwordHash,
         role: "owner",

@@ -24,10 +24,14 @@ import {
 import { eq } from 'drizzle-orm';
 import { verifyToken } from '@/lib/auth/session';
 
+// Force this route to use Node.js runtime to support bcryptjs
+export const runtime = 'nodejs';
+
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Verify user is webmaster
     const sessionCookie = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
@@ -49,7 +53,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const unionId = parseInt(params.id);
+    const unionId = parseInt(id);
 
     // Fetch union and all related data
     const [union] = await db

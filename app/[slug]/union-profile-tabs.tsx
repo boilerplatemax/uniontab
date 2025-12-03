@@ -23,9 +23,9 @@ import { formatDate } from '@/lib/utils/date';
 
 interface UnionProfileTabsProps {
   union: Union;
-  posts: (Post & { createdBy: { name: string }; attachments?: PostAttachment[] })[];
-  files: (FileType & { createdBy: { name: string } })[];
-  events: (Event & { createdBy: { name: string } })[];
+  posts: (Omit<Post, 'createdBy'> & { createdBy: { name: string }; attachments?: PostAttachment[] })[];
+  files: (Omit<FileType, 'createdBy'> & { createdBy: { name: string } })[];
+  events: (Omit<Event, 'createdBy'> & { createdBy: { name: string } })[];
   membership: any;
   isOwner: boolean;
   isApprovedMember: boolean;
@@ -64,9 +64,9 @@ export function UnionProfileTabs({
   const [editPostOpen, setEditPostOpen] = useState(false);
   const [editFileOpen, setEditFileOpen] = useState(false);
   const [editEventOpen, setEditEventOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<Post & { createdBy: { name: string } } | null>(null);
-  const [selectedFile, setSelectedFile] = useState<FileType & { createdBy: { name: string } } | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<Event & { createdBy: { name: string } } | null>(null);
+  const [selectedPost, setSelectedPost] = useState<Omit<Post, 'createdBy'> & { createdBy: { name: string } } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<Omit<FileType, 'createdBy'> & { createdBy: { name: string } } | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Omit<Event, 'createdBy'> & { createdBy: { name: string } } | null>(null);
   const [eventDetailsOpen, setEventDetailsOpen] = useState(false);
   const [deletingPost, setDeletingPost] = useState<number | null>(null);
   const [deletingFile, setDeletingFile] = useState<number | null>(null);
@@ -157,11 +157,11 @@ export function UnionProfileTabs({
     }
   };
 
-  const handleEventClick = (event: Event & { createdBy: { name: string } }) => {
+  const handleEventClick = (event: Omit<Event, 'createdBy'> & { createdBy: { name: string } }) => {
     router.push(`/${union.slug}/event/${event.id}`);
   };
 
-  const handleEditEvent = (event: Event & { createdBy: { name: string } }) => {
+  const handleEditEvent = (event: Omit<Event, 'createdBy'> & { createdBy: { name: string } }) => {
     setSelectedEvent(event);
     setEditEventOpen(true);
   };

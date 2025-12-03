@@ -19,7 +19,8 @@ import { LimitedRichTextEditor } from '@/components/ui/limited-rich-text-editor'
 import { Loader2, AlertCircle } from 'lucide-react';
 import type { Announcement, AnnouncementAttachment } from '@/lib/db/schema';
 
-interface AnnouncementWithDetails extends Announcement {
+interface AnnouncementWithDetails extends Omit<Announcement, 'createdBy'> {
+  createdBy?: { id: number; name: string } | number;
   attachments: AnnouncementAttachment[];
 }
 
@@ -187,11 +188,9 @@ export function EditAnnouncementDialog({
               <div>
                 <Label>File Attachments (Optional)</Label>
                 <MultiFileUpload
-                  unionSlug=""
-                  folder="announcement-attachments"
+                  path="announcement-attachments"
                   onFilesChange={setAttachments}
                   maxFiles={5}
-                  initialFiles={attachments}
                 />
               </div>
             )}

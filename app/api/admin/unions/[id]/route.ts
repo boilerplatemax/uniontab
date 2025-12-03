@@ -26,10 +26,14 @@ import { eq, inArray } from 'drizzle-orm';
 import { verifyToken } from '@/lib/auth/session';
 import { sendEmail } from '@/lib/email/sendgrid';
 
+// Force this route to use Node.js runtime to support bcryptjs
+export const runtime = 'nodejs';
+
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Verify user is webmaster
     const sessionCookie = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
@@ -51,7 +55,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const unionId = parseInt(params.id);
+    const unionId = parseInt(id);
 
     // Get union details first
     const [union] = await db
