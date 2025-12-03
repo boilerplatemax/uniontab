@@ -222,8 +222,7 @@ export function CreateAnnouncementDialog({
               <div>
                 <Label>File Attachments (Optional)</Label>
                 <MultiFileUpload
-                  unionSlug=""
-                  folder="announcement-attachments"
+                  path="announcement-attachments"
                   onFilesChange={setAttachments}
                   maxFiles={5}
                 />

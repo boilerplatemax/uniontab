@@ -402,13 +402,15 @@ export async function sendMassEmail({
       subject,
       text: textContent,
       html: brandedHtml,
-      attachments: attachments?.map((att) => ({
-        ...att,
-        content: att.content,
-        filename: att.filename,
-        type: att.type,
-        disposition: att.disposition || 'attachment',
-      })),
+      attachments: attachments
+        ?.filter((att) => att.content && att.type)
+        .map((att) => ({
+          ...att,
+          content: att.content!,
+          filename: att.filename,
+          type: att.type!,
+          disposition: att.disposition || 'attachment',
+        })),
     });
 
     console.log(`Mass email sent successfully to ${to}`);
