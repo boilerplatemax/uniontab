@@ -15,6 +15,7 @@ interface BillingContentProps {
   union: {
     id: number;
     name: string;
+    publicName: string | null;
     localNumber: string | null;
   };
 }

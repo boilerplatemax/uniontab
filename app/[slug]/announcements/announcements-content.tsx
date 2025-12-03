@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Union, Announcement, AnnouncementAttachment } from '@/lib/db/schema';
 
-interface AnnouncementWithDetails extends Announcement {
+interface AnnouncementWithDetails extends Omit<Announcement, 'createdBy'> {
   createdBy: { id: number; name: string };
   attachments: AnnouncementAttachment[];
 }

@@ -7,7 +7,7 @@ import { sendEmail } from '@/lib/email/sendgrid';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify user is webmaster
@@ -30,7 +30,8 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const unionId = parseInt(params.id);
+    const { id } = await params;
+    const unionId = parseInt(id);
 
     // Get union details
     const [union] = await db

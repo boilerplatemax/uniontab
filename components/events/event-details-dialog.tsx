@@ -13,11 +13,11 @@ import { MapPin, Clock, Calendar, User, Edit, Trash2 } from 'lucide-react'
 import type { Event } from '@/lib/db/schema'
 
 interface EventDetailsDialogProps {
-  event: (Event & { createdBy: { name: string } }) | null
+  event: (Omit<Event, 'createdBy'> & { createdBy: { name: string } }) | null
   open: boolean
   onOpenChange: (open: boolean) => void
   isOwner?: boolean
-  onEdit?: (event: Event & { createdBy: { name: string } }) => void
+  onEdit?: (event: Omit<Event, 'createdBy'> & { createdBy: { name: string } }) => void
   onDelete?: (eventId: number) => void
 }
 
