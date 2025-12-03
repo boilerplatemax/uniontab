@@ -2,7 +2,7 @@ import * as readline from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
 import { db } from './drizzle';
 import { users } from './schema';
-import { hashPassword } from '@/lib/auth/session';
+import { hashPassword } from '@/lib/auth/password';
 import { eq, isNull } from 'drizzle-orm';
 
 const rl = readline.createInterface({ input, output });

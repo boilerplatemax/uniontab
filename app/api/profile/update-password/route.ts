@@ -3,7 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
-import { comparePasswords, hashPassword } from '@/lib/auth/session';
+import { comparePasswords, hashPassword } from '@/lib/auth/password';
 
 export async function POST(request: NextRequest) {
   try {
