@@ -12,6 +12,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Verify database connection is available
+    if (!process.env.POSTGRES_URL) {
+      console.error('POSTGRES_URL environment variable is not set');
+      return NextResponse.json({
+        error: 'Database configuration error',
+        details: process.env.NODE_ENV === 'development' ? 'POSTGRES_URL not set' : undefined
+      }, { status: 500 });
+    }
+
     const [union] = await db
       .select({ id: unions.id, publishedAt: unions.publishedAt })
       .from(unions)
@@ -26,6 +35,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ exists: true }, { status: 200 });
   } catch (error) {
     console.error('Error checking union:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined
+    }, { status: 500 });
   }
 }
