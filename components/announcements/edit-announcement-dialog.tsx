@@ -111,7 +111,7 @@ export function EditAnnouncementDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit {isBanner ? 'Banner' : 'Popup'} Announcement</DialogTitle>
+          <DialogTitle>Edit {isBanner ? 'Banner' : 'Popup'} News</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">

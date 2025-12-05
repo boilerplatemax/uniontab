@@ -181,11 +181,8 @@ export default function OnboardingPage() {
               <div className="space-y-6">
                 <div className="text-center space-y-2">
                   <h2 className="text-2xl font-bold text-gray-900">
-                    Welcome {union.publicName || union.name}!
+                    Welcome {(union.publicName || union.name).toUpperCase()}{union.localNumber ? ` ${union.localNumber}` : ''}!
                   </h2>
-                  {union.localNumber && (
-                    <p className="text-gray-600">Local {union.localNumber}</p>
-                  )}
                 </div>
                 <p className="text-lg text-gray-700 text-center">
                   Let's make your union's website look great! We'll guide you
@@ -485,17 +482,19 @@ export default function OnboardingPage() {
 
         {/* Navigation Buttons */}
         <div className="mt-8 flex justify-between items-center">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStepIndex === 0 || loading}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Previous
-          </Button>
+          {currentStepIndex > 0 && (
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={loading}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Previous
+            </Button>
+          )}
 
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-3 items-center ml-auto">
             {currentStep !== 'welcome' && currentStep !== 'preview' && (
               <button
                 onClick={() => {
@@ -503,7 +502,7 @@ export default function OnboardingPage() {
                   setCurrentStep('preview');
                 }}
                 disabled={loading}
-                className="text-sm text-gray-500 hover:text-gray-700 underline"
+                className="text-sm text-gray-500 hover:text-gray-700 underline cursor-pointer"
               >
                 Skip all
               </button>

@@ -192,7 +192,7 @@ export function UnionProfileTabs({
         <div className="flex gap-2 px-6 pt-2">
           <button
             onClick={() => setActiveTab('posts')}
-            className={`px-4 py-2 font-semibold transition-colors ${
+            className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
               activeTab === 'posts'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
@@ -202,7 +202,7 @@ export function UnionProfileTabs({
           </button>
           <button
             onClick={() => setActiveTab('about')}
-            className={`px-4 py-2 font-semibold transition-colors ${
+            className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
               activeTab === 'about'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
@@ -212,7 +212,7 @@ export function UnionProfileTabs({
           </button>
           <button
             onClick={() => setActiveTab('files')}
-            className={`px-4 py-2 font-semibold transition-colors ${
+            className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
               activeTab === 'files'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
@@ -222,7 +222,7 @@ export function UnionProfileTabs({
           </button>
           <button
             onClick={() => setActiveTab('events')}
-            className={`px-4 py-2 font-semibold transition-colors ${
+            className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
               activeTab === 'events'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
@@ -232,7 +232,7 @@ export function UnionProfileTabs({
           </button>
           <button
             onClick={() => setActiveTab('elections')}
-            className={`px-4 py-2 font-semibold transition-colors ${
+            className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
               activeTab === 'elections'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'

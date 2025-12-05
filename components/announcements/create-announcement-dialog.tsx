@@ -110,7 +110,7 @@ export function CreateAnnouncementDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Announcement</DialogTitle>
+          <DialogTitle>Create New News</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
@@ -263,7 +263,7 @@ export function CreateAnnouncementDialog({
                   Creating...
                 </>
               ) : (
-                'Create Announcement'
+                'Create News'
               )}
             </Button>
           </DialogFooter>

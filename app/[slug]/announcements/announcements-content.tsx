@@ -94,7 +94,7 @@ export function AnnouncementsContent({
               >
                 ← Back to {union.publicName || `${union.name}${union.localNumber ? ` ${union.localNumber}` : ''}`}
               </Link>
-              <h1 className="text-3xl font-bold text-gray-900">Manage Announcements</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Manage News</h1>
               <p className="text-gray-600 mt-1">
                 Create and manage popups and banners for your union members
               </p>
@@ -104,7 +104,7 @@ export function AnnouncementsContent({
               className="bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Create Announcement
+              Create News
             </Button>
           </div>
         </div>
@@ -118,11 +118,11 @@ export function AnnouncementsContent({
             <div className="flex gap-3">
               <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="space-y-2 text-sm">
-                <p className="text-blue-900 font-medium">About Announcements:</p>
+                <p className="text-blue-900 font-medium">About News:</p>
                 <ul className="text-blue-800 space-y-1 list-disc list-inside">
-                  <li><strong>Popups:</strong> Full modal announcements with title, rich content, images, and file attachments. Shows once per member on page load.</li>
+                  <li><strong>Popups:</strong> Full modal news items with title, rich content, images, and file attachments. Shows once per member on page load.</li>
                   <li><strong>Banners:</strong> Top-of-page banners with limited content (300 chars max, text/bold/links only).</li>
-                  <li>Owners can preview announcements but won't see auto-popups to avoid spam.</li>
+                  <li>Owners can preview news items but won't see auto-popups to avoid spam.</li>
                   <li>Only one active popup and one active banner will be shown at a time (most recent).</li>
                 </ul>
               </div>
@@ -134,7 +134,7 @@ export function AnnouncementsContent({
         <div>
           <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Megaphone className="h-6 w-6 text-blue-600" />
-            Popup Announcements ({popupAnnouncements.length})
+            Popup News ({popupAnnouncements.length})
           </h2>
           {popupAnnouncements.length > 0 ? (
             <div className="grid gap-4">
@@ -225,7 +225,7 @@ export function AnnouncementsContent({
         <div>
           <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <AlertCircle className="h-6 w-6 text-blue-600" />
-            Banner Announcements ({bannerAnnouncements.length})
+            Banner News ({bannerAnnouncements.length})
           </h2>
           {bannerAnnouncements.length > 0 ? (
             <div className="grid gap-4">
