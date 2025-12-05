@@ -1,0 +1,200 @@
+import { Users, Mail, Phone, MapPin, Globe } from 'lucide-react';
+import { UnionNavbar } from '../union-navbar';
+import { NavbarSpacer } from '../navbar-spacer';
+import { UnionProfileTabs } from '../union-profile-tabs';
+import { AnnouncementClient } from '../announcement-client';
+import type { ThemeProps } from './types';
+
+/**
+ * Default Theme (Classic Facebook-style layout)
+ * - Large cover photo
+ * - Overlapping logo on profile section
+ * - Contact information bar
+ * - Tab-based content navigation
+ */
+export function DefaultTheme({
+  union,
+  posts,
+  files,
+  events,
+  membership,
+  isOwner,
+  isApprovedMember,
+  userId,
+  slug,
+  pendingMembersCount,
+  handleSignOut,
+  activeAnnouncements,
+}: ThemeProps) {
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* Announcement Banner - Above navbar */}
+      <AnnouncementClient
+        popup={activeAnnouncements.popup}
+        banner={activeAnnouncements.banner}
+      />
+
+      {/* Navigation Bar - Fixed */}
+      <UnionNavbar
+        slug={slug}
+        unionName={union.publicName || union.name}
+        localNumber={union.publicName ? null : union.localNumber}
+        membership={membership}
+        handleSignOut={handleSignOut}
+        pendingMembersCount={pendingMembersCount}
+        announcementId={activeAnnouncements.banner?.id}
+      />
+
+      {/* Spacing for fixed navbar and announcement */}
+      <NavbarSpacer announcementId={activeAnnouncements.banner?.id} />
+
+      {/* Unapproved User Alert Banner */}
+      {membership && membership.member.status === 'pending' && (
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <p className="text-sm text-yellow-800 font-medium">
+                Your account has not been approved yet - some content may not be visible until an admin approves your membership.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cover Photo - Facebook style */}
+      <div className="relative bg-white">
+        <div className="relative h-[300px] sm:h-[400px] bg-gradient-to-r from-blue-600 to-blue-700 overflow-hidden">
+          {union.coverPhotoUrl ? (
+            <img
+              src={union.coverPhotoUrl}
+              alt={`${union.name} cover`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <Users className="h-32 w-32 text-white/30" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Profile Section - Facebook style */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
+        <div className="bg-white rounded-lg shadow-sm pb-4">
+          {/* Logo and Name */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 px-6 pt-6">
+            {/* Logo - Overlapping cover photo with flexible sizing */}
+            <div className="flex-shrink-0 -mt-8 sm:-mt-16 relative z-20">
+              {union.logoUrl ? (
+                <div className="relative h-32 sm:h-40 bg-white rounded-xl border-4 border-white shadow-xl overflow-hidden">
+                  <img
+                    src={union.logoUrl}
+                    alt={`${union.name} logo`}
+                    className="h-full w-auto max-w-[200px] object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-xl bg-blue-600 flex items-center justify-center border-4 border-white shadow-xl">
+                  <Users className="h-16 w-16 sm:h-20 sm:w-20 text-white" />
+                </div>
+              )}
+            </div>
+
+            {/* Name and Local Number */}
+            <div className="flex-1 text-center sm:text-left pb-4">
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+                {(union.publicName || union.name).toUpperCase()}
+                {union.localNumber && !union.publicName && ` ${union.localNumber}`}
+              </h1>
+              {union.description && (
+                <p className="text-gray-600 mt-2 text-sm sm:text-base">
+                  {union.description}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Contact Information Bar */}
+          {(union.email || union.phone || union.address || union.website) && (
+            <div className="px-6 pb-4 border-t pt-4">
+              <div className="flex flex-wrap gap-4 text-sm">
+                {union.email && (
+                  <a
+                    href={`mailto:${union.email}`}
+                    className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    <Mail className="h-4 w-4" />
+                    <span>{union.email}</span>
+                  </a>
+                )}
+                {union.phone && (
+                  <a
+                    href={`tel:${union.phone}`}
+                    className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    <Phone className="h-4 w-4" />
+                    <span>{union.phone}</span>
+                  </a>
+                )}
+                {union.address && (
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <MapPin className="h-4 w-4" />
+                    <span>{union.address}</span>
+                  </div>
+                )}
+                {union.website && (
+                  <a
+                    href={union.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    <Globe className="h-4 w-4" />
+                    <span className="hover:underline">
+                      {union.website.replace(/^https?:\/\//, '')}
+                    </span>
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* Content Area with Tabs */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <UnionProfileTabs
+          union={union}
+          posts={posts}
+          files={files}
+          events={events}
+          membership={membership}
+          isOwner={isOwner}
+          isApprovedMember={isApprovedMember}
+          userId={userId}
+        />
+      </div>
+
+      {/* Footer */}
+      <div className="bg-white border-t mt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-gray-500 text-sm">
+          <p>
+            Powered by{' '}
+            <a
+              href="/"
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              UnionTab
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

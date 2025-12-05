@@ -38,6 +38,7 @@ export async function PUT(request: NextRequest) {
       website,
       description,
       about,
+      theme,
     } = body;
 
     // Update the union
@@ -53,6 +54,7 @@ export async function PUT(request: NextRequest) {
         website: website || null,
         description: description || null,
         about: about || null,
+        theme: theme || 'default',
       })
       .where(eq(unions.id, membership.unionId));
 
