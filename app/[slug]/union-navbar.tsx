@@ -31,14 +31,13 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             <Link
               href={`/${slug}`}
               prefetch={true}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
             >
-              <Users className="h-6 w-6 text-blue-600" />
               <span className="font-semibold text-gray-900 text-lg">
                 {displayName}
               </span>
@@ -76,7 +75,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                         <Link href={`/${slug}/mass-email`} prefetch={true}>
                           <Button variant="ghost" size="sm" className="gap-2">
                             <Mail className="h-4 w-4" />
-                            <span className="hidden md:inline">Mass Email</span>
+                            <span className="hidden md:inline">Emails</span>
                           </Button>
                         </Link>
                       </>
@@ -86,7 +85,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                         <Link href={`/${slug}/announcements`} prefetch={true}>
                           <Button variant="ghost" size="sm" className="gap-2">
                             <Megaphone className="h-4 w-4" />
-                            <span className="hidden md:inline">Announcements</span>
+                            <span className="hidden md:inline">News</span>
                           </Button>
                         </Link>
                         <Link href={`/${slug}/settings`} prefetch={true}>
@@ -190,7 +189,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   >
                     <Button variant="ghost" className="w-full justify-start gap-2">
                       <Mail className="h-4 w-4" />
-                      Mass Email
+                      Emails
                     </Button>
                   </Link>
                 </>
@@ -204,7 +203,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   >
                     <Button variant="ghost" className="w-full justify-start gap-2">
                       <Megaphone className="h-4 w-4" />
-                      Announcements
+                      News
                     </Button>
                   </Link>
                   <Link
