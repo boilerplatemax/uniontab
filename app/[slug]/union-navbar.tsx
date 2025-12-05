@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown } from 'lucide-react';
+import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -23,13 +24,14 @@ interface UnionNavbarProps {
   } | null;
   handleSignOut: () => Promise<void>;
   pendingMembersCount?: number;
-  hasAnnouncement?: boolean;
+  announcementId?: number | null;
 }
 
-export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0, hasAnnouncement = false }: UnionNavbarProps) {
+export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0, announcementId }: UnionNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
+  const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -40,7 +42,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
   // Simplified navbar for non-signed-in users
   if (!membership) {
     return (
-      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${hasAnnouncement ? 'top-12' : 'top-0'}`}>
+      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm transition-all duration-300 ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             <Link
@@ -73,7 +75,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
   // Full navbar for signed-in users
   return (
     <>
-      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${hasAnnouncement ? 'top-12' : 'top-0'}`}>
+      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm transition-all duration-300 ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             <Link

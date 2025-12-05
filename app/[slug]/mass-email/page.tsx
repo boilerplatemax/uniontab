@@ -5,6 +5,7 @@ import { eq, and, count, isNull } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { MassEmailContent } from './mass-email-content';
 import { UnionNavbar } from '../union-navbar';
+import { NavbarSpacer } from '../navbar-spacer';
 import { cookies } from 'next/headers';
 
 async function getUnionBySlug(slug: string) {
@@ -110,6 +111,7 @@ export default async function MassEmailPage({
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
       />
+      <NavbarSpacer />
       <MassEmailContent
         slug={slug}
         union={union}

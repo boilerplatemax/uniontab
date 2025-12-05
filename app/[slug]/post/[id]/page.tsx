@@ -4,6 +4,7 @@ import { unions, users, posts, members, postLikes } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { UnionNavbar } from '../../union-navbar';
+import { NavbarSpacer } from '../../navbar-spacer';
 import { Card, CardContent } from '@/components/ui/card';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { LikeButton } from '@/components/posts/like-button';
@@ -140,6 +141,7 @@ export default async function PostPage({
         membership={membership}
         handleSignOut={handleSignOut}
       />
+      <NavbarSpacer />
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link

@@ -5,6 +5,7 @@ import { eq, and, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { MembersContent } from './members-content';
 import { UnionNavbar } from '../union-navbar';
+import { NavbarSpacer } from '../navbar-spacer';
 import { cookies } from 'next/headers';
 
 async function getUnionBySlug(slug: string) {
@@ -110,6 +111,7 @@ export default async function MembersPage({
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
       />
+      <NavbarSpacer />
       <MembersContent slug={slug} union={union} members={unionMembers} isOwner={isOwner} />
     </>
   );

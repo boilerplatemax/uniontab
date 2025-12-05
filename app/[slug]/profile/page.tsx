@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import { getUser, getUserWithTeam } from '@/lib/db/queries';
 import { MemberProfile } from './member-profile';
 import { UnionNavbar } from '../union-navbar';
+import { NavbarSpacer } from '../navbar-spacer';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, users } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
@@ -78,6 +79,7 @@ export default async function ProfilePage({
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
       />
+      <NavbarSpacer />
       <MemberProfile slug={slug} user={user} userWithUnion={userWithUnion} />
     </>
   );

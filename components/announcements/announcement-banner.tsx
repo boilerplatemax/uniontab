@@ -35,6 +35,9 @@ export function AnnouncementBanner({ announcement, onDismiss }: AnnouncementBann
     dismissedBanners.push(announcement.id);
     localStorage.setItem('dismissedBanners', JSON.stringify(dismissedBanners));
 
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new Event('announcementDismissed'));
+
     // Call API to track dismissal
     onDismiss(announcement.id);
     setVisible(false);
