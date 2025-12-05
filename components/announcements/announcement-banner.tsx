@@ -45,11 +45,11 @@ export function AnnouncementBanner({ announcement, onDismiss }: AnnouncementBann
   }
 
   return (
-    <div className="bg-blue-600 text-white shadow-md relative z-[60] sticky top-0">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center justify-between gap-4">
+    <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white shadow-sm z-[60]">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-4 h-12">
           <div
-            className="flex-1 text-sm sm:text-base"
+            className="flex-1 text-sm"
             dangerouslySetInnerHTML={{ __html: announcement.content }}
           />
           <Button

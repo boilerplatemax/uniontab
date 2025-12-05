@@ -274,7 +274,13 @@ export default async function PublicUnionPage({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Navigation Bar */}
+      {/* Announcement Banner - Above navbar */}
+      <AnnouncementClient
+        popup={activeAnnouncements.popup}
+        banner={activeAnnouncements.banner}
+      />
+
+      {/* Navigation Bar - Fixed */}
       <UnionNavbar
         slug={slug}
         unionName={union.publicName || union.name}
@@ -282,13 +288,11 @@ export default async function PublicUnionPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        hasAnnouncement={!!activeAnnouncements.banner}
       />
 
-      {/* Announcement Banner */}
-      <AnnouncementClient
-        popup={activeAnnouncements.popup}
-        banner={activeAnnouncements.banner}
-      />
+      {/* Spacing for fixed navbar */}
+      <div className={activeAnnouncements.banner ? 'h-[104px]' : 'h-14'} />
 
       {/* Unapproved User Alert Banner */}
       {membership && membership.member.status === 'pending' && (

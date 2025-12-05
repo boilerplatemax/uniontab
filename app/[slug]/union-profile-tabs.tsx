@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -185,61 +185,69 @@ export function UnionProfileTabs({
     }
   };
 
+  const [isTabMenuOpen, setIsTabMenuOpen] = useState(false);
+
+  const tabs = [
+    { id: 'posts' as const, label: 'Posts' },
+    { id: 'about' as const, label: 'About' },
+    { id: 'files' as const, label: 'Files' },
+    { id: 'events' as const, label: 'Events' },
+    { id: 'elections' as const, label: 'Elections' },
+  ];
+
+  const activeTabLabel = tabs.find(tab => tab.id === activeTab)?.label || 'Posts';
+
   return (
     <div className="space-y-4">
       {/* Tabs Navigation */}
       <div className="border-b bg-white rounded-t-lg">
-        <div className="flex gap-2 px-6 pt-2">
-          <button
-            onClick={() => setActiveTab('posts')}
-            className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
-              activeTab === 'posts'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+        {/* Mobile hamburger menu */}
+        <div className="sm:hidden">
+          <Button
+            variant="ghost"
+            className="w-full justify-between px-6 py-4 font-semibold"
+            onClick={() => setIsTabMenuOpen(!isTabMenuOpen)}
           >
-            Posts
-          </button>
-          <button
-            onClick={() => setActiveTab('about')}
-            className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
-              activeTab === 'about'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            About
-          </button>
-          <button
-            onClick={() => setActiveTab('files')}
-            className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
-              activeTab === 'files'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Files
-          </button>
-          <button
-            onClick={() => setActiveTab('events')}
-            className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
-              activeTab === 'events'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Events
-          </button>
-          <button
-            onClick={() => setActiveTab('elections')}
-            className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
-              activeTab === 'elections'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Elections
-          </button>
+            {activeTabLabel}
+            <Menu className="h-4 w-4" />
+          </Button>
+          {isTabMenuOpen && (
+            <div className="border-t">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setIsTabMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-6 py-3 font-medium transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop tabs */}
+        <div className="hidden sm:flex gap-2 px-6 pt-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
+                activeTab === tab.id
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
