@@ -4,6 +4,7 @@ import { unions, members, users } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { UnionNavbar } from '../union-navbar';
+import { NavbarSpacer } from '../navbar-spacer';
 import { signOut } from '@/app/(login)/actions';
 import { SettingsContent } from './settings-content';
 
@@ -84,6 +85,7 @@ export default async function SettingsPage({
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
       />
+      <NavbarSpacer />
       <SettingsContent />
     </>
   );

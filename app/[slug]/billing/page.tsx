@@ -5,6 +5,7 @@ import { eq, and, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { BillingContent } from './billing-content';
 import { UnionNavbar } from '../union-navbar';
+import { NavbarSpacer } from '../navbar-spacer';
 import { signOut } from '@/app/(login)/actions';
 
 async function getUnionBySlug(slug: string) {
@@ -84,6 +85,7 @@ export default async function BillingPage({
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
       />
+      <NavbarSpacer />
       <BillingContent slug={slug} union={union} />
     </>
   );

@@ -6,6 +6,7 @@ import { Users, Camera, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { getUser } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
 import { UnionNavbar } from './union-navbar';
+import { NavbarSpacer } from './navbar-spacer';
 import { UnionProfileTabs } from './union-profile-tabs';
 import { AnnouncementBanner } from '@/components/announcements/announcement-banner';
 import { AnnouncementPopup } from '@/components/announcements/announcement-popup';
@@ -288,11 +289,11 @@ export default async function PublicUnionPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
-        hasAnnouncement={!!activeAnnouncements.banner}
+        announcementId={activeAnnouncements.banner?.id}
       />
 
-      {/* Spacing for fixed navbar */}
-      <div className={activeAnnouncements.banner ? 'h-[104px]' : 'h-14'} />
+      {/* Spacing for fixed navbar and announcement */}
+      <NavbarSpacer announcementId={activeAnnouncements.banner?.id} />
 
       {/* Unapproved User Alert Banner */}
       {membership && membership.member.status === 'pending' && (

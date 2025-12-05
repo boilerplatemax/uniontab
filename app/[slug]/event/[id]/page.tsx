@@ -4,6 +4,7 @@ import { unions, users, events, members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { UnionNavbar } from '../../union-navbar';
+import { NavbarSpacer } from '../../navbar-spacer';
 import { Card, CardContent } from '@/components/ui/card';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { ArrowLeft, Calendar, Clock, MapPin } from 'lucide-react';
@@ -132,6 +133,7 @@ export default async function EventPage({
         membership={membership}
         handleSignOut={handleSignOut}
       />
+      <NavbarSpacer />
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link
