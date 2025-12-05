@@ -17,9 +17,11 @@ import {
   Globe,
   Loader2,
   Save,
+  Palette,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
+import { themeOptions } from '@/lib/themes/config';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -36,7 +38,8 @@ export function SettingsContent() {
     address: '',
     website: '',
     description: '',
-    about: ''
+    about: '',
+    theme: 'default'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -53,7 +56,8 @@ export function SettingsContent() {
         address: union.address || '',
         website: union.website || '',
         description: union.description || '',
-        about: union.about || ''
+        about: union.about || '',
+        theme: union.theme || 'default'
       });
     }
   }, [union]);
@@ -213,6 +217,55 @@ export function SettingsContent() {
                 <p className="text-sm text-gray-500 mt-1">
                   Share your union's story, accomplishments, and goals
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Theme Selection */}
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Theme
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="theme">Homepage Theme</Label>
+                <p className="text-sm text-gray-500 mb-3">
+                  Choose how your union's homepage and tabs are displayed to visitors
+                </p>
+                <div className="grid grid-cols-1 gap-3">
+                  {themeOptions.map((theme) => (
+                    <label
+                      key={theme.id}
+                      className={`flex items-start gap-4 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        formData.theme === theme.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="theme"
+                        value={theme.id}
+                        checked={formData.theme === theme.id}
+                        onChange={(e) =>
+                          setFormData({ ...formData, theme: e.target.value })
+                        }
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-900 mb-1">
+                          {theme.name}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {theme.description}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -41,6 +41,7 @@ export const unions = pgTable('unions', {
   website: varchar('website', { length: 255 }),
   description: text('description'),
   about: text('about'),
+  theme: varchar('theme', { length: 50 }).notNull().default('default'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   publishedAt: timestamp('published_at'),
