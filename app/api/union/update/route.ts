@@ -3,6 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { unions, members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
+import { normalizeUrl } from '@/lib/utils';
 
 export async function PUT(request: NextRequest) {
   try {
@@ -51,7 +52,7 @@ export async function PUT(request: NextRequest) {
         email: email || null,
         phone: phone || null,
         address: address || null,
-        website: website || null,
+        website: normalizeUrl(website),
         description: description || null,
         about: about || null,
         theme: theme || 'default',
