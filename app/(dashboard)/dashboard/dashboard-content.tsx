@@ -20,6 +20,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Loader2, PlusCircle, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import { RegistrationTools } from '@/components/registration-tools';
 
 type ActionState = {
   error?: string;
@@ -297,6 +298,30 @@ function InviteTeamMember() {
   );
 }
 
+function RegistrationToolsWrapper() {
+  const { data: teamData } = useSWR<UnionDataWithMembers>('/api/team', fetcher);
+
+  if (!teamData) return null;
+
+  return (
+    <RegistrationTools
+      slug={teamData.slug}
+      unionName={teamData.publicName || teamData.name}
+      logoUrl={teamData.logoUrl}
+    />
+  );
+}
+
+function RegistrationToolsSkeleton() {
+  return (
+    <Card className="mb-8 h-[280px]">
+      <CardHeader>
+        <CardTitle>Registration Tools</CardTitle>
+      </CardHeader>
+    </Card>
+  );
+}
+
 export default function SettingsPage() {
   return (
     <section className="flex-1 p-4 lg:p-8">
@@ -312,6 +337,9 @@ export default function SettingsPage() {
       </Suspense>
       <Suspense fallback={<InviteTeamMemberSkeleton />}>
         <InviteTeamMember />
+      </Suspense>
+      <Suspense fallback={<RegistrationToolsSkeleton />}>
+        <RegistrationToolsWrapper />
       </Suspense>
     </section>
   );

@@ -3,6 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { unions } from '@/lib/db/schema';
 import { getUser, getUserWithTeam } from '@/lib/db/queries';
 import { eq } from 'drizzle-orm';
+import { normalizeUrl } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
         email: data.email || null,
         phone: data.phone || null,
         address: data.address || null,
-        website: data.website || null,
+        website: normalizeUrl(data.website),
         description: data.description || null,
         about: data.about || null,
         updatedAt: new Date()
