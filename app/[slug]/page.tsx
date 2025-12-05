@@ -10,6 +10,7 @@ import { UnionProfileTabs } from './union-profile-tabs';
 import { AnnouncementBanner } from '@/components/announcements/announcement-banner';
 import { AnnouncementPopup } from '@/components/announcements/announcement-popup';
 import { AnnouncementClient } from './announcement-client';
+import { NavbarSpacer } from './navbar-spacer';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -292,7 +293,7 @@ export default async function PublicUnionPage({
       />
 
       {/* Spacing for fixed navbar */}
-      <div className={activeAnnouncements.banner ? 'h-[104px]' : 'h-14'} />
+      <NavbarSpacer />
 
       {/* Unapproved User Alert Banner */}
       {membership && membership.member.status === 'pending' && (

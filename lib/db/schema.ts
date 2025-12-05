@@ -385,6 +385,23 @@ export const emailLogs = pgTable('email_logs', {
   sentAt: timestamp('sent_at').notNull().defaultNow(),
 });
 
+// Tab Management System
+export const unionTabs = pgTable('union_tabs', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  tabId: varchar('tab_id', { length: 50 }).notNull(), // posts, about, files, events, elections, or custom
+  label: varchar('label', { length: 100 }).notNull(),
+  isEnabled: boolean('is_enabled').notNull().default(true),
+  isPrivate: boolean('is_private').notNull().default(false), // Restricted to approved members only
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  uniqueUnionTab: unique().on(table.unionId, table.tabId),
+}));
+
 export const unionsRelations = relations(unions, ({ many }) => ({
   members: many(members),
   activityLogs: many(activityLogs),
@@ -396,6 +413,7 @@ export const unionsRelations = relations(unions, ({ many }) => ({
   elections: many(elections),
   announcements: many(announcements),
   massEmails: many(massEmails),
+  tabs: many(unionTabs),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -646,6 +664,13 @@ export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   }),
 }));
 
+export const unionTabsRelations = relations(unionTabs, ({ one }) => ({
+  union: one(unions, {
+    fields: [unionTabs.unionId],
+    references: [unions.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Union = typeof unions.$inferSelect;
@@ -690,6 +715,8 @@ export type MassEmail = typeof massEmails.$inferSelect;
 export type NewMassEmail = typeof massEmails.$inferInsert;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type NewEmailLog = typeof emailLogs.$inferInsert;
+export type UnionTab = typeof unionTabs.$inferSelect;
+export type NewUnionTab = typeof unionTabs.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;

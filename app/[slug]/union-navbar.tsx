@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,8 +28,29 @@ interface UnionNavbarProps {
 
 export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0, hasAnnouncement = false }: UnionNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [announcementVisible, setAnnouncementVisible] = useState(false);
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
+
+  useEffect(() => {
+    // Watch for changes to the announcement offset CSS variable
+    const updateAnnouncementVisibility = () => {
+      const offset = getComputedStyle(document.documentElement)
+        .getPropertyValue('--announcement-offset')
+        .trim();
+      setAnnouncementVisible(offset === '3rem');
+    };
+
+    updateAnnouncementVisibility();
+
+    const observer = new MutationObserver(updateAnnouncementVisibility);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['style'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -40,7 +61,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
   // Simplified navbar for non-signed-in users
   if (!membership) {
     return (
-      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${hasAnnouncement ? 'top-12' : 'top-0'}`}>
+      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${announcementVisible ? 'top-12' : 'top-0'}`}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             <Link
@@ -73,7 +94,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
   // Full navbar for signed-in users
   return (
     <>
-      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${hasAnnouncement ? 'top-12' : 'top-0'}`}>
+      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${announcementVisible ? 'top-12' : 'top-0'}`}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             <Link

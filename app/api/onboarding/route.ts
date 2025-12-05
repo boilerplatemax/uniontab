@@ -21,6 +21,12 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
 
+    // Normalize website URL to ensure it has a protocol
+    let website = data.website || null;
+    if (website && !website.match(/^https?:\/\//i)) {
+      website = `https://${website}`;
+    }
+
     // Update the union with onboarding data
     await db
       .update(unions)
@@ -31,7 +37,7 @@ export async function POST(request: NextRequest) {
         email: data.email || null,
         phone: data.phone || null,
         address: data.address || null,
-        website: data.website || null,
+        website: website,
         description: data.description || null,
         about: data.about || null,
         updatedAt: new Date()

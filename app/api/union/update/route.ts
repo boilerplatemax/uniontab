@@ -40,6 +40,12 @@ export async function PUT(request: NextRequest) {
       about,
     } = body;
 
+    // Normalize website URL to ensure it has a protocol
+    let normalizedWebsite = website || null;
+    if (normalizedWebsite && !normalizedWebsite.match(/^https?:\/\//i)) {
+      normalizedWebsite = `https://${normalizedWebsite}`;
+    }
+
     // Update the union
     await db
       .update(unions)
@@ -50,7 +56,7 @@ export async function PUT(request: NextRequest) {
         email: email || null,
         phone: phone || null,
         address: address || null,
-        website: website || null,
+        website: normalizedWebsite,
         description: description || null,
         about: about || null,
       })

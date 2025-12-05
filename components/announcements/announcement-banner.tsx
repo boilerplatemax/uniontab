@@ -8,9 +8,10 @@ import type { Announcement } from '@/lib/db/schema';
 interface AnnouncementBannerProps {
   announcement: Announcement | null;
   onDismiss: (announcementId: number) => void;
+  onVisibilityChange?: (visible: boolean) => void;
 }
 
-export function AnnouncementBanner({ announcement, onDismiss }: AnnouncementBannerProps) {
+export function AnnouncementBanner({ announcement, onDismiss, onVisibilityChange }: AnnouncementBannerProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -19,11 +20,14 @@ export function AnnouncementBanner({ announcement, onDismiss }: AnnouncementBann
       const dismissedBanners = JSON.parse(
         localStorage.getItem('dismissedBanners') || '[]'
       );
-      if (!dismissedBanners.includes(announcement.id)) {
-        setVisible(true);
-      }
+      const isVisible = !dismissedBanners.includes(announcement.id);
+      setVisible(isVisible);
+      onVisibilityChange?.(isVisible);
+    } else {
+      setVisible(false);
+      onVisibilityChange?.(false);
     }
-  }, [announcement]);
+  }, [announcement, onVisibilityChange]);
 
   const handleDismiss = () => {
     if (!announcement) return;
@@ -38,6 +42,7 @@ export function AnnouncementBanner({ announcement, onDismiss }: AnnouncementBann
     // Call API to track dismissal
     onDismiss(announcement.id);
     setVisible(false);
+    onVisibilityChange?.(false);
   };
 
   if (!announcement || !visible) {
