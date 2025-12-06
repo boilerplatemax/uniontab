@@ -168,27 +168,31 @@ ${unionInfo ? `The ${unionName} Team` : 'The UnionTab Team'}
 export async function sendEmailVerification(
   email: string,
   verificationToken: string,
-  name: string
+  name: string,
+  unionInfo?: { name: string; localNumber: string | null } | null
 ) {
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const verificationUrl = `${baseUrl}/auth/verify-email?token=${verificationToken}`;
 
-  const subject = 'Verify Your Email - UnionTab';
+  const unionName = unionInfo ? `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}` : 'UnionTab';
+  const subject = `Verify Your Email - ${unionName}`;
 
   const text = `
 Hi ${name},
 
-Thank you for signing up for UnionTab!
+Thank you for signing up for ${unionName}!
 
 Please verify your email address by clicking the link below:
 ${verificationUrl}
 
 This link will expire in 24 hours.
 
-If you didn't create an account with UnionTab, please ignore this email.
+IMPORTANT: After verifying your email, your membership application will need to be reviewed and approved by an administrator. You will receive another email once your application has been reviewed.
+
+If you didn't create an account with ${unionName}, please ignore this email.
 
 Thanks,
-The UnionTab Team
+The ${unionName} Team
   `.trim();
 
   const html = `
@@ -232,6 +236,13 @@ The UnionTab Team
       border-radius: 6px;
       margin: 20px 0;
     }
+    .info-box {
+      background-color: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
     .footer {
       text-align: center;
       font-size: 12px;
@@ -243,13 +254,13 @@ The UnionTab Team
 <body>
   <div class="container">
     <div class="header">
-      <h1>UnionTab</h1>
+      <h1>${unionName}</h1>
     </div>
     <div class="content">
       <h2>Verify Your Email Address</h2>
       <p>Hi ${name},</p>
-      <p>Thank you for signing up for UnionTab! We're excited to have you on board.</p>
-      <p>Please click the button below to verify your email address and complete your registration:</p>
+      <p>Thank you for signing up for ${unionName}! We're excited to have you on board.</p>
+      <p>Please click the button below to verify your email address:</p>
       <center>
         <a href="${verificationUrl}" class="button" style="display: inline-block; padding: 12px 30px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin: 20px 0;">Verify Email Address</a>
       </center>
@@ -257,15 +268,220 @@ The UnionTab Team
         Or copy and paste this link into your browser:<br>
         <a href="${verificationUrl}" style="word-break: break-all;">${verificationUrl}</a>
       </p>
+      <div class="info-box">
+        <p style="margin: 0; font-weight: 600; color: #92400e;">Next Steps:</p>
+        <p style="margin: 10px 0 0 0; color: #92400e;">After verifying your email, your membership application will need to be reviewed and approved by an administrator. You will receive another email once your application has been reviewed.</p>
+      </div>
       <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
         This link will expire in 24 hours.
       </p>
       <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
-        If you didn't create an account with UnionTab, please ignore this email.
+        If you didn't create an account with ${unionName}, please ignore this email.
       </p>
     </div>
     <div class="footer">
-      <p>© ${new Date().getFullYear()} UnionTab. All rights reserved.</p>
+      <p>© ${new Date().getFullYear()} ${unionName}. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  await sendEmail({ to: email, subject, text, html });
+}
+
+export async function sendMembershipApprovalEmail(
+  email: string,
+  name: string,
+  unionInfo: { name: string; localNumber: string | null; slug: string }
+) {
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  const unionUrl = `${baseUrl}/${unionInfo.slug}`;
+
+  const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
+  const subject = `Membership Approved - ${unionName}`;
+
+  const text = `
+Hi ${name},
+
+Great news! Your membership application for ${unionName} has been approved!
+
+You now have full access to the union platform. Visit your union page:
+${unionUrl}
+
+Thank you for joining ${unionName}!
+
+Best regards,
+The ${unionName} Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .container {
+      background-color: #f9fafb;
+      border-radius: 8px;
+      padding: 30px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #2563eb;
+      margin: 0;
+    }
+    .content {
+      background-color: white;
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+    .success-box {
+      background-color: #d1fae5;
+      border-left: 4px solid #10b981;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 30px;
+      background-color: #10b981;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>${unionName}</h1>
+    </div>
+    <div class="content">
+      <h2>🎉 Membership Approved!</h2>
+      <p>Hi ${name},</p>
+      <div class="success-box">
+        <p style="margin: 0; font-weight: 600; color: #065f46;">Great news!</p>
+        <p style="margin: 10px 0 0 0; color: #065f46;">Your membership application for ${unionName} has been approved!</p>
+      </div>
+      <p>You now have full access to the union platform, including:</p>
+      <ul>
+        <li>Union news and announcements</li>
+        <li>Member resources and documents</li>
+        <li>Event calendar and RSVP</li>
+        <li>Community discussions</li>
+      </ul>
+      <p>Click the button below to access your union page:</p>
+      <center>
+        <a href="${unionUrl}" class="button" style="display: inline-block; padding: 12px 30px; background-color: #10b981; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin: 20px 0;">Visit Union Page</a>
+      </center>
+      <p>Thank you for joining ${unionName}!</p>
+    </div>
+    <div class="footer">
+      <p>© ${new Date().getFullYear()} ${unionName}. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  await sendEmail({ to: email, subject, text, html });
+}
+
+export async function sendMembershipRejectionEmail(
+  email: string,
+  name: string,
+  unionInfo: { name: string; localNumber: string | null }
+) {
+  const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
+  const subject = `Membership Application Update - ${unionName}`;
+
+  const text = `
+Hi ${name},
+
+Thank you for your interest in ${unionName}.
+
+After reviewing your application, we are unable to approve your membership at this time.
+
+If you have questions about this decision or believe this was a mistake, please contact the union administrators directly.
+
+Best regards,
+The ${unionName} Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .container {
+      background-color: #f9fafb;
+      border-radius: 8px;
+      padding: 30px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #2563eb;
+      margin: 0;
+    }
+    .content {
+      background-color: white;
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>${unionName}</h1>
+    </div>
+    <div class="content">
+      <h2>Membership Application Update</h2>
+      <p>Hi ${name},</p>
+      <p>Thank you for your interest in ${unionName}.</p>
+      <p>After reviewing your application, we are unable to approve your membership at this time.</p>
+      <p>If you have questions about this decision or believe this was a mistake, please contact the union administrators directly.</p>
+    </div>
+    <div class="footer">
+      <p>© ${new Date().getFullYear()} ${unionName}. All rights reserved.</p>
     </div>
   </div>
 </body>
