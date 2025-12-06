@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
-import { db } from "@/lib/db";
+import { db } from "@/lib/db/drizzle";
 import { unions, members } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import InvitePageContent from "./invite-page-content";
@@ -12,13 +12,13 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default async function InvitePage({ params }: PageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   // Get user session
   const session = await getSession();
