@@ -30,9 +30,15 @@ export default function VerifyPendingPage() {
           const data = await response.json();
           setEmail(data.email);
 
-          // If already verified, redirect to onboarding
+          // If already verified, redirect based on role
           if (data.emailVerified) {
-            router.push('/onboarding');
+            // Only redirect owners to onboarding
+            if (data.role === 'owner') {
+              router.push('/onboarding');
+            } else {
+              // Members should wait for admin approval
+              router.push('/sign-in');
+            }
           }
         }
       } catch (error) {

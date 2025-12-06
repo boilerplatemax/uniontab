@@ -34,6 +34,7 @@ const steps: OnboardingStep[] = ['welcome', 'logo', 'cover', 'contact', 'about',
 export default function OnboardingPage() {
   const router = useRouter();
   const { data: union, mutate } = useSWR<UnionDataWithMembers>('/api/team', fetcher);
+  const { data: user } = useSWR('/api/user', fetcher);
 
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('welcome');
   const [formData, setFormData] = useState({
@@ -48,6 +49,18 @@ export default function OnboardingPage() {
     about: ''
   });
   const [loading, setLoading] = useState(false);
+
+  // Protect onboarding page - only owners can access
+  useEffect(() => {
+    if (user && user.role !== 'owner') {
+      // Redirect non-owners away from onboarding
+      if (union?.slug) {
+        router.push(`/${union.slug}`);
+      } else {
+        router.push('/sign-in');
+      }
+    }
+  }, [user, union, router]);
 
   useEffect(() => {
     if (union) {

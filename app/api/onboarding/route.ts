@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { unions } from '@/lib/db/schema';
+import { unions, members } from '@/lib/db/schema';
 import { getUser, getUserWithTeam } from '@/lib/db/queries';
 import { eq } from 'drizzle-orm';
 
@@ -16,6 +16,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Union not found' },
         { status: 404 }
+      );
+    }
+
+    // Check if user is an owner - only owners can modify onboarding settings
+    const [membership] = await db
+      .select()
+      .from(members)
+      .where(eq(members.userId, user.id))
+      .limit(1);
+
+    if (!membership || membership.role !== 'owner') {
+      return NextResponse.json(
+        { error: 'Forbidden: Only union owners can modify these settings' },
+        { status: 403 }
       );
     }
 
