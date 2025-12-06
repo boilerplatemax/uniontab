@@ -3,6 +3,8 @@ import { db } from '@/lib/db/drizzle';
 import { unions, users, members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { hashPassword, setSession } from '@/lib/auth/session';
+import { sendEmailVerification } from '@/lib/email/sendgrid';
+import crypto from 'crypto';
 
 export async function POST(
   request: NextRequest,
@@ -47,6 +49,26 @@ export async function POST(
       .limit(1);
 
     if (existingUser) {
+      // Check if this user is already a member of this specific union
+      const [existingMembership] = await db
+        .select()
+        .from(members)
+        .where(and(
+          eq(members.userId, existingUser.id),
+          eq(members.unionId, union.id)
+        ))
+        .limit(1);
+
+      if (existingMembership) {
+        const unionFullName = union.localNumber
+          ? `${union.name} Local ${union.localNumber}`
+          : union.name;
+        return NextResponse.json(
+          { error: `Failed to create user, user is already a member of ${unionFullName}` },
+          { status: 400 }
+        );
+      }
+
       return NextResponse.json(
         { error: 'An account with this email already exists' },
         { status: 400 }
@@ -56,6 +78,11 @@ export async function POST(
     // Hash password
     const passwordHash = await hashPassword(password);
 
+    // Generate email verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpiry = new Date();
+    verificationExpiry.setHours(verificationExpiry.getHours() + 24); // 24 hours from now
+
     // Create user with first and last name
     const [newUser] = await db
       .insert(users)
@@ -63,7 +90,10 @@ export async function POST(
         name: `${firstName} ${lastName}`,
         email,
         passwordHash,
-        role: 'member'
+        role: 'member',
+        emailVerified: false,
+        emailVerificationToken: verificationToken,
+        emailVerificationExpiry: verificationExpiry
       })
       .returning();
 
@@ -81,6 +111,19 @@ export async function POST(
       role: 'member',
       status: 'pending'
     });
+
+    // Send verification email
+    try {
+      await sendEmailVerification(
+        email,
+        verificationToken,
+        newUser.name || firstName,
+        { name: union.name, localNumber: union.localNumber }
+      );
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Don't fail the signup if email fails, but log it
+    }
 
     // Set session
     await setSession(newUser);

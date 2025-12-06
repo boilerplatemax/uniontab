@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown } from 'lucide-react';
+import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import {
@@ -91,17 +91,39 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
               <div className="hidden sm:flex items-center gap-2">
                 {isOwner && (
                   <>
-                    <Link href={`/${slug}/members`} prefetch={true}>
-                      <Button variant="ghost" size="sm" className="gap-2 relative">
-                        <Users className="h-4 w-4" />
-                        <span className="hidden md:inline">Members</span>
-                        {pendingMembersCount > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                            {pendingMembersCount}
-                          </span>
-                        )}
-                      </Button>
-                    </Link>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="gap-2 relative">
+                          <Users className="h-4 w-4" />
+                          <span className="hidden md:inline">Members</span>
+                          <ChevronDown className="h-3 w-3" />
+                          {pendingMembersCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                              {pendingMembersCount}
+                            </span>
+                          )}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        <Link href={`/${slug}/members`} prefetch={true}>
+                          <DropdownMenuItem>
+                            <Users className="h-4 w-4" />
+                            View Members
+                            {pendingMembersCount > 0 && (
+                              <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                {pendingMembersCount}
+                              </span>
+                            )}
+                          </DropdownMenuItem>
+                        </Link>
+                        <Link href={`/${slug}/members/invite`} prefetch={true}>
+                          <DropdownMenuItem>
+                            <UserPlus className="h-4 w-4" />
+                            Invite
+                          </DropdownMenuItem>
+                        </Link>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </>
                 )}
                 {isOwnerOrAdmin && (
@@ -217,12 +239,22 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   >
                     <Button variant="ghost" className="w-full justify-start gap-2 relative">
                       <Users className="h-4 w-4" />
-                      Members
+                      View Members
                       {pendingMembersCount > 0 && (
                         <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                           {pendingMembersCount}
                         </span>
                       )}
+                    </Button>
+                  </Link>
+                  <Link
+                    href={`/${slug}/members/invite`}
+                    prefetch={true}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Button variant="ghost" className="w-full justify-start gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      Invite Members
                     </Button>
                   </Link>
                 </>

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { members } from '@/lib/db/schema';
+import { members, users, unions } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
+import { sendMembershipApprovalEmail, sendMembershipRejectionEmail } from '@/lib/email/sendgrid';
 
 export async function POST(request: Request) {
   try {
@@ -55,11 +56,51 @@ export async function POST(request: Request) {
       );
     }
 
+    // Get the member's user information and union details
+    const [memberUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, memberToUpdate.userId))
+      .limit(1);
+
+    const [union] = await db
+      .select()
+      .from(unions)
+      .where(eq(unions.id, memberToUpdate.unionId))
+      .limit(1);
+
+    if (!memberUser || !union) {
+      return NextResponse.json(
+        { error: 'Member or union information not found' },
+        { status: 404 }
+      );
+    }
+
     // Update the member status
     await db
       .update(members)
       .set({ status: action })
       .where(eq(members.id, memberId));
+
+    // Send email notification
+    try {
+      if (action === 'approved') {
+        await sendMembershipApprovalEmail(
+          memberUser.email,
+          memberUser.name || 'Member',
+          { name: union.name, localNumber: union.localNumber, slug: union.slug }
+        );
+      } else if (action === 'rejected') {
+        await sendMembershipRejectionEmail(
+          memberUser.email,
+          memberUser.name || 'Member',
+          { name: union.name, localNumber: union.localNumber }
+        );
+      }
+    } catch (emailError) {
+      console.error('Failed to send membership decision email:', emailError);
+      // Don't fail the approval if email fails, but log it
+    }
 
     return NextResponse.json({ success: true, status: action });
   } catch (error) {

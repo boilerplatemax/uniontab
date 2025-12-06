@@ -3,7 +3,6 @@
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { AnnouncementClient } from '../announcement-client';
-import { RegistrationShareWidget } from '../registration-share-widget';
 import type { ThemeProps } from './types';
 import { Users } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -118,17 +117,6 @@ export function ModernTheme({
           </div>
         </div>
       </div>
-
-      {/* Registration Share Widget - Only visible to owners */}
-      {isOwner && (
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-          <RegistrationShareWidget
-            slug={slug}
-            unionName={union.name}
-            localNumber={union.localNumber}
-          />
-        </div>
-      )}
 
       {/* Main Content - Less margins, cleaner layout */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">

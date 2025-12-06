@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { members } from '@/lib/db/schema';
+import { members, users, unions } from '@/lib/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
+import { sendMembershipApprovalEmail, sendMembershipRejectionEmail } from '@/lib/email/sendgrid';
 
 export async function POST(request: Request) {
   try {
@@ -67,11 +68,62 @@ export async function POST(request: Request) {
       );
     }
 
+    // Get union details for email
+    const [union] = await db
+      .select()
+      .from(unions)
+      .where(eq(unions.id, unionId))
+      .limit(1);
+
+    if (!union) {
+      return NextResponse.json(
+        { error: 'Union not found' },
+        { status: 404 }
+      );
+    }
+
     // Update all members at once
     await db
       .update(members)
       .set({ status })
       .where(inArray(members.id, memberIds));
+
+    // Send email notifications to all updated members
+    const emailPromises = membersToUpdate.map(async (member) => {
+      try {
+        // Get user information
+        const [memberUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, member.userId))
+          .limit(1);
+
+        if (!memberUser) {
+          console.error(`User not found for member ID ${member.id}`);
+          return;
+        }
+
+        if (status === 'approved') {
+          await sendMembershipApprovalEmail(
+            memberUser.email,
+            memberUser.name || 'Member',
+            { name: union.name, localNumber: union.localNumber, slug: union.slug }
+          );
+        } else if (status === 'rejected') {
+          await sendMembershipRejectionEmail(
+            memberUser.email,
+            memberUser.name || 'Member',
+            { name: union.name, localNumber: union.localNumber }
+          );
+        }
+      } catch (emailError) {
+        console.error(`Failed to send email for member ID ${member.id}:`, emailError);
+        // Don't fail the entire operation if individual emails fail
+      }
+    });
+
+    // Wait for all emails to be sent (or fail)
+    await Promise.allSettled(emailPromises);
 
     return NextResponse.json({
       success: true,
