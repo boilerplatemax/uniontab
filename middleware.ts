@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/auth/session';
 
+// Middleware for authentication and subdomain routing
 const adminRoutes = '/admin';
 
 export async function middleware(request: NextRequest) {
