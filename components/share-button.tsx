@@ -1,0 +1,151 @@
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Share2, Link2, Mail, Facebook, Twitter, Linkedin, Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+interface ShareButtonProps {
+  itemType: 'post' | 'file' | 'event';
+  itemId: number;
+  itemTitle: string;
+  itemUrl: string; // Relative or absolute URL to the item
+  slug: string; // Union slug
+  isOwnerOrAdmin: boolean;
+  variant?: 'default' | 'outline' | 'ghost';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  className?: string;
+}
+
+export function ShareButton({
+  itemType,
+  itemId,
+  itemTitle,
+  itemUrl,
+  slug,
+  isOwnerOrAdmin,
+  variant = 'outline',
+  size = 'sm',
+  className = '',
+}: ShareButtonProps) {
+  const [copied, setCopied] = useState(false);
+  const router = useRouter();
+
+  // Construct full URL if not already absolute
+  const fullUrl = itemUrl.startsWith('http')
+    ? itemUrl
+    : `${typeof window !== 'undefined' ? window.location.origin : ''}${itemUrl}`;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(fullUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+    }
+  };
+
+  const handleSocialShare = (platform: 'facebook' | 'twitter' | 'linkedin') => {
+    const encodedUrl = encodeURIComponent(fullUrl);
+    const encodedTitle = encodeURIComponent(itemTitle);
+
+    let shareUrl = '';
+    switch (platform) {
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+        break;
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`;
+        break;
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        break;
+    }
+
+    if (shareUrl) {
+      window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+  };
+
+  const handleMassEmail = () => {
+    // Create subject and content for mass email
+    const itemTypeDisplay = itemType.charAt(0).toUpperCase() + itemType.slice(1);
+    const subject = `New ${itemTypeDisplay}: ${itemTitle}`;
+
+    // Create HTML content with link
+    const content = `
+      <p>Check out this new ${itemType}:</p>
+      <h2>${itemTitle}</h2>
+      <p><a href="${fullUrl}">View ${itemTypeDisplay}</a></p>
+    `;
+
+    // Navigate to mass email page with pre-filled data
+    const massEmailUrl = `/${slug}/mass-email?subject=${encodeURIComponent(subject)}&content=${encodeURIComponent(content)}`;
+    router.push(massEmailUrl);
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant={variant} size={size} className={className}>
+          <Share2 className="h-4 w-4 mr-2" />
+          Share
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuLabel>Share this {itemType}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem onClick={handleCopyLink}>
+          {copied ? (
+            <>
+              <Check className="h-4 w-4 mr-2" />
+              Link copied!
+            </>
+          ) : (
+            <>
+              <Link2 className="h-4 w-4 mr-2" />
+              Copy link
+            </>
+          )}
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem onClick={() => handleSocialShare('facebook')}>
+          <Facebook className="h-4 w-4 mr-2" />
+          Share on Facebook
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={() => handleSocialShare('twitter')}>
+          <Twitter className="h-4 w-4 mr-2" />
+          Share on X (Twitter)
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={() => handleSocialShare('linkedin')}>
+          <Linkedin className="h-4 w-4 mr-2" />
+          Share on LinkedIn
+        </DropdownMenuItem>
+
+        {isOwnerOrAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleMassEmail}>
+              <Mail className="h-4 w-4 mr-2" />
+              Email to members
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

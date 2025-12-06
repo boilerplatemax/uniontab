@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -62,6 +63,7 @@ interface MassEmailContentProps {
 }
 
 export function MassEmailContent({ slug, union, members }: MassEmailContentProps) {
+  const searchParams = useSearchParams();
   const [subject, setSubject] = useState('');
   const [htmlContent, setHtmlContent] = useState('');
   const [recipientFilter, setRecipientFilter] = useState<'all' | 'approved' | 'admin' | 'pending' | 'rejected' | 'custom'>('approved');
@@ -85,6 +87,19 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
     resetDate: string;
   } | null>(null);
   const [isLoadingUsage, setIsLoadingUsage] = useState(true);
+
+  // Pre-fill email content from URL parameters (for sharing from posts/files/events)
+  useEffect(() => {
+    const subjectParam = searchParams.get('subject');
+    const contentParam = searchParams.get('content');
+
+    if (subjectParam) {
+      setSubject(decodeURIComponent(subjectParam));
+    }
+    if (contentParam) {
+      setHtmlContent(decodeURIComponent(contentParam));
+    }
+  }, [searchParams]);
 
   const getUserDisplayName = (user: { name: string | null; email: string }) => {
     return user.name || user.email;
@@ -333,383 +348,360 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
           </Card>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content - Email Composer */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Compose Email</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Subject */}
-                <div className="space-y-2">
-                  <Label htmlFor="subject">Subject *</Label>
+        {/* Email Usage Counter - Full Width at Top */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Monthly Email Usage
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoadingUsage ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            ) : emailUsage ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Progress Bar */}
+                <div className="md:col-span-2 space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-gray-700">
+                      {emailUsage.used.toLocaleString()} / {emailUsage.limit.toLocaleString()} emails
+                    </span>
+                    <span className="text-gray-500">
+                      {emailUsage.percentUsed}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={emailUsage.percentUsed}
+                    className="h-3"
+                  />
+                  <p className="text-xs text-gray-600">
+                    Resets on {new Date(emailUsage.resetDate).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </p>
+                </div>
+
+                {/* Remaining/Usage Info */}
+                <div className={`rounded-lg p-4 ${
+                  emailUsage.percentUsed >= 90
+                    ? 'bg-red-50 border border-red-200'
+                    : emailUsage.percentUsed >= 75
+                    ? 'bg-yellow-50 border border-yellow-200'
+                    : 'bg-green-50 border border-green-200'
+                }`}>
+                  <p className={`text-base font-semibold ${
+                    emailUsage.percentUsed >= 90
+                      ? 'text-red-900'
+                      : emailUsage.percentUsed >= 75
+                      ? 'text-yellow-900'
+                      : 'text-green-900'
+                  }`}>
+                    {emailUsage.remaining.toLocaleString()}
+                  </p>
+                  <p className={`text-sm ${
+                    emailUsage.percentUsed >= 90
+                      ? 'text-red-700'
+                      : emailUsage.percentUsed >= 75
+                      ? 'text-yellow-700'
+                      : 'text-green-700'
+                  }`}>
+                    emails remaining
+                  </p>
+
+                  {/* Upgrade message for free users approaching limit */}
+                  {emailUsage.limit === 500 && emailUsage.percentUsed >= 75 && (
+                    <p className="text-xs text-blue-900 mt-2 pt-2 border-t border-gray-300">
+                      Upgrade for up to 15,000 emails/month
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Unable to load usage data</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recipient Selection Card - Now prominently displayed */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UsersIcon className="h-5 w-5" />
+              Select Recipients
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Recipient Filter */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="filter">Send to:</Label>
+                <Select value={recipientFilter} onValueChange={(value: any) => {
+                  setRecipientFilter(value);
+                  if (value !== 'custom') {
+                    setSelectedMembers(new Set());
+                  }
+                }}>
+                  <SelectTrigger id="filter">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Members ({members.length})</SelectItem>
+                    <SelectItem value="approved">
+                      Approved Members ({members.filter((m) => m.member.status === 'approved').length})
+                    </SelectItem>
+                    <SelectItem value="admin">
+                      Admins Only ({members.filter((m) => m.member.role === 'admin').length})
+                    </SelectItem>
+                    <SelectItem value="pending">
+                      Pending Members ({members.filter((m) => m.member.status === 'pending').length})
+                    </SelectItem>
+                    <SelectItem value="rejected">
+                      Rejected Members ({members.filter((m) => m.member.status === 'rejected').length})
+                    </SelectItem>
+                    <SelectItem value="custom">Custom Selection</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Recipient Count */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col justify-center">
+                <p className="text-sm font-medium text-blue-900">
+                  {actualRecipients.length} {actualRecipients.length === 1 ? 'recipient' : 'recipients'} selected
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  {actualRecipients.length === 0
+                    ? 'No recipients selected'
+                    : recipientFilter === 'custom'
+                      ? `${selectedMembers.size} custom selected`
+                      : `Using ${recipientFilter} filter`}
+                </p>
+              </div>
+            </div>
+
+            {/* Member Selection Table - Always visible for custom selection */}
+            {recipientFilter === 'custom' && (
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium text-gray-900">Choose individual members</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={toggleSelectAll}
+                  >
+                    {selectedMembers.size === filteredMembers.length && filteredMembers.length > 0
+                      ? 'Deselect All'
+                      : 'Select All'}
+                  </Button>
+                </div>
+
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    id="subject"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="Enter email subject"
-                    className="w-full"
+                    type="text"
+                    placeholder="Search members by name or email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
                   />
                 </div>
 
-                {/* Message */}
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message *</Label>
-                  <div className="border rounded-lg overflow-hidden">
-                    <RichTextEditor
-                      content={htmlContent}
-                      onChange={setHtmlContent}
-                      placeholder="Compose your message..."
-                      className="min-h-[300px]"
-                    />
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    Your message will be automatically wrapped in your union's branded email template.
-                  </p>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-3 pt-4">
-                  <Button
-                    onClick={handlePreview}
-                    variant="outline"
-                    disabled={!isFormValid}
-                    className="flex items-center gap-2"
-                  >
-                    <Eye className="h-4 w-4" />
-                    Preview Recipients
-                  </Button>
-                  <Button
-                    onClick={handleConfirmSend}
-                    disabled={!isFormValid || isSending}
-                    className="flex items-center gap-2"
-                  >
-                    {isSending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-4 w-4" />
-                        Send Email
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Custom Member Selection Table */}
-            {recipientFilter === 'custom' && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <UsersIcon className="h-5 w-5" />
-                      Select Recipients
-                    </CardTitle>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-gray-600">
-                        {selectedMembers.size} of {members.length} selected
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={toggleSelectAll}
-                      >
-                        {selectedMembers.size === filteredMembers.length && filteredMembers.length > 0
-                          ? 'Deselect All'
-                          : 'Select All'}
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {/* Search */}
-                  <div className="mb-4">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        type="text"
-                        placeholder="Search members by name or email..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Table */}
-                  <div className="border rounded-lg overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-gray-50 border-b">
+                {/* Table */}
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b">
+                        <tr>
+                          <th className="px-4 py-3 text-left w-12">
+                            <Checkbox
+                              checked={selectedMembers.size === filteredMembers.length && filteredMembers.length > 0}
+                              onCheckedChange={toggleSelectAll}
+                            />
+                          </th>
+                          <th className="px-4 py-3 text-left w-16"></th>
+                          <th
+                            className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSort('name')}
+                          >
+                            <div className="flex items-center gap-2">
+                              Name
+                              {sortBy === 'name' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </div>
+                          </th>
+                          <th
+                            className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSort('email')}
+                          >
+                            <div className="flex items-center gap-2">
+                              Email
+                              {sortBy === 'email' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </div>
+                          </th>
+                          <th
+                            className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSort('role')}
+                          >
+                            <div className="flex items-center gap-2">
+                              Role
+                              {sortBy === 'role' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </div>
+                          </th>
+                          <th
+                            className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSort('status')}
+                          >
+                            <div className="flex items-center gap-2">
+                              Status
+                              {sortBy === 'status' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </div>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {filteredMembers.length === 0 ? (
                           <tr>
-                            <th className="px-4 py-3 text-left w-12">
-                              <Checkbox
-                                checked={selectedMembers.size === filteredMembers.length && filteredMembers.length > 0}
-                                onCheckedChange={toggleSelectAll}
-                              />
-                            </th>
-                            <th className="px-4 py-3 text-left w-16"></th>
-                            <th
-                              className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                              onClick={() => handleSort('name')}
-                            >
-                              <div className="flex items-center gap-2">
-                                Name
-                                {sortBy === 'name' && (
-                                  sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                                )}
-                              </div>
-                            </th>
-                            <th
-                              className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                              onClick={() => handleSort('email')}
-                            >
-                              <div className="flex items-center gap-2">
-                                Email
-                                {sortBy === 'email' && (
-                                  sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                                )}
-                              </div>
-                            </th>
-                            <th
-                              className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                              onClick={() => handleSort('role')}
-                            >
-                              <div className="flex items-center gap-2">
-                                Role
-                                {sortBy === 'role' && (
-                                  sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                                )}
-                              </div>
-                            </th>
-                            <th
-                              className="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                              onClick={() => handleSort('status')}
-                            >
-                              <div className="flex items-center gap-2">
-                                Status
-                                {sortBy === 'status' && (
-                                  sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                                )}
-                              </div>
-                            </th>
+                            <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                              No members found
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                          {filteredMembers.length === 0 ? (
-                            <tr>
-                              <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                                No members found
+                        ) : (
+                          filteredMembers.map((member) => (
+                            <tr
+                              key={member.member.id}
+                              className={`hover:bg-gray-50 cursor-pointer transition-colors ${
+                                selectedMembers.has(member.member.id) ? 'bg-blue-50' : ''
+                              }`}
+                              onClick={() => toggleMemberSelection(member.member.id)}
+                            >
+                              <td className="px-4 py-3">
+                                <Checkbox
+                                  checked={selectedMembers.has(member.member.id)}
+                                  onCheckedChange={() => toggleMemberSelection(member.member.id)}
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarFallback>
+                                    {getInitials(getUserDisplayName(member.user))}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </td>
+                              <td className="px-4 py-3">
+                                <p className="font-medium text-gray-900">
+                                  {getUserDisplayName(member.user)}
+                                </p>
+                              </td>
+                              <td className="px-4 py-3">
+                                <p className="text-gray-600">{member.user.email}</p>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                  member.member.role === 'owner' ? 'bg-purple-100 text-purple-800' :
+                                  member.member.role === 'admin' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {member.member.role.charAt(0).toUpperCase() + member.member.role.slice(1)}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                  member.member.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                  member.member.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
+                                }`}>
+                                  {member.member.status.charAt(0).toUpperCase() + member.member.status.slice(1)}
+                                </span>
                               </td>
                             </tr>
-                          ) : (
-                            filteredMembers.map((member) => (
-                              <tr
-                                key={member.member.id}
-                                className={`hover:bg-gray-50 cursor-pointer transition-colors ${
-                                  selectedMembers.has(member.member.id) ? 'bg-blue-50' : ''
-                                }`}
-                                onClick={() => toggleMemberSelection(member.member.id)}
-                              >
-                                <td className="px-4 py-3">
-                                  <Checkbox
-                                    checked={selectedMembers.has(member.member.id)}
-                                    onCheckedChange={() => toggleMemberSelection(member.member.id)}
-                                  />
-                                </td>
-                                <td className="px-4 py-3">
-                                  <Avatar className="h-10 w-10">
-                                    <AvatarFallback>
-                                      {getInitials(getUserDisplayName(member.user))}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <p className="font-medium text-gray-900">
-                                    {getUserDisplayName(member.user)}
-                                  </p>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <p className="text-gray-600">{member.user.email}</p>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                    member.member.role === 'owner' ? 'bg-purple-100 text-purple-800' :
-                                    member.member.role === 'admin' ? 'bg-blue-100 text-blue-800' :
-                                    'bg-gray-100 text-gray-800'
-                                  }`}>
-                                    {member.member.role.charAt(0).toUpperCase() + member.member.role.slice(1)}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                    member.member.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                    member.member.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-red-100 text-red-800'
-                                  }`}>
-                                    {member.member.status.charAt(0).toUpperCase() + member.member.status.slice(1)}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Sidebar - Recipients */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Email Usage Counter */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <TrendingUp className="h-5 w-5" />
-                  Monthly Email Usage
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {isLoadingUsage ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                  </div>
-                ) : emailUsage ? (
+        {/* Email Composer - Full Width */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Compose Email</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Subject */}
+            <div className="space-y-2">
+              <Label htmlFor="subject">Subject *</Label>
+              <Input
+                id="subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Enter email subject"
+                className="w-full"
+              />
+            </div>
+
+            {/* Message */}
+            <div className="space-y-2">
+              <Label htmlFor="message">Message *</Label>
+              <div className="border rounded-lg overflow-hidden">
+                <RichTextEditor
+                  content={htmlContent}
+                  onChange={setHtmlContent}
+                  placeholder="Compose your message..."
+                  className="min-h-[300px]"
+                />
+              </div>
+              <p className="text-sm text-gray-500">
+                Your message will be automatically wrapped in your union's branded email template.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3 pt-4">
+              <Button
+                onClick={handlePreview}
+                variant="outline"
+                disabled={!isFormValid}
+                className="flex items-center gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                Preview Recipients
+              </Button>
+              <Button
+                onClick={handleConfirmSend}
+                disabled={!isFormValid || isSending}
+                className="flex items-center gap-2"
+              >
+                {isSending ? (
                   <>
-                    {/* Progress Bar */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-gray-700">
-                          {emailUsage.used.toLocaleString()} / {emailUsage.limit.toLocaleString()} emails
-                        </span>
-                        <span className="text-gray-500">
-                          {emailUsage.percentUsed}%
-                        </span>
-                      </div>
-                      <Progress
-                        value={emailUsage.percentUsed}
-                        className="h-2"
-                      />
-                    </div>
-
-                    {/* Remaining/Usage Info */}
-                    <div className={`rounded-lg p-3 ${
-                      emailUsage.percentUsed >= 90
-                        ? 'bg-red-50 border border-red-200'
-                        : emailUsage.percentUsed >= 75
-                        ? 'bg-yellow-50 border border-yellow-200'
-                        : 'bg-green-50 border border-green-200'
-                    }`}>
-                      <p className={`text-sm font-medium ${
-                        emailUsage.percentUsed >= 90
-                          ? 'text-red-900'
-                          : emailUsage.percentUsed >= 75
-                          ? 'text-yellow-900'
-                          : 'text-green-900'
-                      }`}>
-                        {emailUsage.remaining.toLocaleString()} emails remaining
-                      </p>
-                      <p className={`text-xs mt-1 ${
-                        emailUsage.percentUsed >= 90
-                          ? 'text-red-700'
-                          : emailUsage.percentUsed >= 75
-                          ? 'text-yellow-700'
-                          : 'text-green-700'
-                      }`}>
-                        Resets on {new Date(emailUsage.resetDate).toLocaleDateString('en-US', {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </p>
-                    </div>
-
-                    {/* Upgrade message for free users approaching limit */}
-                    {emailUsage.limit === 500 && emailUsage.percentUsed >= 75 && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <p className="text-xs text-blue-900">
-                          <strong>Need more emails?</strong> Upgrade to a paid plan for up to 15,000 emails per month.
-                        </p>
-                      </div>
-                    )}
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Sending...
                   </>
                 ) : (
-                  <p className="text-sm text-gray-500">Unable to load usage data</p>
+                  <>
+                    <Send className="h-4 w-4" />
+                    Send Email
+                  </>
                 )}
-              </CardContent>
-            </Card>
-
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UsersIcon className="h-5 w-5" />
-                  Recipients
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Recipient Filter */}
-                <div className="space-y-2">
-                  <Label htmlFor="filter">Send to:</Label>
-                  <Select value={recipientFilter} onValueChange={(value: any) => {
-                    setRecipientFilter(value);
-                    if (value !== 'custom') {
-                      setSelectedMembers(new Set());
-                    }
-                  }}>
-                    <SelectTrigger id="filter">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Members ({members.length})</SelectItem>
-                      <SelectItem value="approved">
-                        Approved Members ({members.filter((m) => m.member.status === 'approved').length})
-                      </SelectItem>
-                      <SelectItem value="admin">
-                        Admins Only ({members.filter((m) => m.member.role === 'admin').length})
-                      </SelectItem>
-                      <SelectItem value="pending">
-                        Pending Members ({members.filter((m) => m.member.status === 'pending').length})
-                      </SelectItem>
-                      <SelectItem value="rejected">
-                        Rejected Members ({members.filter((m) => m.member.status === 'rejected').length})
-                      </SelectItem>
-                      <SelectItem value="custom">Custom Selection</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Recipient Count */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm font-medium text-blue-900">
-                    {actualRecipients.length} {actualRecipients.length === 1 ? 'recipient' : 'recipients'}
-                  </p>
-                  <p className="text-xs text-blue-700 mt-1">
-                    {actualRecipients.length === 0
-                      ? 'No recipients selected'
-                      : `Email will be sent to ${actualRecipients.length} member${actualRecipients.length !== 1 ? 's' : ''}`}
-                  </p>
-                </div>
-
-                {/* Custom Selection Note */}
-                {recipientFilter === 'custom' && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-900">
-                      Use the table below to select individual members
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Preview Dialog */}
         <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>

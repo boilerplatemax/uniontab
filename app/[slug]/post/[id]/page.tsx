@@ -8,6 +8,7 @@ import { NavbarSpacer } from '../../navbar-spacer';
 import { Card, CardContent } from '@/components/ui/card';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { LikeButton } from '@/components/posts/like-button';
+import { ShareButton } from '@/components/share-button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
@@ -131,6 +132,7 @@ export default async function PostPage({
   }
 
   const membership = await checkMembership(union.id);
+  const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -170,12 +172,22 @@ export default async function PostPage({
 
             <div className="border-t pt-4">
               <div className="flex items-center justify-between">
-                <LikeButton
-                  postId={post.id}
-                  initialLiked={post.isLikedByUser}
-                  initialCount={post.likeCount}
-                  userId={currentUser?.id || null}
-                />
+                <div className="flex items-center gap-2">
+                  <LikeButton
+                    postId={post.id}
+                    initialLiked={post.isLikedByUser}
+                    initialCount={post.likeCount}
+                    userId={currentUser?.id || null}
+                  />
+                  <ShareButton
+                    itemType="post"
+                    itemId={post.id}
+                    itemTitle={post.title}
+                    itemUrl={`/${slug}/post/${id}`}
+                    slug={slug}
+                    isOwnerOrAdmin={isOwnerOrAdmin}
+                  />
+                </div>
                 <div className="text-sm text-gray-500">
                   Posted by {post.createdBy.name} •{' '}
                   {formatDate(post.createdAt)}

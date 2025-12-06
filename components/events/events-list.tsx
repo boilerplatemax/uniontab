@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { ShareButton } from '@/components/share-button';
 import { MapPin, Clock, Calendar, Edit, Trash2, Loader2 } from 'lucide-react';
 import type { Event } from '@/lib/db/schema';
 import { useState } from 'react';
@@ -14,9 +15,10 @@ interface EventsListProps {
   onEventClick?: (event: Omit<Event, 'createdBy'> & { createdBy: { name: string } }) => void;
   onEdit?: (event: Omit<Event, 'createdBy'> & { createdBy: { name: string } }) => void;
   onDelete?: (eventId: number) => void;
+  slug: string;
 }
 
-export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete }: EventsListProps) {
+export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, slug }: EventsListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<number | null>(null);
@@ -174,35 +176,48 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete }: 
                           </div>
 
                           {/* Action Buttons */}
-                          {isOwner && (
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
+                          <div className="flex items-center gap-2">
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <ShareButton
+                                itemType="event"
+                                itemId={event.id}
+                                itemTitle={event.title}
+                                itemUrl={`/${slug}/event/${event.id}`}
+                                slug={slug}
+                                isOwnerOrAdmin={isOwner}
                                 size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onEdit?.(event);
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteClick(event.id);
-                                }}
-                                disabled={deletingId === event.id}
-                              >
-                                {deletingId === event.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                              </Button>
+                              />
                             </div>
-                          )}
+                            {isOwner && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEdit?.(event);
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(event.id);
+                                  }}
+                                  disabled={deletingId === event.id}
+                                >
+                                  {deletingId === event.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </div>
 
                         {/* Event Image */}

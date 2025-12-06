@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Download, Eye, Edit, Trash2, Loader2, ChevronDown, ChevronRight, FolderOpen, Pencil, ArrowUp, ArrowDown } from 'lucide-react';
+import { ShareButton } from '@/components/share-button';
 import type { File as FileType, FileCategory } from '@/lib/db/schema';
 import { formatDate } from '@/lib/utils/date';
 import { RenameCategoryDialog } from './rename-category-dialog';
@@ -17,6 +18,7 @@ interface CategorizedFilesListProps {
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
   unionId: number;
+  slug: string;
 }
 
 // File Item Component with Arrow Controls
@@ -31,6 +33,7 @@ function FileItem({
   onMoveDown,
   isFirst,
   isLast,
+  slug,
 }: {
   file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } };
   isOwner: boolean;
@@ -42,6 +45,7 @@ function FileItem({
   onMoveDown: () => void;
   isFirst: boolean;
   isLast: boolean;
+  slug: string;
 }) {
   return (
     <div className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
@@ -86,6 +90,15 @@ function FileItem({
             Private
           </span>
         )}
+        <ShareButton
+          itemType="file"
+          itemId={file.id}
+          itemTitle={file.originalName}
+          itemUrl={file.fileUrl}
+          slug={slug}
+          isOwnerOrAdmin={isOwner}
+          size="sm"
+        />
         <Button
           variant="outline"
           size="sm"
@@ -157,6 +170,7 @@ function CategorySection({
   onMoveCategoryDown,
   isFirstCategory,
   isLastCategory,
+  slug,
 }: {
   category: string;
   categoryFiles: (Omit<FileType, 'createdBy'> & { createdBy: { name: string } })[];
@@ -174,6 +188,7 @@ function CategorySection({
   onMoveCategoryDown: () => void;
   isFirstCategory: boolean;
   isLastCategory: boolean;
+  slug: string;
 }) {
   return (
     <Card className="shadow-sm hover:shadow-md transition-all">
@@ -253,6 +268,7 @@ function CategorySection({
                 onMoveDown={() => onMoveFileDown(file.id)}
                 isFirst={index === 0}
                 isLast={index === categoryFiles.length - 1}
+                slug={slug}
               />
             ))}
           </div>
@@ -270,6 +286,7 @@ export function CategorizedFilesList({
   onDelete,
   deletingFile,
   unionId,
+  slug,
 }: CategorizedFilesListProps) {
   const router = useRouter();
   const [categoryOrders, setCategoryOrders] = useState<FileCategory[]>([]);
@@ -554,6 +571,7 @@ export function CategorizedFilesList({
               onMoveCategoryDown={() => handleMoveCategoryDown(category)}
               isFirstCategory={isFirstCategory}
               isLastCategory={isLastCategory}
+              slug={slug}
             />
           );
         })}
