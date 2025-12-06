@@ -1,0 +1,39 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="300" fill="#ffffff"/>
+
+  <!-- Hero Banner Section -->
+  <rect width="400" height="140" fill="url(#modernGradient)"/>
+  <defs>
+    <linearGradient id="modernGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Union Name in Hero -->
+  <text x="200" y="60" font-family="Arial" font-size="24" fill="white" text-anchor="middle" font-weight="bold">Union Name</text>
+  <text x="200" y="85" font-family="Arial" font-size="14" fill="white" text-anchor="middle" opacity="0.9">Building a stronger future together</text>
+
+  <!-- Navigation Tabs -->
+  <rect y="140" width="400" height="45" fill="#f9fafb"/>
+  <text x="50" y="168" font-family="Arial" font-size="12" fill="#6366f1" font-weight="bold">Home</text>
+  <text x="120" y="168" font-family="Arial" font-size="12" fill="#6b7280">About</text>
+  <text x="180" y="168" font-family="Arial" font-size="12" fill="#6b7280">News</text>
+  <text x="240" y="168" font-family="Arial" font-size="12" fill="#6b7280">Events</text>
+
+  <!-- News/Posts Section -->
+  <rect y="185" width="400" height="115" fill="#f3f4f6"/>
+
+  <!-- Post Card 1 -->
+  <rect x="20" y="200" width="360" height="40" fill="white" rx="8" stroke="#e5e7eb"/>
+  <rect x="30" y="210" width="8" height="20" fill="#6366f1" rx="2"/>
+  <text x="50" y="223" font-family="Arial" font-size="12" fill="#111827" font-weight="bold">Latest News Update</text>
+  <text x="50" y="235" font-family="Arial" font-size="10" fill="#6b7280">Posted 2 days ago</text>
+
+  <!-- Post Card 2 -->
+  <rect x="20" y="250" width="360" height="40" fill="white" rx="8" stroke="#e5e7eb"/>
+  <rect x="30" y="260" width="8" height="20" fill="#8b5cf6" rx="2"/>
+  <text x="50" y="273" font-family="Arial" font-size="12" fill="#111827" font-weight="bold">Upcoming Meeting Notice</text>
+  <text x="50" y="285" font-family="Arial" font-size="10" fill="#6b7280">Posted 1 week ago</text>
+</svg>

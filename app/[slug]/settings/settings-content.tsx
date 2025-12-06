@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +19,7 @@ import {
   Loader2,
   Save,
   Palette,
+  Check,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
@@ -232,38 +234,68 @@ export function SettingsContent() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="theme">Homepage Theme</Label>
-                <p className="text-sm text-gray-500 mb-3">
+                <p className="text-sm text-gray-500 mb-4">
                   Choose how your union's homepage and tabs are displayed to visitors
                 </p>
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {themeOptions.map((theme) => (
-                    <label
+                    <div
                       key={theme.id}
-                      className={`flex items-start gap-4 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      onClick={() => setFormData({ ...formData, theme: theme.id })}
+                      className={`relative cursor-pointer group rounded-lg overflow-hidden border-2 transition-all ${
                         formData.theme === theme.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                          ? 'border-blue-500 ring-2 ring-blue-200'
+                          : 'border-gray-200 hover:border-blue-300'
                       }`}
                     >
+                      {/* Thumbnail Image */}
+                      <div className="relative aspect-[4/3] bg-gray-100">
+                        <Image
+                          src={`/assets/themes/${theme.id}.svg`}
+                          alt={`${theme.name} theme preview`}
+                          fill
+                          className="object-cover"
+                        />
+                        {/* Selected Badge */}
+                        {formData.theme === theme.id && (
+                          <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1.5">
+                            <Check className="h-4 w-4" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Theme Info */}
+                      <div className={`p-4 ${
+                        formData.theme === theme.id
+                          ? 'bg-blue-50 border-t-2 border-blue-500'
+                          : 'bg-white border-t-2 border-gray-100'
+                      }`}>
+                        <h3 className={`font-semibold mb-1 ${
+                          formData.theme === theme.id
+                            ? 'text-blue-900'
+                            : 'text-gray-900'
+                        }`}>
+                          {theme.name}
+                        </h3>
+                        <p className={`text-sm ${
+                          formData.theme === theme.id
+                            ? 'text-blue-700'
+                            : 'text-gray-600'
+                        }`}>
+                          {theme.description}
+                        </p>
+                      </div>
+
+                      {/* Hidden radio input for form */}
                       <input
                         type="radio"
                         name="theme"
                         value={theme.id}
                         checked={formData.theme === theme.id}
-                        onChange={(e) =>
-                          setFormData({ ...formData, theme: e.target.value })
-                        }
-                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                        onChange={() => {}}
+                        className="sr-only"
                       />
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900 mb-1">
-                          {theme.name}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {theme.description}
-                        </div>
-                      </div>
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
