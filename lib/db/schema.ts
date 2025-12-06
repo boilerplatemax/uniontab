@@ -63,8 +63,27 @@ export const members = pgTable('members', {
     .notNull()
     .references(() => unions.id, { onDelete: 'cascade' }),
   role: varchar('role', { length: 50 }).notNull(),
-  status: varchar('status', { length: 20 }).notNull().default('pending'),
+  status: varchar('status', { length: 20 }).notNull().default('pending'), // 'pending', 'approved', 'rejected'
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
+
+  // Required fields (collected during sign-up)
+  phone: varchar('phone', { length: 20 }),
+  employer: varchar('employer', { length: 255 }),
+  jobTitle: varchar('job_title', { length: 255 }),
+  worksite: varchar('worksite', { length: 255 }),
+  employmentStatus: varchar('employment_status', { length: 50 }), // 'full-time', 'part-time', 'casual', 'term'
+
+  // Optional fields
+  address: text('address'),
+  dateOfBirth: timestamp('date_of_birth'),
+  memberId: varchar('member_id', { length: 100 }), // Member ID/Number
+  membershipStatus: varchar('membership_status', { length: 50 }).default('active'), // 'active', 'inactive', 'retired'
+  localChapter: varchar('local_chapter', { length: 255 }),
+  bargainingUnit: varchar('bargaining_unit', { length: 255 }),
+  startDateWithEmployer: timestamp('start_date_with_employer'),
+
+  // Admin-only notes field
+  notes: text('notes'), // Only visible to admins/owners
 }, (table) => ({
   uniqueUserUnion: unique('idx_members_unique_user_union').on(table.unionId, table.userId),
 }));

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { users } from '@/lib/db/schema';
+import { users, members, unions } from '@/lib/db/schema';
 import { eq, and, gt } from 'drizzle-orm';
 import { signToken } from '@/lib/auth/session';
 
@@ -53,9 +53,30 @@ export async function POST(request: NextRequest) {
       expires: expiresInOneDay.toISOString(),
     });
 
+    // Get user's union membership to determine redirect
+    const [membership] = await db
+      .select({
+        unionId: members.unionId,
+        role: members.role,
+        unionSlug: unions.slug,
+        publishedAt: unions.publishedAt,
+      })
+      .from(members)
+      .leftJoin(unions, eq(members.unionId, unions.id))
+      .where(eq(members.userId, user.id))
+      .limit(1);
+
     const response = NextResponse.json({
       success: true,
       message: 'Email verified successfully',
+      user: {
+        role: user.role,
+        membership: membership ? {
+          role: membership.role,
+          unionSlug: membership.unionSlug,
+          needsOnboarding: membership.role === 'owner' && !membership.publishedAt,
+        } : null,
+      },
     });
 
     // Set session cookie
