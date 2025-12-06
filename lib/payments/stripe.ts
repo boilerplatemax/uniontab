@@ -8,6 +8,7 @@ import {
 } from '@/lib/db/queries';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  // @ts-ignore - User requested to keep this specific API version
   apiVersion: '2025-04-30.basil'
 });
 
