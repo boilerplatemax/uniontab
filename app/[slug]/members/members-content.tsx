@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { EditMemberDialog } from './edit-member-dialog';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit } from 'lucide-react';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 
 interface Member {
@@ -64,6 +64,17 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
   const [bulkAction, setBulkAction] = useState<string>('');
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
 
+  // Advanced filter states
+  const [employmentStatusFilter, setEmploymentStatusFilter] = useState<string>('all');
+  const [membershipStatusFilter, setMembershipStatusFilter] = useState<string>('all');
+  const [localChapterFilter, setLocalChapterFilter] = useState<string>('all');
+  const [bargainingUnitFilter, setBargainingUnitFilter] = useState<string>('all');
+  const [employerFilter, setEmployerFilter] = useState<string>('all');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // CSV import state
+  const [isImporting, setIsImporting] = useState(false);
+
   // Delete confirmation dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<{ id: number; name: string } | null>(null);
@@ -96,6 +107,31 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
     });
   };
 
+  // Get unique values for filter dropdowns
+  const uniqueEmployers = useMemo(() => {
+    const employers = new Set<string>();
+    membersList.forEach(m => {
+      if (m.member.employer) employers.add(m.member.employer);
+    });
+    return Array.from(employers).sort();
+  }, [membersList]);
+
+  const uniqueLocalChapters = useMemo(() => {
+    const chapters = new Set<string>();
+    membersList.forEach(m => {
+      if (m.member.localChapter) chapters.add(m.member.localChapter);
+    });
+    return Array.from(chapters).sort();
+  }, [membersList]);
+
+  const uniqueBargainingUnits = useMemo(() => {
+    const units = new Set<string>();
+    membersList.forEach(m => {
+      if (m.member.bargainingUnit) units.add(m.member.bargainingUnit);
+    });
+    return Array.from(units).sort();
+  }, [membersList]);
+
   // Filtered, sorted, and paginated members
   const { filteredMembers, paginatedMembers, totalPages } = useMemo(() => {
     // Filter by status and search
@@ -106,14 +142,39 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
         (statusFilter === 'admin' && m.member.role === 'admin') ||
         (statusFilter !== 'admin' && m.member.status === statusFilter);
 
-      // Search filter
+      // Search filter - now includes more fields
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
         !searchQuery ||
         getUserDisplayName(m.user).toLowerCase().includes(searchLower) ||
-        m.user.email.toLowerCase().includes(searchLower);
+        m.user.email.toLowerCase().includes(searchLower) ||
+        m.member.phone?.toLowerCase().includes(searchLower) ||
+        m.member.employer?.toLowerCase().includes(searchLower) ||
+        m.member.jobTitle?.toLowerCase().includes(searchLower) ||
+        m.member.worksite?.toLowerCase().includes(searchLower) ||
+        m.member.memberId?.toLowerCase().includes(searchLower) ||
+        m.member.localChapter?.toLowerCase().includes(searchLower) ||
+        m.member.bargainingUnit?.toLowerCase().includes(searchLower);
 
-      return matchesStatus && matchesSearch;
+      // Advanced filters
+      const matchesEmploymentStatus =
+        employmentStatusFilter === 'all' || m.member.employmentStatus === employmentStatusFilter;
+
+      const matchesMembershipStatus =
+        membershipStatusFilter === 'all' || m.member.membershipStatus === membershipStatusFilter;
+
+      const matchesLocalChapter =
+        localChapterFilter === 'all' || m.member.localChapter === localChapterFilter;
+
+      const matchesBargainingUnit =
+        bargainingUnitFilter === 'all' || m.member.bargainingUnit === bargainingUnitFilter;
+
+      const matchesEmployer =
+        employerFilter === 'all' || m.member.employer === employerFilter;
+
+      return matchesStatus && matchesSearch && matchesEmploymentStatus &&
+             matchesMembershipStatus && matchesLocalChapter && matchesBargainingUnit &&
+             matchesEmployer;
     });
 
     // Sort
@@ -138,7 +199,7 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
     const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
 
     return { filteredMembers: filtered, paginatedMembers: paginated, totalPages: total };
-  }, [membersList, statusFilter, sortBy, searchQuery, currentPage]);
+  }, [membersList, statusFilter, sortBy, searchQuery, currentPage, employmentStatusFilter, membershipStatusFilter, localChapterFilter, bargainingUnitFilter, employerFilter]);
 
   // Reset to page 1 when filters change
   const handleFilterChange = (newFilter: typeof statusFilter) => {
@@ -405,6 +466,152 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
   const rejectedCount = membersList.filter((m) => m.member.status === 'rejected').length;
   const adminCount = membersList.filter((m) => m.member.role === 'admin').length;
 
+  // CSV Export function
+  const handleExportCSV = () => {
+    // Create CSV header
+    const headers = [
+      'Name',
+      'Email',
+      'Phone',
+      'Employer',
+      'Job Title',
+      'Worksite',
+      'Employment Status',
+      'Member ID',
+      'Membership Status',
+      'Local Chapter',
+      'Bargaining Unit',
+      'Role',
+      'Status',
+      'Joined At',
+      'Address',
+      'Date of Birth',
+      'Start Date With Employer',
+      'Notes'
+    ];
+
+    // Create CSV rows from filtered members
+    const rows = filteredMembers.map((m) => [
+      getUserDisplayName(m.user),
+      m.user.email,
+      m.member.phone || '',
+      m.member.employer || '',
+      m.member.jobTitle || '',
+      m.member.worksite || '',
+      m.member.employmentStatus || '',
+      m.member.memberId || '',
+      m.member.membershipStatus || '',
+      m.member.localChapter || '',
+      m.member.bargainingUnit || '',
+      m.member.role,
+      m.member.status,
+      formatDate(m.member.joinedAt),
+      m.member.address || '',
+      m.member.dateOfBirth ? formatDate(m.member.dateOfBirth) : '',
+      m.member.startDateWithEmployer ? formatDate(m.member.startDateWithEmployer) : '',
+      m.member.notes || ''
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${union.name.replace(/\s+/g, '_')}_members_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setSuccessMessage(`Exported ${filteredMembers.length} members to CSV`);
+    setTimeout(() => setSuccessMessage(''), 3000);
+  };
+
+  // CSV Import function
+  const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split('\n').filter(line => line.trim());
+
+        if (lines.length < 2) {
+          setErrorMessage('CSV file is empty or invalid');
+          setTimeout(() => setErrorMessage(''), 3000);
+          setIsImporting(false);
+          return;
+        }
+
+        // Parse CSV
+        const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+        const data = lines.slice(1).map(line => {
+          const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"').trim()) || [];
+          const row: any = {};
+          headers.forEach((header, index) => {
+            row[header] = values[index] || '';
+          });
+          return row;
+        });
+
+        // Send to API for processing
+        const response = await fetch('/api/members/import-csv', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ members: data, unionId: union.id }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to import members');
+        }
+
+        const result = await response.json();
+        setSuccessMessage(`Successfully imported ${result.imported} members. ${result.updated} updated, ${result.skipped} skipped.`);
+        setTimeout(() => setSuccessMessage(''), 5000);
+
+        // Refresh the page to show updated data
+        setTimeout(() => window.location.reload(), 2000);
+      } catch (error) {
+        console.error('Error importing CSV:', error);
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to import CSV');
+        setTimeout(() => setErrorMessage(''), 3000);
+      } finally {
+        setIsImporting(false);
+        // Reset the file input
+        event.target.value = '';
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  // Clear all advanced filters
+  const clearAdvancedFilters = () => {
+    setEmploymentStatusFilter('all');
+    setMembershipStatusFilter('all');
+    setLocalChapterFilter('all');
+    setBargainingUnitFilter('all');
+    setEmployerFilter('all');
+  };
+
+  // Check if any advanced filters are active
+  const hasActiveAdvancedFilters = employmentStatusFilter !== 'all' ||
+    membershipStatusFilter !== 'all' ||
+    localChapterFilter !== 'all' ||
+    bargainingUnitFilter !== 'all' ||
+    employerFilter !== 'all';
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Main Content */}
@@ -488,28 +695,195 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
         </div>
 
         {/* Search and Sort Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search members by name or email..."
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10"
-            />
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search by name, email, phone, employer, job title, worksite, member ID, chapter, or unit..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={sortBy} onValueChange={(value) => handleSortChange(value as typeof sortBy)}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="a-z">Name (A-Z)</SelectItem>
+                <SelectItem value="z-a">Name (Z-A)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={sortBy} onValueChange={(value) => handleSortChange(value as typeof sortBy)}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Newest First</SelectItem>
-              <SelectItem value="oldest">Oldest First</SelectItem>
-              <SelectItem value="a-z">Name (A-Z)</SelectItem>
-              <SelectItem value="z-a">Name (Z-A)</SelectItem>
-            </SelectContent>
-          </Select>
+
+          {/* Advanced Filters and CSV Actions Row */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className={hasActiveAdvancedFilters ? 'border-blue-500 text-blue-700' : ''}
+              >
+                {showAdvancedFilters ? 'Hide Filters' : 'Advanced Filters'}
+                {hasActiveAdvancedFilters && <span className="ml-2 bg-blue-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">!</span>}
+              </Button>
+              {hasActiveAdvancedFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAdvancedFilters}
+                  className="text-gray-600"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+
+            {isOwner && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportCSV}
+                  disabled={filteredMembers.length === 0}
+                  className="gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </Button>
+                <label>
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleImportCSV}
+                    className="hidden"
+                    disabled={isImporting}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isImporting}
+                    className="gap-2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      (e.currentTarget.parentElement?.querySelector('input[type="file"]') as HTMLInputElement)?.click();
+                    }}
+                  >
+                    {isImporting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        Import CSV
+                      </>
+                    )}
+                  </Button>
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* Advanced Filters Panel */}
+          {showAdvancedFilters && (
+            <Card className="p-4 bg-gray-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Employment Status
+                  </label>
+                  <Select value={employmentStatusFilter} onValueChange={setEmploymentStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="full-time">Full-time</SelectItem>
+                      <SelectItem value="part-time">Part-time</SelectItem>
+                      <SelectItem value="casual">Casual</SelectItem>
+                      <SelectItem value="term">Term</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Membership Status
+                  </label>
+                  <Select value={membershipStatusFilter} onValueChange={setMembershipStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="retired">Retired</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Local Chapter
+                  </label>
+                  <Select value={localChapterFilter} onValueChange={setLocalChapterFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {uniqueLocalChapters.map(chapter => (
+                        <SelectItem key={chapter} value={chapter}>{chapter}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Bargaining Unit
+                  </label>
+                  <Select value={bargainingUnitFilter} onValueChange={setBargainingUnitFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {uniqueBargainingUnits.map(unit => (
+                        <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Employer
+                  </label>
+                  <Select value={employerFilter} onValueChange={setEmployerFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {uniqueEmployers.map(employer => (
+                        <SelectItem key={employer} value={employer}>{employer}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
 
         {/* Bulk Actions Bar */}
