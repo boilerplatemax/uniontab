@@ -227,7 +227,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
     // Reserved slugs that cannot be used
     const reservedSlugs = [
-      'dashboard', 'sign-in', 'sign-up', 'onboarding', 'api', 'pricing',
+      'sign-in', 'sign-up', 'onboarding', 'api', 'pricing',
       'about', 'contact', 'terms', 'privacy', 'admin', 'settings', 'help',
       'support', 'billing', 'account', 'profile', 'login', 'logout', 'register',
       'signin', 'signup', 'auth', 'oauth', 'callback', 'verify', 'reset'
@@ -323,7 +323,8 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     redirect('/onboarding');
   }
 
-  redirect('/dashboard');
+  // Redirect invited users to their union's home page
+  redirect(`/${createdUnion.slug}`);
 });
 
 export async function signOut() {

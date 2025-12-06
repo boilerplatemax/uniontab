@@ -8,7 +8,7 @@ import {
 } from '@/lib/db/queries';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-04-30.basil'
+  apiVersion: '2025-08-27.basil'
 });
 
 export async function createCheckoutSession({
@@ -109,7 +109,7 @@ export async function createCustomerPortalSession(union: Union) {
 
   return stripe.billingPortal.sessions.create({
     customer: union.stripeCustomerId,
-    return_url: `${process.env.BASE_URL}/dashboard`,
+    return_url: `${process.env.BASE_URL}/${union.slug}`,
     configuration: configuration.id
   });
 }

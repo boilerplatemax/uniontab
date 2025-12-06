@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { AnnouncementClient } from '../announcement-client';
+import { RegistrationShareWidget } from '../registration-share-widget';
 import type { ThemeProps } from './types';
 import { Users, Home, FileText, Calendar, Vote, Info, Mail, Phone, MapPin, Globe, Menu, X } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -337,6 +338,17 @@ export function TwitterTheme({
           {/* Main Content Area */}
           <main className="flex-1 min-w-0">
             <div className="max-w-2xl mx-auto px-4 py-4 sm:py-6">
+              {/* Registration Share Widget - Only visible to owners */}
+              {isOwner && (
+                <div className="mb-6">
+                  <RegistrationShareWidget
+                    slug={slug}
+                    unionName={union.name}
+                    localNumber={union.localNumber}
+                  />
+                </div>
+              )}
+
               <UnionProfileTabs
                 union={union}
                 posts={posts}

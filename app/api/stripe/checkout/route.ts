@@ -67,8 +67,10 @@ export async function GET(request: NextRequest) {
     const userUnion = await db
       .select({
         unionId: members.unionId,
+        slug: unions.slug,
       })
       .from(members)
+      .innerJoin(unions, eq(members.unionId, unions.id))
       .where(eq(members.userId, user[0].id))
       .limit(1);
 
@@ -89,7 +91,7 @@ export async function GET(request: NextRequest) {
       .where(eq(unions.id, userUnion[0].unionId));
 
     await setSession(user[0]);
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL(`/${userUnion[0].slug}`, request.url));
   } catch (error) {
     console.error('Error handling successful checkout:', error);
     return NextResponse.redirect(new URL('/error', request.url));
