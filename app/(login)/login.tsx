@@ -27,6 +27,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     if (mode === 'signup' && typeof window !== 'undefined') {
@@ -69,6 +70,11 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             if (mode === 'signup' && password !== confirmPassword) {
               e.preventDefault();
               setPasswordError('Passwords do not match');
+              return;
+            }
+            if (mode === 'signup' && !acceptedTerms) {
+              e.preventDefault();
+              setPasswordError('You must accept the Terms of Service to continue');
               return;
             }
           }}
@@ -280,6 +286,45 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                   className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Confirm your password"
                 />
+              </div>
+            </div>
+          )}
+
+          {mode === 'signup' && (
+            <div className="flex items-start">
+              <div className="flex items-center h-5">
+                <input
+                  id="acceptTerms"
+                  name="acceptTerms"
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => {
+                    setAcceptedTerms(e.target.checked);
+                    setPasswordError('');
+                  }}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  required
+                />
+              </div>
+              <div className="ml-3 text-sm">
+                <label htmlFor="acceptTerms" className="text-gray-700">
+                  I have read and agree to the{' '}
+                  <Link
+                    href="/terms"
+                    target="_blank"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                </label>
               </div>
             </div>
           )}

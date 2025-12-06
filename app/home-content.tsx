@@ -279,6 +279,11 @@ export default function HomePage() {
                     Terms of Service
                   </Link>
                 </li>
+                <li>
+                  <Link href="/disclaimer" className="hover:text-white">
+                    Disclaimer
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
