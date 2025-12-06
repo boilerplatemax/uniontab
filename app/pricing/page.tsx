@@ -100,8 +100,14 @@ export default function PricingPage() {
             <p className="text-gray-600">No pricing plans available at the moment.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {products.map((product) => {
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto justify-center">
+            {products.sort((a, b) => {
+              // Sort to show Base first, then Plus
+              const order = { 'Base': 1, 'Plus': 2 };
+              const aOrder = order[a.name as keyof typeof order] || 999;
+              const bOrder = order[b.name as keyof typeof order] || 999;
+              return aOrder - bOrder;
+            }).map((product) => {
               const price = product.prices.find(p => p.id === product.defaultPriceId) || product.prices[0];
 
               return (
