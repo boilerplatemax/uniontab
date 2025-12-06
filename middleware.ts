@@ -2,13 +2,12 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/auth/session';
 
-const protectedRoutes = '/dashboard';
 const adminRoutes = '/admin';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
-  const isProtectedRoute = pathname.startsWith(protectedRoutes) || pathname === '/onboarding';
+  const isProtectedRoute = pathname === '/onboarding';
   const isAdminRoute = pathname.startsWith(adminRoutes);
 
   // Handle subdomain routing for info.uniontab.com

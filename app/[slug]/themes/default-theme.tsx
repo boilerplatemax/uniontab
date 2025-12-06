@@ -3,6 +3,7 @@ import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { UnionProfileTabs } from '../union-profile-tabs';
 import { AnnouncementClient } from '../announcement-client';
+import { RegistrationShareWidget } from '../registration-share-widget';
 import type { ThemeProps } from './types';
 
 /**
@@ -166,6 +167,17 @@ export function DefaultTheme({
 
         </div>
       </div>
+
+      {/* Registration Share Widget - Only visible to owners */}
+      {isOwner && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <RegistrationShareWidget
+            slug={slug}
+            unionName={union.name}
+            localNumber={union.localNumber}
+          />
+        </div>
+      )}
 
       {/* Content Area with Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
