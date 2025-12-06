@@ -30,6 +30,9 @@ export async function createCheckoutSession({
       {
         price: priceId,
         quantity: 1,
+        adjustable_quantity: {
+          enabled: false,
+        },
       },
     ],
     mode: "subscription",
@@ -77,7 +80,7 @@ export async function createCustomerPortalSession(union: Union) {
       features: {
         subscription_update: {
           enabled: true,
-          default_allowed_updates: ["price", "quantity", "promotion_code"],
+          default_allowed_updates: ["price", "promotion_code"],
           proration_behavior: "create_prorations",
           products: [
             {
@@ -109,7 +112,7 @@ export async function createCustomerPortalSession(union: Union) {
 
   return stripe.billingPortal.sessions.create({
     customer: union.stripeCustomerId,
-    return_url: `${process.env.BASE_URL}/${union.slug}`,
+    return_url: `${process.env.BASE_URL}/${union.slug}/billing`,
     configuration: configuration.id,
   })
 }
