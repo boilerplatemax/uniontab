@@ -111,14 +111,17 @@ export function EditMemberDialog({
     setError('');
 
     try {
+      // Destructure memberId from formData to avoid property conflict
+      const { memberId: memberIdNumber, ...restFormData } = formData;
+
       const response = await fetch('/api/members/update-admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           memberId: member.member.id,
           unionId,
-          ...formData,
-          memberIdNumber: formData.memberId, // API expects memberIdNumber
+          ...restFormData,
+          memberIdNumber, // API expects memberIdNumber
         }),
       });
 
