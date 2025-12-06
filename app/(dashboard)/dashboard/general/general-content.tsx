@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { updateAccount } from '@/app/(login)/actions';
-import { User } from '@/lib/db/schema';
+import { User, UnionDataWithMembers } from '@/lib/db/schema';
 import useSWR from 'swr';
 import { Suspense } from 'react';
+import { RegistrationTools } from '@/components/registration-tools';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -72,6 +73,31 @@ function AccountFormWithData({ state }: { state: ActionState }) {
   );
 }
 
+function RegistrationToolsWrapper() {
+  const { data: teamData } = useSWR<UnionDataWithMembers>('/api/team', fetcher);
+
+  if (!teamData) return null;
+
+  return (
+    <RegistrationTools
+      slug={teamData.slug}
+      unionName={teamData.publicName || teamData.name}
+      localNumber={teamData.localNumber}
+      logoUrl={teamData.logoUrl}
+    />
+  );
+}
+
+function RegistrationToolsSkeleton() {
+  return (
+    <Card className="h-[280px]">
+      <CardHeader>
+        <CardTitle>Registration Tools</CardTitle>
+      </CardHeader>
+    </Card>
+  );
+}
+
 export default function GeneralPage() {
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     updateAccount,
@@ -84,7 +110,7 @@ export default function GeneralPage() {
         General Settings
       </h1>
 
-      <Card>
+      <Card className="mb-8">
         <CardHeader>
           <CardTitle>Account Information</CardTitle>
         </CardHeader>
@@ -116,6 +142,10 @@ export default function GeneralPage() {
           </form>
         </CardContent>
       </Card>
+
+      <Suspense fallback={<RegistrationToolsSkeleton />}>
+        <RegistrationToolsWrapper />
+      </Suspense>
     </section>
   );
 }

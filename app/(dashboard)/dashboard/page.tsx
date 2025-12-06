@@ -1,10 +1,5 @@
-import { DashboardAuthWrapper } from './dashboard-auth-wrapper';
-import DashboardContent from './dashboard-content';
+import { redirect } from 'next/navigation';
 
-export default async function DashboardPage() {
-  return (
-    <DashboardAuthWrapper>
-      <DashboardContent />
-    </DashboardAuthWrapper>
-  );
+export default function DashboardPage() {
+  redirect('/dashboard/general');
 }

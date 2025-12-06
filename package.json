@@ -41,6 +41,7 @@
     "drizzle-kit": "^0.31.1",
     "drizzle-orm": "^0.43.1",
     "jose": "^6.0.11",
+    "jspdf": "^3.0.4",
     "lucide-react": "^0.511.0",
     "next": "^15.5.7",
     "postcss": "^8.5.3",
