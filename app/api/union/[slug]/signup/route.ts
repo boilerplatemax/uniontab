@@ -125,11 +125,13 @@ export async function POST(
       // Don't fail the signup if email fails, but log it
     }
 
-    // Set session
-    await setSession(newUser);
+    // Don't set session - require email verification first
+    // Members must verify their email before they can sign in
 
     return NextResponse.json({
       success: true,
+      requiresVerification: true,
+      message: 'Account created successfully. Please check your email to verify your account.',
       user: {
         id: newUser.id,
         name: newUser.name,

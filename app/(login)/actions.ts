@@ -88,6 +88,15 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     };
   }
 
+  // Check if email is verified
+  if (!foundUser.emailVerified) {
+    return {
+      error: 'Please verify your email address before signing in. Check your inbox for the verification link.',
+      email,
+      password
+    };
+  }
+
   await Promise.all([
     setSession(foundUser),
     logActivity(foundUnion?.id, foundUser.id, ActivityType.SIGN_IN)

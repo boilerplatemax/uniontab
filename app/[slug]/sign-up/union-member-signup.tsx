@@ -47,8 +47,13 @@ export function UnionMemberSignUp({
         throw new Error(data.error || 'Failed to sign up');
       }
 
-      // Redirect to union page after successful signup
-      router.push(`/${slug}`);
+      // If email verification is required, redirect to verify-pending page
+      if (data.requiresVerification) {
+        router.push(`/auth/verify-pending?email=${encodeURIComponent(formData.email)}`);
+      } else {
+        // Redirect to union page after successful signup
+        router.push(`/${slug}`);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,12 +9,20 @@ import { Mail, RefreshCw, CheckCircle } from 'lucide-react';
 
 export default function VerifyPendingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
 
   useEffect(() => {
-    // Get user's email from session
+    // First check URL params for email (for members who just signed up)
+    const emailParam = searchParams.get('email');
+    if (emailParam) {
+      setEmail(emailParam);
+      return;
+    }
+
+    // Otherwise, get user's email from session (for owners)
     const fetchUserEmail = async () => {
       try {
         const response = await fetch('/api/user');
@@ -33,7 +41,7 @@ export default function VerifyPendingPage() {
     };
 
     fetchUserEmail();
-  }, [router]);
+  }, [router, searchParams]);
 
   const handleResend = async () => {
     if (!email) return;
