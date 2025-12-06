@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifySession } from '@/lib/auth/session';
+import { getSession } from '@/lib/auth/session';
 import { db } from '@/lib/db/drizzle';
 import { members, users } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await verifySession();
+    const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
