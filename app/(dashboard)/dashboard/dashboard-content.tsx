@@ -307,6 +307,7 @@ function RegistrationToolsWrapper() {
     <RegistrationTools
       slug={teamData.slug}
       unionName={teamData.publicName || teamData.name}
+      localNumber={teamData.localNumber}
       logoUrl={teamData.logoUrl}
     />
   );
