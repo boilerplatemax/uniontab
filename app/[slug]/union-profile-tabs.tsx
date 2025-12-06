@@ -16,6 +16,7 @@ import { EventsList } from '@/components/events/events-list';
 import { EventDetailsDialog } from '@/components/events/event-details-dialog';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { LikeButton } from '@/components/posts/like-button';
+import { ShareButton } from '@/components/share-button';
 import type { Union, Post, File as FileType, Event, Member, PostAttachment } from '@/lib/db/schema';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -421,12 +422,22 @@ export function UnionProfileTabs({
                           )}
 
                           <div className="flex items-center justify-between border-t pt-3 mt-3">
-                            <LikeButton
-                              postId={post.id}
-                              initialLiked={(post as any).isLikedByUser || false}
-                              initialCount={(post as any).likeCount || 0}
-                              userId={userId || null}
-                            />
+                            <div className="flex items-center gap-2">
+                              <LikeButton
+                                postId={post.id}
+                                initialLiked={(post as any).isLikedByUser || false}
+                                initialCount={(post as any).likeCount || 0}
+                                userId={userId || null}
+                              />
+                              <ShareButton
+                                itemType="post"
+                                itemId={post.id}
+                                itemTitle={post.title}
+                                itemUrl={`/${union.slug}/post/${post.id}`}
+                                slug={union.slug}
+                                isOwnerOrAdmin={isOwner}
+                              />
+                            </div>
                             <div className="text-xs sm:text-sm text-gray-500">
                               Posted by {post.createdBy.name} •{' '}
                               {formatDate(post.createdAt)}
@@ -482,6 +493,7 @@ export function UnionProfileTabs({
                   onDelete={handleDeleteFile}
                   deletingFile={deletingFile}
                   unionId={union.id}
+                  slug={union.slug}
                 />
               ) : (
                 <Card className="shadow-sm">
@@ -547,6 +559,7 @@ export function UnionProfileTabs({
                   onEventClick={handleEventClick}
                   onEdit={handleEditEvent}
                   onDelete={handleDeleteEvent}
+                  slug={union.slug}
                 />
               )}
             </>

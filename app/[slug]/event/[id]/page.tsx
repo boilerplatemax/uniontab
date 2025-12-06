@@ -7,6 +7,7 @@ import { UnionNavbar } from '../../union-navbar';
 import { NavbarSpacer } from '../../navbar-spacer';
 import { Card, CardContent } from '@/components/ui/card';
 import { RichTextContent } from '@/components/ui/rich-text-content';
+import { ShareButton } from '@/components/share-button';
 import { ArrowLeft, Calendar, Clock, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
@@ -106,6 +107,7 @@ export default async function EventPage({
   }
 
   const membership = await checkMembership(union.id);
+  const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -194,6 +196,18 @@ export default async function EventPage({
                   </span>
                 </div>
               )}
+            </div>
+
+            {/* Share Button */}
+            <div className="mb-6">
+              <ShareButton
+                itemType="event"
+                itemId={event.id}
+                itemTitle={event.title}
+                itemUrl={`/${slug}/event/${id}`}
+                slug={slug}
+                isOwnerOrAdmin={isOwnerOrAdmin}
+              />
             </div>
 
             {event.description && (
