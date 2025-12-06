@@ -13,12 +13,29 @@ export async function POST(
   try {
     const { slug } = await context.params;
     const body = await request.json();
-    const { firstName, lastName, email, password } = body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      employer,
+      jobTitle,
+      worksite,
+      employmentStatus,
+      // Optional fields
+      address,
+      dateOfBirth,
+      memberId,
+      localChapter,
+      bargainingUnit,
+      startDateWithEmployer,
+    } = body;
 
-    // Validate input
-    if (!firstName || !lastName || !email || !password) {
+    // Validate required fields
+    if (!firstName || !lastName || !email || !password || !phone || !employer || !jobTitle || !worksite || !employmentStatus) {
       return NextResponse.json(
-        { error: 'All fields are required' },
+        { error: 'All required fields must be filled in' },
         { status: 400 }
       );
     }
@@ -104,12 +121,25 @@ export async function POST(
       );
     }
 
-    // Add user as member of this union (pending approval)
+    // Add user as member of this union (pending approval) with all fields
     await db.insert(members).values({
       userId: newUser.id,
       unionId: union.id,
       role: 'member',
-      status: 'pending'
+      status: 'pending',
+      // Required fields
+      phone,
+      employer,
+      jobTitle,
+      worksite,
+      employmentStatus,
+      // Optional fields
+      address: address || null,
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+      memberId: memberId || null,
+      localChapter: localChapter || null,
+      bargainingUnit: bargainingUnit || null,
+      startDateWithEmployer: startDateWithEmployer ? new Date(startDateWithEmployer) : null,
     });
 
     // Send verification email

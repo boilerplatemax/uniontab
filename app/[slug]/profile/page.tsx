@@ -80,7 +80,7 @@ export default async function ProfilePage({
         pendingMembersCount={pendingMembersCount}
       />
       <NavbarSpacer />
-      <MemberProfile slug={slug} user={user} userWithUnion={userWithUnion} />
+      <MemberProfile slug={slug} user={user} userWithUnion={userWithUnion} membership={membership} union={union} />
     </>
   );
 }

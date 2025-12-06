@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { UnionMemberSignUp } from './union-member-signup';
+import { MultiStepMemberSignUp } from './multi-step-signup';
 import { db } from '@/lib/db/drizzle';
 import { unions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -29,7 +29,7 @@ export default async function UnionSignUpPage({
 
   return (
     <Suspense>
-      <UnionMemberSignUp params={params} union={union} />
+      <MultiStepMemberSignUp params={params} union={union} />
     </Suspense>
   );
 }

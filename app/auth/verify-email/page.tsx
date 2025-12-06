@@ -40,9 +40,20 @@ function VerifyEmailForm() {
 
         setSuccess(true);
 
-        // Redirect to onboarding/dashboard after 2 seconds (user is now logged in)
+        // Redirect based on user role and union status after 2 seconds
         setTimeout(() => {
-          router.push('/onboarding');
+          // If owner with unpublished union, go to onboarding
+          if (data.user?.membership?.needsOnboarding) {
+            router.push('/onboarding');
+          }
+          // If member or owner with published union, go to union page
+          else if (data.user?.membership?.unionSlug) {
+            router.push(`/${data.user.membership.unionSlug}`);
+          }
+          // Fallback to onboarding if no membership info
+          else {
+            router.push('/onboarding');
+          }
         }, 2000);
       } catch (err: any) {
         setError(err.message);
@@ -86,18 +97,11 @@ function VerifyEmailForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-center text-gray-600">
-              Your email has been verified and you're now signed in! Let's set up your union.
+              Your email has been verified and you're now signed in!
             </p>
             <p className="text-center text-sm text-gray-500">
-              Redirecting to onboarding...
+              Redirecting you to your union...
             </p>
-            <div className="pt-4">
-              <Link href="/onboarding">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                  Continue to Setup
-                </Button>
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </div>

@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus } from 'lucide-react';
+import { EditMemberDialog } from './edit-member-dialog';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit } from 'lucide-react';
 import Link from 'next/link';
 
 interface Member {
@@ -19,6 +20,19 @@ interface Member {
     role: string;
     status: string;
     joinedAt: Date;
+    phone: string | null;
+    employer: string | null;
+    jobTitle: string | null;
+    worksite: string | null;
+    employmentStatus: string | null;
+    address: string | null;
+    dateOfBirth: Date | null;
+    memberId: string | null;
+    membershipStatus: string | null;
+    localChapter: string | null;
+    bargainingUnit: string | null;
+    startDateWithEmployer: Date | null;
+    notes: string | null;
   };
   user: {
     id: number;
@@ -57,6 +71,10 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
   const [pendingBulkAction, setPendingBulkAction] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+  // Edit member dialog states
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [memberToEdit, setMemberToEdit] = useState<Member | null>(null);
 
   const getUserDisplayName = (user: { name: string | null; email: string }) => {
     return user.name || user.email;
@@ -273,6 +291,18 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
     } finally {
       setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
     }
+  };
+
+  const handleEditMember = (member: Member) => {
+    setMemberToEdit(member);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSave = () => {
+    setSuccessMessage('Member updated successfully');
+    setTimeout(() => setSuccessMessage(''), 3000);
+    // Refresh the page to get updated data
+    window.location.reload();
   };
 
   const handleBulkAction = () => {
@@ -759,6 +789,17 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                             </Button>
                           )}
 
+                          {/* Edit button - always visible */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditMember(member)}
+                            disabled={loadingMembers[member.member.id]}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+
                           {/* Admin toggle for approved members */}
                           {member.member.status === 'approved' && (
                             <Button
@@ -923,6 +964,15 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
         }
         cancelText="Cancel"
         variant={pendingBulkAction === 'delete' ? 'destructive' : 'default'}
+      />
+
+      {/* Edit Member Dialog */}
+      <EditMemberDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        member={memberToEdit}
+        unionId={union.id}
+        onSave={handleEditSave}
       />
     </div>
   );
