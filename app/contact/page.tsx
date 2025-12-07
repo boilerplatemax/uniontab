@@ -1,13 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Users } from 'lucide-react';
+import { Users, Mail, MessageCircle, MapPin, Phone, Clock, Send, CheckCircle2 } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
+
+// Animation component for scroll-triggered animations
+function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{ duration: 0.6, delay, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -57,24 +75,34 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      {/* Navbar - Same as info page */}
-      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Enhanced Navbar */}
+      <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <Users className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">
+            <Link href="/info" className="flex items-center hover:opacity-80 transition-opacity group">
+              <div className="relative">
+                <Users className="h-8 w-8 text-blue-600 group-hover:scale-110 transition-transform" />
+                <div className="absolute -inset-1 bg-blue-600/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <span className="ml-2 text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 UnionTab
               </span>
             </Link>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Link href="/pricing">
+                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  Pricing
+                </Button>
+              </Link>
               <Link href="/sign-in">
-                <Button variant="ghost">Sign In</Button>
+                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  Sign In
+                </Button>
               </Link>
               <Link href="/sign-up">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Create my website
+                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
+                  Get Started
                 </Button>
               </Link>
             </div>
@@ -82,145 +110,425 @@ export default function ContactPage() {
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            Contact Us
+      {/* Hero Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center space-y-6"
+        >
+          <div className="inline-block">
+            <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold inline-flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" />
+              We're Here to Help
+            </div>
+          </div>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900">
+            Get in
+            <span className="block mt-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Touch With Us
+            </span>
           </h1>
-          <p className="text-xl text-gray-600">
-            Have a question? We're here to help. Fill out the form below and we'll get back to you soon.
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Have questions about UnionTab? Our team is ready to help you find the perfect solution for your union.
           </p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Send us a message</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name */}
-              <div>
-                <Label htmlFor="name" className="required">
-                  Name <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="mt-1"
-                  placeholder="Your full name"
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <Label htmlFor="email">
-                  Email <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="mt-1"
-                  placeholder="your.email@example.com"
-                />
-              </div>
-
-              {/* Role */}
-              <div>
-                <Label htmlFor="role">
-                  Role <span className="text-red-500">*</span>
-                </Label>
-                <select
-                  id="role"
-                  required
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'executive' | 'member' })}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="member">Member</option>
-                  <option value="executive">Executive</option>
-                </select>
-              </div>
-
-              {/* Union Name (Optional) */}
-              <div>
-                <Label htmlFor="unionName">Union Name (Optional)</Label>
-                <Input
-                  id="unionName"
-                  type="text"
-                  value={formData.unionName}
-                  onChange={(e) => setFormData({ ...formData, unionName: e.target.value })}
-                  className="mt-1"
-                  placeholder="e.g., International Brotherhood of Electrical Workers"
-                />
-              </div>
-
-              {/* Local Number (Optional) */}
-              <div>
-                <Label htmlFor="localNumber">Local Number (Optional)</Label>
-                <Input
-                  id="localNumber"
-                  type="text"
-                  value={formData.localNumber}
-                  onChange={(e) => setFormData({ ...formData, localNumber: e.target.value })}
-                  className="mt-1"
-                  placeholder="e.g., 123"
-                />
-              </div>
-
-              {/* Message */}
-              <div>
-                <Label htmlFor="message">
-                  Message <span className="text-red-500">*</span>
-                </Label>
-                <Textarea
-                  id="message"
-                  required
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="mt-1"
-                  rows={6}
-                  placeholder="Tell us how we can help..."
-                />
-              </div>
-
-              {/* Submit Button */}
-              <div>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
-                </Button>
-              </div>
-
-              {/* Success/Error Messages */}
-              {submitStatus === 'success' && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-md">
-                  <p className="text-green-800 text-sm">
-                    Thank you for your message! We'll get back to you soon.
-                  </p>
-                </div>
-              )}
-
-              {submitStatus === 'error' && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-red-800 text-sm">
-                    Sorry, there was an error sending your message. Please try again later.
-                  </p>
-                </div>
-              )}
-            </form>
-          </CardContent>
-        </Card>
+        </motion.div>
       </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left Column - Contact Info Cards */}
+          <div className="lg:col-span-1 space-y-6">
+            <AnimatedSection>
+              <Card className="border-2 border-blue-100 hover:border-blue-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50/30">
+                <CardContent className="p-6 space-y-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <Mail className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Email Us</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Send us an email anytime
+                    </p>
+                    <a href="mailto:support@uniontab.com" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                      support@uniontab.com
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            </AnimatedSection>
+
+            <AnimatedSection delay={0.1}>
+              <Card className="border-2 border-indigo-100 hover:border-indigo-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-indigo-50/30">
+                <CardContent className="p-6 space-y-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <Phone className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Call Us</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Mon-Fri from 9am to 6pm EST
+                    </p>
+                    <a href="tel:+15551234567" className="text-indigo-600 hover:text-indigo-700 font-medium text-sm">
+                      +1 (555) 123-4567
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            </AnimatedSection>
+
+            <AnimatedSection delay={0.2}>
+              <Card className="border-2 border-purple-100 hover:border-purple-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-purple-50/30">
+                <CardContent className="p-6 space-y-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <Clock className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Office Hours</h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Monday - Friday
+                    </p>
+                    <p className="text-sm text-gray-900 font-medium">
+                      9:00 AM - 6:00 PM EST
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </AnimatedSection>
+
+            <AnimatedSection delay={0.3}>
+              <Card className="border-2 border-pink-100 hover:border-pink-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-pink-50/30">
+                <CardContent className="p-6 space-y-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <MapPin className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Visit Us</h3>
+                    <p className="text-sm text-gray-600">
+                      123 Union Street<br />
+                      Suite 456<br />
+                      New York, NY 10001
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </AnimatedSection>
+          </div>
+
+          {/* Right Column - Contact Form */}
+          <div className="lg:col-span-2">
+            <AnimatedSection delay={0.2}>
+              <Card className="border-2 border-blue-100 shadow-2xl bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-8">
+                  <div className="mb-6">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      Send Us a Message
+                    </h2>
+                    <p className="text-gray-600">
+                      Fill out the form below and we'll get back to you within 24 hours.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      {/* Name */}
+                      <div className="space-y-2">
+                        <Label htmlFor="name" className="text-gray-700 font-semibold">
+                          Name <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="name"
+                          type="text"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className="h-12 border-2 focus:border-blue-500 transition-colors"
+                          placeholder="John Smith"
+                        />
+                      </div>
+
+                      {/* Email */}
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="text-gray-700 font-semibold">
+                          Email <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          required
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className="h-12 border-2 focus:border-blue-500 transition-colors"
+                          placeholder="john@example.com"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      {/* Role */}
+                      <div className="space-y-2">
+                        <Label htmlFor="role" className="text-gray-700 font-semibold">
+                          Role <span className="text-red-500">*</span>
+                        </Label>
+                        <select
+                          id="role"
+                          required
+                          value={formData.role}
+                          onChange={(e) => setFormData({ ...formData, role: e.target.value as 'executive' | 'member' })}
+                          className="w-full h-12 px-3 py-2 border-2 border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        >
+                          <option value="member">Member</option>
+                          <option value="executive">Executive</option>
+                        </select>
+                      </div>
+
+                      {/* Union Name */}
+                      <div className="space-y-2">
+                        <Label htmlFor="unionName" className="text-gray-700 font-semibold">
+                          Union Name (Optional)
+                        </Label>
+                        <Input
+                          id="unionName"
+                          type="text"
+                          value={formData.unionName}
+                          onChange={(e) => setFormData({ ...formData, unionName: e.target.value })}
+                          className="h-12 border-2 focus:border-blue-500 transition-colors"
+                          placeholder="e.g., IBEW"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Local Number */}
+                    <div className="space-y-2">
+                      <Label htmlFor="localNumber" className="text-gray-700 font-semibold">
+                        Local Number (Optional)
+                      </Label>
+                      <Input
+                        id="localNumber"
+                        type="text"
+                        value={formData.localNumber}
+                        onChange={(e) => setFormData({ ...formData, localNumber: e.target.value })}
+                        className="h-12 border-2 focus:border-blue-500 transition-colors"
+                        placeholder="e.g., 123"
+                      />
+                    </div>
+
+                    {/* Message */}
+                    <div className="space-y-2">
+                      <Label htmlFor="message" className="text-gray-700 font-semibold">
+                        Message <span className="text-red-500">*</span>
+                      </Label>
+                      <Textarea
+                        id="message"
+                        required
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        className="min-h-[150px] border-2 focus:border-blue-500 transition-colors"
+                        rows={6}
+                        placeholder="Tell us how we can help you..."
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div>
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? (
+                          <span className="flex items-center gap-2">
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                              className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                            />
+                            Sending...
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            <Send className="h-5 w-5" />
+                            Send Message
+                          </span>
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Success/Error Messages */}
+                    {submitStatus === 'success' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 bg-green-50 border-2 border-green-200 rounded-lg flex items-start gap-3"
+                      >
+                        <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-green-800 font-semibold">Message sent successfully!</p>
+                          <p className="text-green-700 text-sm mt-1">
+                            Thank you for reaching out. We'll get back to you within 24 hours.
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {submitStatus === 'error' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 bg-red-50 border-2 border-red-200 rounded-lg"
+                      >
+                        <p className="text-red-800 font-semibold">
+                          Oops! Something went wrong.
+                        </p>
+                        <p className="text-red-700 text-sm mt-1">
+                          Please try again or email us directly at support@uniontab.com
+                        </p>
+                      </motion.div>
+                    )}
+                  </form>
+                </CardContent>
+              </Card>
+            </AnimatedSection>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <AnimatedSection>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Quick Questions?
+            </h2>
+            <p className="text-xl text-gray-600">
+              Here are some answers to common questions
+            </p>
+          </div>
+        </AnimatedSection>
+
+        <div className="grid sm:grid-cols-2 gap-6">
+          <AnimatedSection delay={0.1}>
+            <Card className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 h-full">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  How quickly will I hear back?
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  We typically respond within 24 hours during business days. For urgent matters, please call us directly.
+                </p>
+              </CardContent>
+            </Card>
+          </AnimatedSection>
+
+          <AnimatedSection delay={0.2}>
+            <Card className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 h-full">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Do you offer demos?
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Yes! We offer personalized demos for union executives. Just mention it in your message and we'll schedule a time.
+                </p>
+              </CardContent>
+            </Card>
+          </AnimatedSection>
+
+          <AnimatedSection delay={0.3}>
+            <Card className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 h-full">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Can you help with migration?
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Absolutely! Our team can help you migrate from your existing platform. Contact us to discuss your specific needs.
+                </p>
+              </CardContent>
+            </Card>
+          </AnimatedSection>
+
+          <AnimatedSection delay={0.4}>
+            <Card className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 h-full">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  What about technical support?
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  All plans include email support. Paid plans get priority support with faster response times and phone support.
+                </p>
+              </CardContent>
+            </Card>
+          </AnimatedSection>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-12 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <Users className="h-6 w-6 text-blue-400" />
+                <span className="ml-2 text-lg font-bold text-white">
+                  UnionTab
+                </span>
+              </div>
+              <p className="text-sm">
+                Empowering unions with modern digital tools to build stronger, more connected communities.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white mb-4">Product</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link href="/pricing" className="hover:text-white transition-colors">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/sign-up" className="hover:text-white transition-colors">
+                    Get Started
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link href="/about" className="hover:text-white transition-colors">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="hover:text-white transition-colors">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link href="/privacy" className="hover:text-white transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="hover:text-white transition-colors">
+                    Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
+            <p>&copy; 2025 UnionTab. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
