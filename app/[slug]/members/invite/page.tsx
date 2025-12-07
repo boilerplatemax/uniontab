@@ -54,7 +54,7 @@ export default async function InvitePage({ params }: PageProps) {
   return (
     <InvitePageContent
       unionName={union.name}
-      localNumber={union.localNumber}
+      localNumber={union.localNumber ?? null}
       registrationUrl={registrationUrl}
       slug={slug}
     />
