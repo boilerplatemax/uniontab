@@ -107,7 +107,7 @@ export function ModernTheme({
             {/* Title and Description */}
             <div className="flex-1 text-center sm:text-left">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-3">
-                {union.publicName || union.name}
+                {(union.publicName || union.name).toUpperCase()}
                 {union.localNumber && !union.publicName && ` ${union.localNumber}`}
               </h1>
               {union.description && (

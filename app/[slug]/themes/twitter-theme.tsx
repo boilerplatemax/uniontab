@@ -81,7 +81,7 @@ export function TwitterTheme({
               </div>
             )}
             <h1 className="font-bold text-lg truncate">
-              {union.publicName || union.name}
+              {(union.publicName || union.name).toUpperCase()}
             </h1>
           </div>
           <Button
@@ -133,7 +133,7 @@ export function TwitterTheme({
                   )}
                 </div>
                 <h1 className="text-xl font-bold text-gray-900 mb-1">
-                  {union.publicName || union.name}
+                  {(union.publicName || union.name).toUpperCase()}
                   {union.localNumber && !union.publicName && ` ${union.localNumber}`}
                 </h1>
                 {union.description && (
@@ -270,7 +270,7 @@ export function TwitterTheme({
                       )}
                     </div>
                     <h1 className="text-xl font-bold text-gray-900 mb-1">
-                      {union.publicName || union.name}
+                      {(union.publicName || union.name).toUpperCase()}
                       {union.localNumber && !union.publicName && ` ${union.localNumber}`}
                     </h1>
                     {union.description && (
