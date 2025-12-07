@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import type { Member } from '@/lib/db/schema';
 
 interface CreateDuesDialogProps {
@@ -27,6 +27,7 @@ interface CreateDuesDialogProps {
 
 export function CreateDuesDialog({ open, onOpenChange, unionId, members, onSuccess }: CreateDuesDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     memberId: '',
     amount: '',
@@ -38,6 +39,25 @@ export function CreateDuesDialog({ open, onOpenChange, unionId, members, onSucce
     checkNumber: '',
     notes: '',
   });
+
+  // Filter members based on search query
+  const filteredMembers = useMemo(() => {
+    if (!searchQuery.trim()) return members;
+
+    const query = searchQuery.toLowerCase();
+    return members.filter((m) => {
+      const name = m.user.name?.toLowerCase() || '';
+      const email = m.user.email.toLowerCase();
+      return name.includes(query) || email.includes(query);
+    });
+  }, [members, searchQuery]);
+
+  const handleDialogChange = (open: boolean) => {
+    if (!open) {
+      setSearchQuery('');
+    }
+    onOpenChange(open);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +97,7 @@ export function CreateDuesDialog({ open, onOpenChange, unionId, members, onSucce
         checkNumber: '',
         notes: '',
       });
+      setSearchQuery('');
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
@@ -88,7 +109,7 @@ export function CreateDuesDialog({ open, onOpenChange, unionId, members, onSucce
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Dues Record</DialogTitle>
@@ -98,6 +119,21 @@ export function CreateDuesDialog({ open, onOpenChange, unionId, members, onSucce
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="member-search">Search Member</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                id="member-search"
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="member">Member *</Label>
             <Select
@@ -109,11 +145,17 @@ export function CreateDuesDialog({ open, onOpenChange, unionId, members, onSucce
                 <SelectValue placeholder="Select a member" />
               </SelectTrigger>
               <SelectContent>
-                {members.map((m) => (
-                  <SelectItem key={m.member.id} value={m.member.id.toString()}>
-                    {m.user.name} ({m.user.email})
-                  </SelectItem>
-                ))}
+                {filteredMembers.length === 0 ? (
+                  <div className="px-2 py-6 text-center text-sm text-gray-500">
+                    No members found
+                  </div>
+                ) : (
+                  filteredMembers.map((m) => (
+                    <SelectItem key={m.member.id} value={m.member.id.toString()}>
+                      {m.user.name} ({m.user.email})
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -237,7 +279,7 @@ export function CreateDuesDialog({ open, onOpenChange, unionId, members, onSucce
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+            <Button type="button" variant="outline" onClick={() => handleDialogChange(false)} disabled={loading}>
               Cancel
             </Button>
             <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
