@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db } from '@/lib/db/drizzle';
 import { users, members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { verifySession } from '@/lib/session';
+import { getSession } from '@/lib/auth/session';
 
 export async function POST(request: NextRequest) {
   try {
     // Verify user is logged in
-    const session = await verifySession();
-    if (!session?.userId) {
+    const session = await getSession();
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       .from(members)
       .where(
         and(
-          eq(members.userId, session.userId),
+          eq(members.userId, session.user.id),
           eq(members.unionId, unionId)
         )
       );
