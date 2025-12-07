@@ -114,7 +114,7 @@ export default async function AnnouncementsPage({
       <UnionNavbar
         slug={slug}
         unionName={union.name}
-        localNumber={union.localNumber}
+        localNumber={union.localNumber ?? null}
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
