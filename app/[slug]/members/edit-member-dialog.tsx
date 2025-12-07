@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -317,13 +317,11 @@ export function EditMemberDialog({
             </div>
             <div>
               <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => updateField('notes', e.target.value)}
-                placeholder="Add any notes about this member..."
-                rows={4}
-                className="resize-none"
+              <RichTextEditor
+                content={formData.notes}
+                onChange={(content) => updateField('notes', content)}
+                placeholder="Add any notes about this member (supports bold, italic, lists, etc.)..."
+                className="min-h-[200px]"
               />
             </div>
           </div>

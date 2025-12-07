@@ -3,6 +3,7 @@ import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { UnionProfileTabs } from '../union-profile-tabs';
 import { AnnouncementClient } from '../announcement-client';
+import { AccessibilityWidget } from '@/components/accessibility-widget';
 import type { ThemeProps } from './types';
 
 /**
@@ -25,6 +26,7 @@ export function DefaultTheme({
   pendingMembersCount,
   handleSignOut,
   activeAnnouncements,
+  accessibilityWidgetEnabled,
 }: ThemeProps) {
   return (
     <div className="min-h-screen bg-gray-100">
@@ -195,6 +197,9 @@ export function DefaultTheme({
           </p>
         </div>
       </div>
+
+      {/* Accessibility Widget */}
+      <AccessibilityWidget enabled={accessibilityWidgetEnabled} />
     </div>
   );
 }

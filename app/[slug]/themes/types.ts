@@ -21,4 +21,5 @@ export interface ThemeProps {
     popup: any;
     banner: any;
   };
+  accessibilityWidgetEnabled: boolean;
 }

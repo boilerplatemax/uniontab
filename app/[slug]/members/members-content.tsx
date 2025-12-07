@@ -1042,46 +1042,50 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                 {paginatedMembers.map((member) => (
                   <div
                     key={member.member.id}
-                    className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group"
+                    className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group"
                   >
-                    {/* Checkbox for bulk selection */}
-                    {isOwner && member.member.role !== 'owner' && (
-                      <Checkbox
-                        checked={selectedMembers.has(member.member.id)}
-                        onCheckedChange={() => toggleSelectMember(member.member.id)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    )}
+                    {/* Top row on mobile: checkbox + avatar + user info */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      {/* Checkbox for bulk selection */}
+                      {isOwner && member.member.role !== 'owner' && (
+                        <Checkbox
+                          checked={selectedMembers.has(member.member.id)}
+                          onCheckedChange={() => toggleSelectMember(member.member.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex-shrink-0"
+                        />
+                      )}
 
-                    {/* Avatar and User Info */}
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <Avatar className="h-12 w-12 flex-shrink-0">
-                        <AvatarFallback className="bg-blue-600 text-white">
-                          {getInitials(getUserDisplayName(member.user))}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium text-gray-900 truncate">
+                      {/* Avatar and User Info */}
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
+                          <AvatarFallback className="bg-blue-600 text-white text-sm">
+                            {getInitials(getUserDisplayName(member.user))}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 truncate text-sm sm:text-base">
                             {getUserDisplayName(member.user)}
                           </p>
-                          {/* Join date - visible on hover */}
-                          <span className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                          <p className="text-xs sm:text-sm text-gray-600 truncate">{member.user.email}</p>
+                          <span className="text-xs text-gray-500 sm:hidden">
                             Joined {formatDate(member.member.joinedAt)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm text-gray-600 truncate">{member.user.email}</p>
-                        </div>
                       </div>
+
+                      {/* Join date - desktop only, visible on hover */}
+                      <span className="hidden sm:block text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex-shrink-0">
+                        Joined {formatDate(member.member.joinedAt)}
+                      </span>
                     </div>
 
                     {/* Tags and Actions */}
-                    <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                       {/* Role and Status Tags */}
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                          className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-medium ${
                             member.member.role === 'owner'
                               ? 'bg-blue-100 text-blue-700'
                               : member.member.role === 'admin'
@@ -1093,7 +1097,7 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                             member.member.role.slice(1)}
                         </span>
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                          className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-medium ${
                             member.member.status === 'approved'
                               ? 'bg-green-100 text-green-700'
                               : member.member.status === 'pending'
@@ -1105,9 +1109,10 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                             member.member.status.slice(1)}
                         </span>
                       </div>
+
                       {/* Action buttons (owners only) */}
                       {isOwner && member.member.role !== 'owner' && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap gap-2">
                           {/* Approval buttons for pending members */}
                           {member.member.status === 'pending' && (
                             <>
@@ -1115,14 +1120,14 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                                 size="sm"
                                 onClick={() => handleApproval(member.member.id, 'approved')}
                                 disabled={loadingMembers[member.member.id]}
-                                className="bg-green-600 hover:bg-green-700"
+                                className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-initial"
                               >
                                 {loadingMembers[member.member.id] ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <>
-                                    <CheckCircle className="h-4 w-4 mr-1" />
-                                    Approve
+                                    <CheckCircle className="h-4 w-4 sm:mr-1" />
+                                    <span className="hidden sm:inline">Approve</span>
                                   </>
                                 )}
                               </Button>
@@ -1131,13 +1136,14 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                                 variant="destructive"
                                 onClick={() => handleApproval(member.member.id, 'rejected')}
                                 disabled={loadingMembers[member.member.id]}
+                                className="flex-1 sm:flex-initial"
                               >
                                 {loadingMembers[member.member.id] ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <>
-                                    <XCircle className="h-4 w-4 mr-1" />
-                                    Reject
+                                    <XCircle className="h-4 w-4 sm:mr-1" />
+                                    <span className="hidden sm:inline">Reject</span>
                                   </>
                                 )}
                               </Button>
@@ -1156,8 +1162,8 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
                                 <>
-                                  <CheckCircle className="h-4 w-4 mr-1" />
-                                  Approve
+                                  <CheckCircle className="h-4 w-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">Approve</span>
                                 </>
                               )}
                             </Button>
@@ -1170,8 +1176,8 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                             onClick={() => handleEditMember(member)}
                             disabled={loadingMembers[member.member.id]}
                           >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
+                            <Edit className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Edit</span>
                           </Button>
 
                           {/* Admin toggle for approved members */}
@@ -1181,6 +1187,7 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                               variant="outline"
                               onClick={() => handleToggleAdmin(member.member.id, member.member.role)}
                               disabled={loadingMembers[member.member.id]}
+                              className="hidden sm:inline-flex"
                             >
                               {loadingMembers[member.member.id] ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />

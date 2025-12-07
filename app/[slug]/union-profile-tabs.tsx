@@ -14,6 +14,7 @@ import { EditEventDialog } from '@/components/events/edit-event-dialog';
 import { EventsCalendar } from '@/components/events/events-calendar';
 import { EventsList } from '@/components/events/events-list';
 import { EventDetailsDialog } from '@/components/events/event-details-dialog';
+import { ElectionsList } from '@/components/elections/elections-list';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { LikeButton } from '@/components/posts/like-button';
 import { ShareButton } from '@/components/share-button';
@@ -567,24 +568,11 @@ export function UnionProfileTabs({
 
           {/* Elections Tab */}
           {activeTab === 'elections' && (
-            <Card className="shadow-sm">
-              <CardContent className="p-12 text-center">
-                <Vote className="h-16 w-16 text-blue-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Elections & Voting
-                </h3>
-                <p className="text-gray-500 mb-6">
-                  View and participate in union elections and voting
-                </p>
-                <Button
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => router.push(`/${union.slug}/elections`)}
-                >
-                  <Vote className="h-4 w-4 mr-2" />
-                  Go to Elections
-                </Button>
-              </CardContent>
-            </Card>
+            <ElectionsList
+              slug={union.slug}
+              unionId={union.id}
+              isOwner={isOwner}
+            />
           )}
       </div>
 

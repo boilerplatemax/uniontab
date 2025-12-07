@@ -3,6 +3,7 @@
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { AnnouncementClient } from '../announcement-client';
+import { AccessibilityWidget } from '@/components/accessibility-widget';
 import type { ThemeProps } from './types';
 import { Users } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -27,6 +28,7 @@ export function ModernTheme({
   pendingMembersCount,
   handleSignOut,
   activeAnnouncements,
+  accessibilityWidgetEnabled,
 }: ThemeProps) {
   return (
     <div className="min-h-screen bg-white">
@@ -146,6 +148,9 @@ export function ModernTheme({
           </p>
         </div>
       </div>
+
+      {/* Accessibility Widget */}
+      <AccessibilityWidget enabled={accessibilityWidgetEnabled} />
     </div>
   );
 }
