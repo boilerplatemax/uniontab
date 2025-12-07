@@ -3,12 +3,19 @@
 import { RegistrationShareWidget } from '../../registration-share-widget';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserPlus, Mail, CheckCircle, Clock } from 'lucide-react';
+import { UnionNavbar } from '../../union-navbar';
 
 interface InvitePageContentProps {
   unionName: string;
   localNumber?: string | null;
   registrationUrl: string;
   slug: string;
+  membership: {
+    user: { name: string | null };
+    member: { role: string };
+  };
+  handleSignOut: () => Promise<void>;
+  logoUrl?: string | null;
 }
 
 export default function InvitePageContent({
@@ -16,13 +23,31 @@ export default function InvitePageContent({
   localNumber,
   registrationUrl,
   slug,
+  membership,
+  handleSignOut,
+  logoUrl,
 }: InvitePageContentProps) {
   const fullUnionName = localNumber
     ? `${unionName} Local ${localNumber}`
     : unionName;
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4">
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation Bar */}
+      <UnionNavbar
+        slug={slug}
+        unionName={unionName}
+        localNumber={localNumber}
+        membership={membership}
+        handleSignOut={handleSignOut}
+        pendingMembersCount={0}
+        announcementId={null}
+      />
+
+      {/* Spacing for fixed navbar */}
+      <div className="h-14" />
+
+      <div className="container max-w-4xl mx-auto py-8 px-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Invite New Members</h1>
         <p className="text-gray-600">
@@ -36,6 +61,7 @@ export default function InvitePageContent({
           slug={slug}
           unionName={unionName}
           localNumber={localNumber}
+          logoUrl={logoUrl}
         />
 
         {/* Registration Process Information */}
@@ -122,6 +148,7 @@ export default function InvitePageContent({
             </ul>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

@@ -2,9 +2,10 @@ import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db/drizzle";
-import { unions, members } from "@/lib/db/schema";
+import { unions, members, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import InvitePageContent from "./invite-page-content";
+import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Invite Members",
@@ -49,7 +50,19 @@ export default async function InvitePage({ params }: PageProps) {
     redirect(`/${slug}`);
   }
 
+  // Get user details for navbar
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+
   const registrationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/${slug}/sign-up`;
+
+  async function handleSignOut() {
+    'use server';
+    (await cookies()).delete('session');
+  }
 
   return (
     <InvitePageContent
@@ -57,6 +70,12 @@ export default async function InvitePage({ params }: PageProps) {
       localNumber={union.localNumber}
       registrationUrl={registrationUrl}
       slug={slug}
+      membership={{
+        user: { name: user.name },
+        member: { role: membership.role }
+      }}
+      handleSignOut={handleSignOut}
+      logoUrl={union.logoUrl}
     />
   );
 }
