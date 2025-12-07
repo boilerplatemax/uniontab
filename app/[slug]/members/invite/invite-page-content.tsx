@@ -37,7 +37,7 @@ export default function InvitePageContent({
       <UnionNavbar
         slug={slug}
         unionName={unionName}
-        localNumber={localNumber}
+        localNumber={localNumber ?? null}
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={0}
