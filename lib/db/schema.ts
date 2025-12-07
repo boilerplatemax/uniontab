@@ -85,6 +85,10 @@ export const members = pgTable('members', {
 
   // Admin-only notes field
   notes: text('notes'), // Only visible to admins/owners
+
+  // Dues tracking fields
+  isDelinquent: boolean('is_delinquent').notNull().default(false),
+  delinquentSince: timestamp('delinquent_since'),
 }, (table) => ({
   uniqueUserUnion: unique('idx_members_unique_user_union').on(table.unionId, table.userId),
 }));
@@ -406,6 +410,50 @@ export const emailLogs = pgTable('email_logs', {
   sentAt: timestamp('sent_at').notNull().defaultNow(),
 });
 
+// Dues Tracking System Tables
+export const dues = pgTable('dues', {
+  id: serial('id').primaryKey(),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  amount: integer('amount').notNull(), // Amount in cents
+  dueDate: timestamp('due_date').notNull(),
+  paymentStatus: varchar('payment_status', { length: 20 }).notNull().default('unpaid'), // 'paid', 'unpaid', 'partial'
+  paidAmount: integer('paid_amount').notNull().default(0), // Amount paid in cents
+  paidDate: timestamp('paid_date'),
+  paymentMethod: varchar('payment_method', { length: 50 }), // 'cash', 'check', 'money_order', 'bank_transfer', etc.
+  checkNumber: varchar('check_number', { length: 100 }), // For check payments
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
+});
+
+export const duesReceipts = pgTable('dues_receipts', {
+  id: serial('id').primaryKey(),
+  duesId: integer('dues_id')
+    .notNull()
+    .references(() => dues.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  receiptNumber: varchar('receipt_number', { length: 100 }).notNull().unique(),
+  amount: integer('amount').notNull(), // Amount on receipt in cents
+  generatedAt: timestamp('generated_at').notNull().defaultNow(),
+  generatedBy: integer('generated_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
+
 export const unionsRelations = relations(unions, ({ many }) => ({
   members: many(members),
   activityLogs: many(activityLogs),
@@ -417,6 +465,8 @@ export const unionsRelations = relations(unions, ({ many }) => ({
   elections: many(elections),
   announcements: many(announcements),
   massEmails: many(massEmails),
+  dues: many(dues),
+  duesReceipts: many(duesReceipts),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -435,7 +485,7 @@ export const invitationsRelations = relations(invitations, ({ one }) => ({
   }),
 }));
 
-export const membersRelations = relations(members, ({ one }) => ({
+export const membersRelations = relations(members, ({ one, many }) => ({
   user: one(users, {
     fields: [members.userId],
     references: [users.id],
@@ -444,6 +494,8 @@ export const membersRelations = relations(members, ({ one }) => ({
     fields: [members.unionId],
     references: [unions.id],
   }),
+  dues: many(dues),
+  duesReceipts: many(duesReceipts),
 }));
 
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
@@ -667,6 +719,44 @@ export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   }),
 }));
 
+export const duesRelations = relations(dues, ({ one }) => ({
+  member: one(members, {
+    fields: [dues.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [dues.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [dues.createdBy],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [dues.updatedBy],
+    references: [users.id],
+  }),
+}));
+
+export const duesReceiptsRelations = relations(duesReceipts, ({ one }) => ({
+  dues: one(dues, {
+    fields: [duesReceipts.duesId],
+    references: [dues.id],
+  }),
+  member: one(members, {
+    fields: [duesReceipts.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [duesReceipts.unionId],
+    references: [unions.id],
+  }),
+  generatedBy: one(users, {
+    fields: [duesReceipts.generatedBy],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Union = typeof unions.$inferSelect;
@@ -711,6 +801,10 @@ export type MassEmail = typeof massEmails.$inferSelect;
 export type NewMassEmail = typeof massEmails.$inferInsert;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type NewEmailLog = typeof emailLogs.$inferInsert;
+export type Dues = typeof dues.$inferSelect;
+export type NewDues = typeof dues.$inferInsert;
+export type DuesReceipt = typeof duesReceipts.$inferSelect;
+export type NewDuesReceipt = typeof duesReceipts.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;

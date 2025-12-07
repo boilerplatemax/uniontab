@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus } from 'lucide-react';
+import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import {
@@ -128,6 +128,12 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 )}
                 {isOwnerOrAdmin && (
                   <>
+                    <Link href={`/${slug}/dues`} prefetch={true}>
+                      <Button variant="ghost" size="sm" className="gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        <span className="hidden md:inline">Dues</span>
+                      </Button>
+                    </Link>
                     <Link href={`/${slug}/mass-email`} prefetch={true}>
                       <Button variant="ghost" size="sm" className="gap-2">
                         <Mail className="h-4 w-4" />
@@ -261,6 +267,16 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
               )}
               {isOwnerOrAdmin && (
                 <>
+                  <Link
+                    href={`/${slug}/dues`}
+                    prefetch={true}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Button variant="ghost" className="w-full justify-start gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      Dues
+                    </Button>
+                  </Link>
                   <Link
                     href={`/${slug}/mass-email`}
                     prefetch={true}

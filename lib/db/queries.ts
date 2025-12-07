@@ -1,6 +1,6 @@
-import { desc, and, eq, isNull } from 'drizzle-orm';
+import { desc, and, eq, isNull, gte, lte } from 'drizzle-orm';
 import { db } from './drizzle';
-import { activityLogs, members, unions, users } from './schema';
+import { activityLogs, members, unions, users, dues, duesReceipts } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
 
@@ -151,4 +151,149 @@ export async function getUserMembership() {
 export async function isUserOwner(): Promise<boolean> {
   const membership = await getUserMembership();
   return membership?.member.role === 'owner';
+}
+
+// Dues Tracking Queries
+
+/**
+ * Get all dues for a union with member information
+ */
+export async function getDuesForUnion(unionId: number) {
+  return await db.query.dues.findMany({
+    where: eq(dues.unionId, unionId),
+    with: {
+      member: {
+        with: {
+          user: {
+            columns: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        }
+      },
+      createdBy: {
+        columns: {
+          id: true,
+          name: true
+        }
+      },
+      updatedBy: {
+        columns: {
+          id: true,
+          name: true
+        }
+      }
+    },
+    orderBy: [desc(dues.dueDate)]
+  });
+}
+
+/**
+ * Get dues for a specific member
+ */
+export async function getDuesForMember(memberId: number) {
+  return await db.query.dues.findMany({
+    where: eq(dues.memberId, memberId),
+    orderBy: [desc(dues.dueDate)]
+  });
+}
+
+/**
+ * Get delinquent members for a union
+ */
+export async function getDelinquentMembers(unionId: number) {
+  return await db.query.members.findMany({
+    where: and(
+      eq(members.unionId, unionId),
+      eq(members.isDelinquent, true)
+    ),
+    with: {
+      user: {
+        columns: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Get a single dues record by ID
+ */
+export async function getDuesById(duesId: number) {
+  return await db.query.dues.findFirst({
+    where: eq(dues.id, duesId),
+    with: {
+      member: {
+        with: {
+          user: {
+            columns: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Get payment history (receipts) for a member
+ */
+export async function getPaymentHistoryForMember(memberId: number) {
+  return await db.query.duesReceipts.findMany({
+    where: eq(duesReceipts.memberId, memberId),
+    with: {
+      dues: true,
+      generatedBy: {
+        columns: {
+          id: true,
+          name: true
+        }
+      }
+    },
+    orderBy: [desc(duesReceipts.generatedAt)]
+  });
+}
+
+/**
+ * Get receipts for a specific dues record
+ */
+export async function getReceiptsForDues(duesId: number) {
+  return await db.query.duesReceipts.findMany({
+    where: eq(duesReceipts.duesId, duesId),
+    orderBy: [desc(duesReceipts.generatedAt)]
+  });
+}
+
+/**
+ * Get dues summary statistics for a union
+ */
+export async function getDuesSummaryForUnion(unionId: number) {
+  const allDues = await db
+    .select()
+    .from(dues)
+    .where(eq(dues.unionId, unionId));
+
+  const totalDues = allDues.reduce((sum, d) => sum + d.amount, 0);
+  const totalPaid = allDues.reduce((sum, d) => sum + d.paidAmount, 0);
+  const totalUnpaid = allDues.filter(d => d.paymentStatus === 'unpaid').reduce((sum, d) => sum + d.amount, 0);
+  const totalOverdue = allDues.filter(d => d.paymentStatus === 'unpaid' && new Date(d.dueDate) < new Date()).reduce((sum, d) => sum + d.amount, 0);
+
+  return {
+    totalDues,
+    totalPaid,
+    totalUnpaid,
+    totalOverdue,
+    paidCount: allDues.filter(d => d.paymentStatus === 'paid').length,
+    unpaidCount: allDues.filter(d => d.paymentStatus === 'unpaid').length,
+    partialCount: allDues.filter(d => d.paymentStatus === 'partial').length,
+    overdueCount: allDues.filter(d => d.paymentStatus === 'unpaid' && new Date(d.dueDate) < new Date()).length
+  };
 }
