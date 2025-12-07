@@ -194,7 +194,7 @@ export function UnionProfileTabs({
     { id: 'about' as const, label: 'About' },
     { id: 'files' as const, label: 'Files' },
     { id: 'events' as const, label: 'Events' },
-    { id: 'elections' as const, label: 'Elections' },
+    ...(isApprovedMember ? [{ id: 'elections' as const, label: 'Elections' }] : []),
   ];
 
   const activeTabLabel = tabs.find(tab => tab.id === activeTab)?.label || 'Posts';
@@ -567,7 +567,7 @@ export function UnionProfileTabs({
           )}
 
           {/* Elections Tab */}
-          {activeTab === 'elections' && (
+          {activeTab === 'elections' && isApprovedMember && (
             <ElectionsList
               slug={union.slug}
               unionId={union.id}

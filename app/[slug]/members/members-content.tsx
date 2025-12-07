@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { EditMemberDialog } from './edit-member-dialog';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X } from 'lucide-react';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 
 interface Member {
@@ -33,6 +33,8 @@ interface Member {
     bargainingUnit: string | null;
     startDateWithEmployer: Date | null;
     notes: string | null;
+    isDelinquent: boolean;
+    delinquentSince: Date | null;
   };
   user: {
     id: number;
@@ -1108,6 +1110,12 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                           {member.member.status.charAt(0).toUpperCase() +
                             member.member.status.slice(1)}
                         </span>
+                        {member.member.isDelinquent && (
+                          <span className="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                            <DollarSign className="h-3 w-3 mr-1" />
+                            Delinquent
+                          </span>
+                        )}
                       </div>
 
                       {/* Action buttons (owners only) */}

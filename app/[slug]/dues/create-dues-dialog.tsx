@@ -1,0 +1,252 @@
+'use client';
+
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
+import type { Member } from '@/lib/db/schema';
+
+interface CreateDuesDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  unionId: number;
+  members: {
+    member: Member;
+    user: {
+      id: number;
+      name: string | null;
+      email: string;
+    };
+  }[];
+  onSuccess: () => void;
+}
+
+export function CreateDuesDialog({ open, onOpenChange, unionId, members, onSuccess }: CreateDuesDialogProps) {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    memberId: '',
+    amount: '',
+    dueDate: '',
+    paymentStatus: 'unpaid',
+    paidAmount: '0',
+    paidDate: '',
+    paymentMethod: '',
+    checkNumber: '',
+    notes: '',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/dues/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          memberId: parseInt(formData.memberId),
+          unionId,
+          amount: Math.round(parseFloat(formData.amount) * 100), // Convert to cents
+          dueDate: formData.dueDate,
+          paymentStatus: formData.paymentStatus,
+          paidAmount: Math.round(parseFloat(formData.paidAmount || '0') * 100),
+          paidDate: formData.paidDate || null,
+          paymentMethod: formData.paymentMethod || null,
+          checkNumber: formData.checkNumber || null,
+          notes: formData.notes || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create dues');
+      }
+
+      setFormData({
+        memberId: '',
+        amount: '',
+        dueDate: '',
+        paymentStatus: 'unpaid',
+        paidAmount: '0',
+        paidDate: '',
+        paymentMethod: '',
+        checkNumber: '',
+        notes: '',
+      });
+      onSuccess();
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error('Error creating dues:', error);
+      alert(error.message || 'Failed to create dues');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Add Dues Record</DialogTitle>
+          <DialogDescription>
+            Create a new dues record for a member. Enter the amount, due date, and payment status.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="member">Member *</Label>
+            <Select
+              value={formData.memberId}
+              onValueChange={(value) => setFormData({ ...formData, memberId: value })}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a member" />
+              </SelectTrigger>
+              <SelectContent>
+                {members.map((m) => (
+                  <SelectItem key={m.member.id} value={m.member.id.toString()}>
+                    {m.user.name} ({m.user.email})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount ($) *</Label>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                placeholder="100.00"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dueDate">Due Date *</Label>
+              <Input
+                id="dueDate"
+                type="date"
+                value={formData.dueDate}
+                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="paymentStatus">Payment Status *</Label>
+            <Select
+              value={formData.paymentStatus}
+              onValueChange={(value) => setFormData({ ...formData, paymentStatus: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unpaid">Unpaid</SelectItem>
+                <SelectItem value="partial">Partial</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {(formData.paymentStatus === 'paid' || formData.paymentStatus === 'partial') && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="paidAmount">Paid Amount ($)</Label>
+                  <Input
+                    id="paidAmount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.paidAmount}
+                    onChange={(e) => setFormData({ ...formData, paidAmount: e.target.value })}
+                    placeholder="100.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="paidDate">Paid Date</Label>
+                  <Input
+                    id="paidDate"
+                    type="date"
+                    value={formData.paidDate}
+                    onChange={(e) => setFormData({ ...formData, paidDate: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="paymentMethod">Payment Method</Label>
+                  <Select
+                    value={formData.paymentMethod}
+                    onValueChange={(value) => setFormData({ ...formData, paymentMethod: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="check">Check</SelectItem>
+                      <SelectItem value="money_order">Money Order</SelectItem>
+                      <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.paymentMethod === 'check' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="checkNumber">Check Number</Label>
+                    <Input
+                      id="checkNumber"
+                      type="text"
+                      value={formData.checkNumber}
+                      onChange={(e) => setFormData({ ...formData, checkNumber: e.target.value })}
+                      placeholder="1234"
+                    />
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="Add any additional notes..."
+              rows={3}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create Dues Record
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
