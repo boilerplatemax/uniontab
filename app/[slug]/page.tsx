@@ -284,6 +284,7 @@ export default async function PublicUnionPage({
     pendingMembersCount,
     handleSignOut,
     activeAnnouncements,
+    accessibilityWidgetEnabled: union.accessibilityWidgetEnabled ?? true,
   };
 
   // Render the appropriate theme based on union.theme
