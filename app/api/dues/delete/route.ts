@@ -35,16 +35,16 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Check if user is an owner of the union (only owners can delete)
+    // Check if user is an owner or admin of the union
     const [membership] = await db
       .select()
       .from(members)
       .where(and(eq(members.unionId, existingDues.unionId), eq(members.userId, user.id)))
       .limit(1);
 
-    if (!membership || membership.role !== 'owner') {
+    if (!membership || (membership.role !== 'owner' && membership.role !== 'admin')) {
       return NextResponse.json(
-        { error: 'Only union owners can delete dues records' },
+        { error: 'Only union owners and admins can delete dues records' },
         { status: 403 }
       );
     }

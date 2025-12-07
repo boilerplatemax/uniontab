@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
 import { dues, members, duesReceipts } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 
 /**
@@ -17,7 +17,7 @@ async function generateReceiptNumber(unionId: number): Promise<string> {
     .select()
     .from(duesReceipts)
     .where(eq(duesReceipts.unionId, unionId))
-    .orderBy(duesReceipts.generatedAt)
+    .orderBy(desc(duesReceipts.generatedAt))
     .limit(1);
 
   let sequentialNumber = 1;

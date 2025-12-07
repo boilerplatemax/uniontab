@@ -120,7 +120,7 @@ export default async function DuesPage({
         dues={duesData}
         summary={summary}
         members={unionMembers}
-        isOwner={membership?.member.role === 'owner'}
+        isOwnerOrAdmin={isOwnerOrAdmin}
       />
     </>
   );
