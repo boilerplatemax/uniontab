@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, DollarSign, AlertCircle, CheckCircle, Clock, Receipt, Filter, Download } from 'lucide-react';
+import { Plus, DollarSign, AlertCircle, CheckCircle, Clock, Receipt, Filter, Download, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { CreateDuesDialog } from './create-dues-dialog';
 import { EditDuesDialog } from './edit-dues-dialog';
 import { PaymentHistoryDialog } from './payment-history-dialog';
+import { ReceiptViewerDialog } from './receipt-viewer-dialog';
 import { useRouter } from 'next/navigation';
 import type { Union, Member } from '@/lib/db/schema';
 
@@ -33,17 +34,22 @@ interface DuesContentProps {
       email: string;
     };
   }[];
-  isOwner: boolean;
+  isOwnerOrAdmin: boolean;
 }
 
-export function DuesContent({ slug, union, dues: initialDues, summary, members, isOwner }: DuesContentProps) {
+export function DuesContent({ slug, union, dues: initialDues, summary, members, isOwnerOrAdmin }: DuesContentProps) {
   const router = useRouter();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [paymentHistoryOpen, setPaymentHistoryOpen] = useState(false);
+  const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
   const [selectedDues, setSelectedDues] = useState<any>(null);
   const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'unpaid' | 'partial' | 'overdue'>('all');
+  const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   const formatCurrency = (amountInCents: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -75,7 +81,9 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
   };
 
   const handleGenerateReceipt = async (duesId: number) => {
+    setIsGeneratingReceipt(true);
     try {
+      // Generate the receipt
       const response = await fetch('/api/dues/generate-receipt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,11 +96,53 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
       }
 
       const data = await response.json();
-      alert(`Receipt generated: ${data.receipt.receiptNumber}`);
+      const receiptId = data.receipt.id;
+
+      // Fetch the full receipt data
+      const receiptResponse = await fetch(`/api/dues/receipt/${receiptId}`);
+
+      if (!receiptResponse.ok) {
+        throw new Error('Failed to load receipt');
+      }
+
+      const receiptData = await receiptResponse.json();
+
+      // Show the receipt viewer
+      setSelectedReceipt(receiptData.receipt);
+      setReceiptViewerOpen(true);
       router.refresh();
     } catch (error: any) {
       console.error('Error generating receipt:', error);
       alert(error.message || 'Failed to generate receipt');
+    } finally {
+      setIsGeneratingReceipt(false);
+    }
+  };
+
+  const handleDeleteDues = async (duesId: number) => {
+    if (!window.confirm('Are you sure you want to delete this dues record? This action cannot be undone.')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch('/api/dues/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duesId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete dues record');
+      }
+
+      router.refresh();
+    } catch (error: any) {
+      console.error('Error deleting dues:', error);
+      alert(error.message || 'Failed to delete dues record');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -255,8 +305,22 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
                               variant="outline"
                               size="sm"
                               onClick={() => handleGenerateReceipt(d.id)}
+                              disabled={isGeneratingReceipt}
+                              title="Generate Receipt"
                             >
                               <Receipt className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {isOwnerOrAdmin && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteDues(d.id)}
+                              disabled={isDeleting}
+                              title="Delete Dues Record"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           )}
                         </div>
@@ -300,6 +364,12 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
         onOpenChange={setEditDialogOpen}
         dues={selectedDues}
         onSuccess={() => router.refresh()}
+      />
+
+      <ReceiptViewerDialog
+        open={receiptViewerOpen}
+        onOpenChange={setReceiptViewerOpen}
+        receiptData={selectedReceipt}
       />
     </div>
   );
