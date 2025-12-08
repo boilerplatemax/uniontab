@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, Printer, X } from 'lucide-react';
+import { Download, Printer, X, Settings } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import Image from 'next/image';
 
 interface Receipt {
   id: number;
@@ -31,6 +34,7 @@ interface Receipt {
     address: string | null;
     email: string | null;
     phone: string | null;
+    logoUrl: string | null;
   };
   generatedBy: {
     name: string;
@@ -44,6 +48,14 @@ interface ReceiptViewerDialogProps {
 }
 
 export function ReceiptViewerDialog({ open, onOpenChange, receiptData }: ReceiptViewerDialogProps) {
+  const [showSettings, setShowSettings] = useState(false);
+  const [printSettings, setPrintSettings] = useState({
+    showAddress: true,
+    showEmail: true,
+    showPhone: true,
+    showRecordedBy: true,
+  });
+
   const formatCurrency = (amountInCents: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -59,13 +71,39 @@ export function ReceiptViewerDialog({ open, onOpenChange, receiptData }: Receipt
     });
   };
 
+  const capitalizeUnionName = (name: string) => {
+    // Common union acronyms that should be all caps
+    const acronyms = ['atu', 'uaw', 'ufcw', 'seiu', 'afscme', 'ibew', 'iam', 'ue', 'usw', 'cwa', 'aft', 'nea'];
+
+    const words = name.split(' ');
+    return words.map(word => {
+      const lowerWord = word.toLowerCase();
+      if (acronyms.includes(lowerWord)) {
+        return word.toUpperCase();
+      }
+      return word;
+    }).join(' ');
+  };
+
   const handlePrint = () => {
-    window.print();
+    // Update document title for print
+    const originalTitle = document.title;
+    document.title = `Receipt-${receiptData?.receiptNumber}`;
+
+    setTimeout(() => {
+      window.print();
+      // Restore original title after print dialog closes
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 100);
+    }, 100);
   };
 
   if (!receiptData) {
     return null;
   }
+
+  const displayUnionName = capitalizeUnionName(receiptData.union.name);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,24 +121,93 @@ export function ReceiptViewerDialog({ open, onOpenChange, receiptData }: Receipt
             <Printer className="h-4 w-4 mr-2" />
             Print / Save as PDF
           </Button>
+          <Button
+            onClick={() => setShowSettings(!showSettings)}
+            variant="outline"
+            size="sm"
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Print Settings
+          </Button>
         </div>
 
+        {/* Print Settings Panel */}
+        {showSettings && (
+          <div className="mb-4 p-4 border rounded-lg bg-gray-50 print:hidden">
+            <h3 className="font-semibold mb-3">Choose what to include in print:</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="show-address"
+                  checked={printSettings.showAddress}
+                  onCheckedChange={(checked) =>
+                    setPrintSettings({ ...printSettings, showAddress: checked })
+                  }
+                />
+                <Label htmlFor="show-address">Union Address</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="show-email"
+                  checked={printSettings.showEmail}
+                  onCheckedChange={(checked) =>
+                    setPrintSettings({ ...printSettings, showEmail: checked })
+                  }
+                />
+                <Label htmlFor="show-email">Union Email</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="show-phone"
+                  checked={printSettings.showPhone}
+                  onCheckedChange={(checked) =>
+                    setPrintSettings({ ...printSettings, showPhone: checked })
+                  }
+                />
+                <Label htmlFor="show-phone">Union Phone</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="show-recorded-by"
+                  checked={printSettings.showRecordedBy}
+                  onCheckedChange={(checked) =>
+                    setPrintSettings({ ...printSettings, showRecordedBy: checked })
+                  }
+                />
+                <Label htmlFor="show-recorded-by">Recorded By</Label>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Receipt Content */}
-        <div className="receipt-content bg-white p-8 border border-gray-200 rounded-lg print:border-0 print:p-0">
-          {/* Header */}
+        <div className="receipt-content bg-white p-8 border border-gray-200 rounded-lg">
+          {/* Header with Logo */}
           <div className="text-center mb-8">
+            {receiptData.union.logoUrl && (
+              <div className="flex justify-center mb-4">
+                <div className="relative w-24 h-24">
+                  <Image
+                    src={receiptData.union.logoUrl}
+                    alt={`${displayUnionName} Logo`}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            )}
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {receiptData.union.name}
+              {displayUnionName}
             </h1>
             {receiptData.union.localNumber && (
               <p className="text-gray-600">Local {receiptData.union.localNumber}</p>
             )}
-            {receiptData.union.address && (
+            {printSettings.showAddress && receiptData.union.address && (
               <p className="text-sm text-gray-600">{receiptData.union.address}</p>
             )}
             <div className="flex justify-center gap-4 text-sm text-gray-600 mt-2">
-              {receiptData.union.phone && <span>{receiptData.union.phone}</span>}
-              {receiptData.union.email && <span>{receiptData.union.email}</span>}
+              {printSettings.showPhone && receiptData.union.phone && <span>{receiptData.union.phone}</span>}
+              {printSettings.showEmail && receiptData.union.email && <span>{receiptData.union.email}</span>}
             </div>
           </div>
 
@@ -173,14 +280,18 @@ export function ReceiptViewerDialog({ open, onOpenChange, receiptData }: Receipt
 
           {/* Footer Information */}
           <div className="space-y-2 text-sm text-gray-600">
-            <div className="flex justify-between">
-              <span>Recorded By:</span>
-              <span>{receiptData.generatedBy.name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Date Recorded:</span>
-              <span>{formatDate(receiptData.generatedAt)}</span>
-            </div>
+            {printSettings.showRecordedBy && (
+              <>
+                <div className="flex justify-between">
+                  <span>Recorded By:</span>
+                  <span>{receiptData.generatedBy.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Date Recorded:</span>
+                  <span>{formatDate(receiptData.generatedAt)}</span>
+                </div>
+              </>
+            )}
             {receiptData.dues.notes && (
               <div className="mt-4">
                 <p className="font-semibold mb-1">Notes:</p>
@@ -195,7 +306,7 @@ export function ReceiptViewerDialog({ open, onOpenChange, receiptData }: Receipt
           <div className="text-center text-sm text-gray-600 space-y-2">
             <p className="font-medium">Thank you for your continued membership and support!</p>
             <p>This receipt is valid for your records.</p>
-            {receiptData.union.email && (
+            {printSettings.showEmail && receiptData.union.email && (
               <p>For questions, contact us at {receiptData.union.email}</p>
             )}
           </div>
@@ -204,28 +315,83 @@ export function ReceiptViewerDialog({ open, onOpenChange, receiptData }: Receipt
 
       <style jsx global>{`
         @media print {
-          body * {
-            visibility: hidden;
+          @page {
+            margin: 0.5in;
+            size: letter;
           }
-          .receipt-content,
-          .receipt-content * {
-            visibility: visible;
-          }
-          .receipt-content {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 2rem;
-          }
-          .print\\:hidden {
+
+          /* Hide everything except receipt */
+          body > *:not(#__next) {
             display: none !important;
           }
-          .print\\:border-0 {
-            border: 0 !important;
+
+          /* Hide all dialogs and overlays */
+          [role="dialog"],
+          [data-radix-portal],
+          .fixed,
+          .absolute {
+            position: static !important;
           }
-          .print\\:p-0 {
-            padding: 0 !important;
+
+          /* Hide dialog chrome */
+          .print\\:hidden,
+          button,
+          [aria-hidden="true"] {
+            display: none !important;
+          }
+
+          /* Make receipt content visible and properly positioned */
+          .receipt-content {
+            display: block !important;
+            visibility: visible !important;
+            position: relative !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 1rem !important;
+            border: none !important;
+            box-shadow: none !important;
+            page-break-after: avoid;
+            page-break-inside: avoid;
+          }
+
+          .receipt-content * {
+            visibility: visible !important;
+          }
+
+          /* Ensure images print */
+          .receipt-content img {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+
+          /* Remove any links from printing */
+          a[href]:after {
+            content: "" !important;
+          }
+
+          a {
+            text-decoration: none !important;
+            color: inherit !important;
+          }
+
+          /* Ensure colors print */
+          * {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+
+          /* Hide page URL in footer */
+          @page {
+            @bottom-right {
+              content: none;
+            }
+            @bottom-left {
+              content: none;
+            }
+            @bottom-center {
+              content: none;
+            }
           }
         }
       `}</style>
