@@ -3,6 +3,14 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, Eye, Megaphone, AlertCircle, Loader2 } from 'lucide-react';
 import { CreateAnnouncementDialog } from '@/components/announcements/create-announcement-dialog';
 import { EditAnnouncementDialog } from '@/components/announcements/edit-announcement-dialog';
@@ -34,16 +42,19 @@ export function AnnouncementsContent({
   const [initialType, setInitialType] = useState<'popup' | 'banner'>('popup');
   const [editingAnnouncement, setEditingAnnouncement] = useState<AnnouncementWithDetails | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [announcementToDelete, setAnnouncementToDelete] = useState<number | null>(null);
 
-  const handleDelete = async (announcementId: number) => {
-    if (!confirm('Are you sure you want to delete this announcement?')) return;
+  const handleDelete = async () => {
+    if (!announcementToDelete) return;
 
-    setDeletingId(announcementId);
+    setDeletingId(announcementToDelete);
+    setDeleteDialogOpen(false);
     try {
       const response = await fetch('/api/announcements/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ announcementId }),
+        body: JSON.stringify({ announcementId: announcementToDelete }),
       });
 
       if (!response.ok) {
@@ -56,6 +67,7 @@ export function AnnouncementsContent({
       alert('Failed to delete announcement');
     } finally {
       setDeletingId(null);
+      setAnnouncementToDelete(null);
     }
   };
 
@@ -187,7 +199,10 @@ export function AnnouncementsContent({
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDelete(announcement.id)}
+                          onClick={() => {
+                            setAnnouncementToDelete(announcement.id);
+                            setDeleteDialogOpen(true);
+                          }}
                           disabled={deletingId === announcement.id}
                           title="Delete"
                         >
@@ -274,7 +289,10 @@ export function AnnouncementsContent({
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDelete(announcement.id)}
+                          onClick={() => {
+                            setAnnouncementToDelete(announcement.id);
+                            setDeleteDialogOpen(true);
+                          }}
                           disabled={deletingId === announcement.id}
                           title="Delete"
                         >
@@ -325,6 +343,32 @@ export function AnnouncementsContent({
           router.refresh();
         }}
       />
+
+      {/* Delete Announcement Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Announcement</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this announcement? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setAnnouncementToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

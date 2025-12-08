@@ -105,14 +105,14 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
     const attachmentsParam = searchParams.get('attachments');
 
     if (subjectParam) {
-      setSubject(decodeURIComponent(subjectParam));
+      setSubject(subjectParam); // searchParams.get() already decodes the value
     }
     if (contentParam) {
-      setHtmlContent(decodeURIComponent(contentParam));
+      setHtmlContent(contentParam); // searchParams.get() already decodes the value
     }
     if (attachmentsParam) {
       try {
-        const parsedAttachments = JSON.parse(decodeURIComponent(attachmentsParam));
+        const parsedAttachments = JSON.parse(attachmentsParam); // searchParams.get() already decodes the value
         setAttachments(parsedAttachments);
       } catch (error) {
         console.error('Error parsing attachments:', error);
@@ -300,6 +300,8 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
         setHtmlContent('');
         setAttachments([]);
         setSelectedMembers(new Set());
+        // Scroll to top to show success message
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         // Refresh email usage
         fetchEmailUsage();
       } else {
