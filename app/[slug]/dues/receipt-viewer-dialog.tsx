@@ -191,17 +191,16 @@ export function ReceiptViewerDialog({ open, onOpenChange, receiptData }: Receipt
                     src={receiptData.union.logoUrl}
                     alt={`${displayUnionName} Logo`}
                     fill
+                    unoptimized
                     className="object-contain"
+                    priority
                   />
                 </div>
               </div>
             )}
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {displayUnionName}
+              {displayUnionName} {receiptData.union.localNumber}
             </h1>
-            {receiptData.union.localNumber && (
-              <p className="text-gray-600">Local {receiptData.union.localNumber}</p>
-            )}
             {printSettings.showAddress && receiptData.union.address && (
               <p className="text-sm text-gray-600">{receiptData.union.address}</p>
             )}
@@ -320,78 +319,66 @@ export function ReceiptViewerDialog({ open, onOpenChange, receiptData }: Receipt
             size: letter;
           }
 
-          /* Hide everything except receipt */
-          body > *:not(#__next) {
-            display: none !important;
+          /* Hide everything by default */
+          body * {
+            visibility: hidden !important;
           }
 
-          /* Hide all dialogs and overlays */
-          [role="dialog"],
-          [data-radix-portal],
-          .fixed,
-          .absolute {
-            position: static !important;
-          }
-
-          /* Hide dialog chrome */
-          .print\\:hidden,
-          button,
-          [aria-hidden="true"] {
-            display: none !important;
-          }
-
-          /* Make receipt content visible and properly positioned */
-          .receipt-content {
-            display: block !important;
+          /* Show only receipt content and its children */
+          .receipt-content,
+          .receipt-content * {
             visibility: visible !important;
-            position: relative !important;
+          }
+
+          /* Reset positioning for print */
+          body,
+          html,
+          #__next,
+          [data-radix-portal],
+          [role="dialog"] {
+            position: static !important;
+            overflow: visible !important;
+            height: auto !important;
+            width: auto !important;
+          }
+
+          /* Position receipt content properly */
+          .receipt-content {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
             padding: 1rem !important;
             border: none !important;
             box-shadow: none !important;
+            background: white !important;
             page-break-after: avoid;
             page-break-inside: avoid;
           }
 
+          /* Ensure images and backgrounds print */
+          .receipt-content img,
           .receipt-content * {
-            visibility: visible !important;
+            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
           }
 
-          /* Ensure images print */
-          .receipt-content img {
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
+          /* Remove any modal overlays */
+          [data-radix-overlay],
+          [data-radix-dialog-overlay] {
+            display: none !important;
           }
 
-          /* Remove any links from printing */
-          a[href]:after {
-            content: "" !important;
-          }
-
+          /* Remove link decorations */
           a {
             text-decoration: none !important;
             color: inherit !important;
           }
 
-          /* Ensure colors print */
-          * {
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-          }
-
-          /* Hide page URL in footer */
-          @page {
-            @bottom-right {
-              content: none;
-            }
-            @bottom-left {
-              content: none;
-            }
-            @bottom-center {
-              content: none;
-            }
+          a[href]:after {
+            content: "" !important;
           }
         }
       `}</style>

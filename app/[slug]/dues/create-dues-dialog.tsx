@@ -120,42 +120,46 @@ export function CreateDuesDialog({ open, onOpenChange, unionId, members, onSucce
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="member-search">Search Member</Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                id="member-search"
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="member">Member *</Label>
+            <Label htmlFor="member">Select Member *</Label>
             <Select
               value={formData.memberId}
               onValueChange={(value) => setFormData({ ...formData, memberId: value })}
               required
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a member" />
+                <SelectValue placeholder="Search and select a member" />
               </SelectTrigger>
               <SelectContent>
-                {filteredMembers.length === 0 ? (
-                  <div className="px-2 py-6 text-center text-sm text-gray-500">
-                    No members found
+                <div className="sticky top-0 bg-white p-2 border-b z-10">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                      type="text"
+                      placeholder="Search by name or email..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9 h-8"
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                    />
                   </div>
-                ) : (
-                  filteredMembers.map((m) => (
-                    <SelectItem key={m.member.id} value={m.member.id.toString()}>
-                      {m.user.name} ({m.user.email})
-                    </SelectItem>
-                  ))
-                )}
+                </div>
+                <div className="max-h-[300px] overflow-y-auto">
+                  {filteredMembers.length === 0 ? (
+                    <div className="px-2 py-6 text-center text-sm text-gray-500">
+                      No members found
+                    </div>
+                  ) : (
+                    filteredMembers.map((m) => (
+                      <SelectItem key={m.member.id} value={m.member.id.toString()}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{m.user.name}</span>
+                          <span className="text-xs text-gray-500">{m.user.email}</span>
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
+                </div>
               </SelectContent>
             </Select>
           </div>

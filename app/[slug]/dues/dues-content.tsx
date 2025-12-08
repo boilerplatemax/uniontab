@@ -9,6 +9,7 @@ import { CreateDuesDialog } from './create-dues-dialog';
 import { EditDuesDialog } from './edit-dues-dialog';
 import { PaymentHistoryDialog } from './payment-history-dialog';
 import { ReceiptViewerDialog } from './receipt-viewer-dialog';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { useRouter } from 'next/navigation';
 import type { Union, Member } from '@/lib/db/schema';
 
@@ -49,7 +50,8 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
   const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'unpaid' | 'partial' | 'overdue'>('all');
   const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [duesIdToDelete, setDuesIdToDelete] = useState<number | null>(null);
 
   const formatCurrency = (amountInCents: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -119,17 +121,15 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
     }
   };
 
-  const handleDeleteDues = async (duesId: number) => {
-    if (!window.confirm('Are you sure you want to delete this dues record? This action cannot be undone.')) {
-      return;
-    }
+  const handleDeleteDues = async () => {
+    if (!duesIdToDelete) return;
 
     setIsDeleting(true);
     try {
       const response = await fetch('/api/dues/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ duesId }),
+        body: JSON.stringify({ duesId: duesIdToDelete }),
       });
 
       if (!response.ok) {
@@ -137,6 +137,8 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
         throw new Error(error.error || 'Failed to delete dues record');
       }
 
+      setDeleteConfirmOpen(false);
+      setDuesIdToDelete(null);
       router.refresh();
     } catch (error: any) {
       console.error('Error deleting dues:', error);
@@ -144,6 +146,11 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const openDeleteConfirmation = (duesId: number) => {
+    setDuesIdToDelete(duesId);
+    setDeleteConfirmOpen(true);
   };
 
   const filteredDues = initialDues.filter(d => {
@@ -315,7 +322,7 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleDeleteDues(d.id)}
+                              onClick={() => openDeleteConfirmation(d.id)}
                               disabled={isDeleting}
                               title="Delete Dues Record"
                               className="text-red-600 hover:text-red-700 hover:bg-red-50"
@@ -370,6 +377,18 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
         open={receiptViewerOpen}
         onOpenChange={setReceiptViewerOpen}
         receiptData={selectedReceipt}
+      />
+
+      <ConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={handleDeleteDues}
+        title="Delete Dues Record"
+        description="Are you sure you want to delete this dues record? This action cannot be undone and will also delete any associated receipts."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isDeleting}
       />
     </div>
   );
