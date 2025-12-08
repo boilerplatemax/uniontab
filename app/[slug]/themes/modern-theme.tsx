@@ -3,7 +3,7 @@
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { AnnouncementClient } from '../announcement-client';
-import { AccessibilityWidget } from '@/components/accessibility-widget';
+import Accessibilik from 'accessibility-react-widget';
 import type { ThemeProps } from './types';
 import { Users } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -150,7 +150,7 @@ export function ModernTheme({
       </div>
 
       {/* Accessibility Widget */}
-      <AccessibilityWidget enabled={accessibilityWidgetEnabled} />
+      {accessibilityWidgetEnabled && <Accessibilik />}
     </div>
   );
 }
