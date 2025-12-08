@@ -97,8 +97,15 @@ export function ShareButton({
     // Create HTML content - use full post content if provided, otherwise just a link
     let content = '';
     if (itemContent) {
-      // Use the full post content - keep HTML compact to avoid URL encoding issues
-      content = `<h2>${itemTitle}</h2>${itemContent}<hr /><p><a href="${fullUrl}">View Full ${itemTypeDisplay}</a></p>`;
+      // Limit content to first 1000 characters to avoid URL encoding issues
+      // Strip HTML tags for character counting
+      const textContent = itemContent.replace(/<[^>]*>/g, '');
+      const truncatedContent = textContent.length > 1000
+        ? itemContent.substring(0, 1000) + '...'
+        : itemContent;
+
+      // Use the truncated post content with a link to view the full post
+      content = `<h2>${itemTitle}</h2>${truncatedContent}<hr /><p style="margin-top: 20px; padding: 12px; background-color: #f3f4f6; border-radius: 8px; text-align: center;"><a href="${fullUrl}" style="color: #2563eb; text-decoration: none; font-weight: 600;">📖 View Full ${itemTypeDisplay}</a></p>`;
     } else {
       // Fallback to simple link
       content = `<p>Check out this new ${itemType}:</p><h2>${itemTitle}</h2><p><a href="${fullUrl}">View ${itemTypeDisplay}</a></p>`;
