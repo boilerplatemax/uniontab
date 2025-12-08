@@ -106,15 +106,16 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
     const contentParam = searchParams.get('content');
     const attachmentsParam = searchParams.get('attachments');
 
+    // Note: searchParams.get() already returns decoded values, no need for decodeURIComponent
     if (subjectParam) {
-      setSubject(decodeURIComponent(subjectParam));
+      setSubject(subjectParam);
     }
     if (contentParam) {
-      setHtmlContent(decodeURIComponent(contentParam));
+      setHtmlContent(contentParam);
     }
     if (attachmentsParam) {
       try {
-        const parsedAttachments = JSON.parse(decodeURIComponent(attachmentsParam));
+        const parsedAttachments = JSON.parse(attachmentsParam);
         setAttachments(parsedAttachments);
       } catch (error) {
         console.error('Error parsing attachments:', error);

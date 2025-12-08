@@ -25,7 +25,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from './dialog'
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 
 interface RichTextEditorProps {
   content: string
@@ -46,24 +46,7 @@ export function RichTextEditor({
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [2, 3],
-        },
-        bulletList: {
-          keepMarks: true,
-          keepAttributes: false,
-        },
-        orderedList: {
-          keepMarks: true,
-          keepAttributes: false,
-        },
-        blockquote: {
-          HTMLAttributes: {
-            class: 'border-l-4 border-gray-300 pl-4 italic',
-          },
-        },
-      }),
+      StarterKit,
       Placeholder.configure({
         placeholder,
       }),
@@ -85,6 +68,13 @@ export function RichTextEditor({
       },
     },
   })
+
+  // Update editor content when prop changes (e.g., from URL parameters)
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content, false)
+    }
+  }, [editor, content])
 
   const openLinkDialog = useCallback(() => {
     if (!editor) return
