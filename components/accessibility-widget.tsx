@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { X, Accessibility, Type, Contrast, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { X, User, Type, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 interface AccessibilityWidgetProps {
   enabled?: boolean;
@@ -12,7 +12,6 @@ interface AccessibilityWidgetProps {
 export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [fontSize, setFontSize] = useState(100);
-  const [highContrast, setHighContrast] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -20,17 +19,11 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
 
     // Load settings from localStorage
     const savedFontSize = localStorage.getItem('accessibility-font-size');
-    const savedContrast = localStorage.getItem('accessibility-high-contrast');
 
     if (savedFontSize) {
       const size = parseInt(savedFontSize);
       setFontSize(size);
       document.documentElement.style.fontSize = `${size}%`;
-    }
-
-    if (savedContrast === 'true') {
-      setHighContrast(true);
-      document.documentElement.classList.add('high-contrast');
     }
   }, []);
 
@@ -53,26 +46,10 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
     localStorage.setItem('accessibility-font-size', newSize.toString());
   };
 
-  const handleToggleContrast = () => {
-    const newContrast = !highContrast;
-    setHighContrast(newContrast);
-
-    if (newContrast) {
-      document.documentElement.classList.add('high-contrast');
-      localStorage.setItem('accessibility-high-contrast', 'true');
-    } else {
-      document.documentElement.classList.remove('high-contrast');
-      localStorage.setItem('accessibility-high-contrast', 'false');
-    }
-  };
-
   const handleReset = () => {
     setFontSize(100);
-    setHighContrast(false);
     document.documentElement.style.fontSize = '100%';
-    document.documentElement.classList.remove('high-contrast');
     localStorage.removeItem('accessibility-font-size');
-    localStorage.removeItem('accessibility-high-contrast');
   };
 
   return (
@@ -86,14 +63,14 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
             aria-label="Open accessibility options"
             title="Accessibility Options"
           >
-            <Accessibility className="h-6 w-6" />
+            <User className="h-6 w-6" />
           </Button>
         ) : (
           <Card className="shadow-xl w-72">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Accessibility className="h-5 w-5 text-blue-600" />
+                  <User className="h-5 w-5 text-blue-600" />
                   <h3 className="font-semibold text-gray-900">Accessibility</h3>
                 </div>
                 <Button
@@ -141,22 +118,6 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
                   </div>
                 </div>
 
-                {/* High Contrast */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                    <Contrast className="h-4 w-4" />
-                    Display Mode
-                  </label>
-                  <Button
-                    variant={highContrast ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={handleToggleContrast}
-                    className="w-full"
-                  >
-                    {highContrast ? 'High Contrast: On' : 'High Contrast: Off'}
-                  </Button>
-                </div>
-
                 {/* Reset */}
                 <Button
                   variant="outline"
@@ -172,18 +133,6 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
           </Card>
         )}
       </div>
-
-      {/* High Contrast Styles */}
-      {highContrast && (
-        <style jsx global>{`
-          .high-contrast {
-            filter: contrast(120%);
-          }
-          .high-contrast * {
-            font-weight: 500 !important;
-          }
-        `}</style>
-      )}
     </>
   );
 }
