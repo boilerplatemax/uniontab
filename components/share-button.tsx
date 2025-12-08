@@ -25,11 +25,13 @@ interface ShareButtonProps {
   className?: string;
   // Optional - for populating mass email with full content
   itemContent?: string;
+  itemImageUrl?: string; // Optional - for post images
   itemAttachments?: Array<{
     id: number;
     fileName: string;
     fileUrl: string;
     fileSize: number;
+    fileType?: string;
   }>;
 }
 
@@ -44,6 +46,7 @@ export function ShareButton({
   size = 'sm',
   className = '',
   itemContent,
+  itemImageUrl,
   itemAttachments,
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
@@ -107,9 +110,38 @@ export function ShareButton({
       content,
     });
 
-    // Add attachments if provided
-    if (itemAttachments && itemAttachments.length > 0) {
-      params.set('attachments', JSON.stringify(itemAttachments));
+    // Combine all attachments (post attachments + image if exists)
+    const allAttachments = [...(itemAttachments || [])];
+
+    // Add post image as attachment if it exists
+    if (itemImageUrl) {
+      // Infer MIME type from file extension
+      const getImageMimeType = (url: string): string => {
+        const ext = url.split('.').pop()?.toLowerCase();
+        const mimeTypes: Record<string, string> = {
+          'jpg': 'image/jpeg',
+          'jpeg': 'image/jpeg',
+          'png': 'image/png',
+          'gif': 'image/gif',
+          'webp': 'image/webp',
+          'svg': 'image/svg+xml',
+        };
+        return mimeTypes[ext || ''] || 'image/jpeg';
+      };
+
+      const imageFileName = itemImageUrl.split('/').pop() || 'post-image.jpg';
+      allAttachments.unshift({
+        id: -1, // Special ID for post image
+        fileName: imageFileName,
+        fileUrl: itemImageUrl,
+        fileSize: 0, // Size unknown for post images
+        fileType: getImageMimeType(itemImageUrl),
+      });
+    }
+
+    // Add attachments if any exist
+    if (allAttachments.length > 0) {
+      params.set('attachments', JSON.stringify(allAttachments));
     }
 
     // Navigate to mass email page with pre-filled data

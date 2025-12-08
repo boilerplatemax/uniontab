@@ -450,6 +450,7 @@ export function UnionProfileTabs({
                                 slug={union.slug}
                                 isOwnerOrAdmin={isOwner}
                                 itemContent={post.content}
+                                itemImageUrl={post.imageUrl || undefined}
                                 itemAttachments={post.attachments}
                               />
                             </div>

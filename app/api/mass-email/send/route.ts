@@ -151,6 +151,42 @@ export async function POST(request: Request) {
       logoUrl: union.logoUrl,
     };
 
+    // Convert URL-based attachments to base64
+    let processedAttachments = undefined;
+    if (attachments && attachments.length > 0) {
+      processedAttachments = await Promise.all(
+        attachments.map(async (att: any) => {
+          if (att.url) {
+            try {
+              // Fetch the file from the URL
+              const response = await fetch(att.url);
+              if (!response.ok) {
+                throw new Error(`Failed to fetch attachment: ${att.url}`);
+              }
+              const buffer = await response.arrayBuffer();
+              const base64Content = Buffer.from(buffer).toString('base64');
+
+              return {
+                content: base64Content,
+                filename: att.filename,
+                type: att.type,
+                disposition: att.disposition || 'attachment',
+              };
+            } catch (error) {
+              console.error(`Error fetching attachment ${att.filename}:`, error);
+              return null;
+            }
+          } else if (att.content) {
+            // Already has base64 content
+            return att;
+          }
+          return null;
+        })
+      );
+      // Filter out any null values (failed fetches)
+      processedAttachments = processedAttachments.filter(att => att !== null);
+    }
+
     for (const recipient of recipients) {
       try {
         await sendMassEmail({
@@ -159,7 +195,7 @@ export async function POST(request: Request) {
           htmlContent,
           textContent,
           unionInfo,
-          attachments: attachments || undefined,
+          attachments: processedAttachments || undefined,
         });
 
         // Log successful send
