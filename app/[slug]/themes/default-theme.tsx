@@ -1,3 +1,5 @@
+'use client';
+
 import { Users, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
