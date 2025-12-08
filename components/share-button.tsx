@@ -94,20 +94,11 @@ export function ShareButton({
     // Create HTML content - use full post content if provided, otherwise just a link
     let content = '';
     if (itemContent) {
-      // Use the full post content
-      content = `
-        <h2>${itemTitle}</h2>
-        ${itemContent}
-        <hr />
-        <p><a href="${fullUrl}">View Full ${itemTypeDisplay}</a></p>
-      `;
+      // Use the full post content - keep HTML compact to avoid URL encoding issues
+      content = `<h2>${itemTitle}</h2>${itemContent}<hr /><p><a href="${fullUrl}">View Full ${itemTypeDisplay}</a></p>`;
     } else {
       // Fallback to simple link
-      content = `
-        <p>Check out this new ${itemType}:</p>
-        <h2>${itemTitle}</h2>
-        <p><a href="${fullUrl}">View ${itemTypeDisplay}</a></p>
-      `;
+      content = `<p>Check out this new ${itemType}:</p><h2>${itemTitle}</h2><p><a href="${fullUrl}">View ${itemTypeDisplay}</a></p>`;
     }
 
     // Build the URL with query parameters

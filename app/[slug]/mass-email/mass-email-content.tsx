@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ import {
   TrendingUp,
   FileText,
   Paperclip,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -117,6 +119,20 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
       }
     }
   }, [searchParams]);
+
+  const handleFilesUploaded = (files: Array<{ fileName: string; fileUrl: string; fileType: string; fileSize: number }>) => {
+    const newAttachments = files.map((file, index) => ({
+      id: Date.now() + index, // Generate a temporary ID for newly uploaded files
+      fileName: file.fileName,
+      fileUrl: file.fileUrl,
+      fileSize: file.fileSize,
+    }));
+    setAttachments(prev => [...prev, ...newAttachments]);
+  };
+
+  const handleRemoveAttachment = (attachmentId: number) => {
+    setAttachments(prev => prev.filter(a => a.id !== attachmentId));
+  };
 
   const getUserDisplayName = (user: { name: string | null; email: string }) => {
     return user.name || user.email;
@@ -282,6 +298,7 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
         // Reset form after successful send
         setSubject('');
         setHtmlContent('');
+        setAttachments([]);
         setSelectedMembers(new Set());
         // Refresh email usage
         fetchEmailUsage();
@@ -693,38 +710,61 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
               </p>
             </div>
 
-            {/* Attachments from Post */}
-            {attachments.length > 0 && (
-              <div className="space-y-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Paperclip className="h-4 w-4 text-blue-700" />
-                  <Label className="text-blue-900 font-medium">
-                    Attachments ({attachments.length})
-                  </Label>
-                </div>
-                <p className="text-sm text-blue-700 mb-2">
-                  The following files from the post will be included in the email:
-                </p>
-                <div className="space-y-2">
-                  {attachments.map((attachment) => (
-                    <div
-                      key={attachment.id}
-                      className="flex items-center gap-3 p-2 bg-white rounded border border-blue-200"
-                    >
-                      <FileText className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {attachment.fileName}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {(attachment.fileSize / 1024 / 1024).toFixed(2)} MB
-                        </p>
+            {/* File Attachments Upload */}
+            <div className="space-y-3">
+              <MultiFileUpload
+                onFilesChange={handleFilesUploaded}
+                accept="*"
+                maxSize={50}
+                maxFiles={10}
+                bucket="union-files"
+                path="mass-email-attachments"
+                label="File Attachments (optional)"
+                hint="Attach documents, PDFs, or other files to this email"
+              />
+
+              {/* Display Current Attachments */}
+              {attachments.length > 0 && (
+                <div className="space-y-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Paperclip className="h-4 w-4 text-blue-700" />
+                    <Label className="text-blue-900 font-medium">
+                      Attachments ({attachments.length})
+                    </Label>
+                  </div>
+                  <p className="text-sm text-blue-700 mb-2">
+                    The following files will be included in the email:
+                  </p>
+                  <div className="space-y-2">
+                    {attachments.map((attachment) => (
+                      <div
+                        key={attachment.id}
+                        className="flex items-center gap-3 p-2 bg-white rounded border border-blue-200"
+                      >
+                        <FileText className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {attachment.fileName}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {(attachment.fileSize / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveAttachment(attachment.id)}
+                          className="flex-shrink-0 h-8 w-8 p-0"
+                        >
+                          <X className="h-4 w-4 text-gray-500 hover:text-red-600" />
+                        </Button>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 pt-4">
