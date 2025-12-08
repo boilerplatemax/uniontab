@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, posts, members, postLikes } from '@/lib/db/schema';
+import { unions, users, posts, members, postLikes, postAttachments } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { UnionNavbar } from '../../union-navbar';
@@ -9,10 +9,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { LikeButton } from '@/components/posts/like-button';
 import { ShareButton } from '@/components/share-button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Paperclip, FileText, Download } from 'lucide-react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { formatDate } from '@/lib/utils/date';
+import { Button } from '@/components/ui/button';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -48,6 +49,12 @@ async function getPost(postId: number, userId?: number) {
 
   if (!post) return null;
 
+  // Get attachments
+  const attachments = await db
+    .select()
+    .from(postAttachments)
+    .where(eq(postAttachments.postId, postId));
+
   // Get like count
   const [{ value: likeCount }] = await db
     .select({ value: count() })
@@ -67,6 +74,7 @@ async function getPost(postId: number, userId?: number) {
 
   return {
     ...post,
+    attachments,
     likeCount: Number(likeCount),
     isLikedByUser,
   };
@@ -169,6 +177,48 @@ export default async function PostPage({
             )}
 
             <RichTextContent content={post.content} className="mb-6" />
+
+            {/* Post Attachments */}
+            {post.attachments && post.attachments.length > 0 && (
+              <div className="mb-6 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <Paperclip className="h-4 w-4" />
+                  <span>Attachments ({post.attachments.length})</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {post.attachments.map((attachment) => (
+                    <div
+                      key={attachment.id}
+                      className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                    >
+                      <FileText className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {attachment.fileName}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {(attachment.fileSize / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <a
+                        href={attachment.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0"
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          title="Download"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="border-t pt-4">
               <div className="flex items-center justify-between">

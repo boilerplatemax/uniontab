@@ -367,27 +367,48 @@ export function UnionProfileTabs({
                             </div>
                           </div>
 
-                          {/* Desktop: Side-by-side layout with image and content */}
-                          {/* Mobile: Stacked layout */}
-                          <div className={post.imageUrl ? "sm:flex sm:gap-6 mb-4" : "mb-4"}>
-                            {/* Image Section - Left side on desktop, top on mobile */}
+                          {/* Content and Image Layout */}
+                          {/* Mobile: Stacked (image on top, text below) */}
+                          {/* Desktop: Text on left, image on right with title above text */}
+                          <div className="mb-4">
+                            {/* Mobile: Image first */}
                             {post.imageUrl && (
-                              <div className="relative mb-4 sm:mb-0 sm:w-80 sm:flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                              <div className="relative mb-4 sm:hidden rounded-lg overflow-hidden bg-gray-100">
                                 <img
                                   src={post.imageUrl}
                                   alt={post.title}
-                                  className="w-full h-auto sm:max-h-[250px] object-cover"
+                                  className="w-full h-auto object-cover"
                                   loading="lazy"
                                 />
                               </div>
                             )}
 
-                            {/* Content Section - Right side on desktop, below image on mobile */}
-                            <div className="flex-1 min-w-0">
-                              <RichTextContent
-                                content={post.content}
-                                className="text-sm sm:text-base line-clamp-6"
-                              />
+                            {/* Desktop: Text and Image Side by Side */}
+                            <div className={post.imageUrl ? "sm:flex sm:gap-6 sm:items-start" : ""}>
+                              {/* Content Section - Full width on mobile, left side on desktop */}
+                              <div className="flex-1 min-w-0">
+                                <RichTextContent
+                                  content={post.content}
+                                  className="text-sm sm:text-base line-clamp-6"
+                                />
+                                <Link href={`/${union.slug}/post/${post.id}`}>
+                                  <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700">
+                                    View Full Post →
+                                  </Button>
+                                </Link>
+                              </div>
+
+                              {/* Image Section - Hidden on mobile, right side on desktop */}
+                              {post.imageUrl && (
+                                <div className="hidden sm:block sm:w-80 sm:flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                                  <img
+                                    src={post.imageUrl}
+                                    alt={post.title}
+                                    className="w-full h-auto max-h-[250px] object-cover"
+                                    loading="lazy"
+                                  />
+                                </div>
+                              )}
                             </div>
                           </div>
 
