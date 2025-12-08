@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AnnouncementClient } from '../announcement-client';
-import { AccessibilityWidget } from '@/components/accessibility-widget';
+import Accessibilik from 'accessibility-react-widget';
 import type { ThemeProps } from './types';
 import { Users, Home, FileText, Calendar, Vote, Info, Mail, Phone, MapPin, Globe, Menu, X } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -370,7 +370,7 @@ export function TwitterTheme({
       </div>
 
       {/* Accessibility Widget */}
-      <AccessibilityWidget enabled={accessibilityWidgetEnabled} />
+      {accessibilityWidgetEnabled && <Accessibilik />}
     </div>
   );
 }
