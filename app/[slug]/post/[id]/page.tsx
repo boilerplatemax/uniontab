@@ -186,6 +186,8 @@ export default async function PostPage({
                     itemUrl={`/${slug}/post/${id}`}
                     slug={slug}
                     isOwnerOrAdmin={isOwnerOrAdmin}
+                    itemContent={post.content}
+                    itemImageUrl={post.imageUrl || undefined}
                   />
                 </div>
                 <div className="text-sm text-gray-500">

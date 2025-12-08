@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -68,6 +68,7 @@ interface MassEmailContentProps {
 
 export function MassEmailContent({ slug, union, members }: MassEmailContentProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [subject, setSubject] = useState('');
   const [htmlContent, setHtmlContent] = useState('');
   const [recipientFilter, setRecipientFilter] = useState<'all' | 'approved' | 'admin' | 'pending' | 'rejected' | 'custom'>('approved');
@@ -303,6 +304,8 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
         setHtmlContent('');
         setAttachments([]);
         setSelectedMembers(new Set());
+        // Clear URL parameters (from sharing)
+        router.replace(`/${slug}/mass-email`);
         // Refresh email usage
         fetchEmailUsage();
       } else {
