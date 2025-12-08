@@ -96,6 +96,7 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
     fileName: string;
     fileUrl: string;
     fileSize: number;
+    fileType?: string;
   }>>([]);
 
   // Pre-fill email content from URL parameters (for sharing from posts/files/events)
@@ -126,6 +127,7 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
       fileName: file.fileName,
       fileUrl: file.fileUrl,
       fileSize: file.fileSize,
+      fileType: file.fileType,
     }));
     setAttachments(prev => [...prev, ...newAttachments]);
   };
@@ -281,8 +283,9 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
           customRecipientIds: recipientFilter === 'custom' ? Array.from(selectedMembers) : null,
           attachments: attachments.length > 0 ? attachments.map(a => ({
             filename: a.fileName,
-            content: a.fileUrl,
-            type: 'url',
+            url: a.fileUrl,
+            type: a.fileType || 'application/octet-stream',
+            disposition: 'attachment',
           })) : undefined,
         }),
       });

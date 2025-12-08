@@ -626,7 +626,6 @@ export async function sendMassEmail({
           type: att.type!,
           disposition: att.disposition || 'attachment',
           ...(att.contentId && { contentId: att.contentId }),
-          ...(att.url && { url: att.url }),
         })),
     });
 
