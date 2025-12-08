@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  X, Accessibility, Type, Contrast, ZoomIn, ZoomOut, RotateCcw,
+  X, User, Type, Contrast, ZoomIn, ZoomOut, RotateCcw,
   Eye, EyeOff, Moon, Sun, Palette, AlignLeft, AlignCenter, AlignRight,
   Link2, Heading, MousePointer, Image, Minus, Plus, Pause, Volume2
 } from 'lucide-react';
@@ -15,14 +15,8 @@ interface AccessibilityWidgetProps {
 
 interface AccessibilitySettings {
   fontSize: number;
-  lineHeight: number;
-  letterSpacing: number;
-  wordSpacing: number;
-  highContrast: boolean;
   invertColors: boolean;
   grayscale: boolean;
-  darkContrast: boolean;
-  lightContrast: boolean;
   saturate: boolean;
   readableFont: boolean;
   highlightLinks: boolean;
@@ -38,14 +32,8 @@ interface AccessibilitySettings {
 
 const defaultSettings: AccessibilitySettings = {
   fontSize: 100,
-  lineHeight: 100,
-  letterSpacing: 0,
-  wordSpacing: 0,
-  highContrast: false,
   invertColors: false,
   grayscale: false,
-  darkContrast: false,
-  lightContrast: false,
   saturate: false,
   readableFont: false,
   highlightLinks: false,
@@ -89,33 +77,9 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
     // Font size
     root.style.fontSize = `${newSettings.fontSize}%`;
 
-    // Line height
-    if (newSettings.lineHeight !== 100) {
-      root.style.setProperty('--a11y-line-height', `${newSettings.lineHeight}%`);
-    } else {
-      root.style.removeProperty('--a11y-line-height');
-    }
-
-    // Letter spacing
-    if (newSettings.letterSpacing !== 0) {
-      root.style.setProperty('--a11y-letter-spacing', `${newSettings.letterSpacing}px`);
-    } else {
-      root.style.removeProperty('--a11y-letter-spacing');
-    }
-
-    // Word spacing
-    if (newSettings.wordSpacing !== 0) {
-      root.style.setProperty('--a11y-word-spacing', `${newSettings.wordSpacing}px`);
-    } else {
-      root.style.removeProperty('--a11y-word-spacing');
-    }
-
     // Classes
-    root.classList.toggle('a11y-high-contrast', newSettings.highContrast);
     root.classList.toggle('a11y-invert', newSettings.invertColors);
     root.classList.toggle('a11y-grayscale', newSettings.grayscale);
-    root.classList.toggle('a11y-dark-contrast', newSettings.darkContrast);
-    root.classList.toggle('a11y-light-contrast', newSettings.lightContrast);
     root.classList.toggle('a11y-saturate', newSettings.saturate);
     root.classList.toggle('a11y-readable-font', newSettings.readableFont);
     root.classList.toggle('a11y-highlight-links', newSettings.highlightLinks);
@@ -185,7 +149,7 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
             aria-label="Open accessibility options"
             title="Accessibility Options"
           >
-            <Accessibility className="h-6 w-6" />
+            <User className="h-6 w-6" />
           </Button>
         ) : (
           <Card className="shadow-xl w-80 max-h-[85vh] overflow-hidden flex flex-col">
@@ -193,7 +157,7 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
               {/* Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Accessibility className="h-5 w-5 text-blue-600" />
+                  <User className="h-5 w-5 text-blue-600" />
                   <h3 className="font-semibold text-gray-900">Accessibility</h3>
                 </div>
                 <Button
@@ -274,90 +238,6 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
                       </div>
                     </div>
 
-                    {/* Line Height */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">
-                        Line Height
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateSetting('lineHeight', Math.max(settings.lineHeight - 10, 100))}
-                          disabled={settings.lineHeight <= 100}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="text-sm font-medium text-gray-600 min-w-[3rem] text-center">
-                          {settings.lineHeight}%
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateSetting('lineHeight', Math.min(settings.lineHeight + 10, 200))}
-                          disabled={settings.lineHeight >= 200}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Letter Spacing */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">
-                        Letter Spacing
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateSetting('letterSpacing', Math.max(settings.letterSpacing - 1, 0))}
-                          disabled={settings.letterSpacing <= 0}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="text-sm font-medium text-gray-600 min-w-[3rem] text-center">
-                          {settings.letterSpacing}px
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateSetting('letterSpacing', Math.min(settings.letterSpacing + 1, 10))}
-                          disabled={settings.letterSpacing >= 10}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Word Spacing */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">
-                        Word Spacing
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateSetting('wordSpacing', Math.max(settings.wordSpacing - 2, 0))}
-                          disabled={settings.wordSpacing <= 0}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="text-sm font-medium text-gray-600 min-w-[3rem] text-center">
-                          {settings.wordSpacing}px
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateSetting('wordSpacing', Math.min(settings.wordSpacing + 2, 20))}
-                          disabled={settings.wordSpacing >= 20}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-
                     {/* Text Align */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-2 block">
@@ -416,30 +296,6 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
 
                 {activeTab === 'color' && (
                   <>
-                    {/* High Contrast */}
-                    <ToggleOption
-                      icon={<Contrast className="h-4 w-4" />}
-                      label="High Contrast"
-                      value={settings.highContrast}
-                      onChange={(value) => updateSetting('highContrast', value)}
-                    />
-
-                    {/* Dark Contrast */}
-                    <ToggleOption
-                      icon={<Moon className="h-4 w-4" />}
-                      label="Dark Contrast"
-                      value={settings.darkContrast}
-                      onChange={(value) => updateSetting('darkContrast', value)}
-                    />
-
-                    {/* Light Contrast */}
-                    <ToggleOption
-                      icon={<Sun className="h-4 w-4" />}
-                      label="Light Contrast"
-                      value={settings.lightContrast}
-                      onChange={(value) => updateSetting('lightContrast', value)}
-                    />
-
                     {/* Invert Colors */}
                     <ToggleOption
                       icon={<Palette className="h-4 w-4" />}
@@ -565,50 +421,11 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
 
       {/* Global Styles */}
       <style jsx global>{`
-        /* Line height */
-        .a11y-line-height * {
-          line-height: var(--a11y-line-height) !important;
-        }
-
-        /* Letter spacing */
-        .a11y-letter-spacing * {
-          letter-spacing: var(--a11y-letter-spacing) !important;
-        }
-
-        /* Word spacing */
-        .a11y-word-spacing * {
-          word-spacing: var(--a11y-word-spacing) !important;
-        }
-
         /* Text align */
         [style*="--a11y-text-align"] p,
         [style*="--a11y-text-align"] div,
         [style*="--a11y-text-align"] span {
           text-align: var(--a11y-text-align) !important;
-        }
-
-        /* High Contrast */
-        .a11y-high-contrast {
-          filter: contrast(120%) !important;
-        }
-        .a11y-high-contrast * {
-          font-weight: 500 !important;
-        }
-
-        /* Dark Contrast */
-        .a11y-dark-contrast {
-          filter: brightness(0.8) contrast(150%) !important;
-          background: #1a1a1a !important;
-          color: #ffffff !important;
-        }
-        .a11y-dark-contrast * {
-          color: #ffffff !important;
-        }
-
-        /* Light Contrast */
-        .a11y-light-contrast {
-          filter: brightness(1.3) contrast(120%) !important;
-          background: #ffffff !important;
         }
 
         /* Invert Colors */
