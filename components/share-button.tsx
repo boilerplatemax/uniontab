@@ -23,6 +23,14 @@ interface ShareButtonProps {
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   className?: string;
+  // Optional - for populating mass email with full content
+  itemContent?: string;
+  itemAttachments?: Array<{
+    id: number;
+    fileName: string;
+    fileUrl: string;
+    fileSize: number;
+  }>;
 }
 
 export function ShareButton({
@@ -35,6 +43,8 @@ export function ShareButton({
   variant = 'outline',
   size = 'sm',
   className = '',
+  itemContent,
+  itemAttachments,
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const router = useRouter();
@@ -81,15 +91,38 @@ export function ShareButton({
     const itemTypeDisplay = itemType.charAt(0).toUpperCase() + itemType.slice(1);
     const subject = `New ${itemTypeDisplay}: ${itemTitle}`;
 
-    // Create HTML content with link
-    const content = `
-      <p>Check out this new ${itemType}:</p>
-      <h2>${itemTitle}</h2>
-      <p><a href="${fullUrl}">View ${itemTypeDisplay}</a></p>
-    `;
+    // Create HTML content - use full post content if provided, otherwise just a link
+    let content = '';
+    if (itemContent) {
+      // Use the full post content
+      content = `
+        <h2>${itemTitle}</h2>
+        ${itemContent}
+        <hr />
+        <p><a href="${fullUrl}">View Full ${itemTypeDisplay}</a></p>
+      `;
+    } else {
+      // Fallback to simple link
+      content = `
+        <p>Check out this new ${itemType}:</p>
+        <h2>${itemTitle}</h2>
+        <p><a href="${fullUrl}">View ${itemTypeDisplay}</a></p>
+      `;
+    }
+
+    // Build the URL with query parameters
+    const params = new URLSearchParams({
+      subject,
+      content,
+    });
+
+    // Add attachments if provided
+    if (itemAttachments && itemAttachments.length > 0) {
+      params.set('attachments', JSON.stringify(itemAttachments));
+    }
 
     // Navigate to mass email page with pre-filled data
-    const massEmailUrl = `/${slug}/mass-email?subject=${encodeURIComponent(subject)}&content=${encodeURIComponent(content)}`;
+    const massEmailUrl = `/${slug}/mass-email?${params.toString()}`;
     router.push(massEmailUrl);
   };
 

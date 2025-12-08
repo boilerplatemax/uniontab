@@ -33,6 +33,8 @@ import {
   ChevronUp,
   ChevronDown,
   TrendingUp,
+  FileText,
+  Paperclip,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -87,17 +89,32 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
     resetDate: string;
   } | null>(null);
   const [isLoadingUsage, setIsLoadingUsage] = useState(true);
+  const [attachments, setAttachments] = useState<Array<{
+    id: number;
+    fileName: string;
+    fileUrl: string;
+    fileSize: number;
+  }>>([]);
 
   // Pre-fill email content from URL parameters (for sharing from posts/files/events)
   useEffect(() => {
     const subjectParam = searchParams.get('subject');
     const contentParam = searchParams.get('content');
+    const attachmentsParam = searchParams.get('attachments');
 
     if (subjectParam) {
       setSubject(decodeURIComponent(subjectParam));
     }
     if (contentParam) {
       setHtmlContent(decodeURIComponent(contentParam));
+    }
+    if (attachmentsParam) {
+      try {
+        const parsedAttachments = JSON.parse(decodeURIComponent(attachmentsParam));
+        setAttachments(parsedAttachments);
+      } catch (error) {
+        console.error('Error parsing attachments:', error);
+      }
     }
   }, [searchParams]);
 
@@ -246,6 +263,11 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
           textContent,
           recipientFilter,
           customRecipientIds: recipientFilter === 'custom' ? Array.from(selectedMembers) : null,
+          attachments: attachments.length > 0 ? attachments.map(a => ({
+            filename: a.fileName,
+            content: a.fileUrl,
+            type: 'url',
+          })) : undefined,
         }),
       });
 
@@ -670,6 +692,39 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
                 Your message will be automatically wrapped in your union's branded email template.
               </p>
             </div>
+
+            {/* Attachments from Post */}
+            {attachments.length > 0 && (
+              <div className="space-y-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Paperclip className="h-4 w-4 text-blue-700" />
+                  <Label className="text-blue-900 font-medium">
+                    Attachments ({attachments.length})
+                  </Label>
+                </div>
+                <p className="text-sm text-blue-700 mb-2">
+                  The following files from the post will be included in the email:
+                </p>
+                <div className="space-y-2">
+                  {attachments.map((attachment) => (
+                    <div
+                      key={attachment.id}
+                      className="flex items-center gap-3 p-2 bg-white rounded border border-blue-200"
+                    >
+                      <FileText className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {attachment.fileName}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {(attachment.fileSize / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 pt-4">

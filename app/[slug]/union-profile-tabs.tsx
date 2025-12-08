@@ -309,7 +309,8 @@ export function UnionProfileTabs({
                     return (
                       <Card key={post.id} className="shadow-sm hover:shadow-md transition-shadow">
                         <CardContent className="p-4 sm:p-6">
-                          <div className="flex items-start justify-between mb-3">
+                          {/* Header with title and actions */}
+                          <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <Link href={`/${union.slug}/post/${post.id}`} className="flex-1 min-w-0">
                                 <h3 className="text-lg sm:text-xl font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate">
@@ -365,20 +366,30 @@ export function UnionProfileTabs({
                               )}
                             </div>
                           </div>
-                          {post.imageUrl && (
-                            <div className="relative w-full mb-4 rounded-lg overflow-hidden bg-gray-100">
-                              <img
-                                src={post.imageUrl}
-                                alt={post.title}
-                                className="w-full h-auto max-h-[400px] object-contain"
-                                loading="lazy"
+
+                          {/* Desktop: Side-by-side layout with image and content */}
+                          {/* Mobile: Stacked layout */}
+                          <div className={post.imageUrl ? "sm:flex sm:gap-6 mb-4" : "mb-4"}>
+                            {/* Image Section - Left side on desktop, top on mobile */}
+                            {post.imageUrl && (
+                              <div className="relative mb-4 sm:mb-0 sm:w-80 sm:flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                                <img
+                                  src={post.imageUrl}
+                                  alt={post.title}
+                                  className="w-full h-auto sm:max-h-[250px] object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                            )}
+
+                            {/* Content Section - Right side on desktop, below image on mobile */}
+                            <div className="flex-1 min-w-0">
+                              <RichTextContent
+                                content={post.content}
+                                className="text-sm sm:text-base line-clamp-6"
                               />
                             </div>
-                          )}
-                          <RichTextContent
-                            content={post.content}
-                            className="mb-4 text-sm sm:text-base line-clamp-6"
-                          />
+                          </div>
 
                           {/* Post Attachments */}
                           {post.attachments && post.attachments.length > 0 && (
@@ -387,7 +398,7 @@ export function UnionProfileTabs({
                                 <Paperclip className="h-4 w-4" />
                                 <span>Attachments ({post.attachments.length})</span>
                               </div>
-                              <div className="space-y-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {post.attachments.map((attachment) => (
                                   <div
                                     key={attachment.id}
@@ -422,8 +433,9 @@ export function UnionProfileTabs({
                             </div>
                           )}
 
-                          <div className="flex items-center justify-between border-t pt-3 mt-3">
-                            <div className="flex items-center gap-2">
+                          {/* Action Bar - Improved mobile layout */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t pt-4 mt-4">
+                            <div className="flex items-center gap-3">
                               <LikeButton
                                 postId={post.id}
                                 initialLiked={(post as any).isLikedByUser || false}
@@ -437,11 +449,12 @@ export function UnionProfileTabs({
                                 itemUrl={`/${union.slug}/post/${post.id}`}
                                 slug={union.slug}
                                 isOwnerOrAdmin={isOwner}
+                                itemContent={post.content}
+                                itemAttachments={post.attachments}
                               />
                             </div>
-                            <div className="text-xs sm:text-sm text-gray-500">
-                              Posted by {post.createdBy.name} •{' '}
-                              {formatDate(post.createdAt)}
+                            <div className="text-sm text-gray-500">
+                              Posted by {post.createdBy.name} • {formatDate(post.createdAt)}
                             </div>
                           </div>
                         </CardContent>
