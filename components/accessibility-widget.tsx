@@ -185,7 +185,7 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
             aria-label="Open accessibility options"
             title="Accessibility Options"
           >
-            <Accessibility className="h-6 w-6" />
+            <User className="h-6 w-6" />
           </Button>
         ) : (
           <Card className="shadow-xl w-80 max-h-[85vh] overflow-hidden flex flex-col">
@@ -193,7 +193,7 @@ export function AccessibilityWidget({ enabled = true }: AccessibilityWidgetProps
               {/* Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Accessibility className="h-5 w-5 text-blue-600" />
+                  <User className="h-5 w-5 text-blue-600" />
                   <h3 className="font-semibold text-gray-900">Accessibility</h3>
                 </div>
                 <Button
