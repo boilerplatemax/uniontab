@@ -48,6 +48,7 @@ export async function GET(
         unionAddress: unions.address,
         unionEmail: unions.email,
         unionPhone: unions.phone,
+        unionLogoUrl: unions.logoUrl,
       })
       .from(duesReceipts)
       .innerJoin(dues, eq(duesReceipts.duesId, dues.id))
@@ -120,6 +121,7 @@ export async function GET(
         address: receiptResult.unionAddress,
         email: receiptResult.unionEmail,
         phone: receiptResult.unionPhone,
+        logoUrl: receiptResult.unionLogoUrl,
       },
       generatedBy: {
         name: generatedByUser?.name || 'Unknown',
