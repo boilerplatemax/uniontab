@@ -8,6 +8,7 @@ import { DefaultTheme } from './themes/default-theme';
 import { ModernTheme } from './themes/modern-theme';
 import { TwitterTheme } from './themes/twitter-theme';
 import type { ThemeId } from '@/lib/themes/config';
+import { AutoVerifyEmailDomain } from '@/components/auto-verify-email-domain';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -290,13 +291,23 @@ export default async function PublicUnionPage({
   // Render the appropriate theme based on union.theme
   const theme = (union.theme || 'default') as ThemeId;
 
-  switch (theme) {
-    case 'modern':
-      return <ModernTheme {...themeProps} />;
-    case 'twitter':
-      return <TwitterTheme {...themeProps} />;
-    case 'default':
-    default:
-      return <DefaultTheme {...themeProps} />;
-  }
+  const ThemeComponent = (() => {
+    switch (theme) {
+      case 'modern':
+        return <ModernTheme {...themeProps} />;
+      case 'twitter':
+        return <TwitterTheme {...themeProps} />;
+      case 'default':
+      default:
+        return <DefaultTheme {...themeProps} />;
+    }
+  })();
+
+  return (
+    <>
+      {/* Automatically verify email domain if pending */}
+      <AutoVerifyEmailDomain unionId={union.id} />
+      {ThemeComponent}
+    </>
+  );
 }
