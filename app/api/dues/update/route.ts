@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { dues, members } from '@/lib/db/schema';
+import { dues, members, duesAuditLog } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 
@@ -21,7 +21,9 @@ export async function PATCH(request: Request) {
       paidDate,
       paymentMethod,
       checkNumber,
-      notes
+      notes,
+      isWaived,
+      waiverReason
     } = await request.json();
 
     if (!duesId) {
@@ -74,6 +76,20 @@ export async function PATCH(request: Request) {
     if (checkNumber !== undefined) updateData.checkNumber = checkNumber;
     if (notes !== undefined) updateData.notes = notes;
 
+    // Handle waiver
+    if (isWaived !== undefined) {
+      updateData.isWaived = isWaived;
+      if (isWaived) {
+        updateData.waiverReason = waiverReason;
+        updateData.waivedBy = user.id;
+        updateData.waivedAt = new Date();
+      } else {
+        updateData.waiverReason = null;
+        updateData.waivedBy = null;
+        updateData.waivedAt = null;
+      }
+    }
+
     // Update the dues record
     const [updatedDues] = await db
       .update(dues)
@@ -117,6 +133,45 @@ export async function PATCH(request: Request) {
           })
           .where(eq(members.id, existingDues.memberId));
       }
+    }
+
+    // Create audit log entry
+    const changes = [];
+    if (amount !== undefined && amount !== existingDues.amount) {
+      changes.push(`Amount: $${existingDues.amount / 100} → $${amount / 100}`);
+    }
+    if (paymentStatus !== undefined && paymentStatus !== existingDues.paymentStatus) {
+      changes.push(`Status: ${existingDues.paymentStatus} → ${paymentStatus}`);
+    }
+    if (paidAmount !== undefined && paidAmount !== existingDues.paidAmount) {
+      changes.push(`Paid: $${existingDues.paidAmount / 100} → $${paidAmount / 100}`);
+    }
+    if (isWaived && !existingDues.isWaived) {
+      changes.push(`Waived: ${waiverReason}`);
+    }
+
+    if (changes.length > 0) {
+      await db.insert(duesAuditLog).values({
+        entityType: isWaived ? 'waiver' : 'payment',
+        entityId: duesId,
+        action: 'updated',
+        changesSummary: changes.join('; '),
+        previousValue: JSON.stringify({
+          amount: existingDues.amount,
+          paymentStatus: existingDues.paymentStatus,
+          paidAmount: existingDues.paidAmount,
+          isWaived: existingDues.isWaived,
+        }),
+        newValue: JSON.stringify({
+          amount,
+          paymentStatus,
+          paidAmount,
+          isWaived,
+        }),
+        performedBy: user.id,
+        memberId: existingDues.memberId,
+        unionId: existingDues.unionId,
+      });
     }
 
     return NextResponse.json({ success: true, dues: updatedDues });

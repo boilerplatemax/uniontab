@@ -27,6 +27,8 @@ export function EditDuesDialog({ open, onOpenChange, dues, onSuccess }: EditDues
     paymentMethod: '',
     checkNumber: '',
     notes: '',
+    isWaived: false,
+    waiverReason: '',
   });
 
   useEffect(() => {
@@ -40,6 +42,8 @@ export function EditDuesDialog({ open, onOpenChange, dues, onSuccess }: EditDues
         paymentMethod: dues.paymentMethod || '',
         checkNumber: dues.checkNumber || '',
         notes: dues.notes || '',
+        isWaived: dues.isWaived || false,
+        waiverReason: dues.waiverReason || '',
       });
     }
   }, [dues]);
@@ -62,6 +66,8 @@ export function EditDuesDialog({ open, onOpenChange, dues, onSuccess }: EditDues
           paymentMethod: formData.paymentMethod || null,
           checkNumber: formData.checkNumber || null,
           notes: formData.notes || null,
+          isWaived: formData.paymentStatus === 'waived',
+          waiverReason: formData.paymentStatus === 'waived' ? formData.waiverReason : null,
         }),
       });
 
@@ -132,9 +138,25 @@ export function EditDuesDialog({ open, onOpenChange, dues, onSuccess }: EditDues
                 <SelectItem value="unpaid">Unpaid</SelectItem>
                 <SelectItem value="partial">Partial</SelectItem>
                 <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="waived">Waived</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {formData.paymentStatus === 'waived' && (
+            <div className="space-y-2">
+              <Label htmlFor="waiverReason">Waiver Reason *</Label>
+              <Textarea
+                id="waiverReason"
+                value={formData.waiverReason}
+                onChange={(e) => setFormData({ ...formData, waiverReason: e.target.value })}
+                placeholder="e.g., Financial hardship, unemployment, medical emergency..."
+                required
+                rows={3}
+              />
+              <p className="text-xs text-gray-500">Explain why this member's dues are being waived</p>
+            </div>
+          )}
 
           {(formData.paymentStatus === 'paid' || formData.paymentStatus === 'partial') && (
             <>

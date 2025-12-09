@@ -1,6 +1,6 @@
 import { desc, and, eq, isNull, gte, lte } from 'drizzle-orm';
 import { db } from './drizzle';
-import { activityLogs, members, unions, users, dues, duesReceipts } from './schema';
+import { activityLogs, members, unions, users, dues, duesReceipts, duesCycles } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
 
@@ -326,4 +326,19 @@ export async function getMemberDuesWithReceipts(memberId: number) {
   );
 
   return duesWithReceipts;
+}
+
+export async function getDuesCyclesForUnion(unionId: number) {
+  return await db.query.duesCycles.findMany({
+    where: eq(duesCycles.unionId, unionId),
+    with: {
+      createdBy: {
+        columns: {
+          id: true,
+          name: true
+        }
+      }
+    },
+    orderBy: [desc(duesCycles.createdAt)]
+  });
 }
