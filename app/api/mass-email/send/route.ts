@@ -146,6 +146,7 @@ export async function POST(request: Request) {
     let failureCount = 0;
 
     const unionInfo = {
+      id: unionId, // Include unionId for rate limiting and subdomain email
       name: union.name,
       localNumber: union.localNumber,
       logoUrl: union.logoUrl,
