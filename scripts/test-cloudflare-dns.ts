@@ -4,7 +4,11 @@
  * Run with: npx tsx scripts/test-cloudflare-dns.ts
  */
 
+import dotenv from 'dotenv';
 import { getZoneInfo } from '../lib/email/cloudflare-client';
+
+// Load environment variables from .env file
+dotenv.config();
 
 async function testCloudflare() {
   console.log('🔍 Testing Cloudflare API connection...\n');
