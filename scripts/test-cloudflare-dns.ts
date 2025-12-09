@@ -6,12 +6,18 @@
 
 import dotenv from 'dotenv';
 import { getZoneInfo } from '../lib/email/cloudflare-client';
+import path from 'path';
+import fs from 'fs';
 
 // Load environment variables from .env file
-dotenv.config();
+const envPath = path.resolve(process.cwd(), '.env');
+console.log('Looking for .env file at:', envPath);
+console.log('.env file exists:', fs.existsSync(envPath));
+
+dotenv.config({ path: envPath });
 
 async function testCloudflare() {
-  console.log('🔍 Testing Cloudflare API connection...\n');
+  console.log('\n🔍 Testing Cloudflare API connection...\n');
 
   // Check environment variables
   const hasToken = !!process.env.CLOUDFLARE_API_TOKEN;
