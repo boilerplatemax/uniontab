@@ -40,6 +40,7 @@ interface DuesContentProps {
 
 export function DuesContent({ slug, union, dues: initialDues, summary, members, isOwnerOrAdmin }: DuesContentProps) {
   const router = useRouter();
+  const [activeView, setActiveView] = useState<'overview' | 'delinquent'>('overview');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [paymentHistoryOpen, setPaymentHistoryOpen] = useState(false);
@@ -162,6 +163,54 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
     return true;
   });
 
+  // Calculate delinquent members
+  const delinquentMembers = members
+    .map(m => {
+      const memberDues = initialDues.filter(d => d.memberId === m.member.id);
+      const overdueDues = memberDues.filter(d => d.paymentStatus !== 'paid' && new Date(d.dueDate) < new Date());
+      const totalOwed = overdueDues.reduce((sum, d) => sum + (d.amount - d.paidAmount), 0);
+      const lastPaid = memberDues
+        .filter(d => d.paidDate)
+        .sort((a, b) => new Date(b.paidDate).getTime() - new Date(a.paidDate).getTime())[0];
+
+      // Calculate months overdue
+      const oldestOverdue = overdueDues.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
+      const monthsOverdue = oldestOverdue
+        ? Math.floor((new Date().getTime() - new Date(oldestOverdue.dueDate).getTime()) / (1000 * 60 * 60 * 24 * 30))
+        : 0;
+
+      // Delinquency level
+      let level: 'low' | 'medium' | 'high' | null = null;
+      if (monthsOverdue >= 6) level = 'high';
+      else if (monthsOverdue >= 3) level = 'medium';
+      else if (monthsOverdue >= 1) level = 'low';
+
+      return {
+        ...m,
+        totalOwed,
+        overdueDues,
+        lastPaidDate: lastPaid?.paidDate || null,
+        monthsOverdue,
+        delinquencyLevel: level,
+        isDelinquent: m.member.isDelinquent || overdueDues.length > 0
+      };
+    })
+    .filter(m => m.isDelinquent)
+    .sort((a, b) => b.totalOwed - a.totalOwed);
+
+  const getDelinquencyBadge = (level: 'low' | 'medium' | 'high' | null, monthsOverdue: number) => {
+    if (level === 'high') {
+      return <Badge className="bg-red-600"><AlertCircle className="h-3 w-3 mr-1" />{monthsOverdue}+ months</Badge>;
+    }
+    if (level === 'medium') {
+      return <Badge className="bg-orange-500"><AlertCircle className="h-3 w-3 mr-1" />{monthsOverdue} months</Badge>;
+    }
+    if (level === 'low') {
+      return <Badge className="bg-yellow-500"><Clock className="h-3 w-3 mr-1" />{monthsOverdue} month{monthsOverdue !== 1 ? 's' : ''}</Badge>;
+    }
+    return <Badge variant="secondary">New</Badge>;
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
@@ -212,44 +261,74 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
         </Card>
       </div>
 
-      {/* Actions and Filters */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            variant={filterStatus === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilterStatus('all')}
-          >
-            All ({initialDues.length})
-          </Button>
-          <Button
-            variant={filterStatus === 'paid' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilterStatus('paid')}
-          >
-            Paid ({summary.paidCount})
-          </Button>
-          <Button
-            variant={filterStatus === 'unpaid' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilterStatus('unpaid')}
-          >
-            Unpaid ({summary.unpaidCount})
-          </Button>
-          <Button
-            variant={filterStatus === 'overdue' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilterStatus('overdue')}
-          >
-            Overdue ({summary.overdueCount})
-          </Button>
-        </div>
-
-        <Button onClick={() => setCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Dues Record
-        </Button>
+      {/* View Tabs */}
+      <div className="flex gap-4 border-b mb-6">
+        <button
+          onClick={() => setActiveView('overview')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeView === 'overview'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => setActiveView('delinquent')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeView === 'delinquent'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Delinquent Members
+          {delinquentMembers.length > 0 && (
+            <Badge className="ml-2 bg-red-500">{delinquentMembers.length}</Badge>
+          )}
+        </button>
       </div>
+
+      {/* Overview Tab */}
+      {activeView === 'overview' && (
+        <>
+          {/* Actions and Filters */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={filterStatus === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterStatus('all')}
+              >
+                All ({initialDues.length})
+              </Button>
+              <Button
+                variant={filterStatus === 'paid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterStatus('paid')}
+              >
+                Paid ({summary.paidCount})
+              </Button>
+              <Button
+                variant={filterStatus === 'unpaid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterStatus('unpaid')}
+              >
+                Unpaid ({summary.unpaidCount})
+              </Button>
+              <Button
+                variant={filterStatus === 'overdue' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterStatus('overdue')}
+              >
+                Overdue ({summary.overdueCount})
+              </Button>
+            </div>
+
+            <Button onClick={() => setCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Dues Record
+            </Button>
+          </div>
 
       {/* Dues Table */}
       <Card>
@@ -356,6 +435,119 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
           )}
         </CardContent>
       </Card>
+        </>
+      )}
+
+      {/* Delinquent Members Tab */}
+      {activeView === 'delinquent' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Delinquent Members</CardTitle>
+            <CardDescription>
+              Members with overdue dues payments ({delinquentMembers.length} member{delinquentMembers.length !== 1 ? 's' : ''})
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {delinquentMembers.length > 0 ? (
+              <>
+                {/* Summary Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div>
+                    <div className="text-sm text-red-700 mb-1">Total Delinquent</div>
+                    <div className="text-2xl font-bold text-red-900">{delinquentMembers.length}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-red-700 mb-1">Total Owed</div>
+                    <div className="text-2xl font-bold text-red-900">
+                      {formatCurrency(delinquentMembers.reduce((sum, m) => sum + m.totalOwed, 0))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-red-700 mb-1">Breakdown</div>
+                    <div className="text-sm text-red-900">
+                      <div>🔴 High: {delinquentMembers.filter(m => m.delinquencyLevel === 'high').length}</div>
+                      <div>🟠 Medium: {delinquentMembers.filter(m => m.delinquencyLevel === 'medium').length}</div>
+                      <div>🟡 Low: {delinquentMembers.filter(m => m.delinquencyLevel === 'low').length}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delinquent Members Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Severity</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Member</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Amount Owed</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Overdue Periods</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Last Payment</th>
+                        <th className="text-right py-3 px-4 font-semibold text-sm">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {delinquentMembers.map((m: any) => (
+                        <tr key={m.member.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4">
+                            {getDelinquencyBadge(m.delinquencyLevel, m.monthsOverdue)}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div>
+                              <div className="font-medium">{m.user.name}</div>
+                              <div className="text-sm text-gray-500">{m.user.email}</div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="font-semibold text-red-600">{formatCurrency(m.totalOwed)}</span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="text-sm">
+                              {m.overdueDues.length} period{m.overdueDues.length !== 1 ? 's' : ''}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            {m.lastPaidDate ? (
+                              <div className="text-sm">{formatDate(m.lastPaidDate)}</div>
+                            ) : (
+                              <span className="text-gray-400 text-sm">Never</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  // Find first unpaid dues for this member
+                                  const unpaidDues = initialDues.find(
+                                    d => d.memberId === m.member.id && d.paymentStatus !== 'paid'
+                                  );
+                                  if (unpaidDues) {
+                                    setSelectedDues(unpaidDues);
+                                    setEditDialogOpen(true);
+                                  }
+                                }}
+                              >
+                                Record Payment
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Delinquent Members</h3>
+                <p className="text-gray-500">All members are in good standing!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Dialogs */}
       <CreateDuesDialog

@@ -297,3 +297,33 @@ export async function getDuesSummaryForUnion(unionId: number) {
     overdueCount: allDues.filter(d => d.paymentStatus === 'unpaid' && new Date(d.dueDate) < new Date()).length
   };
 }
+
+export async function getMemberDues(memberId: number) {
+  return await db.query.dues.findMany({
+    where: eq(dues.memberId, memberId),
+    orderBy: [desc(dues.dueDate)]
+  });
+}
+
+export async function getMemberDuesWithReceipts(memberId: number) {
+  const memberDues = await db.query.dues.findMany({
+    where: eq(dues.memberId, memberId),
+    orderBy: [desc(dues.dueDate)]
+  });
+
+  // Get receipts for each dues record
+  const duesWithReceipts = await Promise.all(
+    memberDues.map(async (duesRecord) => {
+      const receipts = await db.query.duesReceipts.findMany({
+        where: eq(duesReceipts.duesId, duesRecord.id),
+        orderBy: [desc(duesReceipts.generatedAt)]
+      });
+      return {
+        ...duesRecord,
+        receipts
+      };
+    })
+  );
+
+  return duesWithReceipts;
+}
