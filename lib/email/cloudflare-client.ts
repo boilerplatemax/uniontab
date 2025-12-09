@@ -17,6 +17,7 @@ export interface DnsRecord {
   content: string; // Record value
   ttl?: number; // TTL in seconds (default: 3600)
   proxied?: boolean; // Cloudflare proxy (default: false for email records)
+  comment?: string; // User-friendly note/comment for the DNS record
 }
 
 export interface CloudflareDnsRecord extends DnsRecord {
@@ -27,6 +28,7 @@ export interface CloudflareDnsRecord extends DnsRecord {
   modified_on: string;
   proxiable: boolean;
   locked: boolean;
+  comment?: string;
 }
 
 export interface CloudflareApiResponse<T> {
@@ -90,13 +92,18 @@ async function cloudflareRequest<T>(
  * Create a DNS record in Cloudflare
  */
 export async function createDnsRecord(record: DnsRecord): Promise<CloudflareDnsRecord> {
-  const payload = {
+  const payload: Record<string, unknown> = {
     type: record.type,
     name: record.name,
     content: record.content,
     ttl: record.ttl || 3600,
     proxied: record.proxied ?? false,
   };
+
+  // Add comment if provided
+  if (record.comment) {
+    payload.comment = record.comment;
+  }
 
   const response = await cloudflareRequest<CloudflareDnsRecord>(
     `/zones/${CLOUDFLARE_ZONE_ID}/dns_records`,
@@ -167,13 +174,18 @@ export async function updateDnsRecord(
   // Get existing record first to merge with updates
   const existing = await getDnsRecord(recordId);
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     type: updates.type || existing.type,
     name: updates.name || existing.name,
     content: updates.content || existing.content,
     ttl: updates.ttl || existing.ttl,
     proxied: updates.proxied ?? existing.proxied,
   };
+
+  // Update comment if provided
+  if (updates.comment !== undefined) {
+    payload.comment = updates.comment;
+  }
 
   const response = await cloudflareRequest<CloudflareDnsRecord>(
     `/zones/${CLOUDFLARE_ZONE_ID}/dns_records/${recordId}`,
@@ -253,6 +265,7 @@ export async function createSendGridDnsRecords(
       content: sendgridRecords.dkim1.data,
       ttl: 3600,
       proxied: false,
+      comment: `SendGrid DKIM1 signature for ${subdomain} - Required for email authentication`,
     });
   }
 
@@ -264,6 +277,7 @@ export async function createSendGridDnsRecords(
       content: sendgridRecords.dkim2.data,
       ttl: 3600,
       proxied: false,
+      comment: `SendGrid DKIM2 signature for ${subdomain} - Required for email authentication`,
     });
   }
 
@@ -275,6 +289,7 @@ export async function createSendGridDnsRecords(
       content: sendgridRecords.mailCname.data,
       ttl: 3600,
       proxied: false,
+      comment: `SendGrid Return-Path for ${subdomain} - Required for bounce handling`,
     });
   }
 
@@ -286,6 +301,7 @@ export async function createSendGridDnsRecords(
       content: sendgridRecords.trackingCname.data,
       ttl: 3600,
       proxied: false,
+      comment: `SendGrid tracking domain for ${subdomain} - Optional for click/open tracking`,
     });
   }
 
