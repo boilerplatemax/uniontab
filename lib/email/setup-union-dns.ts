@@ -16,6 +16,7 @@ import {
   createDomainAuthentication,
   extractDnsRecords,
   listDomainAuthentications,
+  validateDomainAuthentication,
   type SendGridDomainAuth
 } from './sendgrid-domains';
 import { createSendGridDnsRecords } from './cloudflare-client';
@@ -128,6 +129,41 @@ export async function setupDnsForNewUnion(
 
     console.log(`[DNS Setup] Saved configuration to database for union ${unionId}`);
     console.log(`[DNS Setup] ✅ Complete! Union ${unionName} can now send from ${fullDomain}`);
+
+    // Step 5: Schedule automatic verification (after 2 minutes for DNS propagation)
+    console.log(`[DNS Setup] Scheduling automatic verification in 2 minutes...`);
+    setTimeout(async () => {
+      try {
+        console.log(`[DNS Setup] Verifying DNS records for union ${unionId}...`);
+        const validation = await validateDomainAuthentication(Number(sendgridAuth.id));
+
+        if (validation.valid) {
+          console.log(`[DNS Setup] ✅ Verification successful for union ${unionId}!`);
+
+          // Update database with verification status
+          await db
+            .update(unionEmailDomains)
+            .set({
+              verificationStatus: 'verified',
+              verifiedAt: new Date(),
+            })
+            .where(eq(unionEmailDomains.unionId, unionId));
+        } else {
+          console.log(`[DNS Setup] ⏳ Verification pending for union ${unionId}, will retry later`);
+
+          // Update database with pending status
+          await db
+            .update(unionEmailDomains)
+            .set({
+              verificationStatus: 'pending',
+              lastVerificationAttempt: new Date(),
+            })
+            .where(eq(unionEmailDomains.unionId, unionId));
+        }
+      } catch (error) {
+        console.error(`[DNS Setup] ❌ Verification failed for union ${unionId}:`, error);
+      }
+    }, 2 * 60 * 1000); // 2 minutes
 
     return {
       success: true,
