@@ -12,7 +12,12 @@ import { db } from '@/lib/db/drizzle';
 import { unionEmailDomains } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { generateUniqueSubdomain, getFullDomain } from './subdomain';
-import { createDomainAuthentication, extractDnsRecords } from './sendgrid-domains';
+import {
+  createDomainAuthentication,
+  extractDnsRecords,
+  listDomainAuthentications,
+  type SendGridDomainAuth
+} from './sendgrid-domains';
 import { createSendGridDnsRecords } from './cloudflare-client';
 
 export interface SetupDnsResult {
@@ -56,11 +61,28 @@ export async function setupDnsForNewUnion(
 
     console.log(`[DNS Setup] Generated subdomain: ${fullDomain}`);
 
-    // Step 2: Create SendGrid domain authentication
+    // Step 2: Check if SendGrid domain authentication already exists
+    let sendgridAuth: SendGridDomainAuth;
     const baseDomain = process.env.EMAIL_BASE_DOMAIN || 'uniontab.com';
-    const sendgridAuth = await createDomainAuthentication(baseDomain, subdomain);
 
-    console.log(`[DNS Setup] Created SendGrid domain authentication: ${sendgridAuth.id}`);
+    try {
+      const existingDomains = await listDomainAuthentications();
+      const matchingDomain = existingDomains.find(
+        (d) => d.subdomain === subdomain && d.domain === baseDomain
+      );
+
+      if (matchingDomain) {
+        console.log(`[DNS Setup] Found existing SendGrid domain: ${matchingDomain.id}`);
+        sendgridAuth = matchingDomain;
+      } else {
+        console.log(`[DNS Setup] Creating new SendGrid domain authentication`);
+        sendgridAuth = await createDomainAuthentication(baseDomain, subdomain);
+        console.log(`[DNS Setup] Created SendGrid domain authentication: ${sendgridAuth.id}`);
+      }
+    } catch (error: any) {
+      console.error(`[DNS Setup] SendGrid error:`, error);
+      throw error;
+    }
 
     // Extract DNS records from SendGrid response
     const dnsRecords = extractDnsRecords(sendgridAuth);
