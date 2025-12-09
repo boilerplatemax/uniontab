@@ -4,6 +4,14 @@ import { dues, members, duesAuditLog } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 
+// Helper to parse date strings correctly (avoid timezone issues)
+const parseDate = (dateString: string) => {
+  if (dateString && !dateString.includes('T')) {
+    return new Date(`${dateString}T12:00:00Z`);
+  }
+  return new Date(dateString);
+};
+
 export async function PATCH(request: Request) {
   try {
     const user = await getUser();
@@ -68,10 +76,10 @@ export async function PATCH(request: Request) {
     };
 
     if (amount !== undefined) updateData.amount = amount;
-    if (dueDate !== undefined) updateData.dueDate = new Date(dueDate);
+    if (dueDate !== undefined) updateData.dueDate = parseDate(dueDate);
     if (paymentStatus !== undefined) updateData.paymentStatus = paymentStatus;
     if (paidAmount !== undefined) updateData.paidAmount = paidAmount;
-    if (paidDate !== undefined) updateData.paidDate = paidDate ? new Date(paidDate) : null;
+    if (paidDate !== undefined) updateData.paidDate = paidDate ? parseDate(paidDate) : null;
     if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod;
     if (checkNumber !== undefined) updateData.checkNumber = checkNumber;
     if (notes !== undefined) updateData.notes = notes;

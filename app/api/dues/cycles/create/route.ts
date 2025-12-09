@@ -4,6 +4,14 @@ import { duesCycles, members } from '@/lib/db/schema';
 import { getUser } from '@/lib/db/queries';
 import { eq, and } from 'drizzle-orm';
 
+// Helper to parse date strings correctly (avoid timezone issues)
+const parseDate = (dateString: string) => {
+  if (dateString && !dateString.includes('T')) {
+    return new Date(`${dateString}T12:00:00Z`);
+  }
+  return new Date(dateString);
+};
+
 export async function POST(request: Request) {
   try {
     const user = await getUser();
@@ -54,10 +62,10 @@ export async function POST(request: Request) {
       .values({
         unionId,
         name,
-        periodStart: new Date(periodStart),
-        periodEnd: new Date(periodEnd),
+        periodStart: parseDate(periodStart),
+        periodEnd: parseDate(periodEnd),
         amountDue,
-        dueDate: new Date(dueDate),
+        dueDate: parseDate(dueDate),
         gracePeriodDays: gracePeriodDays || 30,
         isRecurring: isRecurring || false,
         recurrenceType: isRecurring ? recurrenceType : null,
