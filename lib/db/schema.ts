@@ -411,6 +411,39 @@ export const emailLogs = pgTable('email_logs', {
 });
 
 // Dues Tracking System Tables
+export const duesCycles = pgTable('dues_cycles', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+
+  // Cycle details
+  name: varchar('name', { length: 255 }).notNull(), // e.g., "January 2025", "Q1 2025"
+  periodStart: timestamp('period_start').notNull(),
+  periodEnd: timestamp('period_end').notNull(),
+
+  // Dues amount
+  amountDue: integer('amount_due').notNull(), // Amount in cents
+
+  // Due date
+  dueDate: timestamp('due_date').notNull(),
+  gracePeriodDays: integer('grace_period_days').notNull().default(30),
+
+  // Recurrence
+  isRecurring: boolean('is_recurring').notNull().default(false),
+  recurrenceType: varchar('recurrence_type', { length: 20 }), // 'monthly', 'quarterly', 'annual'
+
+  // Status
+  status: varchar('status', { length: 20 }).notNull().default('active'), // 'active', 'closed', 'draft'
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  notes: text('notes'),
+});
+
 export const dues = pgTable('dues', {
   id: serial('id').primaryKey(),
   memberId: integer('member_id')
@@ -419,14 +452,23 @@ export const dues = pgTable('dues', {
   unionId: integer('union_id')
     .notNull()
     .references(() => unions.id, { onDelete: 'cascade' }),
+  cycleId: integer('cycle_id')
+    .references(() => duesCycles.id, { onDelete: 'set null' }), // Link to dues cycle (optional)
   amount: integer('amount').notNull(), // Amount in cents
   dueDate: timestamp('due_date').notNull(),
-  paymentStatus: varchar('payment_status', { length: 20 }).notNull().default('unpaid'), // 'paid', 'unpaid', 'partial'
+  paymentStatus: varchar('payment_status', { length: 20 }).notNull().default('unpaid'), // 'paid', 'unpaid', 'partial', 'waived'
   paidAmount: integer('paid_amount').notNull().default(0), // Amount paid in cents
   paidDate: timestamp('paid_date'),
   paymentMethod: varchar('payment_method', { length: 50 }), // 'cash', 'check', 'money_order', 'bank_transfer', etc.
   checkNumber: varchar('check_number', { length: 100 }), // For check payments
   notes: text('notes'),
+
+  // Waiver fields
+  isWaived: boolean('is_waived').notNull().default(false),
+  waiverReason: text('waiver_reason'),
+  waivedBy: integer('waived_by').references(() => users.id, { onDelete: 'set null' }),
+  waivedAt: timestamp('waived_at'),
+
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   createdBy: integer('created_by')
@@ -454,6 +496,33 @@ export const duesReceipts = pgTable('dues_receipts', {
     .references(() => users.id, { onDelete: 'set null' }),
 });
 
+export const duesAuditLog = pgTable('dues_audit_log', {
+  id: serial('id').primaryKey(),
+
+  // What changed
+  entityType: varchar('entity_type', { length: 50 }).notNull(), // 'payment', 'status', 'cycle', 'waiver'
+  entityId: integer('entity_id').notNull(),
+
+  // Change details
+  action: varchar('action', { length: 50 }).notNull(), // 'created', 'updated', 'deleted', 'waived'
+  changesSummary: text('changes_summary').notNull(),
+  previousValue: text('previous_value'), // JSON string
+  newValue: text('new_value'), // JSON string
+
+  // Who and when
+  performedBy: integer('performed_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'restrict' }),
+  performedAt: timestamp('performed_at').notNull().defaultNow(),
+
+  // Context
+  memberId: integer('member_id')
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+});
+
 export const unionsRelations = relations(unions, ({ many }) => ({
   members: many(members),
   activityLogs: many(activityLogs),
@@ -467,6 +536,8 @@ export const unionsRelations = relations(unions, ({ many }) => ({
   massEmails: many(massEmails),
   dues: many(dues),
   duesReceipts: many(duesReceipts),
+  duesCycles: many(duesCycles),
+  duesAuditLog: many(duesAuditLog),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -728,12 +799,20 @@ export const duesRelations = relations(dues, ({ one }) => ({
     fields: [dues.unionId],
     references: [unions.id],
   }),
+  cycle: one(duesCycles, {
+    fields: [dues.cycleId],
+    references: [duesCycles.id],
+  }),
   createdBy: one(users, {
     fields: [dues.createdBy],
     references: [users.id],
   }),
   updatedBy: one(users, {
     fields: [dues.updatedBy],
+    references: [users.id],
+  }),
+  waivedBy: one(users, {
+    fields: [dues.waivedBy],
     references: [users.id],
   }),
 }));
@@ -754,6 +833,33 @@ export const duesReceiptsRelations = relations(duesReceipts, ({ one }) => ({
   generatedBy: one(users, {
     fields: [duesReceipts.generatedBy],
     references: [users.id],
+  }),
+}));
+
+export const duesCyclesRelations = relations(duesCycles, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [duesCycles.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [duesCycles.createdBy],
+    references: [users.id],
+  }),
+  dues: many(dues),
+}));
+
+export const duesAuditLogRelations = relations(duesAuditLog, ({ one }) => ({
+  performedBy: one(users, {
+    fields: [duesAuditLog.performedBy],
+    references: [users.id],
+  }),
+  member: one(members, {
+    fields: [duesAuditLog.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [duesAuditLog.unionId],
+    references: [unions.id],
   }),
 }));
 
@@ -805,6 +911,10 @@ export type Dues = typeof dues.$inferSelect;
 export type NewDues = typeof dues.$inferInsert;
 export type DuesReceipt = typeof duesReceipts.$inferSelect;
 export type NewDuesReceipt = typeof duesReceipts.$inferInsert;
+export type DuesCycle = typeof duesCycles.$inferSelect;
+export type NewDuesCycle = typeof duesCycles.$inferInsert;
+export type DuesAuditLog = typeof duesAuditLog.$inferSelect;
+export type NewDuesAuditLog = typeof duesAuditLog.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;
