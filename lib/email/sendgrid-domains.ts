@@ -7,7 +7,11 @@
 
 // SendGrid API configuration
 const SENDGRID_API_BASE = 'https://api.sendgrid.com/v3';
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+
+// Helper function to get environment variable (lazy evaluation)
+function getApiKey(): string | undefined {
+  return process.env.SENDGRID_API_KEY;
+}
 
 /**
  * SendGrid Domain Authentication response structure
@@ -85,7 +89,8 @@ export interface ValidationResponse {
  * Validate SendGrid configuration
  */
 function validateConfig(): void {
-  if (!SENDGRID_API_KEY) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
     throw new Error('SENDGRID_API_KEY environment variable is not set');
   }
 }
@@ -101,11 +106,12 @@ async function sendgridRequest<T>(
   validateConfig();
 
   const url = `${SENDGRID_API_BASE}${endpoint}`;
+  const apiKey = getApiKey();
 
   const response = await fetch(url, {
     method,
     headers: {
-      'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: body ? JSON.stringify(body) : undefined,

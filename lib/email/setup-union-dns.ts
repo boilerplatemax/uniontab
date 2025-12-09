@@ -12,7 +12,13 @@ import { db } from '@/lib/db/drizzle';
 import { unionEmailDomains } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { generateUniqueSubdomain, getFullDomain } from './subdomain';
-import { createDomainAuthentication, extractDnsRecords } from './sendgrid-domains';
+import {
+  createDomainAuthentication,
+  extractDnsRecords,
+  listDomainAuthentications,
+  validateDomainAuthentication,
+  type SendGridDomainAuth
+} from './sendgrid-domains';
 import { createSendGridDnsRecords } from './cloudflare-client';
 
 export interface SetupDnsResult {
@@ -56,11 +62,28 @@ export async function setupDnsForNewUnion(
 
     console.log(`[DNS Setup] Generated subdomain: ${fullDomain}`);
 
-    // Step 2: Create SendGrid domain authentication
+    // Step 2: Check if SendGrid domain authentication already exists
+    let sendgridAuth: SendGridDomainAuth;
     const baseDomain = process.env.EMAIL_BASE_DOMAIN || 'uniontab.com';
-    const sendgridAuth = await createDomainAuthentication(baseDomain, subdomain);
 
-    console.log(`[DNS Setup] Created SendGrid domain authentication: ${sendgridAuth.id}`);
+    try {
+      const existingDomains = await listDomainAuthentications();
+      const matchingDomain = existingDomains.find(
+        (d) => d.subdomain === subdomain && d.domain === baseDomain
+      );
+
+      if (matchingDomain) {
+        console.log(`[DNS Setup] Found existing SendGrid domain: ${matchingDomain.id}`);
+        sendgridAuth = matchingDomain;
+      } else {
+        console.log(`[DNS Setup] Creating new SendGrid domain authentication`);
+        sendgridAuth = await createDomainAuthentication(baseDomain, subdomain);
+        console.log(`[DNS Setup] Created SendGrid domain authentication: ${sendgridAuth.id}`);
+      }
+    } catch (error: any) {
+      console.error(`[DNS Setup] SendGrid error:`, error);
+      throw error;
+    }
 
     // Extract DNS records from SendGrid response
     const dnsRecords = extractDnsRecords(sendgridAuth);
@@ -106,6 +129,41 @@ export async function setupDnsForNewUnion(
 
     console.log(`[DNS Setup] Saved configuration to database for union ${unionId}`);
     console.log(`[DNS Setup] ✅ Complete! Union ${unionName} can now send from ${fullDomain}`);
+
+    // Step 5: Schedule automatic verification (after 2 minutes for DNS propagation)
+    console.log(`[DNS Setup] Scheduling automatic verification in 2 minutes...`);
+    setTimeout(async () => {
+      try {
+        console.log(`[DNS Setup] Verifying DNS records for union ${unionId}...`);
+        const validation = await validateDomainAuthentication(Number(sendgridAuth.id));
+
+        if (validation.valid) {
+          console.log(`[DNS Setup] ✅ Verification successful for union ${unionId}!`);
+
+          // Update database with verification status
+          await db
+            .update(unionEmailDomains)
+            .set({
+              verificationStatus: 'verified',
+              verifiedAt: new Date(),
+            })
+            .where(eq(unionEmailDomains.unionId, unionId));
+        } else {
+          console.log(`[DNS Setup] ⏳ Verification pending for union ${unionId}, will retry later`);
+
+          // Update database with pending status
+          await db
+            .update(unionEmailDomains)
+            .set({
+              verificationStatus: 'pending',
+              lastVerificationAttempt: new Date(),
+            })
+            .where(eq(unionEmailDomains.unionId, unionId));
+        }
+      } catch (error) {
+        console.error(`[DNS Setup] ❌ Verification failed for union ${unionId}:`, error);
+      }
+    }, 2 * 60 * 1000); // 2 minutes
 
     return {
       success: true,
