@@ -130,6 +130,7 @@ export async function createDnsRecord(record: DnsRecord): Promise<CloudflareDnsR
 
 /**
  * Create multiple DNS records in batch
+ * Checks if records already exist and reuses them instead of creating duplicates
  */
 export async function createDnsRecords(records: DnsRecord[]): Promise<CloudflareDnsRecord[]> {
   const createdRecords: CloudflareDnsRecord[] = [];
@@ -137,8 +138,17 @@ export async function createDnsRecords(records: DnsRecord[]): Promise<Cloudflare
   // Create records sequentially to avoid rate limits
   for (const record of records) {
     try {
-      const created = await createDnsRecord(record);
-      createdRecords.push(created);
+      // Check if record already exists
+      const existingRecords = await listDnsRecords(record.name, record.type);
+
+      if (existingRecords.length > 0) {
+        console.log(`[Cloudflare] Record already exists: ${record.name} (${record.type})`);
+        createdRecords.push(existingRecords[0]);
+      } else {
+        console.log(`[Cloudflare] Creating new record: ${record.name} (${record.type})`);
+        const created = await createDnsRecord(record);
+        createdRecords.push(created);
+      }
     } catch (error) {
       console.error(`Failed to create DNS record ${record.name}:`, error);
       // Continue with other records even if one fails
