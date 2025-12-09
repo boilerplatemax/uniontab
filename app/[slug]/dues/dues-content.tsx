@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, DollarSign, AlertCircle, CheckCircle, Clock, Receipt, Filter, Download, Trash2 } from 'lucide-react';
+import { Plus, DollarSign, AlertCircle, CheckCircle, Clock, Receipt, Filter, Download, Trash2, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { CreateDuesDialog } from './create-dues-dialog';
 import { EditDuesDialog } from './edit-dues-dialog';
@@ -40,7 +40,7 @@ interface DuesContentProps {
 
 export function DuesContent({ slug, union, dues: initialDues, summary, members, isOwnerOrAdmin }: DuesContentProps) {
   const router = useRouter();
-  const [activeView, setActiveView] = useState<'overview' | 'delinquent'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'delinquent' | 'history'>('overview');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [paymentHistoryOpen, setPaymentHistoryOpen] = useState(false);
@@ -211,6 +211,41 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
     return <Badge variant="secondary">New</Badge>;
   };
 
+  // Payment history data (only paid/partial records)
+  const paymentHistory = initialDues
+    .filter(d => d.paidAmount > 0)
+    .sort((a, b) => new Date(b.paidDate || b.createdAt).getTime() - new Date(a.paidDate || a.createdAt).getTime());
+
+  // Export to CSV function
+  const handleExportToCSV = () => {
+    const csvHeaders = ['Date', 'Member Name', 'Member Email', 'Amount Paid', 'Payment Method', 'Period', 'Status', 'Notes'];
+    const csvRows = paymentHistory.map(d => [
+      formatDate(d.paidDate || d.createdAt),
+      d.member.user.name,
+      d.member.user.email,
+      formatCurrency(d.paidAmount),
+      d.paymentMethod || 'N/A',
+      formatDate(d.dueDate),
+      d.paymentStatus,
+      (d.notes || '').replace(/,/g, ';').replace(/\n/g, ' ')
+    ]);
+
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `payment-history-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
@@ -285,6 +320,17 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
           {delinquentMembers.length > 0 && (
             <Badge className="ml-2 bg-red-500">{delinquentMembers.length}</Badge>
           )}
+        </button>
+        <button
+          onClick={() => setActiveView('history')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeView === 'history'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Payment History
+          <Badge className="ml-2" variant="secondary">{paymentHistory.length}</Badge>
         </button>
       </div>
 
@@ -543,6 +589,121 @@ export function DuesContent({ slug, union, dues: initialDues, summary, members, 
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No Delinquent Members</h3>
                 <p className="text-gray-500">All members are in good standing!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Payment History Tab */}
+      {activeView === 'history' && (
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Payment History</CardTitle>
+                <CardDescription>
+                  Complete record of all payments received ({paymentHistory.length} payment{paymentHistory.length !== 1 ? 's' : ''})
+                </CardDescription>
+              </div>
+              <Button onClick={handleExportToCSV} variant="outline">
+                <FileText className="h-4 w-4 mr-2" />
+                Export to CSV
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {paymentHistory.length > 0 ? (
+              <>
+                {/* Summary Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div>
+                    <div className="text-sm text-blue-700 mb-1">Total Payments</div>
+                    <div className="text-2xl font-bold text-blue-900">{paymentHistory.length}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-blue-700 mb-1">Total Collected</div>
+                    <div className="text-2xl font-bold text-blue-900">
+                      {formatCurrency(paymentHistory.reduce((sum, d) => sum + d.paidAmount, 0))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-blue-700 mb-1">Payment Methods</div>
+                    <div className="text-sm text-blue-900">
+                      {[...new Set(paymentHistory.map(d => d.paymentMethod).filter(Boolean))].map((method, i) => (
+                        <div key={i} className="capitalize">{method?.replace('_', ' ')}</div>
+                      )) || 'N/A'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment History Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Payment Date</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Member</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Amount</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Method</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Period</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm">Status</th>
+                        <th className="text-right py-3 px-4 font-semibold text-sm">Receipt</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paymentHistory.map((d: any) => (
+                        <tr key={d.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4">
+                            <div className="font-medium">{formatDate(d.paidDate || d.createdAt)}</div>
+                            {d.checkNumber && (
+                              <div className="text-xs text-gray-500">Ref: {d.checkNumber}</div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div>
+                              <div className="font-medium">{d.member.user.name}</div>
+                              <div className="text-xs text-gray-500">{d.member.user.email}</div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="font-semibold text-green-600">{formatCurrency(d.paidAmount)}</span>
+                            {d.paidAmount < d.amount && (
+                              <div className="text-xs text-gray-500">of {formatCurrency(d.amount)}</div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            {d.paymentMethod ? (
+                              <span className="capitalize text-sm">{d.paymentMethod.replace('_', ' ')}</span>
+                            ) : (
+                              <span className="text-gray-400 text-sm">—</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-sm">{formatDate(d.dueDate)}</td>
+                          <td className="py-3 px-4">{getStatusBadge(d.paymentStatus, d.dueDate)}</td>
+                          <td className="py-3 px-4 text-right">
+                            {d.paymentStatus !== 'unpaid' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleGenerateReceipt(d.id)}
+                                disabled={isGeneratingReceipt}
+                              >
+                                <Receipt className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Payment History</h3>
+                <p className="text-gray-500">No payments have been recorded yet.</p>
               </div>
             )}
           </CardContent>
