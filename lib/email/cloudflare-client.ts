@@ -295,7 +295,7 @@ export async function createSendGridDnsRecords(
       type: 'CNAME',
       name: sendgridRecords.dkim1.host,
       content: sendgridRecords.dkim1.data,
-      ttl: 3600,
+      ttl: 60,
       proxied: false,
       comment: `SendGrid DKIM1 signature for ${subdomain} - Required for email authentication`,
     });
@@ -307,7 +307,7 @@ export async function createSendGridDnsRecords(
       type: 'CNAME',
       name: sendgridRecords.dkim2.host,
       content: sendgridRecords.dkim2.data,
-      ttl: 3600,
+      ttl: 60,
       proxied: false,
       comment: `SendGrid DKIM2 signature for ${subdomain} - Required for email authentication`,
     });
@@ -319,7 +319,7 @@ export async function createSendGridDnsRecords(
       type: 'CNAME',
       name: sendgridRecords.mailCname.host,
       content: sendgridRecords.mailCname.data,
-      ttl: 3600,
+      ttl: 60,
       proxied: false,
       comment: `SendGrid Return-Path for ${subdomain} - Required for bounce handling`,
     });
@@ -331,7 +331,7 @@ export async function createSendGridDnsRecords(
       type: 'CNAME',
       name: sendgridRecords.trackingCname.host,
       content: sendgridRecords.trackingCname.data,
-      ttl: 3600,
+      ttl: 60,
       proxied: false,
       comment: `SendGrid tracking domain for ${subdomain} - Optional for click/open tracking`,
     });
