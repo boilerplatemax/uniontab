@@ -236,20 +236,80 @@ export function UnionProfileTabs({
         </div>
 
         {/* Desktop tabs */}
-        <div className="hidden sm:flex gap-2 px-6 pt-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
-                activeTab === tab.id
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="hidden sm:flex items-center justify-between px-6 pt-2">
+          <div className="flex gap-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Action buttons for desktop - positioned on the right */}
+          <div className="flex gap-2 items-center pb-2">
+            {isOwner && (
+              <>
+                {activeTab === 'posts' && (
+                  <Button
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => setCreatePostOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Post
+                  </Button>
+                )}
+                {activeTab === 'files' && (
+                  <Button
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => setUploadFileOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Upload File
+                  </Button>
+                )}
+                {activeTab === 'events' && (
+                  <Button
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => setCreateEventOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Event
+                  </Button>
+                )}
+              </>
+            )}
+
+            {/* View toggle for events (for all users on desktop) */}
+            {activeTab === 'events' && (
+              <div className={`flex gap-2 ${isOwner ? 'ml-2 border-l pl-2' : ''}`}>
+                <Button
+                  variant={eventsView === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setEventsView('list')}
+                >
+                  List
+                </Button>
+                <Button
+                  variant={eventsView === 'calendar' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setEventsView('calendar')}
+                >
+                  Calendar
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -284,9 +344,9 @@ export function UnionProfileTabs({
           {/* Posts Tab */}
           {activeTab === 'posts' && (
             <>
-              {/* Create Post Button (Admin only) */}
+              {/* Create Post Button (Mobile only) */}
               {isOwner && (
-                <div className="flex justify-start">
+                <div className="flex justify-start sm:hidden">
                   <Button
                     className="bg-blue-600 hover:bg-blue-700"
                     onClick={() => setCreatePostOpen(true)}
@@ -503,9 +563,9 @@ export function UnionProfileTabs({
           {/* Files Tab */}
           {activeTab === 'files' && (
             <>
-              {/* Upload File Button (Admin only) */}
+              {/* Upload File Button (Mobile only) */}
               {isOwner && (
-                <div className="flex justify-start">
+                <div className="flex justify-start sm:hidden">
                   <Button
                     className="bg-blue-600 hover:bg-blue-700"
                     onClick={() => setUploadFileOpen(true)}
@@ -552,9 +612,9 @@ export function UnionProfileTabs({
           {/* Events Tab */}
           {activeTab === 'events' && (
             <>
-              {/* Create Event Button & View Toggle (Admin only) */}
+              {/* Create Event Button & View Toggle (Mobile only) */}
               {isOwner && (
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between sm:hidden">
                   <Button
                     className="bg-blue-600 hover:bg-blue-700"
                     onClick={() => setCreateEventOpen(true)}
@@ -579,6 +639,26 @@ export function UnionProfileTabs({
                       Calendar
                     </Button>
                   </div>
+                </div>
+              )}
+
+              {/* View Toggle for non-owners on mobile */}
+              {!isOwner && (
+                <div className="flex justify-end gap-2 sm:hidden">
+                  <Button
+                    variant={eventsView === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setEventsView('list')}
+                  >
+                    List
+                  </Button>
+                  <Button
+                    variant={eventsView === 'calendar' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setEventsView('calendar')}
+                  >
+                    Calendar
+                  </Button>
                 </div>
               )}
 
@@ -616,6 +696,7 @@ export function UnionProfileTabs({
         open={createPostOpen}
         onOpenChange={setCreatePostOpen}
         unionId={union.id}
+        slug={union.slug}
         onSuccess={() => router.refresh()}
       />
       <EditPostDialog

@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,12 +17,13 @@ import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Mail } from 'lucide-react';
 
 interface CreatePostDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   unionId: number;
+  slug: string;
   onSuccess: () => void;
 }
 
@@ -35,8 +38,10 @@ export function CreatePostDialog({
   open,
   onOpenChange,
   unionId,
+  slug,
   onSuccess,
 }: CreatePostDialogProps) {
+  const router = useRouter();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -44,6 +49,12 @@ export function CreatePostDialog({
   const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [createdPost, setCreatedPost] = useState<{
+    title: string;
+    content: string;
+    attachments: PostAttachment[];
+  } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,14 +80,16 @@ export function CreatePostDialog({
         throw new Error(data.error || 'Failed to create post');
       }
 
-      // Reset form
-      setTitle('');
-      setContent('');
-      setImageUrl('');
-      setAttachments([]);
-      setIsPrivate(false);
+      // Store created post data for sharing
+      setCreatedPost({
+        title,
+        content,
+        attachments,
+      });
+
+      // Show share confirmation dialog
+      setShowShareDialog(true);
       onOpenChange(false);
-      onSuccess();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -84,7 +97,36 @@ export function CreatePostDialog({
     }
   };
 
+  const handleShareYes = () => {
+    if (!createdPost) return;
+
+    // Navigate to mass-email with pre-filled post content
+    const params = new URLSearchParams();
+    params.set('subject', `New Post: ${createdPost.title}`);
+    params.set('content', createdPost.content);
+
+    if (createdPost.attachments.length > 0) {
+      params.set('attachments', JSON.stringify(createdPost.attachments));
+    }
+
+    router.push(`/${slug}/mass-email?${params.toString()}`);
+    handleShareNo();
+  };
+
+  const handleShareNo = () => {
+    // Reset form and close share dialog
+    setTitle('');
+    setContent('');
+    setImageUrl('');
+    setAttachments([]);
+    setIsPrivate(false);
+    setCreatedPost(null);
+    setShowShareDialog(false);
+    onSuccess();
+  };
+
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -195,5 +237,41 @@ export function CreatePostDialog({
         </form>
       </DialogContent>
     </Dialog>
+
+    {/* Share Confirmation Dialog */}
+    <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Post Created Successfully!
+          </DialogTitle>
+          <DialogDescription>
+            Would you like to share this post with members via email?
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
+          <p className="text-sm text-gray-600">
+            Selecting "Yes" will open the mass email page with your post content pre-filled, allowing you to send it to your members.
+          </p>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={handleShareNo}
+          >
+            No, Thanks
+          </Button>
+          <Button
+            onClick={handleShareYes}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            Yes, Share via Email
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }
