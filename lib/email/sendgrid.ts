@@ -1,6 +1,6 @@
 import sgMail from '@sendgrid/mail';
-import { db } from '../db';
-import { unionEmailDomains } from '../db/schema';
+import { db } from '@/lib/db/drizzle';
+import { unionEmailDomains } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { checkRateLimit, incrementRateLimitCounters } from './rate-limits';
 import { getEmailAddress } from './subdomain';
@@ -73,13 +73,19 @@ async function getFromEmail(
   };
 }
 
+/**
+ * Send a transactional email
+ * NOTE: Regular emails (password reset, verification, etc.) should NOT pass unionId
+ * to ensure they use noreply@uniontab.com. Only mass emails should pass unionId
+ * to use custom subdomains.
+ */
 export async function sendEmail({ to, subject, text, html, unionId, fromLocalPart }: SendEmailOptions) {
   if (!apiKey) {
     console.error('SendGrid API key not configured');
     throw new Error('Email service not configured');
   }
 
-  // Check rate limits if unionId is provided
+  // Check rate limits if unionId is provided (mass emails only)
   if (unionId) {
     const rateLimitCheck = await checkRateLimit(unionId);
 
@@ -88,7 +94,7 @@ export async function sendEmail({ to, subject, text, html, unionId, fromLocalPar
     }
   }
 
-  // Get FROM email (subdomain or default)
+  // Get FROM email (subdomain for mass emails, default for regular emails)
   const fromEmail = await getFromEmail(unionId, fromLocalPart);
 
   try {

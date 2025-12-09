@@ -5,22 +5,20 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getJwtPayload } from '@/lib/auth';
-import { db } from '@/lib/db';
+import { getUser } from '@/lib/db/queries';
+import { db } from '@/lib/db/drizzle';
 import { members, unionEmailDomains } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { getDomainAuthentication, getValidationSummary } from '@/lib/email/sendgrid-domains';
 import { getRateLimitUsage } from '@/lib/email/rate-limits';
 
 export async function GET(request: Request) {
   try {
     // Verify authentication
-    const payload = await getJwtPayload();
-    if (!payload) {
+    const user = await getUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const userId = payload.id;
 
     // Get unionId from query params
     const { searchParams } = new URL(request.url);
@@ -37,14 +35,18 @@ export async function GET(request: Request) {
     }
 
     // Check if user is member of this union
-    const member = await db
+    const [member] = await db
       .select()
       .from(members)
-      .where(eq(members.userId, userId))
-      .where(eq(members.unionId, unionId))
+      .where(
+        and(
+          eq(members.userId, user.id),
+          eq(members.unionId, unionId)
+        )
+      )
       .limit(1);
 
-    if (member.length === 0) {
+    if (!member) {
       return NextResponse.json({ error: 'Not a member of this union' }, { status: 403 });
     }
 

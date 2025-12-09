@@ -10,8 +10,8 @@
  * Each tenant subdomain has its own rate limit counters.
  */
 
-import { db } from '../db';
-import { unionEmailDomains, unions } from '../db/schema';
+import { db } from '@/lib/db/drizzle';
+import { unionEmailDomains, unions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 /**

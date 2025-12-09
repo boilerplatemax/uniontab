@@ -5,21 +5,19 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getJwtPayload } from '@/lib/auth';
-import { db } from '@/lib/db';
+import { getUser } from '@/lib/db/queries';
+import { db } from '@/lib/db/drizzle';
 import { members, unionEmailDomains } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { validateDomainAuthentication } from '@/lib/email/sendgrid-domains';
 
 export async function POST(request: Request) {
   try {
     // Verify authentication
-    const payload = await getJwtPayload();
-    if (!payload) {
+    const user = await getUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const userId = payload.id;
 
     // Get request body
     const body = await request.json();
@@ -30,18 +28,22 @@ export async function POST(request: Request) {
     }
 
     // Check if user is owner/admin of this union
-    const member = await db
+    const [member] = await db
       .select()
       .from(members)
-      .where(eq(members.userId, userId))
-      .where(eq(members.unionId, unionId))
+      .where(
+        and(
+          eq(members.userId, user.id),
+          eq(members.unionId, unionId)
+        )
+      )
       .limit(1);
 
-    if (member.length === 0) {
+    if (!member) {
       return NextResponse.json({ error: 'Not a member of this union' }, { status: 403 });
     }
 
-    const userRole = member[0].role;
+    const userRole = member.role;
     if (userRole !== 'owner' && userRole !== 'admin') {
       return NextResponse.json(
         { error: 'Only owners and admins can verify email domains' },

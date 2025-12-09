@@ -5,8 +5,8 @@
  * Each tenant gets a subdomain like: atu123.uniontab.com
  */
 
-import { db } from '../db';
-import { unions, unionEmailDomains } from '../db/schema';
+import { db } from '@/lib/db/drizzle';
+import { unions, unionEmailDomains } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 // Base domain for all subdomains
