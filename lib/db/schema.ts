@@ -410,6 +410,52 @@ export const emailLogs = pgTable('email_logs', {
   sentAt: timestamp('sent_at').notNull().defaultNow(),
 });
 
+// Union Email Domains - Multi-subdomain email sending
+export const unionEmailDomains = pgTable('union_email_domains', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' })
+    .unique(), // One domain per union
+
+  // Subdomain configuration
+  subdomain: varchar('subdomain', { length: 100 }).notNull().unique(), // e.g., "atu123"
+  fullDomain: varchar('full_domain', { length: 255 }).notNull().unique(), // e.g., "atu123.uniontab.com"
+
+  // SendGrid configuration
+  sendgridDomainId: text('sendgrid_domain_id').unique(), // SendGrid's domain ID
+  verificationStatus: varchar('verification_status', { length: 20 })
+    .notNull()
+    .default('pending'), // 'pending', 'verifying', 'verified', 'failed'
+  lastVerificationAttempt: timestamp('last_verification_attempt'),
+  verificationError: text('verification_error'),
+
+  // DNS Records (stored as JSON for reference)
+  dnsRecords: json('dns_records'), // Array of {type, name, value, cloudflareId}
+
+  // Cloudflare record IDs for cleanup
+  cloudflareRecordIds: json('cloudflare_record_ids'), // Array of Cloudflare DNS record IDs
+
+  // Rate limiting counters
+  emailsSentToday: integer('emails_sent_today').notNull().default(0),
+  emailsSentThisHour: integer('emails_sent_this_hour').notNull().default(0),
+  emailsSentThisMinute: integer('emails_sent_this_minute').notNull().default(0),
+  lastEmailSentAt: timestamp('last_email_sent_at'),
+  dailyResetAt: timestamp('daily_reset_at').notNull().defaultNow(),
+  hourlyResetAt: timestamp('hourly_reset_at').notNull().defaultNow(),
+  minuteResetAt: timestamp('minute_reset_at').notNull().defaultNow(),
+
+  // Abuse protection
+  isBlocked: boolean('is_blocked').notNull().default(false),
+  blockedReason: text('blocked_reason'),
+  blockedAt: timestamp('blocked_at'),
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  verifiedAt: timestamp('verified_at'),
+});
+
 // Dues Tracking System Tables
 export const duesCycles = pgTable('dues_cycles', {
   id: serial('id').primaryKey(),
@@ -523,7 +569,7 @@ export const duesAuditLog = pgTable('dues_audit_log', {
     .references(() => unions.id, { onDelete: 'cascade' }),
 });
 
-export const unionsRelations = relations(unions, ({ many }) => ({
+export const unionsRelations = relations(unions, ({ one, many }) => ({
   members: many(members),
   activityLogs: many(activityLogs),
   invitations: many(invitations),
@@ -534,6 +580,7 @@ export const unionsRelations = relations(unions, ({ many }) => ({
   elections: many(elections),
   announcements: many(announcements),
   massEmails: many(massEmails),
+  emailDomain: one(unionEmailDomains),
   dues: many(dues),
   duesReceipts: many(duesReceipts),
   duesCycles: many(duesCycles),
@@ -790,6 +837,13 @@ export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   }),
 }));
 
+export const unionEmailDomainsRelations = relations(unionEmailDomains, ({ one }) => ({
+  union: one(unions, {
+    fields: [unionEmailDomains.unionId],
+    references: [unions.id],
+  }),
+}));
+
 export const duesRelations = relations(dues, ({ one }) => ({
   member: one(members, {
     fields: [dues.memberId],
@@ -915,6 +969,8 @@ export type DuesCycle = typeof duesCycles.$inferSelect;
 export type NewDuesCycle = typeof duesCycles.$inferInsert;
 export type DuesAuditLog = typeof duesAuditLog.$inferSelect;
 export type NewDuesAuditLog = typeof duesAuditLog.$inferInsert;
+export type UnionEmailDomain = typeof unionEmailDomains.$inferSelect;
+export type NewUnionEmailDomain = typeof unionEmailDomains.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;

@@ -1,4 +1,9 @@
 import sgMail from '@sendgrid/mail';
+import { db } from '../db';
+import { unionEmailDomains } from '../db/schema';
+import { eq } from 'drizzle-orm';
+import { checkRateLimit, incrementRateLimitCounters } from './rate-limits';
+import { getEmailAddress } from './subdomain';
 
 // Initialize SendGrid with API key
 const apiKey = process.env.SENDGRID_API_KEY;
@@ -22,27 +27,85 @@ interface SendEmailOptions {
   subject: string;
   text: string;
   html: string;
+  unionId?: number; // Optional: Use tenant-specific subdomain if verified
+  fromLocalPart?: string; // Optional: Override FROM local part (default: 'notify')
 }
 
-export async function sendEmail({ to, subject, text, html }: SendEmailOptions) {
+/**
+ * Get FROM email address for a union
+ * Uses verified subdomain if available, falls back to default
+ */
+async function getFromEmail(
+  unionId?: number,
+  fromLocalPart: string = 'notify'
+): Promise<{ email: string; name: string }> {
+  // If no unionId, use default
+  if (!unionId) {
+    return {
+      email: FROM_EMAIL,
+      name: FROM_NAME,
+    };
+  }
+
+  try {
+    // Check if union has a verified email domain
+    const emailDomain = await db
+      .select()
+      .from(unionEmailDomains)
+      .where(eq(unionEmailDomains.unionId, unionId))
+      .limit(1);
+
+    // If domain exists and is verified, use it
+    if (emailDomain.length > 0 && emailDomain[0].verificationStatus === 'verified') {
+      return {
+        email: getEmailAddress(emailDomain[0].subdomain, fromLocalPart),
+        name: FROM_NAME,
+      };
+    }
+  } catch (error) {
+    console.error(`Failed to get email domain for union ${unionId}:`, error);
+  }
+
+  // Fall back to default
+  return {
+    email: FROM_EMAIL,
+    name: FROM_NAME,
+  };
+}
+
+export async function sendEmail({ to, subject, text, html, unionId, fromLocalPart }: SendEmailOptions) {
   if (!apiKey) {
     console.error('SendGrid API key not configured');
     throw new Error('Email service not configured');
   }
 
+  // Check rate limits if unionId is provided
+  if (unionId) {
+    const rateLimitCheck = await checkRateLimit(unionId);
+
+    if (!rateLimitCheck.allowed) {
+      throw new Error(`Rate limit exceeded: ${rateLimitCheck.reason}`);
+    }
+  }
+
+  // Get FROM email (subdomain or default)
+  const fromEmail = await getFromEmail(unionId, fromLocalPart);
+
   try {
     await sgMail.send({
       to,
-      from: {
-        email: FROM_EMAIL,
-        name: FROM_NAME,
-      },
+      from: fromEmail,
       subject,
       text,
       html,
     });
 
-    console.log(`Email sent successfully to ${to}`);
+    console.log(`Email sent successfully to ${to} from ${fromEmail.email}`);
+
+    // Increment rate limit counters if unionId is provided
+    if (unionId) {
+      await incrementRateLimitCounters(unionId);
+    }
   } catch (error: any) {
     console.error('Error sending email:', error);
     if (error.response) {
@@ -497,6 +560,7 @@ interface SendMassEmailOptions {
   htmlContent: string;
   textContent: string;
   unionInfo: {
+    id?: number; // Union ID for rate limiting and subdomain
     name: string;
     localNumber: string | null;
     logoUrl?: string | null;
@@ -523,6 +587,18 @@ export async function sendMassEmail({
     console.error('SendGrid API key not configured');
     throw new Error('Email service not configured');
   }
+
+  // Check rate limits if unionId is provided
+  if (unionInfo.id) {
+    const rateLimitCheck = await checkRateLimit(unionInfo.id);
+
+    if (!rateLimitCheck.allowed) {
+      throw new Error(`Rate limit exceeded: ${rateLimitCheck.reason}`);
+    }
+  }
+
+  // Get FROM email (subdomain or default)
+  const fromEmail = await getFromEmail(unionInfo.id, 'notify');
 
   const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
   const unionNameUppercase = unionName.toUpperCase();
@@ -612,7 +688,7 @@ export async function sendMassEmail({
     await sgMail.send({
       to,
       from: {
-        email: FROM_EMAIL,
+        email: fromEmail.email,
         name: unionNameUppercase,
       },
       subject,
@@ -629,7 +705,12 @@ export async function sendMassEmail({
         })),
     });
 
-    console.log(`Mass email sent successfully to ${to}`);
+    console.log(`Mass email sent successfully to ${to} from ${fromEmail.email}`);
+
+    // Increment rate limit counters if unionId is provided
+    if (unionInfo.id) {
+      await incrementRateLimitCounters(unionInfo.id);
+    }
   } catch (error: any) {
     console.error('Error sending mass email:', error);
     if (error.response) {
