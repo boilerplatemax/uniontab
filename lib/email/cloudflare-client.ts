@@ -7,8 +7,15 @@
 
 // Cloudflare API configuration
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4';
-const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
-const CLOUDFLARE_ZONE_ID = process.env.CLOUDFLARE_ZONE_ID;
+
+// Helper functions to get environment variables (lazy evaluation)
+function getApiToken(): string | undefined {
+  return process.env.CLOUDFLARE_API_TOKEN;
+}
+
+function getZoneId(): string | undefined {
+  return process.env.CLOUDFLARE_ZONE_ID;
+}
 
 // DNS record types
 export interface DnsRecord {
@@ -42,10 +49,13 @@ export interface CloudflareApiResponse<T> {
  * Validate Cloudflare configuration
  */
 function validateConfig(): void {
-  if (!CLOUDFLARE_API_TOKEN) {
+  const apiToken = getApiToken();
+  const zoneId = getZoneId();
+
+  if (!apiToken) {
     throw new Error('CLOUDFLARE_API_TOKEN environment variable is not set');
   }
-  if (!CLOUDFLARE_ZONE_ID) {
+  if (!zoneId) {
     throw new Error('CLOUDFLARE_ZONE_ID environment variable is not set');
   }
 }
@@ -62,10 +72,12 @@ async function cloudflareRequest<T>(
 
   const url = `${CLOUDFLARE_API_BASE}${endpoint}`;
 
+  const apiToken = getApiToken();
+
   const response = await fetch(url, {
     method,
     headers: {
-      'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
+      'Authorization': `Bearer ${apiToken}`,
       'Content-Type': 'application/json',
     },
     body: body ? JSON.stringify(body) : undefined,
@@ -105,8 +117,10 @@ export async function createDnsRecord(record: DnsRecord): Promise<CloudflareDnsR
     payload.comment = record.comment;
   }
 
+  const zoneId = getZoneId();
+
   const response = await cloudflareRequest<CloudflareDnsRecord>(
-    `/zones/${CLOUDFLARE_ZONE_ID}/dns_records`,
+    `/zones/${zoneId}/dns_records`,
     'POST',
     payload
   );
@@ -139,8 +153,10 @@ export async function createDnsRecords(records: DnsRecord[]): Promise<Cloudflare
  * Get a DNS record by ID
  */
 export async function getDnsRecord(recordId: string): Promise<CloudflareDnsRecord> {
+  const zoneId = getZoneId();
+
   const response = await cloudflareRequest<CloudflareDnsRecord>(
-    `/zones/${CLOUDFLARE_ZONE_ID}/dns_records/${recordId}`
+    `/zones/${zoneId}/dns_records/${recordId}`
   );
 
   return response.result;
@@ -157,8 +173,10 @@ export async function listDnsRecords(
   if (name) params.append('name', name);
   if (type) params.append('type', type);
 
+  const zoneId = getZoneId();
+
   const response = await cloudflareRequest<CloudflareDnsRecord[]>(
-    `/zones/${CLOUDFLARE_ZONE_ID}/dns_records?${params.toString()}`
+    `/zones/${zoneId}/dns_records?${params.toString()}`
   );
 
   return response.result;
@@ -187,8 +205,10 @@ export async function updateDnsRecord(
     payload.comment = updates.comment;
   }
 
+  const zoneId = getZoneId();
+
   const response = await cloudflareRequest<CloudflareDnsRecord>(
-    `/zones/${CLOUDFLARE_ZONE_ID}/dns_records/${recordId}`,
+    `/zones/${zoneId}/dns_records/${recordId}`,
     'PUT',
     payload
   );
@@ -200,8 +220,10 @@ export async function updateDnsRecord(
  * Delete a DNS record
  */
 export async function deleteDnsRecord(recordId: string): Promise<void> {
+  const zoneId = getZoneId();
+
   await cloudflareRequest<{ id: string }>(
-    `/zones/${CLOUDFLARE_ZONE_ID}/dns_records/${recordId}`,
+    `/zones/${zoneId}/dns_records/${recordId}`,
     'DELETE'
   );
 }
@@ -319,12 +341,14 @@ export async function getZoneInfo(): Promise<{
 }> {
   validateConfig();
 
+  const zoneId = getZoneId();
+
   const response = await cloudflareRequest<{
     id: string;
     name: string;
     status: string;
     name_servers: string[];
-  }>(`/zones/${CLOUDFLARE_ZONE_ID}`);
+  }>(`/zones/${zoneId}`);
 
   return response.result;
 }

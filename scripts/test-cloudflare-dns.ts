@@ -4,17 +4,19 @@
  * Run with: npx tsx scripts/test-cloudflare-dns.ts
  */
 
+// Load environment variables FIRST, before any imports
 import dotenv from 'dotenv';
-import { getZoneInfo } from '../lib/email/cloudflare-client';
 import path from 'path';
 import fs from 'fs';
 
-// Load environment variables from .env file
 const envPath = path.resolve(process.cwd(), '.env');
 console.log('Looking for .env file at:', envPath);
 console.log('.env file exists:', fs.existsSync(envPath));
 
 dotenv.config({ path: envPath });
+
+// Now import modules that depend on environment variables
+import { getZoneInfo } from '../lib/email/cloudflare-client';
 
 async function testCloudflare() {
   console.log('\n🔍 Testing Cloudflare API connection...\n');
