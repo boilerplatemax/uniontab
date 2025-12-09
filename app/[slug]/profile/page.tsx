@@ -1,5 +1,5 @@
 import { redirect, notFound } from 'next/navigation';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { getUser, getUserWithTeam, getMemberDuesWithReceipts } from '@/lib/db/queries';
 import { MemberProfile } from './member-profile';
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
@@ -69,6 +69,9 @@ export default async function ProfilePage({
   const isOwner = membership?.member.role === 'owner';
   const pendingMembersCount = isOwner ? await getPendingMembersCount(union.id) : 0;
 
+  // Get member's dues with receipts
+  const memberDues = membership ? await getMemberDuesWithReceipts(membership.member.id) : [];
+
   return (
     <>
       <UnionNavbar
@@ -80,7 +83,14 @@ export default async function ProfilePage({
         pendingMembersCount={pendingMembersCount}
       />
       <NavbarSpacer />
-      <MemberProfile slug={slug} user={user} userWithUnion={userWithUnion} membership={membership} union={union} />
+      <MemberProfile
+        slug={slug}
+        user={user}
+        userWithUnion={userWithUnion}
+        membership={membership}
+        union={union}
+        memberDues={memberDues}
+      />
     </>
   );
 }

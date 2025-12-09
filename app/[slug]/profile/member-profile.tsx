@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Lock, Loader2, Briefcase } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { User, Lock, Loader2, Briefcase, DollarSign, Download, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import type { User as UserType, Union, Member } from '@/lib/db/schema';
 
 interface MemberProfileProps {
@@ -18,10 +19,11 @@ interface MemberProfileProps {
     member: Member;
   } | null;
   union: Union;
+  memberDues: any[];
 }
 
-export function MemberProfile({ slug, user, userWithUnion, membership, union }: MemberProfileProps) {
-  const [activeTab, setActiveTab] = useState<'general' | 'member' | 'security'>('general');
+export function MemberProfile({ slug, user, userWithUnion, membership, union, memberDues }: MemberProfileProps) {
+  const [activeTab, setActiveTab] = useState<'general' | 'member' | 'dues' | 'security'>('general');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -165,6 +167,59 @@ export function MemberProfile({ slug, user, userWithUnion, membership, union }: 
     }
   };
 
+  // Dues helper functions
+  const formatCurrency = (amountInCents: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amountInCents / 100);
+  };
+
+  const formatDate = (date: Date | string) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const getStatusBadge = (status: string, dueDate: Date) => {
+    if (status === 'paid') {
+      return <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Paid</Badge>;
+    }
+    if (status === 'partial') {
+      return <Badge className="bg-yellow-500"><Clock className="h-3 w-3 mr-1" />Partial</Badge>;
+    }
+    const isOverdue = new Date(dueDate) < new Date();
+    if (isOverdue) {
+      return <Badge className="bg-red-500"><AlertCircle className="h-3 w-3 mr-1" />Overdue</Badge>;
+    }
+    return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Unpaid</Badge>;
+  };
+
+  const handleDownloadReceipt = async (receiptId: number) => {
+    try {
+      const response = await fetch(`/api/dues/receipt/${receiptId}`);
+      if (!response.ok) {
+        throw new Error('Failed to load receipt');
+      }
+      const data = await response.json();
+      // Open in new window for print/download
+      window.open(`/${slug}/profile?receipt=${receiptId}`, '_blank');
+    } catch (error: any) {
+      alert(error.message || 'Failed to load receipt');
+    }
+  };
+
+  // Calculate dues summary
+  const duesSummary = {
+    totalDues: memberDues.reduce((sum, d) => sum + d.amount, 0),
+    totalPaid: memberDues.reduce((sum, d) => sum + d.paidAmount, 0),
+    totalOutstanding: memberDues.filter(d => d.paymentStatus !== 'paid').reduce((sum, d) => sum + (d.amount - d.paidAmount), 0),
+    overdueCount: memberDues.filter(d => d.paymentStatus === 'unpaid' && new Date(d.dueDate) < new Date()).length,
+    isDelinquent: membership?.member.isDelinquent || false,
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Main Content */}
@@ -202,6 +257,22 @@ export function MemberProfile({ slug, user, userWithUnion, membership, union }: 
             <div className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
               Member Info
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('dues')}
+            className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+              activeTab === 'dues'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Dues
+              {duesSummary.overdueCount > 0 && (
+                <Badge className="bg-red-500 ml-1">{duesSummary.overdueCount}</Badge>
+              )}
             </div>
           </button>
           <button
@@ -445,6 +516,157 @@ export function MemberProfile({ slug, user, userWithUnion, membership, union }: 
               </form>
             </CardContent>
           </Card>
+        )}
+
+        {/* Dues Tab */}
+        {activeTab === 'dues' && (
+          <div className="space-y-6">
+            {/* Dues Status Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Dues Status</CardTitle>
+                <CardDescription>View your payment history and current standing</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {duesSummary.isDelinquent ? (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg mb-6">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold text-red-900">Payment Overdue</h3>
+                        <p className="text-sm text-red-700 mt-1">
+                          Your dues payments are past due. Outstanding balance: <strong>{formatCurrency(duesSummary.totalOutstanding)}</strong>
+                        </p>
+                        <p className="text-sm text-red-700 mt-1">
+                          Please contact the union office or submit payment as soon as possible to maintain your membership in good standing.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg mb-6">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold text-green-900">Account in Good Standing</h3>
+                        <p className="text-sm text-green-700 mt-1">
+                          {duesSummary.totalOutstanding > 0
+                            ? `Current balance: ${formatCurrency(duesSummary.totalOutstanding)}`
+                            : 'All dues are paid up to date. Thank you!'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Summary Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">Total Dues</div>
+                    <div className="text-2xl font-bold">{formatCurrency(duesSummary.totalDues)}</div>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">Total Paid</div>
+                    <div className="text-2xl font-bold text-green-600">{formatCurrency(duesSummary.totalPaid)}</div>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">Outstanding</div>
+                    <div className="text-2xl font-bold text-red-600">{formatCurrency(duesSummary.totalOutstanding)}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Payment History */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment History</CardTitle>
+                <CardDescription>All your dues records and receipts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {memberDues.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-4 font-semibold text-sm">Due Date</th>
+                          <th className="text-left py-3 px-4 font-semibold text-sm">Amount</th>
+                          <th className="text-left py-3 px-4 font-semibold text-sm">Status</th>
+                          <th className="text-left py-3 px-4 font-semibold text-sm">Paid</th>
+                          <th className="text-left py-3 px-4 font-semibold text-sm">Payment Method</th>
+                          <th className="text-right py-3 px-4 font-semibold text-sm">Receipt</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {memberDues.map((d: any) => (
+                          <tr key={d.id} className="border-b hover:bg-gray-50">
+                            <td className="py-3 px-4">{formatDate(d.dueDate)}</td>
+                            <td className="py-3 px-4 font-semibold">{formatCurrency(d.amount)}</td>
+                            <td className="py-3 px-4">{getStatusBadge(d.paymentStatus, d.dueDate)}</td>
+                            <td className="py-3 px-4">
+                              {d.paidAmount > 0 ? (
+                                <div>
+                                  <div className="font-medium">{formatCurrency(d.paidAmount)}</div>
+                                  {d.paidDate && (
+                                    <div className="text-xs text-gray-500">{formatDate(d.paidDate)}</div>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">—</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              {d.paymentMethod ? (
+                                <span className="capitalize">{d.paymentMethod.replace('_', ' ')}</span>
+                              ) : (
+                                <span className="text-gray-400">—</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              {d.receipts && d.receipts.length > 0 ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDownloadReceipt(d.receipts[0].id)}
+                                >
+                                  <Download className="h-4 w-4 mr-1" />
+                                  Download
+                                </Button>
+                              ) : d.paymentStatus !== 'unpaid' ? (
+                                <span className="text-xs text-gray-500">No receipt</span>
+                              ) : (
+                                <span className="text-gray-400">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <DollarSign className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Dues Records</h3>
+                    <p className="text-gray-500">You don't have any dues records yet.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Payment Instructions */}
+            {union.paymentInstructions && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Payment Instructions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose prose-sm max-w-none">
+                    <p className="text-gray-700 whitespace-pre-wrap">{union.paymentInstructions}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
 
         {/* Security Settings */}
