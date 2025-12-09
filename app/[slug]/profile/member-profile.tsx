@@ -652,20 +652,6 @@ export function MemberProfile({ slug, user, userWithUnion, membership, union, me
                 )}
               </CardContent>
             </Card>
-
-            {/* Payment Instructions */}
-            {union.paymentInstructions && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Payment Instructions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-sm max-w-none">
-                    <p className="text-gray-700 whitespace-pre-wrap">{union.paymentInstructions}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
         )}
 
