@@ -8,6 +8,7 @@ import { customerPortalAction, checkoutAction } from '@/lib/payments/actions';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
 import { useState, useEffect } from 'react';
+import { StorageUsageBar } from '@/components/storage/storage-usage-bar';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -147,6 +148,11 @@ export function BillingContent({ slug, union }: BillingContentProps) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Storage Usage */}
+        <div className="mb-6">
+          <StorageUsageBar unionSlug={slug} />
+        </div>
 
         {/* Available Plans - Show if no active subscription or subscription is cancelled */}
         {shouldShowProducts && (

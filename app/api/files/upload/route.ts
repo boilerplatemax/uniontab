@@ -3,6 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { files, members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
+import { checkStorageLimit, incrementStorageUsage, formatBytes } from '@/lib/storage/limits';
 
 export async function POST(request: Request) {
   try {
@@ -36,6 +37,25 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check storage limits before uploading
+    const storageCheck = await checkStorageLimit(unionId, fileSize);
+
+    if (!storageCheck.canUpload) {
+      return NextResponse.json(
+        {
+          error: 'Storage limit exceeded',
+          details: {
+            fileSize: formatBytes(fileSize),
+            used: formatBytes(storageCheck.used),
+            limit: formatBytes(storageCheck.limit),
+            remaining: formatBytes(storageCheck.remaining),
+            message: `This file (${formatBytes(fileSize)}) would exceed your storage limit. You have ${formatBytes(storageCheck.remaining)} remaining of ${formatBytes(storageCheck.limit)}.`
+          }
+        },
+        { status: 413 } // 413 Payload Too Large
+      );
+    }
+
     // Create the file record
     const [newFile] = await db
       .insert(files)
@@ -51,6 +71,9 @@ export async function POST(request: Request) {
         createdBy: user.id,
       })
       .returning();
+
+    // Increment storage usage
+    await incrementStorageUsage(unionId, fileSize);
 
     return NextResponse.json({ success: true, file: newFile });
   } catch (error) {

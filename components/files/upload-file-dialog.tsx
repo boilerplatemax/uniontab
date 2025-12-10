@@ -91,7 +91,9 @@ export function UploadFileDialog({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to upload file');
+        // Use detailed message if available (e.g., for storage limit errors)
+        const errorMessage = data.details?.message || data.error || 'Failed to upload file';
+        throw new Error(errorMessage);
       }
 
       // Reset form
