@@ -53,6 +53,7 @@ export const unions = pgTable('unions', {
   subscriptionStatus: varchar('subscription_status', { length: 20 }),
   monthlyEmailsSent: integer('monthly_emails_sent').notNull().default(0),
   emailUsageResetDate: timestamp('email_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
+  storageUsedBytes: integer('storage_used_bytes').notNull().default(0),
 });
 
 export const members = pgTable('members', {

@@ -82,7 +82,7 @@ const pricingPlans: PricingPlan[] = [
       { name: "Email Messages", included: true, limit: "2,500/month" },
       { name: "SMS Messages", included: true, limit: "500/month" },
       { name: "Elections", included: true, limit: "Unlimited" },
-      { name: "Storage", included: true, limit: "25 GB" },
+      { name: "Storage", included: true, limit: "10 GB" },
       { name: "Custom Pages", included: true, limit: "Unlimited" },
       { name: "Member Portal", included: true },
       { name: "Advanced Analytics", included: true },
@@ -107,7 +107,7 @@ const pricingPlans: PricingPlan[] = [
       { name: "Email Messages", included: true, limit: "10,000/month" },
       { name: "SMS Messages", included: true, limit: "2,500/month" },
       { name: "Elections", included: true, limit: "Unlimited" },
-      { name: "Storage", included: true, limit: "100 GB" },
+      { name: "Storage", included: true, limit: "30 GB" },
       { name: "Custom Pages", included: true, limit: "Unlimited" },
       { name: "Member Portal", included: true },
       { name: "Advanced Analytics", included: true },
@@ -295,7 +295,7 @@ export default function PricingPage() {
               { feature: "Email/month", free: "100", base: "2,500", plus: "10,000" },
               { feature: "SMS/month", free: "50", base: "500", plus: "2,500" },
               { feature: "Elections", free: "2/year", base: "Unlimited", plus: "Unlimited" },
-              { feature: "Storage", free: "1 GB", base: "25 GB", plus: "100 GB" },
+              { feature: "Storage", free: "1 GB", base: "10 GB", plus: "30 GB" },
               { feature: "Custom Pages", free: "5", base: "Unlimited", plus: "Unlimited" },
             ].map((row, i) => (
               <div key={i} className={`grid grid-cols-4 gap-4 p-6 ${i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>

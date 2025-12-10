@@ -3,6 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { files, members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
+import { decrementStorageUsage } from '@/lib/storage/limits';
 
 export async function POST(request: Request) {
   try {
@@ -46,8 +47,15 @@ export async function POST(request: Request) {
       );
     }
 
+    // Store file size before deletion for storage tracking
+    const fileSize = file.fileSize;
+    const unionId = file.unionId;
+
     // Delete the file
     await db.delete(files).where(eq(files.id, fileId));
+
+    // Decrement storage usage
+    await decrementStorageUsage(unionId, fileSize);
 
     return NextResponse.json({ success: true });
   } catch (error) {
