@@ -9,6 +9,7 @@ import { EditPostDialog } from '@/components/posts/edit-post-dialog';
 import { UploadFileDialog } from '@/components/files/upload-file-dialog';
 import { EditFileDialog } from '@/components/files/edit-file-dialog';
 import { CategorizedFilesList } from '@/components/files/categorized-files-list';
+import { CompactStorageWidget } from '@/components/storage/compact-storage-widget';
 import { CreateEventDialog } from '@/components/events/create-event-dialog';
 import { EditEventDialog } from '@/components/events/edit-event-dialog';
 import { EventsCalendar } from '@/components/events/events-calendar';
@@ -574,6 +575,11 @@ export function UnionProfileTabs({
                     Upload File
                   </Button>
                 </div>
+              )}
+
+              {/* Storage Usage Widget (Owner only) */}
+              {isOwner && (
+                <CompactStorageWidget unionSlug={union.slug} />
               )}
 
               {/* Files List */}
