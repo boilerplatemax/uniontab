@@ -1,5 +1,5 @@
 import { db } from '@/lib/db/drizzle';
-import { unions, files, postAttachments, announcementAttachments } from '@/lib/db/schema';
+import { unions, files, postAttachments, announcementAttachments, posts, announcements } from '@/lib/db/schema';
 import { eq, sum } from 'drizzle-orm';
 
 /**
@@ -59,7 +59,8 @@ export async function calculateStorageUsed(unionId: number): Promise<number> {
   const postAttachmentsResult = await db
     .select({ total: sum(postAttachments.fileSize) })
     .from(postAttachments)
-    .where(eq(postAttachments.unionId, unionId));
+    .innerJoin(posts, eq(postAttachments.postId, posts.id))
+    .where(eq(posts.unionId, unionId));
 
   const postAttachmentsTotal = Number(postAttachmentsResult[0]?.total || 0);
 
@@ -67,7 +68,8 @@ export async function calculateStorageUsed(unionId: number): Promise<number> {
   const announcementAttachmentsResult = await db
     .select({ total: sum(announcementAttachments.fileSize) })
     .from(announcementAttachments)
-    .where(eq(announcementAttachments.unionId, unionId));
+    .innerJoin(announcements, eq(announcementAttachments.announcementId, announcements.id))
+    .where(eq(announcements.unionId, unionId));
 
   const announcementAttachmentsTotal = Number(announcementAttachmentsResult[0]?.total || 0);
 
