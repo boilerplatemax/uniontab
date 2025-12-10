@@ -21,10 +21,20 @@ import {
   postAttachments,
   postLikes,
   users,
+  massEmails,
+  emailLogs,
+  unionEmailDomains,
+  dues,
+  duesReceipts,
+  duesCycles,
+  duesAuditLog,
 } from '@/lib/db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { verifyToken } from '@/lib/auth/session';
 import { sendEmail } from '@/lib/email/sendgrid';
+import { deleteDnsRecords } from '@/lib/email/cloudflare-client';
+import { deleteDomainAuthentication } from '@/lib/email/sendgrid-domains';
+import { stripe } from '@/lib/payments/stripe';
 
 // Force this route to use Node.js runtime to support bcryptjs
 export const runtime = 'nodejs';
@@ -67,6 +77,66 @@ export async function DELETE(
     if (!union) {
       return NextResponse.json({ error: 'Union not found' }, { status: 404 });
     }
+
+    console.log(`Starting deletion of union: ${union.name} (ID: ${unionId})`);
+
+    // =====================================================
+    // STEP 1: Clean up external services (Cloudflare, SendGrid, Stripe)
+    // =====================================================
+
+    // Get union email domain configuration to clean up DNS records
+    const [emailDomain] = await db
+      .select()
+      .from(unionEmailDomains)
+      .where(eq(unionEmailDomains.unionId, unionId))
+      .limit(1);
+
+    if (emailDomain) {
+      console.log('Found email domain configuration for cleanup');
+
+      // Delete Cloudflare DNS records
+      if (emailDomain.cloudflareRecordIds && Array.isArray(emailDomain.cloudflareRecordIds)) {
+        const recordIds = emailDomain.cloudflareRecordIds as string[];
+        if (recordIds.length > 0) {
+          try {
+            console.log(`Deleting ${recordIds.length} Cloudflare DNS records...`);
+            await deleteDnsRecords(recordIds);
+            console.log('Successfully deleted Cloudflare DNS records');
+          } catch (error) {
+            console.error('Failed to delete Cloudflare DNS records:', error);
+            // Continue with deletion even if Cloudflare cleanup fails
+          }
+        }
+      }
+
+      // Delete SendGrid domain authentication
+      if (emailDomain.sendgridDomainId) {
+        try {
+          console.log(`Deleting SendGrid domain authentication (ID: ${emailDomain.sendgridDomainId})...`);
+          await deleteDomainAuthentication(parseInt(emailDomain.sendgridDomainId));
+          console.log('Successfully deleted SendGrid domain authentication');
+        } catch (error) {
+          console.error('Failed to delete SendGrid domain authentication:', error);
+          // Continue with deletion even if SendGrid cleanup fails
+        }
+      }
+    }
+
+    // Cancel Stripe subscription if one exists
+    if (union.stripeSubscriptionId) {
+      try {
+        console.log(`Canceling Stripe subscription (ID: ${union.stripeSubscriptionId})...`);
+        await stripe.subscriptions.cancel(union.stripeSubscriptionId);
+        console.log('Successfully canceled Stripe subscription');
+      } catch (error) {
+        console.error('Failed to cancel Stripe subscription:', error);
+        // Continue with deletion even if Stripe cancellation fails
+      }
+    }
+
+    // =====================================================
+    // STEP 2: Collect data for deletion and notifications
+    // =====================================================
 
     // Get all members to notify them and collect user emails
     const unionMembers = await db
@@ -128,7 +198,18 @@ export async function DELETE(
 
     const voteIds = electionVotesData.map((v) => v.id);
 
-    console.log(`Starting deletion of union: ${union.name} (ID: ${unionId})`);
+    // Get all mass emails to delete their logs
+    const unionMassEmails = await db
+      .select()
+      .from(massEmails)
+      .where(eq(massEmails.unionId, unionId));
+
+    const massEmailIds = unionMassEmails.map((e) => e.id);
+
+    // =====================================================
+    // STEP 3: Delete all related data
+    // =====================================================
+    console.log('Starting database cleanup...');
 
     // Delete all related data in correct order (children first, then parents)
     // Note: Some tables have cascade delete set up in schema, but we'll be explicit
@@ -224,11 +305,45 @@ export async function DELETE(
     await db.delete(members).where(eq(members.unionId, unionId));
     console.log('Deleted members');
 
-    // 16. Finally, delete the union itself
+    // 16. Delete email logs (child of mass emails)
+    if (massEmailIds.length > 0) {
+      await db
+        .delete(emailLogs)
+        .where(inArray(emailLogs.massEmailId, massEmailIds));
+      console.log('Deleted email logs');
+    }
+
+    // 17. Delete mass emails
+    await db.delete(massEmails).where(eq(massEmails.unionId, unionId));
+    console.log('Deleted mass emails');
+
+    // 18. Delete dues receipts (child of dues)
+    await db.delete(duesReceipts).where(eq(duesReceipts.unionId, unionId));
+    console.log('Deleted dues receipts');
+
+    // 19. Delete dues
+    await db.delete(dues).where(eq(dues.unionId, unionId));
+    console.log('Deleted dues');
+
+    // 20. Delete dues cycles
+    await db.delete(duesCycles).where(eq(duesCycles.unionId, unionId));
+    console.log('Deleted dues cycles');
+
+    // 21. Delete dues audit log
+    await db.delete(duesAuditLog).where(eq(duesAuditLog.unionId, unionId));
+    console.log('Deleted dues audit log');
+
+    // 22. Delete union email domains (DNS cleanup already done above)
+    await db.delete(unionEmailDomains).where(eq(unionEmailDomains.unionId, unionId));
+    console.log('Deleted union email domains');
+
+    // 23. Finally, delete the union itself
     await db.delete(unions).where(eq(unions.id, unionId));
     console.log('Deleted union');
 
-    // 17. Clean up orphaned user accounts
+    // =====================================================
+    // STEP 4: Clean up orphaned user accounts
+    // =====================================================
     // For each user that was a member of this union, check if they have other memberships
     // If not, delete their user account
     const orphanedUserIds: number[] = [];
@@ -253,7 +368,9 @@ export async function DELETE(
       console.log(`Deleted ${orphanedUserIds.length} orphaned user accounts`);
     }
 
-    // Send notification emails to all members
+    // =====================================================
+    // STEP 5: Send notification emails to all affected members
+    // =====================================================
     const emailPromises = unionMembers.map(async (member) => {
       try {
         await sendEmail({
@@ -301,6 +418,11 @@ The UnionTab Team`,
       deletedUnion: union.name,
       notifiedMembers: unionMembers.length,
       orphanedUsersDeleted: orphanedUserIds.length,
+      externalServicesCleanedUp: {
+        cloudflare: emailDomain?.cloudflareRecordIds ? true : false,
+        sendgrid: emailDomain?.sendgridDomainId ? true : false,
+        stripe: union.stripeSubscriptionId ? true : false,
+      },
     });
   } catch (error) {
     console.error('Error deleting union:', error);
