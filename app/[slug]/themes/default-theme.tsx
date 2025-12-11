@@ -1,4 +1,5 @@
-import { Users, Mail, Phone, MapPin, Globe } from 'lucide-react';
+import { Users, Mail, Phone, MapPin, Globe, Settings } from 'lucide-react';
+import Link from 'next/link';
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -81,6 +82,17 @@ export function DefaultTheme({
             <div className="flex items-center justify-center h-full">
               <Users className="h-32 w-32 text-white/30" />
             </div>
+          )}
+
+          {/* Edit Button for Owners/Admins */}
+          {isOwner && (
+            <Link
+              href={`/${slug}/settings`}
+              className="absolute bottom-4 right-4 bg-white/90 hover:bg-white backdrop-blur-sm p-3 rounded-lg shadow-lg transition-all hover:scale-105 group"
+              title="Edit banner and settings"
+            >
+              <Settings className="h-5 w-5 text-gray-700 group-hover:text-blue-600 transition-colors" />
+            </Link>
           )}
         </div>
       </div>

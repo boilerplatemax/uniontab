@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db/drizzle';
 import { unions, members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -42,7 +43,7 @@ export async function PUT(request: NextRequest) {
     } = body;
 
     // Update the union
-    await db
+    const [updatedUnion] = await db
       .update(unions)
       .set({
         publicName: publicName || null,
@@ -56,7 +57,14 @@ export async function PUT(request: NextRequest) {
         about: about || null,
         theme: theme || 'default',
       })
-      .where(eq(unions.id, membership.unionId));
+      .where(eq(unions.id, membership.unionId))
+      .returning();
+
+    // Revalidate the union page to show updated content immediately
+    if (updatedUnion?.slug) {
+      revalidatePath(`/${updatedUnion.slug}`);
+      revalidatePath(`/${updatedUnion.slug}/settings`);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -22,7 +22,7 @@ export async function resizeImage(
   const {
     maxWidth = 1920,
     maxHeight = 1080,
-    quality = 0.9,
+    quality = 0.95,
     maintainAspectRatio = true,
   } = options;
 
@@ -95,7 +95,7 @@ export async function smartCropImage(
   file: File,
   targetWidth: number,
   targetHeight: number,
-  quality: number = 0.9
+  quality: number = 0.95
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

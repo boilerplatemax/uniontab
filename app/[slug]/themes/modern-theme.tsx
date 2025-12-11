@@ -1,11 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { AnnouncementClient } from '../announcement-client';
 import { AccessibilityWidget } from '@/components/accessibility-widget';
 import type { ThemeProps } from './types';
-import { Users } from 'lucide-react';
+import { Users, Settings } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
 
 /**
@@ -82,6 +83,17 @@ export function ModernTheme({
             />
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-blue-800/80" />
           </div>
+        )}
+
+        {/* Edit Button for Owners/Admins */}
+        {isOwner && (
+          <Link
+            href={`/${slug}/settings`}
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm p-3 rounded-lg shadow-lg transition-all hover:scale-105 border border-white/20 group"
+            title="Edit banner and settings"
+          >
+            <Settings className="h-5 w-5 text-white group-hover:text-white transition-colors" />
+          </Link>
         )}
 
         {/* Hero Content */}
