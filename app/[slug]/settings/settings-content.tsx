@@ -312,6 +312,9 @@ export function SettingsContent() {
                 onFileSelect={(file, url) => {
                   if (url) {
                     setFormData({ ...formData, logoUrl: url });
+                  } else if (file === null) {
+                    // Handle removal
+                    setFormData({ ...formData, logoUrl: '' });
                   }
                 }}
                 accept="image/*"
@@ -329,6 +332,9 @@ export function SettingsContent() {
                 onFileSelect={(file, url) => {
                   if (url) {
                     setFormData({ ...formData, coverPhotoUrl: url });
+                  } else if (file === null) {
+                    // Handle removal
+                    setFormData({ ...formData, coverPhotoUrl: '' });
                   }
                 }}
                 accept="image/*"
