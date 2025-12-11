@@ -15,7 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X, File as FileIcon } from 'lucide-react';
 
 interface PostAttachment {
   fileName: string;
@@ -63,6 +63,10 @@ export function EditPostDialog({
       setIsPrivate(post.isPrivate);
     }
   }, [post]);
+
+  const handleRemoveAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,6 +156,39 @@ export function EditPostDialog({
             </div>
 
             <div>
+              <Label>File Attachments (optional)</Label>
+
+              {/* Display existing attachments */}
+              {attachments.length > 0 && (
+                <div className="space-y-2 mb-4 mt-2">
+                  <p className="text-sm text-gray-600">Current attachments:</p>
+                  {attachments.map((attachment, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+                    >
+                      <FileIcon className="h-5 w-5 text-gray-600 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{attachment.fileName}</p>
+                        <p className="text-xs text-gray-500">
+                          {(attachment.fileSize / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveAttachment(index)}
+                        className="flex-shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload new attachments */}
               <MultiFileUpload
                 onFilesChange={(files) => {
                   setAttachments(prev => [...prev, ...files]);
@@ -161,7 +198,7 @@ export function EditPostDialog({
                 maxFiles={5}
                 bucket="union-files"
                 path="post-attachments"
-                label="File Attachments (optional)"
+                label=""
                 hint="Attach documents, PDFs, or other files to this post"
               />
               <p className="text-xs text-gray-500 mt-2">
