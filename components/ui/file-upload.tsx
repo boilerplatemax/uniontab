@@ -111,13 +111,13 @@ export function FileUpload({
 
         if (smartCrop) {
           // Use smart crop for exact dimensions
-          processedBlob = await smartCropImage(file, width, height, 0.9)
+          processedBlob = await smartCropImage(file, width, height, 0.95)
         } else if (autoResize) {
           // Use resize to fit within dimensions
           processedBlob = await resizeImage(file, {
-            maxWidth: width,
-            maxHeight: height,
-            quality: 0.9,
+            maxWidth: width * 1.5, // Allow 50% larger for better quality
+            maxHeight: height * 1.5,
+            quality: 0.95,
             maintainAspectRatio: true
           })
         } else {
