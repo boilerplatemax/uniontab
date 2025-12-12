@@ -1,6 +1,6 @@
-import { desc, and, eq, isNull, gte, lte } from 'drizzle-orm';
+import { desc, and, eq, isNull, gte, lte, or, sql } from 'drizzle-orm';
 import { db } from './drizzle';
-import { activityLogs, members, unions, users, dues, duesReceipts, duesCycles } from './schema';
+import { activityLogs, members, unions, users, dues, duesReceipts, duesCycles, grievances, grievanceComments, grievanceAttachments, grievanceCategories } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
 
@@ -340,5 +340,283 @@ export async function getDuesCyclesForUnion(unionId: number) {
       }
     },
     orderBy: [desc(duesCycles.createdAt)]
+  });
+}
+
+// Grievance Tracking Queries
+
+/**
+ * Get all grievances for a union with member and assignment information
+ */
+export async function getGrievancesForUnion(unionId: number, filters?: {
+  status?: string;
+  priority?: string;
+  category?: string;
+  assignedTo?: number;
+  memberId?: number;
+}) {
+  let conditions = [eq(grievances.unionId, unionId)];
+
+  if (filters?.status) {
+    conditions.push(eq(grievances.status, filters.status));
+  }
+  if (filters?.priority) {
+    conditions.push(eq(grievances.priority, filters.priority));
+  }
+  if (filters?.category) {
+    conditions.push(eq(grievances.category, filters.category));
+  }
+  if (filters?.assignedTo) {
+    conditions.push(eq(grievances.assignedTo, filters.assignedTo));
+  }
+  if (filters?.memberId) {
+    conditions.push(eq(grievances.memberId, filters.memberId));
+  }
+
+  return await db.query.grievances.findMany({
+    where: and(...conditions),
+    with: {
+      member: {
+        with: {
+          user: {
+            columns: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        }
+      },
+      assignedTo: {
+        columns: {
+          id: true,
+          name: true,
+          email: true
+        }
+      },
+      createdBy: {
+        columns: {
+          id: true,
+          name: true
+        }
+      },
+      comments: {
+        orderBy: [desc(grievanceComments.createdAt)],
+        limit: 3
+      },
+      attachments: {
+        orderBy: [desc(grievanceAttachments.createdAt)]
+      }
+    },
+    orderBy: [desc(grievances.updatedAt)]
+  });
+}
+
+/**
+ * Get grievances for a specific member
+ */
+export async function getGrievancesForMember(memberId: number) {
+  return await db.query.grievances.findMany({
+    where: eq(grievances.memberId, memberId),
+    with: {
+      assignedTo: {
+        columns: {
+          id: true,
+          name: true
+        }
+      },
+      comments: {
+        where: eq(grievanceComments.isInternal, false), // Only show public comments to members
+        orderBy: [desc(grievanceComments.createdAt)]
+      },
+      attachments: {
+        orderBy: [desc(grievanceAttachments.createdAt)]
+      }
+    },
+    orderBy: [desc(grievances.updatedAt)]
+  });
+}
+
+/**
+ * Get a single grievance by ID with all related data
+ */
+export async function getGrievanceById(grievanceId: number, includeInternal: boolean = false) {
+  const grievance = await db.query.grievances.findFirst({
+    where: eq(grievances.id, grievanceId),
+    with: {
+      member: {
+        with: {
+          user: {
+            columns: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        }
+      },
+      assignedTo: {
+        columns: {
+          id: true,
+          name: true,
+          email: true
+        }
+      },
+      createdBy: {
+        columns: {
+          id: true,
+          name: true
+        }
+      },
+      updatedBy: {
+        columns: {
+          id: true,
+          name: true
+        }
+      },
+      comments: {
+        where: includeInternal ? undefined : eq(grievanceComments.isInternal, false),
+        with: {
+          createdBy: {
+            columns: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        },
+        orderBy: [desc(grievanceComments.createdAt)]
+      },
+      attachments: {
+        with: {
+          uploadedBy: {
+            columns: {
+              id: true,
+              name: true
+            }
+          }
+        },
+        orderBy: [desc(grievanceAttachments.createdAt)]
+      }
+    }
+  });
+
+  return grievance;
+}
+
+/**
+ * Get comments for a specific grievance
+ */
+export async function getGrievanceComments(grievanceId: number, includeInternal: boolean = false) {
+  return await db.query.grievanceComments.findMany({
+    where: includeInternal
+      ? eq(grievanceComments.grievanceId, grievanceId)
+      : and(eq(grievanceComments.grievanceId, grievanceId), eq(grievanceComments.isInternal, false)),
+    with: {
+      createdBy: {
+        columns: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    },
+    orderBy: [desc(grievanceComments.createdAt)]
+  });
+}
+
+/**
+ * Get attachments for a specific grievance
+ */
+export async function getGrievanceAttachments(grievanceId: number) {
+  return await db.query.grievanceAttachments.findMany({
+    where: eq(grievanceAttachments.grievanceId, grievanceId),
+    with: {
+      uploadedBy: {
+        columns: {
+          id: true,
+          name: true
+        }
+      }
+    },
+    orderBy: [desc(grievanceAttachments.createdAt)]
+  });
+}
+
+/**
+ * Get grievance categories for a union
+ */
+export async function getGrievanceCategories(unionId: number) {
+  return await db.query.grievanceCategories.findMany({
+    where: and(
+      eq(grievanceCategories.unionId, unionId),
+      eq(grievanceCategories.isActive, true)
+    ),
+    orderBy: [grievanceCategories.sortOrder, grievanceCategories.name]
+  });
+}
+
+/**
+ * Get grievance summary statistics for a union
+ */
+export async function getGrievanceSummaryForUnion(unionId: number) {
+  const allGrievances = await db
+    .select()
+    .from(grievances)
+    .where(eq(grievances.unionId, unionId));
+
+  const statusCounts = allGrievances.reduce((acc, g) => {
+    acc[g.status] = (acc[g.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const priorityCounts = allGrievances.reduce((acc, g) => {
+    const priority = g.priority || 'medium';
+    acc[priority] = (acc[priority] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  return {
+    total: allGrievances.length,
+    statusCounts,
+    priorityCounts,
+    draftCount: statusCounts['draft'] || 0,
+    submittedCount: statusCounts['submitted'] || 0,
+    assignedCount: statusCounts['assigned'] || 0,
+    underReviewCount: statusCounts['under_review'] || 0,
+    awaitingResponseCount: statusCounts['awaiting_response'] || 0,
+    resolvedCount: statusCounts['resolved'] || 0,
+    closedCount: statusCounts['closed'] || 0,
+    urgentCount: priorityCounts['urgent'] || 0,
+    highCount: priorityCounts['high'] || 0,
+    mediumCount: priorityCounts['medium'] || 0,
+    lowCount: priorityCounts['low'] || 0
+  };
+}
+
+/**
+ * Get grievances assigned to a specific user
+ */
+export async function getGrievancesAssignedToUser(userId: number) {
+  return await db.query.grievances.findMany({
+    where: eq(grievances.assignedTo, userId),
+    with: {
+      member: {
+        with: {
+          user: {
+            columns: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        }
+      },
+      comments: {
+        orderBy: [desc(grievanceComments.createdAt)],
+        limit: 3
+      }
+    },
+    orderBy: [desc(grievances.updatedAt)]
   });
 }

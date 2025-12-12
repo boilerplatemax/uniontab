@@ -586,6 +586,8 @@ export const unionsRelations = relations(unions, ({ one, many }) => ({
   duesReceipts: many(duesReceipts),
   duesCycles: many(duesCycles),
   duesAuditLog: many(duesAuditLog),
+  grievances: many(grievances),
+  grievanceCategories: many(grievanceCategories),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -918,6 +920,148 @@ export const duesAuditLogRelations = relations(duesAuditLog, ({ one }) => ({
   }),
 }));
 
+// Grievance Tracking System Tables
+export const grievances = pgTable('grievances', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+
+  // Grievance details
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description').notNull(),
+  category: varchar('category', { length: 100 }), // 'workplace', 'disciplinary', 'contract', 'harassment', 'safety', 'other'
+
+  // Status tracking
+  status: varchar('status', { length: 20 }).notNull().default('draft'), // 'draft', 'submitted', 'assigned', 'under_review', 'awaiting_response', 'resolved', 'closed'
+  priority: varchar('priority', { length: 20 }).default('medium'), // 'low', 'medium', 'high', 'urgent'
+
+  // Assignment
+  assignedTo: integer('assigned_to').references(() => users.id, { onDelete: 'set null' }), // Steward/admin handling the case
+  assignedAt: timestamp('assigned_at'),
+
+  // Resolution
+  resolutionNotes: text('resolution_notes'),
+  resolutionOutcome: varchar('resolution_outcome', { length: 50 }), // 'upheld', 'denied', 'partially_upheld', 'withdrawn', 'settled'
+  resolvedAt: timestamp('resolved_at'),
+  closedAt: timestamp('closed_at'),
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
+});
+
+export const grievanceComments = pgTable('grievance_comments', {
+  id: serial('id').primaryKey(),
+  grievanceId: integer('grievance_id')
+    .notNull()
+    .references(() => grievances.id, { onDelete: 'cascade' }),
+
+  // Comment details
+  comment: text('comment').notNull(),
+  isInternal: boolean('is_internal').notNull().default(false), // Internal notes only visible to admins/stewards
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
+
+export const grievanceAttachments = pgTable('grievance_attachments', {
+  id: serial('id').primaryKey(),
+  grievanceId: integer('grievance_id')
+    .notNull()
+    .references(() => grievances.id, { onDelete: 'cascade' }),
+
+  // File details
+  fileName: varchar('file_name', { length: 255 }).notNull(),
+  fileUrl: text('file_url').notNull(),
+  fileType: varchar('file_type', { length: 100 }).notNull(),
+  fileSize: integer('file_size').notNull(),
+
+  // Metadata
+  uploadedBy: integer('uploaded_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const grievanceCategories = pgTable('grievance_categories', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 100 }).notNull(),
+  description: text('description'),
+  isActive: boolean('is_active').notNull().default(true),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  uniqueUnionCategory: unique().on(table.unionId, table.name),
+}));
+
+export const grievancesRelations = relations(grievances, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [grievances.unionId],
+    references: [unions.id],
+  }),
+  member: one(members, {
+    fields: [grievances.memberId],
+    references: [members.id],
+  }),
+  assignedTo: one(users, {
+    fields: [grievances.assignedTo],
+    references: [users.id],
+  }),
+  createdBy: one(users, {
+    fields: [grievances.createdBy],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [grievances.updatedBy],
+    references: [users.id],
+  }),
+  comments: many(grievanceComments),
+  attachments: many(grievanceAttachments),
+}));
+
+export const grievanceCommentsRelations = relations(grievanceComments, ({ one }) => ({
+  grievance: one(grievances, {
+    fields: [grievanceComments.grievanceId],
+    references: [grievances.id],
+  }),
+  createdBy: one(users, {
+    fields: [grievanceComments.createdBy],
+    references: [users.id],
+  }),
+}));
+
+export const grievanceAttachmentsRelations = relations(grievanceAttachments, ({ one }) => ({
+  grievance: one(grievances, {
+    fields: [grievanceAttachments.grievanceId],
+    references: [grievances.id],
+  }),
+  uploadedBy: one(users, {
+    fields: [grievanceAttachments.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
+export const grievanceCategoriesRelations = relations(grievanceCategories, ({ one }) => ({
+  union: one(unions, {
+    fields: [grievanceCategories.unionId],
+    references: [unions.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Union = typeof unions.$inferSelect;
@@ -972,6 +1116,14 @@ export type DuesAuditLog = typeof duesAuditLog.$inferSelect;
 export type NewDuesAuditLog = typeof duesAuditLog.$inferInsert;
 export type UnionEmailDomain = typeof unionEmailDomains.$inferSelect;
 export type NewUnionEmailDomain = typeof unionEmailDomains.$inferInsert;
+export type Grievance = typeof grievances.$inferSelect;
+export type NewGrievance = typeof grievances.$inferInsert;
+export type GrievanceComment = typeof grievanceComments.$inferSelect;
+export type NewGrievanceComment = typeof grievanceComments.$inferInsert;
+export type GrievanceAttachment = typeof grievanceAttachments.$inferSelect;
+export type NewGrievanceAttachment = typeof grievanceAttachments.$inferInsert;
+export type GrievanceCategory = typeof grievanceCategories.$inferSelect;
+export type NewGrievanceCategory = typeof grievanceCategories.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;
@@ -1011,4 +1163,21 @@ export enum QuestionType {
   RANKING = 'ranking',
   SCALE = 'scale',
   YES_NO = 'yes_no',
+}
+
+export enum GrievanceStatus {
+  DRAFT = 'draft',
+  SUBMITTED = 'submitted',
+  ASSIGNED = 'assigned',
+  UNDER_REVIEW = 'under_review',
+  AWAITING_RESPONSE = 'awaiting_response',
+  RESOLVED = 'resolved',
+  CLOSED = 'closed',
+}
+
+export enum GrievancePriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  URGENT = 'urgent',
 }
