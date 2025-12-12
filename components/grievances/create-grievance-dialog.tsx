@@ -187,15 +187,9 @@ export function CreateGrievanceDialog({
                 Upload any relevant documents, emails, photos, or other evidence
               </p>
               <MultiFileUpload
-                unionSlug={unionSlug}
-                folder="grievances"
-                onFilesUploaded={(files) => {
-                  setAttachments(files.map(f => ({
-                    fileName: f.name,
-                    fileUrl: f.url,
-                    fileType: f.type,
-                    fileSize: f.size,
-                  })));
+                path="grievances"
+                onFilesChange={(files) => {
+                  setAttachments(prev => [...prev, ...files]);
                 }}
                 maxFiles={10}
               />
