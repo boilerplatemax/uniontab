@@ -110,9 +110,10 @@ export default async function GrievanceDetailPage({
   return (
     <>
       <UnionNavbar
-        union={union}
-        user={membership.user}
-        role={membership.member.role}
+        slug={union.slug}
+        unionName={union.name}
+        localNumber={union.localNumber}
+        membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={0}
       />
