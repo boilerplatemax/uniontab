@@ -97,7 +97,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
       .update(grievanceComments)
       .set({
         comment,
-        updatedAt: new Date(),
       })
       .where(eq(grievanceComments.id, commentIdNum))
       .returning();
