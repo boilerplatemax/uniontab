@@ -620,3 +620,84 @@ export async function getGrievancesAssignedToUser(userId: number) {
     orderBy: [desc(grievances.updatedAt)]
   });
 }
+
+// Notification count functions
+export async function getGrievanceNotificationCount(unionId: number, userId: number, isAdmin: boolean) {
+  try {
+    // Get the member
+    const [membership] = await db
+      .select()
+      .from(members)
+      .where(and(
+        eq(members.unionId, unionId),
+        eq(members.userId, userId)
+      ))
+      .limit(1);
+
+    if (!membership) {
+      return 0;
+    }
+
+    if (isAdmin) {
+      // For admins: count submitted/unassigned grievances
+      const unassignedCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(grievances)
+        .where(and(
+          eq(grievances.unionId, unionId),
+          or(
+            eq(grievances.status, 'submitted'),
+            and(
+              eq(grievances.status, 'assigned'),
+              isNull(grievances.assignedTo)
+            )
+          )
+        ));
+
+      return Number(unassignedCount[0]?.count || 0);
+    } else {
+      // For members: count their grievances with recent updates (last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const recentCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(grievances)
+        .where(and(
+          eq(grievances.unionId, unionId),
+          eq(grievances.memberId, membership.id),
+          gte(grievances.updatedAt, sevenDaysAgo),
+          or(
+            eq(grievances.status, 'assigned'),
+            eq(grievances.status, 'under_review'),
+            eq(grievances.status, 'awaiting_response')
+          )
+        ));
+
+      return Number(recentCount[0]?.count || 0);
+    }
+  } catch (error) {
+    console.error('Error getting grievance notification count:', error);
+    return 0;
+  }
+}
+
+export async function getStrikeNotificationCount(unionId: number, userId: number, isAdmin: boolean) {
+  try {
+    const { strikes } = await import('./schema');
+    
+    // Count active strikes for all users
+    const activeCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(strikes)
+      .where(and(
+        eq(strikes.unionId, unionId),
+        eq(strikes.status, 'active')
+      ));
+
+    return Number(activeCount[0]?.count || 0);
+  } catch (error) {
+    console.error('Error getting strike notification count:', error);
+    return 0;
+  }
+}

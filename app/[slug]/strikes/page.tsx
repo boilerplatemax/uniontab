@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, users, strikes, picketZones, strikeAnnouncements, strikeIncidents, strikeResources } from '@/lib/db/schema';
 import { eq, and, count, desc } from 'drizzle-orm';
-import { getUser } from '@/lib/db/queries';
+import { getUser, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { StrikesContent } from './strikes-content';
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
@@ -120,6 +120,8 @@ export default async function StrikesPage({
   const strikesList = await getStrikesForUnion(union.id);
   const summary = isOwnerOrAdmin ? await getStrikeSummary(union.id) : null;
   const pendingCount = await getPendingMembersCount(union.id);
+  const grievanceNotificationCount = await getGrievanceNotificationCount(union.id, user.id, isOwnerOrAdmin);
+  const strikeNotificationCount = await getStrikeNotificationCount(union.id, user.id, isOwnerOrAdmin);
 
   return (
     <>
@@ -130,6 +132,8 @@ export default async function StrikesPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingCount}
+        grievanceNotificationCount={grievanceNotificationCount}
+        strikeNotificationCount={strikeNotificationCount}
       />
       <NavbarSpacer />
       <StrikesContent

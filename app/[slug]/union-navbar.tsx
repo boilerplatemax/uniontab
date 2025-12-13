@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign } from 'lucide-react';
+import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,9 +25,11 @@ interface UnionNavbarProps {
   handleSignOut: () => Promise<void>;
   pendingMembersCount?: number;
   announcementId?: number | null;
+  grievanceNotificationCount?: number;
+  strikeNotificationCount?: number;
 }
 
-export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0, announcementId }: UnionNavbarProps) {
+export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0, announcementId, grievanceNotificationCount = 0, strikeNotificationCount = 0 }: UnionNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
@@ -89,6 +91,32 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
             </Link>
             <div className="flex items-center gap-2">
               <div className="hidden sm:flex items-center gap-2">
+                {/* Grievances - visible to all members */}
+                <Link href={`/${slug}/grievances`} prefetch={true}>
+                  <Button variant="ghost" size="sm" className="gap-2 relative">
+                    <FileText className="h-4 w-4" />
+                    <span className="hidden md:inline">Grievances</span>
+                    {grievanceNotificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {grievanceNotificationCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+
+                {/* Strikes - visible to all members */}
+                <Link href={`/${slug}/strikes`} prefetch={true}>
+                  <Button variant="ghost" size="sm" className="gap-2 relative">
+                    <Zap className="h-4 w-4" />
+                    <span className="hidden md:inline">Strikes</span>
+                    {strikeNotificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {strikeNotificationCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+
                 {isOwner && (
                   <>
                     <DropdownMenu>
@@ -236,6 +264,41 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   Profile
                 </Button>
               </Link>
+
+              {/* Grievances - visible to all members */}
+              <Link
+                href={`/${slug}/grievances`}
+                prefetch={true}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Button variant="ghost" className="w-full justify-start gap-2 relative">
+                  <FileText className="h-4 w-4" />
+                  Grievances
+                  {grievanceNotificationCount > 0 && (
+                    <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                      {grievanceNotificationCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+
+              {/* Strikes - visible to all members */}
+              <Link
+                href={`/${slug}/strikes`}
+                prefetch={true}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Button variant="ghost" className="w-full justify-start gap-2 relative">
+                  <Zap className="h-4 w-4" />
+                  Strikes
+                  {strikeNotificationCount > 0 && (
+                    <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                      {strikeNotificationCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+
               {isOwner && (
                 <>
                   <Link
