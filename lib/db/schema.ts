@@ -588,6 +588,7 @@ export const unionsRelations = relations(unions, ({ one, many }) => ({
   duesAuditLog: many(duesAuditLog),
   grievances: many(grievances),
   grievanceCategories: many(grievanceCategories),
+  strikes: many(strikes),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -1062,6 +1063,279 @@ export const grievanceCategoriesRelations = relations(grievanceCategories, ({ on
   }),
 }));
 
+// Strike Hub System Tables
+export const strikes = pgTable('strikes', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+
+  // Strike details
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  rules: text('rules'), // Strike rules and guidelines
+
+  // Timeline
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date'),
+
+  // Status tracking
+  status: varchar('status', { length: 20 }).notNull().default('preparing'), // 'preparing', 'active', 'resolved'
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
+});
+
+export const picketZones = pgTable('picket_zones', {
+  id: serial('id').primaryKey(),
+  strikeId: integer('strike_id')
+    .notNull()
+    .references(() => strikes.id, { onDelete: 'cascade' }),
+
+  // Zone details
+  name: varchar('name', { length: 255 }).notNull(),
+  location: text('location'), // Address or description
+  notes: text('notes'), // Additional instructions
+
+  // Status
+  isActive: boolean('is_active').notNull().default(true),
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const picketShifts = pgTable('picket_shifts', {
+  id: serial('id').primaryKey(),
+  zoneId: integer('zone_id')
+    .notNull()
+    .references(() => picketZones.id, { onDelete: 'cascade' }),
+
+  // Shift timing
+  date: timestamp('date').notNull(),
+  startTime: varchar('start_time', { length: 10 }).notNull(), // e.g., "09:00"
+  endTime: varchar('end_time', { length: 10 }).notNull(), // e.g., "17:00"
+
+  // Capacity
+  maxMembers: integer('max_members').notNull().default(10),
+
+  // Notes
+  notes: text('notes'),
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const picketAssignments = pgTable('picket_assignments', {
+  id: serial('id').primaryKey(),
+  shiftId: integer('shift_id')
+    .notNull()
+    .references(() => picketShifts.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+
+  // Check-in/out tracking for strike pay
+  checkInTime: timestamp('check_in_time'),
+  checkOutTime: timestamp('check_out_time'),
+
+  // Status
+  status: varchar('status', { length: 20 }).notNull().default('signed_up'), // 'signed_up', 'checked_in', 'completed', 'no_show'
+
+  // Notes
+  notes: text('notes'),
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  uniqueShiftMember: unique('unique_shift_member').on(table.shiftId, table.memberId),
+}));
+
+export const strikeAnnouncements = pgTable('strike_announcements', {
+  id: serial('id').primaryKey(),
+  strikeId: integer('strike_id')
+    .notNull()
+    .references(() => strikes.id, { onDelete: 'cascade' }),
+
+  // Announcement details
+  title: varchar('title', { length: 255 }).notNull(),
+  message: text('message').notNull(),
+
+  // Delivery method
+  sendMethod: varchar('send_method', { length: 50 }).notNull().default('in_app'), // 'in_app', 'email', 'sms', 'push', 'all'
+
+  // Priority/urgency
+  isUrgent: boolean('is_urgent').notNull().default(false),
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
+
+export const strikeIncidents = pgTable('strike_incidents', {
+  id: serial('id').primaryKey(),
+  strikeId: integer('strike_id')
+    .notNull()
+    .references(() => strikes.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  zoneId: integer('zone_id')
+    .references(() => picketZones.id, { onDelete: 'set null' }), // Optional zone reference
+
+  // Incident details
+  description: text('description').notNull(),
+  severity: varchar('severity', { length: 20 }).notNull().default('medium'), // 'low', 'medium', 'high', 'critical'
+  incidentType: varchar('incident_type', { length: 50 }), // 'safety', 'confrontation', 'injury', 'legal', 'media', 'other'
+
+  // Evidence
+  fileUrl: text('file_url'), // Attached photo/video/document
+  fileName: varchar('file_name', { length: 255 }),
+  fileType: varchar('file_type', { length: 100 }),
+
+  // Resolution tracking
+  status: varchar('status', { length: 20 }).notNull().default('reported'), // 'reported', 'under_review', 'resolved', 'escalated'
+  resolutionNotes: text('resolution_notes'),
+  resolvedBy: integer('resolved_by').references(() => users.id, { onDelete: 'set null' }),
+  resolvedAt: timestamp('resolved_at'),
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const strikeResources = pgTable('strike_resources', {
+  id: serial('id').primaryKey(),
+  strikeId: integer('strike_id')
+    .notNull()
+    .references(() => strikes.id, { onDelete: 'cascade' }),
+
+  // Resource details
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  resourceType: varchar('resource_type', { length: 50 }).notNull(), // 'document', 'link', 'video', 'image', 'other'
+
+  // File details (for uploaded documents)
+  fileUrl: text('file_url'),
+  fileName: varchar('file_name', { length: 255 }),
+  fileType: varchar('file_type', { length: 100 }),
+  fileSize: integer('file_size'),
+
+  // External link (for links/videos)
+  externalUrl: text('external_url'),
+
+  // Organization
+  category: varchar('category', { length: 100 }), // 'legal', 'guidelines', 'contacts', 'media', 'training', 'other'
+  sortOrder: integer('sort_order').notNull().default(0),
+
+  // Access control
+  isPrivate: boolean('is_private').notNull().default(false), // If true, only members can view
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
+
+// Strike Hub Relations
+export const strikesRelations = relations(strikes, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [strikes.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [strikes.createdBy],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [strikes.updatedBy],
+    references: [users.id],
+  }),
+  zones: many(picketZones),
+  announcements: many(strikeAnnouncements),
+  incidents: many(strikeIncidents),
+  resources: many(strikeResources),
+}));
+
+export const picketZonesRelations = relations(picketZones, ({ one, many }) => ({
+  strike: one(strikes, {
+    fields: [picketZones.strikeId],
+    references: [strikes.id],
+  }),
+  shifts: many(picketShifts),
+  incidents: many(strikeIncidents),
+}));
+
+export const picketShiftsRelations = relations(picketShifts, ({ one, many }) => ({
+  zone: one(picketZones, {
+    fields: [picketShifts.zoneId],
+    references: [picketZones.id],
+  }),
+  assignments: many(picketAssignments),
+}));
+
+export const picketAssignmentsRelations = relations(picketAssignments, ({ one }) => ({
+  shift: one(picketShifts, {
+    fields: [picketAssignments.shiftId],
+    references: [picketShifts.id],
+  }),
+  member: one(members, {
+    fields: [picketAssignments.memberId],
+    references: [members.id],
+  }),
+}));
+
+export const strikeAnnouncementsRelations = relations(strikeAnnouncements, ({ one }) => ({
+  strike: one(strikes, {
+    fields: [strikeAnnouncements.strikeId],
+    references: [strikes.id],
+  }),
+  createdBy: one(users, {
+    fields: [strikeAnnouncements.createdBy],
+    references: [users.id],
+  }),
+}));
+
+export const strikeIncidentsRelations = relations(strikeIncidents, ({ one }) => ({
+  strike: one(strikes, {
+    fields: [strikeIncidents.strikeId],
+    references: [strikes.id],
+  }),
+  member: one(members, {
+    fields: [strikeIncidents.memberId],
+    references: [members.id],
+  }),
+  zone: one(picketZones, {
+    fields: [strikeIncidents.zoneId],
+    references: [picketZones.id],
+  }),
+  resolvedBy: one(users, {
+    fields: [strikeIncidents.resolvedBy],
+    references: [users.id],
+  }),
+}));
+
+export const strikeResourcesRelations = relations(strikeResources, ({ one }) => ({
+  strike: one(strikes, {
+    fields: [strikeResources.strikeId],
+    references: [strikes.id],
+  }),
+  createdBy: one(users, {
+    fields: [strikeResources.createdBy],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Union = typeof unions.$inferSelect;
@@ -1124,6 +1398,20 @@ export type GrievanceAttachment = typeof grievanceAttachments.$inferSelect;
 export type NewGrievanceAttachment = typeof grievanceAttachments.$inferInsert;
 export type GrievanceCategory = typeof grievanceCategories.$inferSelect;
 export type NewGrievanceCategory = typeof grievanceCategories.$inferInsert;
+export type Strike = typeof strikes.$inferSelect;
+export type NewStrike = typeof strikes.$inferInsert;
+export type PicketZone = typeof picketZones.$inferSelect;
+export type NewPicketZone = typeof picketZones.$inferInsert;
+export type PicketShift = typeof picketShifts.$inferSelect;
+export type NewPicketShift = typeof picketShifts.$inferInsert;
+export type PicketAssignment = typeof picketAssignments.$inferSelect;
+export type NewPicketAssignment = typeof picketAssignments.$inferInsert;
+export type StrikeAnnouncement = typeof strikeAnnouncements.$inferSelect;
+export type NewStrikeAnnouncement = typeof strikeAnnouncements.$inferInsert;
+export type StrikeIncident = typeof strikeIncidents.$inferSelect;
+export type NewStrikeIncident = typeof strikeIncidents.$inferInsert;
+export type StrikeResource = typeof strikeResources.$inferSelect;
+export type NewStrikeResource = typeof strikeResources.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;
@@ -1180,4 +1468,65 @@ export enum GrievancePriority {
   MEDIUM = 'medium',
   HIGH = 'high',
   URGENT = 'urgent',
+}
+
+export enum StrikeStatus {
+  PREPARING = 'preparing',
+  ACTIVE = 'active',
+  RESOLVED = 'resolved',
+}
+
+export enum PicketAssignmentStatus {
+  SIGNED_UP = 'signed_up',
+  CHECKED_IN = 'checked_in',
+  COMPLETED = 'completed',
+  NO_SHOW = 'no_show',
+}
+
+export enum StrikeAnnouncementSendMethod {
+  IN_APP = 'in_app',
+  EMAIL = 'email',
+  SMS = 'sms',
+  PUSH = 'push',
+  ALL = 'all',
+}
+
+export enum StrikeIncidentSeverity {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  CRITICAL = 'critical',
+}
+
+export enum StrikeIncidentType {
+  SAFETY = 'safety',
+  CONFRONTATION = 'confrontation',
+  INJURY = 'injury',
+  LEGAL = 'legal',
+  MEDIA = 'media',
+  OTHER = 'other',
+}
+
+export enum StrikeIncidentStatus {
+  REPORTED = 'reported',
+  UNDER_REVIEW = 'under_review',
+  RESOLVED = 'resolved',
+  ESCALATED = 'escalated',
+}
+
+export enum StrikeResourceType {
+  DOCUMENT = 'document',
+  LINK = 'link',
+  VIDEO = 'video',
+  IMAGE = 'image',
+  OTHER = 'other',
+}
+
+export enum StrikeResourceCategory {
+  LEGAL = 'legal',
+  GUIDELINES = 'guidelines',
+  CONTACTS = 'contacts',
+  MEDIA = 'media',
+  TRAINING = 'training',
+  OTHER = 'other',
 }
