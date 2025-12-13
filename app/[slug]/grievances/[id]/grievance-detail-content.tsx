@@ -16,8 +16,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, User, Send, Paperclip, Download } from 'lucide-react';
+import { MultiFileUpload } from '@/components/ui/multi-file-upload';
+import { ArrowLeft, Calendar, User, Send, Paperclip, Download, AlertTriangle, Trash2, Edit2, X, Check, Upload } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { GrievanceStatus } from '@/lib/db/schema';
 
@@ -28,6 +39,7 @@ interface GrievanceDetailContentProps {
   memberId: number;
   grievance: any;
   adminMembers: any[];
+  allMembers: any[];
 }
 
 export function GrievanceDetailContent({
@@ -37,6 +49,7 @@ export function GrievanceDetailContent({
   memberId,
   grievance: initialGrievance,
   adminMembers,
+  allMembers,
 }: GrievanceDetailContentProps) {
   const router = useRouter();
   const [grievance, setGrievance] = useState(initialGrievance);
@@ -45,9 +58,17 @@ export function GrievanceDetailContent({
   const [loading, setLoading] = useState(false);
   const [assignLoading, setAssignLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [showNonAdminWarning, setShowNonAdminWarning] = useState(false);
+  const [pendingAssignmentId, setPendingAssignmentId] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [newAttachments, setNewAttachments] = useState<any[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
   const isGrievanceOwner = grievance.memberId === memberId;
+  const canManageFiles = isOwnerOrAdmin || isGrievanceOwner;
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,15 +86,45 @@ export function GrievanceDetailContent({
       });
 
       if (response.ok) {
+        const data = await response.json();
+        // Update grievance state with new comment
+        setGrievance((prev: any) => ({
+          ...prev,
+          comments: [...(prev.comments || []), data.comment],
+        }));
         setNewComment('');
         setIsInternalNote(false);
-        // Refresh the page to show new comment
-        router.refresh();
       }
     } catch (error) {
       console.error('Error adding comment:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAssignmentChange = (assignedToId: string) => {
+    if (assignedToId === 'unassigned') {
+      handleAssign(assignedToId);
+      return;
+    }
+
+    // Check if the selected user is a non-admin
+    const selectedMember = allMembers.find(m => m.user.id.toString() === assignedToId);
+    const isNonAdmin = selectedMember && selectedMember.member.role !== 'owner' && selectedMember.member.role !== 'admin';
+
+    if (isNonAdmin) {
+      setPendingAssignmentId(assignedToId);
+      setShowNonAdminWarning(true);
+    } else {
+      handleAssign(assignedToId);
+    }
+  };
+
+  const confirmNonAdminAssignment = () => {
+    if (pendingAssignmentId) {
+      handleAssign(pendingAssignmentId);
+      setShowNonAdminWarning(false);
+      setPendingAssignmentId(null);
     }
   };
 
@@ -89,7 +140,13 @@ export function GrievanceDetailContent({
       });
 
       if (response.ok) {
-        router.refresh();
+        const data = await response.json();
+        // Update grievance state with new assignment
+        setGrievance((prev: any) => ({
+          ...prev,
+          assignedTo: data.grievance.assignedTo,
+          assignedAt: data.grievance.assignedAt,
+        }));
       }
     } catch (error) {
       console.error('Error assigning grievance:', error);
@@ -108,7 +165,12 @@ export function GrievanceDetailContent({
       });
 
       if (response.ok) {
-        router.refresh();
+        const data = await response.json();
+        // Update grievance state with new status
+        setGrievance((prev: any) => ({
+          ...prev,
+          status: data.grievance.status,
+        }));
       }
     } catch (error) {
       console.error('Error updating status:', error);
@@ -119,6 +181,117 @@ export function GrievanceDetailContent({
 
   const handleSubmit = async () => {
     await handleStatusChange(GrievanceStatus.SUBMITTED);
+    // Navigate back to grievances list after successful submission
+    router.push(`/${union.slug}/grievances`);
+  };
+
+  const handleEditComment = (commentId: number, currentText: string) => {
+    setEditingCommentId(commentId);
+    setEditingCommentText(currentText);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditingCommentText('');
+  };
+
+  const handleSaveEdit = async (commentId: number) => {
+    if (!editingCommentText.trim()) return;
+
+    try {
+      const response = await fetch(`/api/grievances/comments/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment: editingCommentText }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update the comment in the grievance state
+        setGrievance((prev: any) => ({
+          ...prev,
+          comments: prev.comments.map((c: any) =>
+            c.id === commentId ? data.comment : c
+          ),
+        }));
+        setEditingCommentId(null);
+        setEditingCommentText('');
+      }
+    } catch (error) {
+      console.error('Error updating comment:', error);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    try {
+      const response = await fetch(`/api/grievances/comments/${commentId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Remove the comment from the grievance state
+        setGrievance((prev: any) => ({
+          ...prev,
+          comments: prev.comments.filter((c: any) => c.id !== commentId),
+        }));
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId: number) => {
+    if (!confirm('Are you sure you want to delete this file?')) return;
+
+    try {
+      const response = await fetch(`/api/grievances/attachments/${attachmentId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Remove the attachment from the grievance state
+        setGrievance((prev: any) => ({
+          ...prev,
+          attachments: prev.attachments.filter((a: any) => a.id !== attachmentId),
+        }));
+      }
+    } catch (error) {
+      console.error('Error deleting attachment:', error);
+    }
+  };
+
+  const handleUploadAttachments = async () => {
+    if (newAttachments.length === 0) return;
+
+    setUploading(true);
+    try {
+      // Upload each attachment
+      for (const attachment of newAttachments) {
+        const response = await fetch(`/api/grievances/${grievance.id}/attachment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(attachment),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Add the new attachment to the grievance state
+          setGrievance((prev: any) => ({
+            ...prev,
+            attachments: [...(prev.attachments || []), data.attachment],
+          }));
+        }
+      }
+
+      setNewAttachments([]);
+      setShowFileUpload(false);
+    } catch (error) {
+      console.error('Error uploading attachments:', error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -185,7 +358,7 @@ export function GrievanceDetailContent({
               <Label className="text-base font-semibold">Assigned To</Label>
               <Select
                 value={grievance.assignedTo?.id.toString() || 'unassigned'}
-                onValueChange={handleAssign}
+                onValueChange={handleAssignmentChange}
                 disabled={assignLoading}
               >
                 <SelectTrigger className="mt-2 w-full max-w-md">
@@ -193,11 +366,14 @@ export function GrievanceDetailContent({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {adminMembers.map((admin) => (
-                    <SelectItem key={admin.user.id} value={admin.user.id.toString()}>
-                      {admin.user.name}
-                    </SelectItem>
-                  ))}
+                  {allMembers.map((member) => {
+                    const isAdmin = member.member.role === 'owner' || member.member.role === 'admin';
+                    return (
+                      <SelectItem key={member.user.id} value={member.user.id.toString()}>
+                        {member.user.name} {!isAdmin && '(Member)'}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -230,26 +406,89 @@ export function GrievanceDetailContent({
           )}
 
           {/* Attachments */}
-          {grievance.attachments && grievance.attachments.length > 0 && (
-            <div className="border-t pt-4">
+          <div className="border-t pt-4">
+            <div className="flex items-center justify-between mb-2">
               <Label className="text-base font-semibold">Attachments</Label>
-              <div className="mt-2 space-y-2">
+              {canManageFiles && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFileUpload(!showFileUpload)}
+                >
+                  <Upload className="h-4 w-4 mr-1" />
+                  Upload Files
+                </Button>
+              )}
+            </div>
+
+            {showFileUpload && (
+              <div className="mb-4 p-4 border rounded-lg bg-gray-50">
+                <MultiFileUpload
+                  onFilesUploaded={setNewAttachments}
+                  disabled={uploading}
+                />
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    size="sm"
+                    onClick={handleUploadAttachments}
+                    disabled={uploading || newAttachments.length === 0}
+                  >
+                    {uploading ? 'Uploading...' : `Upload ${newAttachments.length} file(s)`}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setShowFileUpload(false);
+                      setNewAttachments([]);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {grievance.attachments && grievance.attachments.length > 0 ? (
+              <div className="space-y-2">
                 {grievance.attachments.map((attachment: any) => (
-                  <a
+                  <div
                     key={attachment.id}
-                    href={attachment.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="flex items-center gap-2 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <Paperclip className="h-4 w-4 text-muted-foreground" />
-                    <span className="flex-1">{attachment.fileName}</span>
-                    <Download className="h-4 w-4 text-muted-foreground" />
-                  </a>
+                    <a
+                      href={attachment.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 hover:underline"
+                    >
+                      {attachment.fileName}
+                    </a>
+                    <a
+                      href={attachment.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Download className="h-4 w-4 text-muted-foreground" />
+                    </a>
+                    {canManageFiles && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteAttachment(attachment.id)}
+                        className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              !showFileUpload && <p className="text-sm text-muted-foreground">No attachments</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -265,29 +504,101 @@ export function GrievanceDetailContent({
           {/* Existing Comments */}
           {grievance.comments && grievance.comments.length > 0 ? (
             <div className="space-y-4">
-              {grievance.comments.map((comment: any) => (
-                <div
-                  key={comment.id}
-                  className={`p-4 rounded-lg border ${
-                    comment.isInternal ? 'bg-yellow-50 border-yellow-200' : 'bg-white'
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{comment.createdBy.name}</span>
-                      {comment.isInternal && (
-                        <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
-                          Internal Note
-                        </Badge>
-                      )}
+              {grievance.comments.map((comment: any) => {
+                const isAdminComment = comment.createdBy.id !== grievance.member?.user?.id;
+                const isCommentOwner = comment.createdBy.id === user.id;
+                const canEditOrDelete = isCommentOwner || isOwnerOrAdmin;
+                const isEditing = editingCommentId === comment.id;
+
+                return (
+                  <div
+                    key={comment.id}
+                    className={`p-4 rounded-lg border ${
+                      comment.isInternal
+                        ? 'bg-yellow-50 border-yellow-200'
+                        : isAdminComment
+                        ? 'bg-blue-50 border-blue-200'
+                        : 'bg-gray-50 border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">{comment.createdBy.name}</span>
+                        {comment.isInternal && (
+                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+                            Internal Note
+                          </Badge>
+                        )}
+                        {isAdminComment && !comment.isInternal && (
+                          <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                            Union Admin
+                          </Badge>
+                        )}
+                        {!isAdminComment && !comment.isInternal && (
+                          <Badge variant="outline" className="bg-gray-100 text-gray-800">
+                            Member
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                        </span>
+                        {canEditOrDelete && !isEditing && (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditComment(comment.id, comment.comment)}
+                              className="h-7 w-7 p-0"
+                            >
+                              <Edit2 className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-                    </span>
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <Textarea
+                          value={editingCommentText}
+                          onChange={(e) => setEditingCommentText(e.target.value)}
+                          rows={3}
+                          className="w-full"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveEdit(comment.id)}
+                            disabled={!editingCommentText.trim()}
+                          >
+                            <Check className="h-3 w-3 mr-1" />
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleCancelEdit}
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="whitespace-pre-wrap text-muted-foreground">{comment.comment}</p>
+                    )}
                   </div>
-                  <p className="whitespace-pre-wrap text-muted-foreground">{comment.comment}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-8">
@@ -331,6 +642,35 @@ export function GrievanceDetailContent({
           </form>
         </CardContent>
       </Card>
+
+      {/* Non-Admin Assignment Warning Dialog */}
+      <AlertDialog open={showNonAdminWarning} onOpenChange={setShowNonAdminWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Assigning to Non-Admin Member
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to assign this grievance to a regular member who is not an admin or executive.
+              Regular members may not have the authority or tools to properly handle grievances.
+              <br /><br />
+              Are you sure you want to proceed with this assignment?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowNonAdminWarning(false);
+              setPendingAssignmentId(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmNonAdminAssignment}>
+              Assign Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

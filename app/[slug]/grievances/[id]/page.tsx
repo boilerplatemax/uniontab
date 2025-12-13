@@ -129,6 +129,7 @@ export default async function GrievanceDetailPage({
   }
 
   const adminMembers = isOwnerOrAdmin ? await getAdminMembers(union.id) : [];
+  const allMembers = isOwnerOrAdmin ? await getAllApprovedMembers(union.id) : [];
   const grievanceNotificationCount = await getGrievanceNotificationCount(union.id, user.id, isOwnerOrAdmin);
   const strikeNotificationCount = await getStrikeNotificationCount(union.id, user.id, isOwnerOrAdmin);
 
@@ -152,6 +153,7 @@ export default async function GrievanceDetailPage({
         memberId={membership.member.id}
         grievance={grievance}
         adminMembers={adminMembers}
+        allMembers={allMembers}
       />
     </>
   );
