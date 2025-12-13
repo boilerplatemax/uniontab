@@ -424,8 +424,10 @@ export function GrievanceDetailContent({
             {showFileUpload && (
               <div className="mb-4 p-4 border rounded-lg bg-gray-50">
                 <MultiFileUpload
-                  onFilesUploaded={setNewAttachments}
-                  disabled={uploading}
+                  onFilesChange={(files) => {
+                    setNewAttachments(prev => [...prev, ...files]);
+                  }}
+                  path="grievances"
                 />
                 <div className="flex gap-2 mt-3">
                   <Button

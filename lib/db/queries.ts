@@ -1,6 +1,6 @@
 import { desc, and, eq, ne, isNull, gte, lte, or, sql } from 'drizzle-orm';
 import { db } from './drizzle';
-import { activityLogs, members, unions, users, dues, duesReceipts, duesCycles, grievances, grievanceComments, grievanceAttachments, grievanceCategories } from './schema';
+import { activityLogs, members, unions, users, dues, duesReceipts, duesCycles, grievances, grievanceComments, grievanceAttachments, grievanceCategories, GrievanceStatus } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
 
