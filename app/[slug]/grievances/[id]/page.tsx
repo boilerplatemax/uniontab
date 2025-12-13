@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, users } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { getUser, getGrievanceById } from '@/lib/db/queries';
+import { getUser, getGrievanceById, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { GrievanceDetailContent } from './grievance-detail-content';
 import { UnionNavbar } from '../../union-navbar';
 import { NavbarSpacer } from '../../navbar-spacer';
@@ -64,6 +64,29 @@ async function getAdminMembers(unionId: number) {
   return adminMembers.filter(m => m.member.role === 'owner' || m.member.role === 'admin');
 }
 
+async function getAllApprovedMembers(unionId: number) {
+  const allMembers = await db
+    .select({
+      member: members,
+      user: {
+        id: users.id,
+        name: users.name,
+        email: users.email
+      }
+    })
+    .from(members)
+    .innerJoin(users, eq(members.userId, users.id))
+    .where(
+      and(
+        eq(members.unionId, unionId),
+        eq(members.status, 'approved')
+      )
+    )
+    .orderBy(users.name);
+
+  return allMembers;
+}
+
 async function handleSignOut() {
   'use server';
   (await cookies()).delete('session');
@@ -106,6 +129,8 @@ export default async function GrievanceDetailPage({
   }
 
   const adminMembers = isOwnerOrAdmin ? await getAdminMembers(union.id) : [];
+  const grievanceNotificationCount = await getGrievanceNotificationCount(union.id, user.id, isOwnerOrAdmin);
+  const strikeNotificationCount = await getStrikeNotificationCount(union.id, user.id, isOwnerOrAdmin);
 
   return (
     <>
@@ -116,6 +141,8 @@ export default async function GrievanceDetailPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={0}
+        grievanceNotificationCount={grievanceNotificationCount}
+        strikeNotificationCount={strikeNotificationCount}
       />
       <NavbarSpacer />
       <GrievanceDetailContent

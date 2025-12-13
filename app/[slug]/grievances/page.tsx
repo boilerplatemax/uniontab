@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, users } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
-import { getUser, getGrievancesForUnion, getGrievanceSummaryForUnion, getGrievancesForMember } from '@/lib/db/queries';
+import { getUser, getGrievancesForUnion, getGrievanceSummaryForUnion, getGrievancesForMember, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { GrievancesContent } from './grievances-content';
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
@@ -118,6 +118,8 @@ export default async function GrievancesPage({
   const adminMembers = isOwnerOrAdmin ? await getAdminMembers(union.id) : [];
 
   const pendingCount = await getPendingMembersCount(union.id);
+  const grievanceNotificationCount = await getGrievanceNotificationCount(union.id, user.id, isOwnerOrAdmin);
+  const strikeNotificationCount = await getStrikeNotificationCount(union.id, user.id, isOwnerOrAdmin);
 
   return (
     <>
@@ -128,6 +130,8 @@ export default async function GrievancesPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingCount}
+        grievanceNotificationCount={grievanceNotificationCount}
+        strikeNotificationCount={strikeNotificationCount}
       />
       <NavbarSpacer />
       <GrievancesContent

@@ -61,20 +61,21 @@ export async function POST(request: Request, { params }: RouteParams) {
       );
     }
 
-    // If assignedTo is provided, verify that user exists and is a member
+    // If assignedTo is provided, verify that user exists and is an approved member
     if (assignedTo) {
       const [assigneeMembership] = await db
         .select()
         .from(members)
         .where(and(
           eq(members.unionId, grievance.unionId),
-          eq(members.userId, assignedTo)
+          eq(members.userId, assignedTo),
+          eq(members.status, 'approved')
         ))
         .limit(1);
 
-      if (!assigneeMembership || (assigneeMembership.role !== 'owner' && assigneeMembership.role !== 'admin')) {
+      if (!assigneeMembership) {
         return NextResponse.json(
-          { error: 'Assignee must be a union owner or admin' },
+          { error: 'Assignee must be an approved member of the union' },
           { status: 400 }
         );
       }
