@@ -55,7 +55,10 @@ export function GrievancesContent({
   };
 
   const handleExport = async () => {
-    window.open(`/api/grievances/export?unionId=${union.id}`, '_blank');
+    const params = new URLSearchParams({ unionId: union.id.toString() });
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (priorityFilter !== 'all') params.set('priority', priorityFilter);
+    window.open(`/api/grievances/export?${params.toString()}`, '_blank');
   };
 
   // Filter grievances based on search query
@@ -124,14 +127,33 @@ export function GrievancesContent({
       {/* Summary Stats (Admin only) */}
       {isOwnerOrAdmin && summary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg border p-4">
+          <div
+            className="bg-white rounded-lg border p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => handleStatusFilterChange('all')}
+          >
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <FileText className="h-4 w-4" />
               <span>Total Grievances</span>
             </div>
             <p className="text-2xl font-bold">{summary.total}</p>
           </div>
-          <div className="bg-white rounded-lg border p-4">
+          <div
+            className="bg-white rounded-lg border p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={async () => {
+              setStatusFilter('all');
+              setPriorityFilter('all');
+              const params = new URLSearchParams({ unionId: union.id.toString() });
+              const response = await fetch(`/api/grievances/list?${params.toString()}`);
+              if (response.ok) {
+                const data = await response.json();
+                // Filter to only show active statuses
+                const activeGrievances = data.grievances.filter((g: any) =>
+                  ['submitted', 'assigned', 'under_review'].includes(g.status)
+                );
+                setGrievances(activeGrievances);
+              }
+            }}
+          >
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <AlertCircle className="h-4 w-4 text-orange-500" />
               <span>Active</span>
@@ -140,14 +162,20 @@ export function GrievancesContent({
               {summary.submittedCount + summary.assignedCount + summary.underReviewCount}
             </p>
           </div>
-          <div className="bg-white rounded-lg border p-4">
+          <div
+            className="bg-white rounded-lg border p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => handlePriorityFilterChange('urgent')}
+          >
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <AlertCircle className="h-4 w-4 text-red-500" />
               <span>Urgent</span>
             </div>
             <p className="text-2xl font-bold">{summary.urgentCount}</p>
           </div>
-          <div className="bg-white rounded-lg border p-4">
+          <div
+            className="bg-white rounded-lg border p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => handleStatusFilterChange(GrievanceStatus.RESOLVED)}
+          >
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <CheckCircle className="h-4 w-4 text-green-500" />
               <span>Resolved</span>
@@ -179,7 +207,7 @@ export function GrievancesContent({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value={GrievanceStatus.DRAFT}>Draft</SelectItem>
+                {!isOwnerOrAdmin && <SelectItem value={GrievanceStatus.DRAFT}>Draft</SelectItem>}
                 <SelectItem value={GrievanceStatus.SUBMITTED}>Submitted</SelectItem>
                 <SelectItem value={GrievanceStatus.ASSIGNED}>Assigned</SelectItem>
                 <SelectItem value={GrievanceStatus.UNDER_REVIEW}>Under Review</SelectItem>
@@ -233,6 +261,7 @@ export function GrievancesContent({
               grievance={grievance}
               unionSlug={union.slug}
               isAdmin={isOwnerOrAdmin}
+              isOwner={grievance.memberId === memberId}
             />
           ))}
         </div>

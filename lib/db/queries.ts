@@ -1,4 +1,4 @@
-import { desc, and, eq, isNull, gte, lte, or, sql } from 'drizzle-orm';
+import { desc, and, eq, ne, isNull, gte, lte, or, sql } from 'drizzle-orm';
 import { db } from './drizzle';
 import { activityLogs, members, unions, users, dues, duesReceipts, duesCycles, grievances, grievanceComments, grievanceAttachments, grievanceCategories } from './schema';
 import { cookies } from 'next/headers';
@@ -357,9 +357,13 @@ export async function getGrievancesForUnion(unionId: number, filters?: {
 }) {
   let conditions = [eq(grievances.unionId, unionId)];
 
-  if (filters?.status) {
+  // Exclude draft grievances by default (members' drafts should only be visible to them)
+  if (!filters?.status) {
+    conditions.push(ne(grievances.status, GrievanceStatus.DRAFT));
+  } else if (filters.status) {
     conditions.push(eq(grievances.status, filters.status));
   }
+
   if (filters?.priority) {
     conditions.push(eq(grievances.priority, filters.priority));
   }

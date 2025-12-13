@@ -14,6 +14,10 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const unionId = parseInt(searchParams.get('unionId') || '0');
+    const status = searchParams.get('status');
+    const priority = searchParams.get('priority');
+    const category = searchParams.get('category');
+    const assignedTo = searchParams.get('assignedTo');
 
     if (!unionId) {
       return NextResponse.json(
@@ -39,8 +43,15 @@ export async function GET(request: Request) {
       );
     }
 
-    // Get all grievances for the union
-    const grievances = await getGrievancesForUnion(unionId);
+    // Build filters
+    const filters: any = {};
+    if (status && status !== 'all') filters.status = status;
+    if (priority && priority !== 'all') filters.priority = priority;
+    if (category) filters.category = category;
+    if (assignedTo) filters.assignedTo = parseInt(assignedTo);
+
+    // Get grievances with filters applied
+    const grievances = await getGrievancesForUnion(unionId, filters);
 
     // Generate CSV
     const headers = [

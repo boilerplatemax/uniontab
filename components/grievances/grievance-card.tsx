@@ -1,26 +1,33 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { GrievanceStatusBadge } from './grievance-status-badge';
 import { GrievancePriorityBadge } from './grievance-priority-badge';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MessageSquare, Paperclip, User } from 'lucide-react';
+import { Calendar, MessageSquare, Paperclip, User, Eye, Edit2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface GrievanceCardProps {
   grievance: any;
   unionSlug: string;
   isAdmin?: boolean;
+  isOwner?: boolean;
 }
 
-export function GrievanceCard({ grievance, unionSlug, isAdmin = false }: GrievanceCardProps) {
+export function GrievanceCard({ grievance, unionSlug, isAdmin = false, isOwner = false }: GrievanceCardProps) {
+  const router = useRouter();
   const commentCount = grievance.comments?.length || 0;
   const attachmentCount = grievance.attachments?.length || 0;
+  const canEdit = isOwner && grievance.status === 'draft';
+
+  const handleView = () => {
+    router.push(`/${unionSlug}/grievances/${grievance.id}`);
+  };
 
   return (
-    <Link href={`/${unionSlug}/grievances/${grievance.id}`}>
-      <Card className="hover:border-primary/50 transition-all cursor-pointer">
+      <Card className="hover:border-primary/50 transition-all">
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
@@ -77,16 +84,25 @@ export function GrievanceCard({ grievance, unionSlug, isAdmin = false }: Grievan
                   <span>{attachmentCount}</span>
                 </div>
               )}
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>
+                  {formatDistanceToNow(new Date(grievance.updatedAt), { addSuffix: true })}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>
-                {formatDistanceToNow(new Date(grievance.updatedAt), { addSuffix: true })}
-              </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleView}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                View
+              </Button>
             </div>
           </div>
         </CardFooter>
       </Card>
-    </Link>
   );
 }
