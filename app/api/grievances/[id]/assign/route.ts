@@ -102,7 +102,21 @@ export async function POST(request: Request, { params }: RouteParams) {
       .where(eq(grievances.id, grievanceId))
       .returning();
 
-    return NextResponse.json({ success: true, grievance: updatedGrievance });
+    // Fetch the full grievance with assignedTo user details
+    const grievanceWithDetails = await db.query.grievances.findFirst({
+      where: eq(grievances.id, grievanceId),
+      with: {
+        assignedTo: {
+          columns: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    return NextResponse.json({ success: true, grievance: grievanceWithDetails || updatedGrievance });
   } catch (error) {
     console.error('Error assigning grievance:', error);
     return NextResponse.json(

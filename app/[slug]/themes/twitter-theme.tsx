@@ -27,6 +27,8 @@ export function TwitterTheme({
   userId,
   slug,
   pendingMembersCount,
+  grievanceNotificationCount,
+  strikeNotificationCount,
   handleSignOut,
   activeAnnouncements,
   accessibilityWidgetEnabled,

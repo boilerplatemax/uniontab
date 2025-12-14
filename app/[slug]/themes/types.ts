@@ -16,6 +16,8 @@ export interface ThemeProps {
   userId: number | null;
   slug: string;
   pendingMembersCount: number;
+  grievanceNotificationCount: number;
+  strikeNotificationCount: number;
   handleSignOut: () => Promise<void>;
   activeAnnouncements: {
     popup: any;
