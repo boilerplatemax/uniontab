@@ -92,6 +92,7 @@ export async function GET(request: Request) {
         meetingPassword: meetings.meetingPassword,
         status: meetings.status,
         isPrivate: meetings.isPrivate,
+        participantMode: meetings.participantMode,
         createdAt: meetings.createdAt,
         updatedAt: meetings.updatedAt,
         createdBy: {

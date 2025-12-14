@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { meetings, members, users, meetingInvites } from '@/lib/db/schema';
+import { meetings, members, users, meetingInvites, meetingParticipants } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 
@@ -40,6 +40,7 @@ export async function GET(
         meetingPassword: meetings.meetingPassword,
         status: meetings.status,
         isPrivate: meetings.isPrivate,
+        participantMode: meetings.participantMode,
         createdAt: meetings.createdAt,
         updatedAt: meetings.updatedAt,
         createdBy: {
@@ -166,12 +167,30 @@ export async function PUT(
         meetingId: body.meetingId ?? existingMeeting.meetingId,
         meetingPassword: body.meetingPassword ?? existingMeeting.meetingPassword,
         isPrivate: body.isPrivate ?? existingMeeting.isPrivate,
+        participantMode: body.participantMode ?? existingMeeting.participantMode,
         status: body.status ?? existingMeeting.status,
         updatedAt: new Date(),
         updatedBy: user.id,
       })
       .where(eq(meetings.id, meetingId))
       .returning();
+
+    // Handle participant updates
+    if (body.participantMode !== undefined) {
+      // Delete existing participants
+      await db.delete(meetingParticipants).where(eq(meetingParticipants.meetingId, meetingId));
+
+      // Add new participants if selected mode
+      if (body.participantMode === 'selected' && body.selectedMemberIds && body.selectedMemberIds.length > 0) {
+        const participantValues = body.selectedMemberIds.map((memberId: number) => ({
+          meetingId,
+          memberId,
+          addedBy: user.id,
+        }));
+
+        await db.insert(meetingParticipants).values(participantValues);
+      }
+    }
 
     return NextResponse.json({ success: true, meeting: updatedMeeting });
   } catch (error) {

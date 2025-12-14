@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { meetings, members } from '@/lib/db/schema';
+import { meetings, members, meetingParticipants } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 
@@ -27,6 +27,8 @@ export async function POST(request: Request) {
       meetingPassword,
       isPrivate,
       status,
+      participantMode,
+      selectedMemberIds,
     } = await request.json();
 
     if (!unionId || !title || !scheduledDate || !startTime) {
@@ -78,10 +80,22 @@ export async function POST(request: Request) {
         meetingId: meetingId || null,
         meetingPassword: meetingPassword || null,
         isPrivate: isPrivate !== false,
+        participantMode: participantMode || 'all',
         status: status || 'scheduled',
         createdBy: user.id,
       })
       .returning();
+
+    // Add participants if selected mode
+    if (participantMode === 'selected' && selectedMemberIds && selectedMemberIds.length > 0) {
+      const participantValues = selectedMemberIds.map((memberId: number) => ({
+        meetingId: newMeeting.id,
+        memberId,
+        addedBy: user.id,
+      }));
+
+      await db.insert(meetingParticipants).values(participantValues);
+    }
 
     return NextResponse.json({ success: true, meeting: newMeeting });
   } catch (error) {

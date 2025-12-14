@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Video, Calendar, Clock, Link, Lock } from 'lucide-react';
+import { Video, Calendar, Clock, Link, Lock, Users } from 'lucide-react';
+import { MeetingParticipantSelector } from './meeting-participant-selector';
 
 interface Meeting {
   id: number;
@@ -26,6 +27,7 @@ interface Meeting {
   meetingPassword: string | null;
   status: string;
   isPrivate: boolean;
+  participantMode?: string;
 }
 
 interface EditMeetingDialogProps {
@@ -56,6 +58,8 @@ const STATUSES = [
 export function EditMeetingDialog({ open, onOpenChange, meeting, onMeetingUpdated }: EditMeetingDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [participantMode, setParticipantMode] = useState<'all' | 'selected'>('all');
+  const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -91,8 +95,30 @@ export function EditMeetingDialog({ open, onOpenChange, meeting, onMeetingUpdate
         status: meeting.status,
         isPrivate: meeting.isPrivate,
       });
+
+      // Set participant mode
+      setParticipantMode((meeting.participantMode as 'all' | 'selected') || 'all');
+
+      // Fetch existing participants
+      if (meeting.participantMode === 'selected') {
+        fetchParticipants();
+      } else {
+        setSelectedMemberIds([]);
+      }
     }
   }, [meeting, open]);
+
+  const fetchParticipants = async () => {
+    try {
+      const response = await fetch(`/api/meetings/${meeting.id}/participants`);
+      const data = await response.json();
+      if (data.success) {
+        setSelectedMemberIds(data.participants.map((p: { memberId: number }) => p.memberId));
+      }
+    } catch (error) {
+      console.error('Failed to fetch participants:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +129,11 @@ export function EditMeetingDialog({ open, onOpenChange, meeting, onMeetingUpdate
       const response = await fetch(`/api/meetings/${meeting.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          participantMode,
+          selectedMemberIds: participantMode === 'selected' ? selectedMemberIds : [],
+        }),
       });
 
       const data = await response.json();
@@ -326,6 +356,20 @@ export function EditMeetingDialog({ open, onOpenChange, meeting, onMeetingUpdate
               />
             </div>
           </div>
+
+          {/* Participant Selection */}
+          {formData.isPrivate && (
+            <div className="border-t pt-4">
+              <MeetingParticipantSelector
+                unionId={meeting.unionId}
+                participantMode={participantMode}
+                onParticipantModeChange={setParticipantMode}
+                selectedMemberIds={selectedMemberIds}
+                onSelectedMembersChange={setSelectedMemberIds}
+                disabled={loading}
+              />
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

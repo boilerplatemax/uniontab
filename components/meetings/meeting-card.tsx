@@ -26,6 +26,7 @@ interface Meeting {
   meetingPassword: string | null;
   status: string;
   isPrivate: boolean;
+  participantMode?: string;
   createdAt: Date;
   createdBy: {
     id: number;
@@ -177,7 +178,7 @@ export function MeetingCard({ meeting, unionInfo, isOwnerOrAdmin, onMeetingUpdat
               )}
 
               {isOwnerOrAdmin && (
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm">
                       <MoreVertical className="h-4 w-4" />
@@ -226,6 +227,7 @@ export function MeetingCard({ meeting, unionInfo, isOwnerOrAdmin, onMeetingUpdat
         meetingId={meeting.id}
         meetingTitle={meeting.title}
         unionId={meeting.unionId}
+        participantMode={meeting.participantMode}
       />
 
       <EditMeetingDialog
