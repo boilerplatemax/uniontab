@@ -589,6 +589,7 @@ export const unionsRelations = relations(unions, ({ one, many }) => ({
   grievances: many(grievances),
   grievanceCategories: many(grievanceCategories),
   strikes: many(strikes),
+  meetings: many(meetings),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -1533,4 +1534,118 @@ export enum StrikeResourceCategory {
   MEDIA = 'media',
   TRAINING = 'training',
   OTHER = 'other',
+}
+
+// Meeting Management System Tables
+export const meetings = pgTable('meetings', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+
+  // Meeting details
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  agenda: text('agenda'),
+
+  // Schedule
+  scheduledDate: timestamp('scheduled_date').notNull(),
+  startTime: varchar('start_time', { length: 10 }).notNull(), // e.g., "14:00"
+  endTime: varchar('end_time', { length: 10 }), // e.g., "15:00"
+  timezone: varchar('timezone', { length: 100 }).notNull().default('America/New_York'),
+
+  // Video conferencing
+  platform: varchar('platform', { length: 20 }).notNull().default('zoom'), // 'zoom', 'google_meet', 'custom'
+  meetingLink: text('meeting_link'), // The join URL
+  meetingId: varchar('meeting_id', { length: 100 }), // Platform-specific meeting ID
+  meetingPassword: varchar('meeting_password', { length: 100 }), // Optional password
+
+  // Status
+  status: varchar('status', { length: 20 }).notNull().default('scheduled'), // 'draft', 'scheduled', 'in_progress', 'completed', 'cancelled'
+
+  // Access control
+  isPrivate: boolean('is_private').notNull().default(true), // Members only by default
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
+});
+
+export const meetingInvites = pgTable('meeting_invites', {
+  id: serial('id').primaryKey(),
+  meetingId: integer('meeting_id')
+    .notNull()
+    .references(() => meetings.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+
+  // Invite status
+  status: varchar('status', { length: 20 }).notNull().default('pending'), // 'pending', 'sent', 'opened', 'accepted', 'declined'
+  sentAt: timestamp('sent_at'),
+  respondedAt: timestamp('responded_at'),
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  uniqueMeetingMember: unique('unique_meeting_member').on(table.meetingId, table.memberId),
+}));
+
+// Meeting Relations
+export const meetingsRelations = relations(meetings, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [meetings.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [meetings.createdBy],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [meetings.updatedBy],
+    references: [users.id],
+  }),
+  invites: many(meetingInvites),
+}));
+
+export const meetingInvitesRelations = relations(meetingInvites, ({ one }) => ({
+  meeting: one(meetings, {
+    fields: [meetingInvites.meetingId],
+    references: [meetings.id],
+  }),
+  member: one(members, {
+    fields: [meetingInvites.memberId],
+    references: [members.id],
+  }),
+}));
+
+export type Meeting = typeof meetings.$inferSelect;
+export type NewMeeting = typeof meetings.$inferInsert;
+export type MeetingInvite = typeof meetingInvites.$inferSelect;
+export type NewMeetingInvite = typeof meetingInvites.$inferInsert;
+
+export enum MeetingStatus {
+  DRAFT = 'draft',
+  SCHEDULED = 'scheduled',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+}
+
+export enum MeetingPlatform {
+  ZOOM = 'zoom',
+  GOOGLE_MEET = 'google_meet',
+  CUSTOM = 'custom',
+}
+
+export enum MeetingInviteStatus {
+  PENDING = 'pending',
+  SENT = 'sent',
+  OPENED = 'opened',
+  ACCEPTED = 'accepted',
+  DECLINED = 'declined',
 }

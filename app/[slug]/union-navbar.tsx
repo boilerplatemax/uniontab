@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap } from 'lucide-react';
+import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import {
@@ -114,6 +114,14 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                         {strikeNotificationCount}
                       </span>
                     )}
+                  </Button>
+                </Link>
+
+                {/* Meetings - visible to all members */}
+                <Link href={`/${slug}/meetings`} prefetch={true}>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <Video className="h-4 w-4" />
+                    <span className="hidden md:inline">Meetings</span>
                   </Button>
                 </Link>
 
@@ -296,6 +304,18 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                       {strikeNotificationCount}
                     </span>
                   )}
+                </Button>
+              </Link>
+
+              {/* Meetings - visible to all members */}
+              <Link
+                href={`/${slug}/meetings`}
+                prefetch={true}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Button variant="ghost" className="w-full justify-start gap-2">
+                  <Video className="h-4 w-4" />
+                  Meetings
                 </Button>
               </Link>
 

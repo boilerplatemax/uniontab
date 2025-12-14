@@ -581,6 +581,29 @@ interface SendMassEmailOptions {
   }>;
 }
 
+interface SendMeetingInviteOptions {
+  to: string;
+  memberName: string;
+  meeting: {
+    title: string;
+    description: string | null;
+    scheduledDate: Date;
+    startTime: string;
+    endTime: string | null;
+    timezone: string;
+    platform: string;
+    meetingLink: string | null;
+    meetingPassword: string | null;
+  };
+  unionInfo: {
+    id?: number;
+    name: string;
+    localNumber: string | null;
+    logoUrl?: string | null;
+    slug: string;
+  };
+}
+
 export async function sendMassEmail({
   to,
   subject,
@@ -723,5 +746,275 @@ export async function sendMassEmail({
       console.error('SendGrid error response:', error.response.body);
     }
     throw new Error(`Failed to send email to ${to}: ${error.message}`);
+  }
+}
+
+export async function sendMeetingInviteEmail({
+  to,
+  memberName,
+  meeting,
+  unionInfo,
+}: SendMeetingInviteOptions) {
+  if (!apiKey) {
+    console.error('SendGrid API key not configured');
+    throw new Error('Email service not configured');
+  }
+
+  // Check rate limits if unionId is provided
+  if (unionInfo.id) {
+    const rateLimitCheck = await checkRateLimit(unionInfo.id);
+    if (!rateLimitCheck.allowed) {
+      throw new Error(`Rate limit exceeded: ${rateLimitCheck.reason}`);
+    }
+  }
+
+  // Get FROM email
+  const fromEmail = await getFromEmail(unionInfo.id, 'meetings');
+
+  const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
+  const unionNameUppercase = unionName.toUpperCase();
+
+  // Format date and time
+  const meetingDate = new Date(meeting.scheduledDate).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const startTimeFormatted = formatTime(meeting.startTime);
+  const endTimeFormatted = meeting.endTime ? formatTime(meeting.endTime) : null;
+  const timeRange = endTimeFormatted
+    ? `${startTimeFormatted} - ${endTimeFormatted}`
+    : startTimeFormatted;
+
+  const platformName = meeting.platform === 'zoom' ? 'Zoom' :
+                       meeting.platform === 'google_meet' ? 'Google Meet' :
+                       'Video Conference';
+
+  const subject = `Meeting Invitation: ${meeting.title} - ${unionName}`;
+
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  const meetingPageUrl = `${baseUrl}/${unionInfo.slug}/meetings`;
+
+  const text = `
+Hi ${memberName},
+
+You are invited to a ${unionName} online meeting!
+
+Meeting: ${meeting.title}
+Date: ${meetingDate}
+Time: ${timeRange} (${meeting.timezone})
+Platform: ${platformName}
+${meeting.meetingLink ? `Join Link: ${meeting.meetingLink}` : ''}
+${meeting.meetingPassword ? `Password: ${meeting.meetingPassword}` : ''}
+
+${meeting.description ? `About this meeting:\n${meeting.description}` : ''}
+
+View all meetings: ${meetingPageUrl}
+
+We hope to see you there!
+
+Best regards,
+The ${unionName} Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f9fafb;
+    }
+    .email-container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .email-header {
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .email-header img {
+      max-width: 100px;
+      max-height: 60px;
+      margin-bottom: 15px;
+    }
+    .email-header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .email-body {
+      padding: 30px;
+    }
+    .meeting-card {
+      background-color: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .meeting-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #1e40af;
+      margin-bottom: 15px;
+    }
+    .meeting-detail {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      color: #374151;
+    }
+    .meeting-detail-icon {
+      width: 20px;
+      margin-right: 10px;
+      color: #2563eb;
+    }
+    .join-button {
+      display: inline-block;
+      padding: 14px 30px;
+      background-color: #2563eb;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      margin: 20px 0;
+    }
+    .join-button:hover {
+      background-color: #1d4ed8;
+    }
+    .password-box {
+      background-color: #fef3c7;
+      border: 1px solid #fbbf24;
+      border-radius: 4px;
+      padding: 10px 15px;
+      margin: 15px 0;
+      font-size: 14px;
+    }
+    .description {
+      background-color: #f9fafb;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    .email-footer {
+      background-color: #f9fafb;
+      padding: 20px 30px;
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      border-top: 1px solid #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="email-header">
+      ${unionInfo.logoUrl ? `<img src="${unionInfo.logoUrl}" alt="${unionNameUppercase} Logo">` : ''}
+      <h1>${unionNameUppercase}</h1>
+    </div>
+    <div class="email-body">
+      <p>Hi ${memberName},</p>
+      <p>You are invited to an online meeting!</p>
+
+      <div class="meeting-card">
+        <div class="meeting-title">${meeting.title}</div>
+
+        <div class="meeting-detail">
+          <span class="meeting-detail-icon">&#128197;</span>
+          <strong>${meetingDate}</strong>
+        </div>
+
+        <div class="meeting-detail">
+          <span class="meeting-detail-icon">&#128336;</span>
+          <span>${timeRange} (${meeting.timezone})</span>
+        </div>
+
+        <div class="meeting-detail">
+          <span class="meeting-detail-icon">&#128187;</span>
+          <span>${platformName}</span>
+        </div>
+
+        ${meeting.meetingLink ? `
+        <center>
+          <a href="${meeting.meetingLink}" class="join-button">Join Meeting</a>
+        </center>
+        ` : ''}
+
+        ${meeting.meetingPassword ? `
+        <div class="password-box">
+          <strong>Meeting Password:</strong> ${meeting.meetingPassword}
+        </div>
+        ` : ''}
+      </div>
+
+      ${meeting.description ? `
+      <div class="description">
+        <strong>About this meeting:</strong>
+        <p>${meeting.description}</p>
+      </div>
+      ` : ''}
+
+      <p style="margin-top: 20px;">We hope to see you there!</p>
+
+      <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
+        <a href="${meetingPageUrl}">View all meetings</a>
+      </p>
+    </div>
+    <div class="email-footer">
+      <p>This invitation was sent by ${unionNameUppercase}</p>
+      <p>&copy; ${new Date().getFullYear()} ${unionNameUppercase}. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  try {
+    await sgMail.send({
+      to,
+      from: {
+        email: fromEmail.email,
+        name: unionNameUppercase,
+      },
+      subject,
+      text,
+      html,
+    });
+
+    console.log(`Meeting invite sent successfully to ${to}`);
+
+    // Increment rate limit counters if unionId is provided
+    if (unionInfo.id) {
+      await incrementRateLimitCounters(unionInfo.id);
+    }
+  } catch (error: any) {
+    console.error('Error sending meeting invite:', error);
+    if (error.response) {
+      console.error('SendGrid error response:', error.response.body);
+    }
+    throw new Error(`Failed to send meeting invite to ${to}: ${error.message}`);
   }
 }
