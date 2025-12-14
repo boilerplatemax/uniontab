@@ -28,7 +28,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       );
     }
 
-    const { isArchived } = await request.json();
+    const { isArchived, markAsResolved } = await request.json();
 
     if (typeof isArchived !== 'boolean') {
       return NextResponse.json(
@@ -69,15 +69,23 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     // Update the grievance archive status
+    const updateData: any = {
+      isArchived,
+      archivedAt: isArchived ? new Date() : null,
+      archivedBy: isArchived ? user.id : null,
+      updatedAt: new Date(),
+      updatedBy: user.id,
+    };
+
+    // If archiving and should mark as resolved, update status
+    if (isArchived && markAsResolved && grievance.status !== 'resolved') {
+      updateData.status = 'resolved';
+      updateData.resolvedAt = new Date();
+    }
+
     const [updatedGrievance] = await db
       .update(grievances)
-      .set({
-        isArchived,
-        archivedAt: isArchived ? new Date() : null,
-        archivedBy: isArchived ? user.id : null,
-        updatedAt: new Date(),
-        updatedBy: user.id,
-      })
+      .set(updateData)
       .where(eq(grievances.id, grievanceId))
       .returning();
 

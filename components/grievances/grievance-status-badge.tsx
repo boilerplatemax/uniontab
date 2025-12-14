@@ -31,10 +31,6 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   [GrievanceStatus.RESOLVED]: {
     label: 'Resolved',
     className: 'bg-green-100 text-green-800 border-green-300'
-  },
-  [GrievanceStatus.CLOSED]: {
-    label: 'Closed',
-    className: 'bg-gray-100 text-gray-600 border-gray-300'
   }
 };
 

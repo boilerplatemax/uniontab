@@ -405,7 +405,6 @@ export function GrievanceDetailContent({
                     Awaiting Response
                   </SelectItem>
                   <SelectItem value={GrievanceStatus.RESOLVED}>Resolved</SelectItem>
-                  <SelectItem value={GrievanceStatus.CLOSED}>Closed</SelectItem>
                 </SelectContent>
               </Select>
             </div>

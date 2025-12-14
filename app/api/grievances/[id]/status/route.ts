@@ -16,8 +16,7 @@ const VALID_STATUSES = [
   'assigned',
   'under_review',
   'awaiting_response',
-  'resolved',
-  'closed'
+  'resolved'
 ];
 
 export async function PUT(request: Request, { params }: RouteParams) {
@@ -107,11 +106,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
       if (resolutionOutcome) {
         updateData.resolutionOutcome = resolutionOutcome;
       }
-    }
-
-    // Set closed_at when status changes to closed
-    if (status === 'closed' && grievance.status !== 'closed') {
-      updateData.closedAt = new Date();
     }
 
     // Update the grievance

@@ -620,7 +620,6 @@ export async function getGrievanceSummaryForUnion(unionId: number) {
     underReviewCount: statusCounts['under_review'] || 0,
     awaitingResponseCount: statusCounts['awaiting_response'] || 0,
     resolvedCount: statusCounts['resolved'] || 0,
-    closedCount: statusCounts['closed'] || 0,
     urgentCount: priorityCounts['urgent'] || 0,
     highCount: priorityCounts['high'] || 0,
     mediumCount: priorityCounts['medium'] || 0,
