@@ -299,6 +299,8 @@ export function GrievancesContent({
               unionSlug={union.slug}
               isAdmin={isOwnerOrAdmin}
               isOwner={grievance.memberId === memberId}
+              onDelete={handleRefresh}
+              onArchiveToggle={handleRefresh}
             />
           ))}
         </div>

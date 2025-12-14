@@ -90,8 +90,12 @@ export function GrievanceCard({
 
       if (response.ok) {
         setShowArchiveDialog(false);
-        if (onArchiveToggle) onArchiveToggle();
-        router.refresh();
+        if (onArchiveToggle) {
+          onArchiveToggle();
+        } else {
+          // Fallback to router refresh if no callback provided
+          router.refresh();
+        }
       } else {
         const data = await response.json();
         alert(data.error || 'Failed to archive grievance');
