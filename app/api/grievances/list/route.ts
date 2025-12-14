@@ -19,6 +19,7 @@ export async function GET(request: Request) {
     const category = searchParams.get('category') || undefined;
     const assignedToParam = searchParams.get('assignedTo');
     const assignedTo = assignedToParam ? parseInt(assignedToParam) : undefined;
+    const includeArchived = searchParams.get('includeArchived') === 'true';
 
     if (!unionId) {
       return NextResponse.json(
@@ -53,10 +54,15 @@ export async function GET(request: Request) {
         priority,
         category,
         assignedTo,
+        includeArchived,
       });
     } else {
-      // Regular members can only see their own grievances
-      grievances = await getGrievancesForMember(membership.id);
+      // Regular members can only see their own grievances (with filters)
+      grievances = await getGrievancesForMember(membership.id, {
+        status,
+        priority,
+        category,
+      });
     }
 
     return NextResponse.json({ success: true, grievances });

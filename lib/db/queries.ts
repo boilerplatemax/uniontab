@@ -365,11 +365,10 @@ export async function getGrievancesForUnion(unionId: number, filters?: {
     conditions.push(eq(grievances.status, filters.status));
   }
 
-  // Note: Archived filter temporarily disabled until migration runs in production
   // Exclude archived grievances by default unless explicitly requested
-  // if (!filters?.includeArchived) {
-  //   conditions.push(eq(grievances.isArchived, false));
-  // }
+  if (!filters?.includeArchived) {
+    conditions.push(eq(grievances.isArchived, false));
+  }
 
   if (filters?.priority) {
     conditions.push(eq(grievances.priority, filters.priority));
@@ -426,9 +425,25 @@ export async function getGrievancesForUnion(unionId: number, filters?: {
 /**
  * Get grievances for a specific member
  */
-export async function getGrievancesForMember(memberId: number) {
+export async function getGrievancesForMember(memberId: number, filters?: {
+  status?: string;
+  priority?: string;
+  category?: string;
+}) {
+  let conditions = [eq(grievances.memberId, memberId)];
+
+  if (filters?.status) {
+    conditions.push(eq(grievances.status, filters.status));
+  }
+  if (filters?.priority) {
+    conditions.push(eq(grievances.priority, filters.priority));
+  }
+  if (filters?.category) {
+    conditions.push(eq(grievances.category, filters.category));
+  }
+
   return await db.query.grievances.findMany({
-    where: eq(grievances.memberId, memberId),
+    where: and(...conditions),
     with: {
       assignedTo: {
         columns: {
@@ -571,12 +586,18 @@ export async function getGrievanceCategories(unionId: number) {
  * Get grievance summary statistics for a union
  */
 export async function getGrievanceSummaryForUnion(unionId: number) {
-  // Note: Archived filter temporarily disabled until migration runs in production
-  // Exclude archived grievances from summary
+  // Exclude archived grievances and draft grievances from summary
+  // Draft grievances are not counted since they haven't been submitted yet
   const allGrievances = await db
     .select()
     .from(grievances)
-    .where(eq(grievances.unionId, unionId));
+    .where(
+      and(
+        eq(grievances.unionId, unionId),
+        ne(grievances.status, GrievanceStatus.DRAFT),
+        eq(grievances.isArchived, false)
+      )
+    );
 
   const statusCounts = allGrievances.reduce((acc, g) => {
     acc[g.status] = (acc[g.status] || 0) + 1;
