@@ -365,10 +365,11 @@ export async function getGrievancesForUnion(unionId: number, filters?: {
     conditions.push(eq(grievances.status, filters.status));
   }
 
+  // Note: Archived filter temporarily disabled until migration runs in production
   // Exclude archived grievances by default unless explicitly requested
-  if (!filters?.includeArchived) {
-    conditions.push(eq(grievances.isArchived, false));
-  }
+  // if (!filters?.includeArchived) {
+  //   conditions.push(eq(grievances.isArchived, false));
+  // }
 
   if (filters?.priority) {
     conditions.push(eq(grievances.priority, filters.priority));
@@ -570,14 +571,12 @@ export async function getGrievanceCategories(unionId: number) {
  * Get grievance summary statistics for a union
  */
 export async function getGrievanceSummaryForUnion(unionId: number) {
+  // Note: Archived filter temporarily disabled until migration runs in production
   // Exclude archived grievances from summary
   const allGrievances = await db
     .select()
     .from(grievances)
-    .where(and(
-      eq(grievances.unionId, unionId),
-      eq(grievances.isArchived, false)
-    ));
+    .where(eq(grievances.unionId, unionId));
 
   const statusCounts = allGrievances.reduce((acc, g) => {
     acc[g.status] = (acc[g.status] || 0) + 1;
