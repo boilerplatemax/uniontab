@@ -1565,6 +1565,7 @@ export const meetings = pgTable('meetings', {
 
   // Access control
   isPrivate: boolean('is_private').notNull().default(true), // Members only by default
+  participantMode: varchar('participant_mode', { length: 20 }).notNull().default('all'), // 'all' or 'selected'
 
   // Metadata
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -1595,6 +1596,24 @@ export const meetingInvites = pgTable('meeting_invites', {
   uniqueMeetingMember: unique('unique_meeting_member').on(table.meetingId, table.memberId),
 }));
 
+// Meeting participants - tracks which members can see/participate in a meeting
+export const meetingParticipants = pgTable('meeting_participants', {
+  id: serial('id').primaryKey(),
+  meetingId: integer('meeting_id')
+    .notNull()
+    .references(() => meetings.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  addedBy: integer('added_by')
+    .references(() => users.id, { onDelete: 'set null' }),
+}, (table) => ({
+  uniqueMeetingParticipant: unique('unique_meeting_participant').on(table.meetingId, table.memberId),
+}));
+
 // Meeting Relations
 export const meetingsRelations = relations(meetings, ({ one, many }) => ({
   union: one(unions, {
@@ -1610,6 +1629,7 @@ export const meetingsRelations = relations(meetings, ({ one, many }) => ({
     references: [users.id],
   }),
   invites: many(meetingInvites),
+  participants: many(meetingParticipants),
 }));
 
 export const meetingInvitesRelations = relations(meetingInvites, ({ one }) => ({
@@ -1623,10 +1643,27 @@ export const meetingInvitesRelations = relations(meetingInvites, ({ one }) => ({
   }),
 }));
 
+export const meetingParticipantsRelations = relations(meetingParticipants, ({ one }) => ({
+  meeting: one(meetings, {
+    fields: [meetingParticipants.meetingId],
+    references: [meetings.id],
+  }),
+  member: one(members, {
+    fields: [meetingParticipants.memberId],
+    references: [members.id],
+  }),
+  addedBy: one(users, {
+    fields: [meetingParticipants.addedBy],
+    references: [users.id],
+  }),
+}));
+
 export type Meeting = typeof meetings.$inferSelect;
 export type NewMeeting = typeof meetings.$inferInsert;
 export type MeetingInvite = typeof meetingInvites.$inferSelect;
 export type NewMeetingInvite = typeof meetingInvites.$inferInsert;
+export type MeetingParticipant = typeof meetingParticipants.$inferSelect;
+export type NewMeetingParticipant = typeof meetingParticipants.$inferInsert;
 
 export enum MeetingStatus {
   DRAFT = 'draft',
@@ -1648,4 +1685,9 @@ export enum MeetingInviteStatus {
   OPENED = 'opened',
   ACCEPTED = 'accepted',
   DECLINED = 'declined',
+}
+
+export enum MeetingParticipantMode {
+  ALL = 'all',
+  SELECTED = 'selected',
 }

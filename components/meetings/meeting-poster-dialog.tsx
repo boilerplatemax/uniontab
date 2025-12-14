@@ -228,53 +228,101 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
       <style jsx global>{`
         @media print {
           @page {
-            margin: 0;
+            margin: 0.5in;
             size: letter portrait;
           }
 
-          body * {
-            visibility: hidden !important;
+          /* Hide everything except poster content */
+          body > *:not([data-radix-portal]) {
+            display: none !important;
           }
 
-          .poster-content,
-          .poster-content * {
-            visibility: visible !important;
-          }
-
-          body,
-          html,
-          #__next,
-          [data-radix-portal],
-          [role="dialog"] {
-            position: static !important;
-            overflow: visible !important;
-            height: auto !important;
-            width: auto !important;
-          }
-
-          .poster-content {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border: none !important;
-            box-shadow: none !important;
-            background: white !important;
-            min-height: 100vh !important;
-          }
-
-          .poster-content img,
-          .poster-content * {
-            print-color-adjust: exact !important;
-            -webkit-print-color-adjust: exact !important;
+          [data-radix-portal] > *:not([role="dialog"]) {
+            display: none !important;
           }
 
           [data-radix-overlay],
           [data-radix-dialog-overlay] {
             display: none !important;
+          }
+
+          [role="dialog"] {
+            position: static !important;
+            transform: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            max-width: none !important;
+            max-height: none !important;
+            overflow: visible !important;
+            padding: 0 !important;
+            background: transparent !important;
+          }
+
+          [role="dialog"] > *:not(.poster-content) {
+            display: none !important;
+          }
+
+          .poster-content {
+            display: block !important;
+            visibility: visible !important;
+            position: static !important;
+            width: 100% !important;
+            height: auto !important;
+            max-width: 7.5in !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: white !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            aspect-ratio: auto !important;
+          }
+
+          .poster-content,
+          .poster-content * {
+            visibility: visible !important;
+            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
+
+          /* Ensure proper font sizes for print */
+          .poster-content h1 {
+            font-size: 18pt !important;
+          }
+
+          .poster-content h2 {
+            font-size: 22pt !important;
+          }
+
+          .poster-content h3 {
+            font-size: 14pt !important;
+          }
+
+          .poster-content p {
+            font-size: 10pt !important;
+          }
+
+          .poster-content .text-4xl {
+            font-size: 24pt !important;
+          }
+
+          /* Compact spacing for print */
+          .poster-content .p-8 {
+            padding: 0.4in !important;
+          }
+
+          .poster-content .mb-8 {
+            margin-bottom: 0.25in !important;
+          }
+
+          .poster-content .mb-4 {
+            margin-bottom: 0.15in !important;
+          }
+
+          .poster-content .gap-6 {
+            gap: 0.2in !important;
           }
 
           a {
