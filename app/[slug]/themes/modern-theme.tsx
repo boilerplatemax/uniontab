@@ -27,6 +27,8 @@ export function ModernTheme({
   userId,
   slug,
   pendingMembersCount,
+  grievanceNotificationCount,
+  strikeNotificationCount,
   handleSignOut,
   activeAnnouncements,
   accessibilityWidgetEnabled,
@@ -48,6 +50,8 @@ export function ModernTheme({
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
         announcementId={activeAnnouncements.banner?.id}
+        grievanceNotificationCount={grievanceNotificationCount}
+        strikeNotificationCount={strikeNotificationCount}
       />
 
       {/* Spacing for fixed navbar and announcement */}

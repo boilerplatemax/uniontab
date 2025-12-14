@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
-import { ArrowLeft, Calendar, User, Send, Paperclip, Download, AlertTriangle, Trash2, Edit2, X, Check, Upload } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Send, Paperclip, Download, AlertTriangle, Trash2, Edit2, X, Check, Upload, Archive, ArchiveRestore } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { GrievanceStatus } from '@/lib/db/schema';
 
@@ -65,6 +65,7 @@ export function GrievanceDetailContent({
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [newAttachments, setNewAttachments] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [archiving, setArchiving] = useState(false);
 
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
   const isGrievanceOwner = grievance.memberId === memberId;
@@ -170,7 +171,11 @@ export function GrievanceDetailContent({
         setGrievance((prev: any) => ({
           ...prev,
           status: data.grievance.status,
+          resolvedAt: data.grievance.resolvedAt,
+          closedAt: data.grievance.closedAt,
         }));
+        // Refresh the page data to ensure lists are up to date
+        router.refresh();
       }
     } catch (error) {
       console.error('Error updating status:', error);
@@ -294,6 +299,36 @@ export function GrievanceDetailContent({
     }
   };
 
+  const handleArchiveToggle = async () => {
+    if (!confirm(`Are you sure you want to ${grievance.isArchived ? 'unarchive' : 'archive'} this grievance?`)) {
+      return;
+    }
+
+    setArchiving(true);
+    try {
+      const response = await fetch(`/api/grievances/${grievance.id}/archive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isArchived: !grievance.isArchived }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setGrievance((prev: any) => ({
+          ...prev,
+          isArchived: data.grievance.isArchived,
+          archivedAt: data.grievance.archivedAt,
+          archivedBy: data.grievance.archivedBy,
+        }));
+        router.refresh();
+      }
+    } catch (error) {
+      console.error('Error archiving grievance:', error);
+    } finally {
+      setArchiving(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Back Button */}
@@ -402,6 +437,40 @@ export function GrievanceDetailContent({
                   <SelectItem value={GrievanceStatus.CLOSED}>Closed</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {/* Archive Management (for admins) */}
+          {isOwnerOrAdmin && (
+            <div className="border-t pt-4">
+              <Label className="text-base font-semibold">Archive</Label>
+              <div className="mt-2">
+                <Button
+                  variant={grievance.isArchived ? "default" : "outline"}
+                  onClick={handleArchiveToggle}
+                  disabled={archiving}
+                  className="w-full max-w-md"
+                >
+                  {archiving ? (
+                    'Processing...'
+                  ) : grievance.isArchived ? (
+                    <>
+                      <ArchiveRestore className="h-4 w-4 mr-2" />
+                      Unarchive Grievance
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="h-4 w-4 mr-2" />
+                      Archive Grievance
+                    </>
+                  )}
+                </Button>
+                {grievance.isArchived && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    This grievance is archived and hidden from the main list.
+                  </p>
+                )}
+              </div>
             </div>
           )}
 

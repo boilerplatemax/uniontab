@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, users, members, posts, files, events, postLikes, postAttachments, announcements, announcementAttachments, dismissedAnnouncements } from '@/lib/db/schema';
 import { eq, and, desc, count, sql } from 'drizzle-orm';
-import { getUser } from '@/lib/db/queries';
+import { getUser, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
 import { DefaultTheme } from './themes/default-theme';
 import { ModernTheme } from './themes/modern-theme';
@@ -263,6 +263,14 @@ export default async function PublicUnionPage({
   // Get pending members count for owners
   const pendingMembersCount = isOwner ? await getPendingMembersCount(union.id) : 0;
 
+  // Get notification counts for grievances and strikes
+  const grievanceNotificationCount = currentUser && isApprovedMember
+    ? await getGrievanceNotificationCount(union.id, currentUser.id, isOwner)
+    : 0;
+  const strikeNotificationCount = currentUser && isApprovedMember
+    ? await getStrikeNotificationCount(union.id, currentUser.id, isOwner)
+    : 0;
+
   // Fetch posts, files, and events
   const unionPosts = await getUnionPosts(union.id, currentUser?.id);
   const unionFiles = await getUnionFiles(union.id);
@@ -283,6 +291,8 @@ export default async function PublicUnionPage({
     userId: currentUser?.id || null,
     slug,
     pendingMembersCount,
+    grievanceNotificationCount,
+    strikeNotificationCount,
     handleSignOut,
     activeAnnouncements,
     accessibilityWidgetEnabled: union.accessibilityWidgetEnabled ?? true,

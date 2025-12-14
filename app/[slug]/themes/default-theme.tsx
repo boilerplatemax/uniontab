@@ -25,6 +25,8 @@ export function DefaultTheme({
   userId,
   slug,
   pendingMembersCount,
+  grievanceNotificationCount,
+  strikeNotificationCount,
   handleSignOut,
   activeAnnouncements,
   accessibilityWidgetEnabled,
@@ -46,6 +48,8 @@ export function DefaultTheme({
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
         announcementId={activeAnnouncements.banner?.id}
+        grievanceNotificationCount={grievanceNotificationCount}
+        strikeNotificationCount={strikeNotificationCount}
       />
 
       {/* Spacing for fixed navbar and announcement */}

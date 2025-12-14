@@ -354,6 +354,7 @@ export async function getGrievancesForUnion(unionId: number, filters?: {
   category?: string;
   assignedTo?: number;
   memberId?: number;
+  includeArchived?: boolean;
 }) {
   let conditions = [eq(grievances.unionId, unionId)];
 
@@ -362,6 +363,11 @@ export async function getGrievancesForUnion(unionId: number, filters?: {
     conditions.push(ne(grievances.status, GrievanceStatus.DRAFT));
   } else if (filters.status) {
     conditions.push(eq(grievances.status, filters.status));
+  }
+
+  // Exclude archived grievances by default unless explicitly requested
+  if (!filters?.includeArchived) {
+    conditions.push(eq(grievances.isArchived, false));
   }
 
   if (filters?.priority) {
@@ -564,10 +570,14 @@ export async function getGrievanceCategories(unionId: number) {
  * Get grievance summary statistics for a union
  */
 export async function getGrievanceSummaryForUnion(unionId: number) {
+  // Exclude archived grievances from summary
   const allGrievances = await db
     .select()
     .from(grievances)
-    .where(eq(grievances.unionId, unionId));
+    .where(and(
+      eq(grievances.unionId, unionId),
+      eq(grievances.isArchived, false)
+    ));
 
   const statusCounts = allGrievances.reduce((acc, g) => {
     acc[g.status] = (acc[g.status] || 0) + 1;

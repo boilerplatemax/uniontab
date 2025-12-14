@@ -950,6 +950,11 @@ export const grievances = pgTable('grievances', {
   resolvedAt: timestamp('resolved_at'),
   closedAt: timestamp('closed_at'),
 
+  // Archiving
+  isArchived: boolean('is_archived').notNull().default(false),
+  archivedAt: timestamp('archived_at'),
+  archivedBy: integer('archived_by').references(() => users.id, { onDelete: 'set null' }),
+
   // Metadata
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
