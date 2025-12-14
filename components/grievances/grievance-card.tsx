@@ -14,6 +14,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { GrievanceStatusBadge } from './grievance-status-badge';
 import { GrievancePriorityBadge } from './grievance-priority-badge';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +44,7 @@ export function GrievanceCard({
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  const [wasResolved, setWasResolved] = useState<string>('no');
 
   const commentCount = grievance.comments?.length || 0;
   const attachmentCount = grievance.attachments?.length || 0;
@@ -85,11 +88,15 @@ export function GrievanceCard({
       const response = await fetch(`/api/grievances/${grievance.id}/archive`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isArchived: !grievance.isArchived }),
+        body: JSON.stringify({
+          isArchived: !grievance.isArchived,
+          markAsResolved: !grievance.isArchived && wasResolved === 'yes'
+        }),
       });
 
       if (response.ok) {
         setShowArchiveDialog(false);
+        setWasResolved('no'); // Reset for next time
         if (onArchiveToggle) {
           onArchiveToggle();
         } else {
@@ -259,6 +266,27 @@ export function GrievanceCard({
                 : 'Are you sure you want to archive this grievance? It will be hidden from the main grievances list, but you can unarchive it later.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {!grievance.isArchived && (
+            <div className="py-4">
+              <Label className="text-sm font-medium mb-3 block">
+                Was this grievance resolved?
+              </Label>
+              <RadioGroup value={wasResolved} onValueChange={setWasResolved}>
+                <div className="flex items-center space-x-2 mb-2">
+                  <RadioGroupItem value="yes" id="resolved-yes" />
+                  <Label htmlFor="resolved-yes" className="font-normal cursor-pointer">
+                    Yes, the issue was resolved
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id="resolved-no" />
+                  <Label htmlFor="resolved-no" className="font-normal cursor-pointer">
+                    No, the issue was not resolved
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={archiving}>Cancel</AlertDialogCancel>
             <AlertDialogAction

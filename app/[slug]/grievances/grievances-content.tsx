@@ -42,6 +42,7 @@ export function GrievancesContent({
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [showArchived, setShowArchived] = useState(false);
   const [grievances, setGrievances] = useState(initialGrievances);
+  const [summaryData, setSummaryData] = useState(summary);
 
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
 
@@ -55,6 +56,15 @@ export function GrievancesContent({
     if (response.ok) {
       const data = await response.json();
       setGrievances(data.grievances);
+
+      // Also refresh the summary
+      if (isOwnerOrAdmin) {
+        const summaryResponse = await fetch(`/api/grievances/summary?unionId=${union.id}`);
+        if (summaryResponse.ok) {
+          const summaryData = await summaryResponse.json();
+          setSummaryData(summaryData.summary);
+        }
+      }
     }
   };
 
@@ -145,7 +155,7 @@ export function GrievancesContent({
       </div>
 
       {/* Summary Stats (Admin only) */}
-      {isOwnerOrAdmin && summary && (
+      {isOwnerOrAdmin && summaryData && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div
             className="bg-white rounded-lg border p-4 cursor-pointer hover:bg-gray-50 transition-colors"
@@ -158,7 +168,7 @@ export function GrievancesContent({
               <FileText className="h-4 w-4" />
               <span>Total Grievances</span>
             </div>
-            <p className="text-2xl font-bold">{summary.total}</p>
+            <p className="text-2xl font-bold">{summaryData.total}</p>
           </div>
           <div
             className="bg-white rounded-lg border p-4 cursor-pointer hover:bg-gray-50 transition-colors"
@@ -183,7 +193,7 @@ export function GrievancesContent({
               <span>Active</span>
             </div>
             <p className="text-2xl font-bold">
-              {summary.submittedCount + summary.assignedCount + summary.underReviewCount}
+              {summaryData.submittedCount + summaryData.assignedCount + summaryData.underReviewCount}
             </p>
           </div>
           <div
@@ -194,7 +204,7 @@ export function GrievancesContent({
               <AlertCircle className="h-4 w-4 text-red-500" />
               <span>Urgent</span>
             </div>
-            <p className="text-2xl font-bold">{summary.urgentCount}</p>
+            <p className="text-2xl font-bold">{summaryData.urgentCount}</p>
           </div>
           <div
             className="bg-white rounded-lg border p-4 cursor-pointer hover:bg-gray-50 transition-colors"
@@ -204,7 +214,7 @@ export function GrievancesContent({
               <CheckCircle className="h-4 w-4 text-green-500" />
               <span>Resolved</span>
             </div>
-            <p className="text-2xl font-bold">{summary.resolvedCount}</p>
+            <p className="text-2xl font-bold">{summaryData.resolvedCount}</p>
           </div>
         </div>
       )}
@@ -237,7 +247,6 @@ export function GrievancesContent({
                 <SelectItem value={GrievanceStatus.UNDER_REVIEW}>Under Review</SelectItem>
                 <SelectItem value={GrievanceStatus.AWAITING_RESPONSE}>Awaiting Response</SelectItem>
                 <SelectItem value={GrievanceStatus.RESOLVED}>Resolved</SelectItem>
-                <SelectItem value={GrievanceStatus.CLOSED}>Closed</SelectItem>
               </SelectContent>
             </Select>
           </div>

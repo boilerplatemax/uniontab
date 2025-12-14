@@ -937,7 +937,7 @@ export const grievances = pgTable('grievances', {
   category: varchar('category', { length: 100 }), // 'workplace', 'disciplinary', 'contract', 'harassment', 'safety', 'other'
 
   // Status tracking
-  status: varchar('status', { length: 20 }).notNull().default('draft'), // 'draft', 'submitted', 'assigned', 'under_review', 'awaiting_response', 'resolved', 'closed'
+  status: varchar('status', { length: 20 }).notNull().default('draft'), // 'draft', 'submitted', 'assigned', 'under_review', 'awaiting_response', 'resolved'
   priority: varchar('priority', { length: 20 }).default('medium'), // 'low', 'medium', 'high', 'urgent'
 
   // Assignment
@@ -1465,7 +1465,6 @@ export enum GrievanceStatus {
   UNDER_REVIEW = 'under_review',
   AWAITING_RESPONSE = 'awaiting_response',
   RESOLVED = 'resolved',
-  CLOSED = 'closed',
 }
 
 export enum GrievancePriority {
