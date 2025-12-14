@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -12,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { GrievanceCard } from '@/components/grievances/grievance-card';
 import { CreateGrievanceDialog } from '@/components/grievances/create-grievance-dialog';
-import { Plus, Search, Download, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { Plus, Search, Download, FileText, AlertCircle, CheckCircle, Archive } from 'lucide-react';
 import { GrievanceStatus } from '@/lib/db/schema';
 
 interface GrievancesContentProps {
@@ -38,6 +40,7 @@ export function GrievancesContent({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [showArchived, setShowArchived] = useState(false);
   const [grievances, setGrievances] = useState(initialGrievances);
 
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
@@ -46,6 +49,7 @@ export function GrievancesContent({
     const params = new URLSearchParams({ unionId: union.id.toString() });
     if (statusFilter !== 'all') params.set('status', statusFilter);
     if (priorityFilter !== 'all') params.set('priority', priorityFilter);
+    if (showArchived) params.set('includeArchived', 'true');
 
     const response = await fetch(`/api/grievances/list?${params.toString()}`);
     if (response.ok) {
@@ -77,6 +81,7 @@ export function GrievancesContent({
     const params = new URLSearchParams({ unionId: union.id.toString() });
     if (value !== 'all') params.set('status', value);
     if (priorityFilter !== 'all') params.set('priority', priorityFilter);
+    if (showArchived) params.set('includeArchived', 'true');
 
     const response = await fetch(`/api/grievances/list?${params.toString()}`);
     if (response.ok) {
@@ -90,6 +95,21 @@ export function GrievancesContent({
     const params = new URLSearchParams({ unionId: union.id.toString() });
     if (statusFilter !== 'all') params.set('status', statusFilter);
     if (value !== 'all') params.set('priority', value);
+    if (showArchived) params.set('includeArchived', 'true');
+
+    const response = await fetch(`/api/grievances/list?${params.toString()}`);
+    if (response.ok) {
+      const data = await response.json();
+      setGrievances(data.grievances);
+    }
+  };
+
+  const handleShowArchivedChange = async (checked: boolean) => {
+    setShowArchived(checked);
+    const params = new URLSearchParams({ unionId: union.id.toString() });
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (priorityFilter !== 'all') params.set('priority', priorityFilter);
+    if (checked) params.set('includeArchived', 'true');
 
     const response = await fetch(`/api/grievances/list?${params.toString()}`);
     if (response.ok) {
@@ -129,7 +149,10 @@ export function GrievancesContent({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div
             className="bg-white rounded-lg border p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-            onClick={() => handleStatusFilterChange('all')}
+            onClick={() => {
+              setShowArchived(false);
+              handleStatusFilterChange('all');
+            }}
           >
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <FileText className="h-4 w-4" />
@@ -142,6 +165,7 @@ export function GrievancesContent({
             onClick={async () => {
               setStatusFilter('all');
               setPriorityFilter('all');
+              setShowArchived(false);
               const params = new URLSearchParams({ unionId: union.id.toString() });
               const response = await fetch(`/api/grievances/list?${params.toString()}`);
               if (response.ok) {
@@ -232,6 +256,19 @@ export function GrievancesContent({
             </Select>
           </div>
         </div>
+        {isOwnerOrAdmin && (
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+            <Switch
+              id="show-archived"
+              checked={showArchived}
+              onCheckedChange={handleShowArchivedChange}
+            />
+            <Label htmlFor="show-archived" className="text-sm cursor-pointer flex items-center gap-1">
+              <Archive className="h-4 w-4" />
+              Show archived grievances
+            </Label>
+          </div>
+        )}
       </div>
 
       {/* Grievances List */}

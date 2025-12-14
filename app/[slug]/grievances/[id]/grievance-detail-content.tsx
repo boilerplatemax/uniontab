@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
-import { ArrowLeft, Calendar, User, Send, Paperclip, Download, AlertTriangle, Trash2, Edit2, X, Check, Upload, Archive, ArchiveRestore } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Send, Paperclip, Download, AlertTriangle, Trash2, Edit2, X, Check, Upload } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { GrievanceStatus } from '@/lib/db/schema';
 
@@ -65,7 +65,6 @@ export function GrievanceDetailContent({
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [newAttachments, setNewAttachments] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [archiving, setArchiving] = useState(false);
 
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
   const isGrievanceOwner = grievance.memberId === memberId;
@@ -227,9 +226,10 @@ export function GrievanceDetailContent({
     }
   };
 
-  const handleDeleteComment = async (commentId: number) => {
-    if (!confirm('Are you sure you want to delete this comment?')) return;
+  const [deleteCommentId, setDeleteCommentId] = useState<number | null>(null);
+  const [deleteAttachmentId, setDeleteAttachmentId] = useState<number | null>(null);
 
+  const handleDeleteComment = async (commentId: number) => {
     try {
       const response = await fetch(`/api/grievances/comments/${commentId}`, {
         method: 'DELETE',
@@ -241,6 +241,7 @@ export function GrievanceDetailContent({
           ...prev,
           comments: prev.comments.filter((c: any) => c.id !== commentId),
         }));
+        setDeleteCommentId(null);
       }
     } catch (error) {
       console.error('Error deleting comment:', error);
@@ -248,8 +249,6 @@ export function GrievanceDetailContent({
   };
 
   const handleDeleteAttachment = async (attachmentId: number) => {
-    if (!confirm('Are you sure you want to delete this file?')) return;
-
     try {
       const response = await fetch(`/api/grievances/attachments/${attachmentId}`, {
         method: 'DELETE',
@@ -261,6 +260,7 @@ export function GrievanceDetailContent({
           ...prev,
           attachments: prev.attachments.filter((a: any) => a.id !== attachmentId),
         }));
+        setDeleteAttachmentId(null);
       }
     } catch (error) {
       console.error('Error deleting attachment:', error);
@@ -299,35 +299,6 @@ export function GrievanceDetailContent({
     }
   };
 
-  const handleArchiveToggle = async () => {
-    if (!confirm(`Are you sure you want to ${grievance.isArchived ? 'unarchive' : 'archive'} this grievance?`)) {
-      return;
-    }
-
-    setArchiving(true);
-    try {
-      const response = await fetch(`/api/grievances/${grievance.id}/archive`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isArchived: !grievance.isArchived }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setGrievance((prev: any) => ({
-          ...prev,
-          isArchived: data.grievance.isArchived,
-          archivedAt: data.grievance.archivedAt,
-          archivedBy: data.grievance.archivedBy,
-        }));
-        router.refresh();
-      }
-    } catch (error) {
-      console.error('Error archiving grievance:', error);
-    } finally {
-      setArchiving(false);
-    }
-  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -440,40 +411,6 @@ export function GrievanceDetailContent({
             </div>
           )}
 
-          {/* Archive Management (for admins) */}
-          {isOwnerOrAdmin && (
-            <div className="border-t pt-4">
-              <Label className="text-base font-semibold">Archive</Label>
-              <div className="mt-2">
-                <Button
-                  variant={grievance.isArchived ? "default" : "outline"}
-                  onClick={handleArchiveToggle}
-                  disabled={archiving}
-                  className="w-full max-w-md"
-                >
-                  {archiving ? (
-                    'Processing...'
-                  ) : grievance.isArchived ? (
-                    <>
-                      <ArchiveRestore className="h-4 w-4 mr-2" />
-                      Unarchive Grievance
-                    </>
-                  ) : (
-                    <>
-                      <Archive className="h-4 w-4 mr-2" />
-                      Archive Grievance
-                    </>
-                  )}
-                </Button>
-                {grievance.isArchived && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    This grievance is archived and hidden from the main list.
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Attachments */}
           <div className="border-t pt-4">
             <div className="flex items-center justify-between mb-2">
@@ -547,7 +484,7 @@ export function GrievanceDetailContent({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteAttachment(attachment.id)}
+                        onClick={() => setDeleteAttachmentId(attachment.id)}
                         className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-3 w-3" />
@@ -628,7 +565,7 @@ export function GrievanceDetailContent({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDeleteComment(comment.id)}
+                              onClick={() => setDeleteCommentId(comment.id)}
                               className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -713,6 +650,48 @@ export function GrievanceDetailContent({
           </form>
         </CardContent>
       </Card>
+
+      {/* Delete Comment Confirmation Dialog */}
+      <AlertDialog open={deleteCommentId !== null} onOpenChange={(open) => !open && setDeleteCommentId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Comment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this comment? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteCommentId && handleDeleteComment(deleteCommentId)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Attachment Confirmation Dialog */}
+      <AlertDialog open={deleteAttachmentId !== null} onOpenChange={(open) => !open && setDeleteAttachmentId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Attachment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this file? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteAttachmentId && handleDeleteAttachment(deleteAttachmentId)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Non-Admin Assignment Warning Dialog */}
       <AlertDialog open={showNonAdminWarning} onOpenChange={setShowNonAdminWarning}>
