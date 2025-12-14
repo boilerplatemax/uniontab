@@ -86,9 +86,6 @@ importers:
       dotenv:
         specifier: ^16.5.0
         version: 16.5.0
-      drizzle-kit:
-        specifier: ^0.31.1
-        version: 0.31.1
       drizzle-orm:
         specifier: ^0.43.1
         version: 0.43.1(gel@2.1.0)(postgres@3.4.5)
@@ -141,6 +138,9 @@ importers:
         specifier: ^3.24.4
         version: 3.24.4
     devDependencies:
+      drizzle-kit:
+        specifier: ^0.31.8
+        version: 0.31.8
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -1965,8 +1965,8 @@ packages:
     resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
     engines: {node: '>=12'}
 
-  drizzle-kit@0.31.1:
-    resolution: {integrity: sha512-PUjYKWtzOzPtdtQlTHQG3qfv4Y0XT8+Eas6UbxCmxTj7qgMf+39dDujf1BP1I+qqZtw9uzwTh8jYtkMuCq+B0Q==}
+  drizzle-kit@0.31.8:
+    resolution: {integrity: sha512-O9EC/miwdnRDY10qRxM8P3Pg8hXe3LyU4ZipReKOgTwn4OqANmftj8XJz1UPUAS6NMHf0E2htjsbQujUTkncCg==}
     hasBin: true
 
   drizzle-orm@0.43.1:
@@ -4404,7 +4404,7 @@ snapshots:
 
   dotenv@16.5.0: {}
 
-  drizzle-kit@0.31.1:
+  drizzle-kit@0.31.8:
     dependencies:
       '@drizzle-team/brocli': 0.10.2
       '@esbuild-kit/esm-loader': 2.6.5
