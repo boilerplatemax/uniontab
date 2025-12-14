@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Video, Calendar, Clock, Link, Lock } from 'lucide-react';
+import { Plus, Video, Calendar, Clock, Link, Lock, Zap, Loader2 } from 'lucide-react';
 
 interface CreateMeetingDialogProps {
   unionId: number;
@@ -29,6 +29,9 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [zoomConfigured, setZoomConfigured] = useState(false);
+  const [autoCreateZoom, setAutoCreateZoom] = useState(false);
+  const [creatingZoom, setCreatingZoom] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -45,18 +48,74 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
     isPrivate: true,
   });
 
+  // Check if Zoom API is configured
+  useEffect(() => {
+    async function checkZoomStatus() {
+      try {
+        const response = await fetch('/api/zoom/status');
+        if (response.ok) {
+          const data = await response.json();
+          setZoomConfigured(data.configured);
+          // Auto-enable if Zoom is configured and platform is zoom
+          if (data.configured && formData.platform === 'zoom') {
+            setAutoCreateZoom(true);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check Zoom status:', err);
+      }
+    }
+    checkZoomStatus();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
+      let meetingDetails = { ...formData };
+
+      // If Zoom is configured and auto-create is enabled, create Zoom meeting first
+      if (formData.platform === 'zoom' && autoCreateZoom && zoomConfigured) {
+        setCreatingZoom(true);
+
+        const zoomResponse = await fetch('/api/zoom/create-meeting', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            unionId,
+            title: formData.title,
+            agenda: formData.agenda,
+            scheduledDate: formData.scheduledDate,
+            startTime: formData.startTime,
+            endTime: formData.endTime,
+            timezone: formData.timezone,
+          }),
+        });
+
+        const zoomData = await zoomResponse.json();
+        setCreatingZoom(false);
+
+        if (!zoomResponse.ok) {
+          throw new Error(zoomData.error || 'Failed to create Zoom meeting');
+        }
+
+        // Use the Zoom meeting details
+        meetingDetails = {
+          ...formData,
+          meetingLink: zoomData.zoomMeeting.joinUrl,
+          meetingId: String(zoomData.zoomMeeting.id),
+          meetingPassword: zoomData.zoomMeeting.password || '',
+        };
+      }
+
       const response = await fetch('/api/meetings/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           unionId,
-          ...formData,
+          ...meetingDetails,
         }),
       });
 
@@ -81,9 +140,11 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
         meetingPassword: '',
         isPrivate: true,
       });
+      setAutoCreateZoom(zoomConfigured); // Reset to default
       onMeetingCreated();
     } catch (err: any) {
       setError(err.message);
+      setCreatingZoom(false);
     } finally {
       setLoading(false);
     }
@@ -219,7 +280,15 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
                 <Label htmlFor="platform">Platform</Label>
                 <Select
                   value={formData.platform}
-                  onValueChange={(value) => setFormData({ ...formData, platform: value })}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, platform: value });
+                    // Auto-enable Zoom creation when switching to Zoom if configured
+                    if (value === 'zoom' && zoomConfigured) {
+                      setAutoCreateZoom(true);
+                    } else {
+                      setAutoCreateZoom(false);
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -232,40 +301,69 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="meetingLink">Meeting Link</Label>
-                <Input
-                  id="meetingLink"
-                  type="url"
-                  value={formData.meetingLink}
-                  onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
-                  placeholder="https://zoom.us/j/... or https://meet.google.com/..."
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Paste the meeting join link from your video platform
-                </p>
-              </div>
+              {/* Zoom API Integration Option */}
+              {formData.platform === 'zoom' && zoomConfigured && (
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-blue-600" />
+                      <Label htmlFor="autoCreateZoom" className="text-blue-900 font-medium">
+                        Auto-create Zoom meeting
+                      </Label>
+                    </div>
+                    <Switch
+                      id="autoCreateZoom"
+                      checked={autoCreateZoom}
+                      onCheckedChange={setAutoCreateZoom}
+                    />
+                  </div>
+                  <p className="text-xs text-blue-700 mt-2">
+                    {autoCreateZoom
+                      ? 'A Zoom meeting will be automatically created with the details above. Meeting link, ID, and password will be generated for you.'
+                      : 'Turn this on to automatically create a Zoom meeting, or paste your own meeting link below.'}
+                  </p>
+                </div>
+              )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="meetingId">Meeting ID (optional)</Label>
-                  <Input
-                    id="meetingId"
-                    value={formData.meetingId}
-                    onChange={(e) => setFormData({ ...formData, meetingId: e.target.value })}
-                    placeholder="e.g., 123-456-7890"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="meetingPassword">Password (optional)</Label>
-                  <Input
-                    id="meetingPassword"
-                    value={formData.meetingPassword}
-                    onChange={(e) => setFormData({ ...formData, meetingPassword: e.target.value })}
-                    placeholder="Meeting password"
-                  />
-                </div>
-              </div>
+              {/* Manual link entry - show when not auto-creating */}
+              {!(formData.platform === 'zoom' && autoCreateZoom && zoomConfigured) && (
+                <>
+                  <div>
+                    <Label htmlFor="meetingLink">Meeting Link</Label>
+                    <Input
+                      id="meetingLink"
+                      type="url"
+                      value={formData.meetingLink}
+                      onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
+                      placeholder="https://zoom.us/j/... or https://meet.google.com/..."
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Paste the meeting join link from your video platform
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="meetingId">Meeting ID (optional)</Label>
+                      <Input
+                        id="meetingId"
+                        value={formData.meetingId}
+                        onChange={(e) => setFormData({ ...formData, meetingId: e.target.value })}
+                        placeholder="e.g., 123-456-7890"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="meetingPassword">Password (optional)</Label>
+                      <Input
+                        id="meetingPassword"
+                        value={formData.meetingPassword}
+                        onChange={(e) => setFormData({ ...formData, meetingPassword: e.target.value })}
+                        placeholder="Meeting password"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -288,11 +386,18 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Meeting'}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {creatingZoom ? 'Creating Zoom Meeting...' : 'Creating...'}
+                </span>
+              ) : (
+                'Create Meeting'
+              )}
             </Button>
           </DialogFooter>
         </form>
