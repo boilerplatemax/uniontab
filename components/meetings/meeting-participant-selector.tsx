@@ -23,10 +23,10 @@ interface Member {
   localChapter: string | null;
   bargainingUnit: string | null;
   user: {
-    id: number;
+    id: number | null;
     name: string | null;
-    email: string;
-  };
+    email: string | null;
+  } | null;
 }
 
 interface MeetingParticipantSelectorProps {
@@ -112,8 +112,8 @@ export function MeetingParticipantSelector({
     return members.filter(m => {
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch = !searchQuery ||
-        (m.user.name?.toLowerCase().includes(searchLower)) ||
-        m.user.email.toLowerCase().includes(searchLower) ||
+        (m.user?.name?.toLowerCase().includes(searchLower)) ||
+        (m.user?.email?.toLowerCase().includes(searchLower)) ||
         m.employer?.toLowerCase().includes(searchLower) ||
         m.jobTitle?.toLowerCase().includes(searchLower);
 
@@ -136,11 +136,13 @@ export function MeetingParticipantSelector({
     setBargainingUnitFilter('all');
   };
 
-  const getUserDisplayName = (user: { name: string | null; email: string }) => {
-    return user.name || user.email;
+  const getUserDisplayName = (user: { name: string | null; email: string | null } | null) => {
+    if (!user) return 'Unknown';
+    return user.name || user.email || 'Unknown';
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
@@ -434,41 +436,45 @@ export function MeetingParticipantSelector({
               </div>
             ) : (
               <div className="p-2 space-y-1">
-                {filteredMembers.map(member => (
-                  <div
-                    key={member.id}
-                    className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                      selectedMemberIds.includes(member.id)
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => !disabled && toggleMember(member.id)}
-                  >
-                    <Checkbox
-                      checked={selectedMemberIds.includes(member.id)}
-                      onCheckedChange={() => toggleMember(member.id)}
-                      disabled={disabled}
-                      className="pointer-events-none"
-                    />
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-blue-600 text-white text-xs">
-                        {getInitials(getUserDisplayName(member.user))}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {getUserDisplayName(member.user)}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">
-                        {member.user.email}
-                        {member.jobTitle && ` • ${member.jobTitle}`}
-                      </p>
+                {filteredMembers.map(member => {
+                  const displayName = getUserDisplayName(member.user);
+                  const email = member.user?.email || '';
+                  return (
+                    <div
+                      key={member.id}
+                      className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                        selectedMemberIds.includes(member.id)
+                          ? 'bg-blue-50 border border-blue-200'
+                          : 'hover:bg-gray-50'
+                      }`}
+                      onClick={() => !disabled && toggleMember(member.id)}
+                    >
+                      <Checkbox
+                        checked={selectedMemberIds.includes(member.id)}
+                        onCheckedChange={() => toggleMember(member.id)}
+                        disabled={disabled}
+                        className="pointer-events-none"
+                      />
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-blue-600 text-white text-xs">
+                          {getInitials(displayName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {displayName}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {email}
+                          {member.jobTitle ? ` • ${member.jobTitle}` : ''}
+                        </p>
+                      </div>
+                      {member.role === 'admin' && (
+                        <Badge variant="secondary" className="text-xs">Admin</Badge>
+                      )}
                     </div>
-                    {member.role === 'admin' && (
-                      <Badge variant="secondary" className="text-xs">Admin</Badge>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

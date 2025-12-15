@@ -71,7 +71,9 @@ export async function POST(request: Request) {
         title,
         description: description || null,
         agenda: agenda || null,
-        scheduledDate: new Date(scheduledDate),
+        // Append time to prevent UTC parsing issue - "2024-12-14" alone is parsed as UTC midnight
+        // which displays as the previous day in US timezones. Adding T12:00:00 makes it local noon.
+        scheduledDate: new Date(`${scheduledDate}T12:00:00`),
         startTime,
         endTime: endTime || null,
         timezone: timezone || 'America/New_York',
