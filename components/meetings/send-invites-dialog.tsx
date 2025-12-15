@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Mail, Users, CheckCircle } from 'lucide-react';
 
 interface SendInvitesDialogProps {
@@ -12,28 +10,21 @@ interface SendInvitesDialogProps {
   onOpenChange: (open: boolean) => void;
   meetingId: number;
   meetingTitle: string;
-  unionId: number;
-  participantMode?: string;
 }
 
-export function SendInvitesDialog({ open, onOpenChange, meetingId, meetingTitle, unionId, participantMode }: SendInvitesDialogProps) {
+export function SendInvitesDialog({ open, onOpenChange, meetingId, meetingTitle }: SendInvitesDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [recipientFilter, setRecipientFilter] = useState('all');
   const [existingInvites, setExistingInvites] = useState<number>(0);
-  const [participantCount, setParticipantCount] = useState<number>(0);
 
   useEffect(() => {
     if (open) {
       setError(null);
       setSuccess(null);
       fetchExistingInvites();
-      if (participantMode === 'selected') {
-        fetchParticipantCount();
-      }
     }
-  }, [open, meetingId, participantMode]);
+  }, [open, meetingId]);
 
   const fetchExistingInvites = async () => {
     try {
@@ -47,18 +38,6 @@ export function SendInvitesDialog({ open, onOpenChange, meetingId, meetingTitle,
     }
   };
 
-  const fetchParticipantCount = async () => {
-    try {
-      const response = await fetch(`/api/meetings/${meetingId}/participants`);
-      const data = await response.json();
-      if (data.success) {
-        setParticipantCount(data.participants.length);
-      }
-    } catch (err) {
-      console.error('Failed to fetch participant count:', err);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -69,7 +48,7 @@ export function SendInvitesDialog({ open, onOpenChange, meetingId, meetingTitle,
       const response = await fetch(`/api/meetings/${meetingId}/invites`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipientFilter }),
+        body: JSON.stringify({ recipientFilter: 'all' }),
       });
 
       const data = await response.json();
@@ -120,35 +99,10 @@ export function SendInvitesDialog({ open, onOpenChange, meetingId, meetingTitle,
             </div>
           )}
 
-          {participantMode === 'selected' ? (
-            <div className="space-y-3">
-              <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-md text-sm flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                <span>
-                  This meeting is set to <strong>selected participants only</strong>.
-                  {participantCount > 0
-                    ? ` ${participantCount} member${participantCount !== 1 ? 's' : ''} will receive invites.`
-                    : ' No participants have been selected yet.'}
-                </span>
-              </div>
-              <p className="text-sm text-gray-500">
-                To change who receives invites, edit the meeting and modify the participant selection.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <Label>Who would you like to invite?</Label>
-              <RadioGroup value={recipientFilter} onValueChange={setRecipientFilter}>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="all" id="all" />
-                  <Label htmlFor="all" className="cursor-pointer">
-                    <span className="font-medium">All Approved Members</span>
-                    <p className="text-sm text-gray-500">Send to everyone in the union</p>
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-          )}
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Users className="h-4 w-4" />
+            <span>Invites will be sent to all approved members</span>
+          </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

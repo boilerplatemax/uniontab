@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { meetings, members, users, meetingInvites, unions, meetingParticipants } from '@/lib/db/schema';
+import { meetings, members, users, meetingInvites, unions } from '@/lib/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { sendMeetingInviteEmail } from '@/lib/email/sendgrid';
@@ -106,8 +106,6 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid meeting ID' }, { status: 400 });
     }
 
-    const { memberIds, recipientFilter } = await request.json();
-
     // Get meeting
     const [meeting] = await db
       .select()
@@ -148,44 +146,15 @@ export async function POST(
       return NextResponse.json({ error: 'Union not found' }, { status: 404 });
     }
 
-    // Determine which members to invite based on participantMode
-    let targetMemberIds: number[] = [];
-
-    // Check if meeting has selected participants mode
-    if (meeting.participantMode === 'selected') {
-      // Get selected participants from meetingParticipants table
-      const participants = await db
-        .select({ memberId: meetingParticipants.memberId })
-        .from(meetingParticipants)
-        .where(eq(meetingParticipants.meetingId, meetingId));
-
-      targetMemberIds = participants.map(p => p.memberId);
-
-      if (targetMemberIds.length === 0) {
-        return NextResponse.json(
-          { error: 'No participants have been selected for this meeting' },
-          { status: 400 }
-        );
-      }
-    } else if (memberIds && Array.isArray(memberIds) && memberIds.length > 0) {
-      // Specific members selected from the dialog
-      targetMemberIds = memberIds;
-    } else if (recipientFilter === 'all' || recipientFilter === 'approved') {
-      // All approved members
-      const allMembers = await db
-        .select({ id: members.id })
-        .from(members)
-        .where(and(
-          eq(members.unionId, meeting.unionId),
-          eq(members.status, 'approved')
-        ));
-      targetMemberIds = allMembers.map(m => m.id);
-    } else {
-      return NextResponse.json(
-        { error: 'No recipients specified' },
-        { status: 400 }
-      );
-    }
+    // Get all approved members
+    const allMembers = await db
+      .select({ id: members.id })
+      .from(members)
+      .where(and(
+        eq(members.unionId, meeting.unionId),
+        eq(members.status, 'approved')
+      ));
+    const targetMemberIds = allMembers.map(m => m.id);
 
     if (targetMemberIds.length === 0) {
       return NextResponse.json(

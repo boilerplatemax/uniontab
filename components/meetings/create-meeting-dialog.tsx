@@ -8,8 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Video, Calendar, Clock, Link, Lock, Zap, Loader2, Users } from 'lucide-react';
-import { MeetingParticipantSelector } from './meeting-participant-selector';
+import { Plus, Video, Calendar, Clock, Link, Lock, Zap, Loader2 } from 'lucide-react';
 
 interface CreateMeetingDialogProps {
   unionId: number;
@@ -49,8 +48,6 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
     isPrivate: true,
   });
 
-  const [participantMode, setParticipantMode] = useState<'all' | 'selected'>('all');
-  const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
 
   // Check if Zoom API is configured
   useEffect(() => {
@@ -120,8 +117,6 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
         body: JSON.stringify({
           unionId,
           ...meetingDetails,
-          participantMode,
-          selectedMemberIds: participantMode === 'selected' ? selectedMemberIds : [],
         }),
       });
 
@@ -146,8 +141,6 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
         meetingPassword: '',
         isPrivate: true,
       });
-      setParticipantMode('all');
-      setSelectedMemberIds([]);
       setAutoCreateZoom(zoomConfigured); // Reset to default
       onMeetingCreated();
     } catch (err: any) {
@@ -393,19 +386,6 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
             </p>
           </div>
 
-          {/* Participant Selection */}
-          {formData.isPrivate && (
-            <div className="border-t pt-4">
-              <MeetingParticipantSelector
-                unionId={unionId}
-                participantMode={participantMode}
-                onParticipantModeChange={setParticipantMode}
-                selectedMemberIds={selectedMemberIds}
-                onSelectedMembersChange={setSelectedMemberIds}
-                disabled={loading}
-              />
-            </div>
-          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>

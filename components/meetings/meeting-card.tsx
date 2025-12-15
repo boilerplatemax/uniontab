@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Calendar, Clock, Video, MoreVertical, ExternalLink, Mail, FileText, Trash, Edit, Users } from 'lucide-react';
+import { Calendar, Clock, Video, MoreVertical, ExternalLink, Mail, FileText, Trash, Edit } from 'lucide-react';
 import { MeetingPosterDialog } from './meeting-poster-dialog';
 import { SendInvitesDialog } from './send-invites-dialog';
 import { EditMeetingDialog } from './edit-meeting-dialog';
@@ -26,7 +26,6 @@ interface Meeting {
   meetingPassword: string | null;
   status: string;
   isPrivate: boolean;
-  participantMode?: string;
   createdAt: Date;
   createdBy: {
     id: number;
@@ -226,8 +225,6 @@ export function MeetingCard({ meeting, unionInfo, isOwnerOrAdmin, onMeetingUpdat
         onOpenChange={setShowInvites}
         meetingId={meeting.id}
         meetingTitle={meeting.title}
-        unionId={meeting.unionId}
-        participantMode={meeting.participantMode}
       />
 
       <EditMeetingDialog
