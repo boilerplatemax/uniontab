@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,6 +60,7 @@ export function EditMeetingDialog({ open, onOpenChange, meeting, onMeetingUpdate
   const [error, setError] = useState<string | null>(null);
   const [participantMode, setParticipantMode] = useState<'all' | 'selected'>('all');
   const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
+  const initializedForMeetingId = useRef<number | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -78,7 +79,10 @@ export function EditMeetingDialog({ open, onOpenChange, meeting, onMeetingUpdate
   });
 
   useEffect(() => {
-    if (meeting && open) {
+    // Only initialize once per meeting when dialog opens
+    if (meeting && open && initializedForMeetingId.current !== meeting.id) {
+      initializedForMeetingId.current = meeting.id;
+
       const date = new Date(meeting.scheduledDate);
       setFormData({
         title: meeting.title,
@@ -105,6 +109,11 @@ export function EditMeetingDialog({ open, onOpenChange, meeting, onMeetingUpdate
       } else {
         setSelectedMemberIds([]);
       }
+    }
+
+    // Reset initialization tracking when dialog closes
+    if (!open) {
+      initializedForMeetingId.current = null;
     }
   }, [meeting, open]);
 
