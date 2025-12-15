@@ -75,15 +75,23 @@ export function MeetingsContent({ unionInfo }: MeetingsContentProps) {
   }, [fetchMeetings]);
 
   const now = new Date();
+  // Get today's date at midnight for date-only comparison
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   const upcomingMeetings = meetings.filter(m => {
     const meetingDate = new Date(m.scheduledDate);
-    return meetingDate >= now && m.status !== 'cancelled' && m.status !== 'completed';
+    // Get just the date part of the meeting (at midnight)
+    const meetingDay = new Date(meetingDate.getFullYear(), meetingDate.getMonth(), meetingDate.getDate());
+    // Show as upcoming if meeting is today or in the future (regardless of time)
+    return meetingDay >= today && m.status !== 'cancelled' && m.status !== 'completed';
   }).sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
 
   const pastMeetings = meetings.filter(m => {
     const meetingDate = new Date(m.scheduledDate);
-    return meetingDate < now || m.status === 'completed';
+    // Get just the date part of the meeting (at midnight)
+    const meetingDay = new Date(meetingDate.getFullYear(), meetingDate.getMonth(), meetingDate.getDate());
+    // Show as past only if meeting was before today or marked as completed
+    return meetingDay < today || m.status === 'completed';
   }).sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime());
 
   const cancelledMeetings = meetings.filter(m => m.status === 'cancelled');

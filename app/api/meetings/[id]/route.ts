@@ -158,7 +158,8 @@ export async function PUT(
         title: body.title ?? existingMeeting.title,
         description: body.description ?? existingMeeting.description,
         agenda: body.agenda ?? existingMeeting.agenda,
-        scheduledDate: body.scheduledDate ? new Date(body.scheduledDate) : existingMeeting.scheduledDate,
+        // Append time to prevent UTC parsing issue - date strings alone are parsed as UTC midnight
+        scheduledDate: body.scheduledDate ? new Date(`${body.scheduledDate}T12:00:00`) : existingMeeting.scheduledDate,
         startTime: body.startTime ?? existingMeeting.startTime,
         endTime: body.endTime ?? existingMeeting.endTime,
         timezone: body.timezone ?? existingMeeting.timezone,
