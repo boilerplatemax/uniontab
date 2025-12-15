@@ -124,9 +124,16 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
             }
             .poster-wrapper {
               width: 100%;
-              height: 100%;
+              min-height: 100vh;
               margin: 0;
               padding: 0;
+              display: flex;
+              flex-direction: column;
+            }
+            .poster-content {
+              display: flex;
+              flex-direction: column;
+              min-height: 100vh;
             }
             .header-banner {
               background: linear-gradient(to right, #2563eb, #1e40af);
@@ -165,6 +172,7 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
               font-size: 0.875rem;
             }
             .main-content {
+              flex: 1;
               padding: 1.25rem 1.5rem;
             }
             .meeting-title-section {
@@ -267,6 +275,7 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
               padding: 0.75rem 1.5rem;
               text-align: center;
               border-top: 1px solid #e5e7eb;
+              margin-top: auto;
             }
             .footer-text {
               font-size: 0.75rem;
