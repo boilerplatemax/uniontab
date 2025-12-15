@@ -99,8 +99,16 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
           <title>${fileName}</title>
           <style>
             @page {
-              margin: 0.5in;
+              margin: 0;
               size: letter portrait;
+            }
+            @media print {
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+              }
             }
             * {
               box-sizing: border-box;
@@ -111,10 +119,14 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
               print-color-adjust: exact !important;
               -webkit-print-color-adjust: exact !important;
+              margin: 0;
+              padding: 0;
             }
             .poster-wrapper {
-              max-width: 7.5in;
-              margin: 0 auto;
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              padding: 0;
             }
             .header-banner {
               background: linear-gradient(to right, #2563eb, #1e40af);

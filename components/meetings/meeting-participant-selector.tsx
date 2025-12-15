@@ -451,7 +451,6 @@ export function MeetingParticipantSelector({
                     >
                       <Checkbox
                         checked={selectedMemberIds.includes(member.id)}
-                        onCheckedChange={() => toggleMember(member.id)}
                         disabled={disabled}
                         className="pointer-events-none"
                       />
