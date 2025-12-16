@@ -8,7 +8,7 @@ import { AccessibilityWidget } from '@/components/accessibility-widget';
 import type { ThemeProps } from './types';
 import { Users, Settings } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
-import { DEFAULT_THEME_COLOR } from '@/lib/utils/color';
+import { DEFAULT_THEME_COLOR, getContrastColor } from '@/lib/utils/color';
 
 /**
  * Modern Theme (Clean website style)
@@ -34,6 +34,10 @@ export function ModernTheme({
   activeAnnouncements,
   accessibilityWidgetEnabled,
 }: ThemeProps) {
+  // Calculate contrast color for hero text based on theme color
+  const heroTextColor = getContrastColor(union.themeColor || DEFAULT_THEME_COLOR);
+  const heroTextOpacity = heroTextColor === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)';
+
   return (
     <div className="min-h-screen bg-white">
       {/* Announcement Banner - Above navbar */}
@@ -105,10 +109,15 @@ export function ModernTheme({
         {isOwner && (
           <Link
             href={`/${slug}/settings`}
-            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm p-3 rounded-lg shadow-lg transition-all hover:scale-105 border border-white/20 group"
+            className="absolute top-4 right-4 backdrop-blur-sm p-3 rounded-lg shadow-lg transition-all hover:scale-105 group"
+            style={{
+              backgroundColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+              borderWidth: 1,
+              borderColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
+            }}
             title="Edit banner and settings"
           >
-            <Settings className="h-5 w-5 text-white group-hover:text-white transition-colors" />
+            <Settings className="h-5 w-5 transition-colors" style={{ color: heroTextColor }} />
           </Link>
         )}
 
@@ -118,7 +127,14 @@ export function ModernTheme({
             {/* Logo */}
             {union.logoUrl ? (
               <div className="flex-shrink-0">
-                <div className="relative h-24 sm:h-28 lg:h-32 bg-white/10 backdrop-blur-sm rounded-2xl p-4 border-2 border-white/20 shadow-2xl overflow-hidden">
+                <div
+                  className="relative h-24 sm:h-28 lg:h-32 backdrop-blur-sm rounded-2xl p-4 shadow-2xl overflow-hidden"
+                  style={{
+                    backgroundColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+                    borderWidth: 2,
+                    borderColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
+                  }}
+                >
                   <img
                     src={union.logoUrl}
                     alt={`${union.name} logo`}
@@ -127,19 +143,26 @@ export function ModernTheme({
                 </div>
               </div>
             ) : (
-              <div className="flex-shrink-0 h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border-2 border-white/20 shadow-2xl">
-                <Users className="h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 text-white" />
+              <div
+                className="flex-shrink-0 h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32 rounded-2xl backdrop-blur-sm flex items-center justify-center shadow-2xl"
+                style={{
+                  backgroundColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+                  borderWidth: 2,
+                  borderColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
+                }}
+              >
+                <Users className="h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16" style={{ color: heroTextColor }} />
               </div>
             )}
 
             {/* Title and Description */}
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-3">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3" style={{ color: heroTextColor }}>
                 {(union.publicName || union.name).toUpperCase()}
                 {union.localNumber && !union.publicName && ` ${union.localNumber}`}
               </h1>
               {union.description && (
-                <p className="text-base sm:text-lg lg:text-xl text-white/90 max-w-3xl">
+                <p className="text-base sm:text-lg lg:text-xl max-w-3xl" style={{ color: heroTextOpacity }}>
                   {union.description}
                 </p>
               )}

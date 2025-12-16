@@ -11,16 +11,16 @@ export function useAnnouncementVisibility(announcementId: number | null | undefi
       return;
     }
 
-    // Check if user has dismissed this announcement in localStorage
+    // Check if user has dismissed this announcement in sessionStorage (resets on new session)
     const dismissedBanners = JSON.parse(
-      localStorage.getItem('dismissedBanners') || '[]'
+      sessionStorage.getItem('dismissedBanners') || '[]'
     );
     setIsVisible(!dismissedBanners.includes(announcementId));
 
     // Listen for storage changes (when banner is dismissed)
     const handleStorageChange = () => {
       const dismissedBanners = JSON.parse(
-        localStorage.getItem('dismissedBanners') || '[]'
+        sessionStorage.getItem('dismissedBanners') || '[]'
       );
       setIsVisible(!dismissedBanners.includes(announcementId));
     };

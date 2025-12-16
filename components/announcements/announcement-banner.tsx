@@ -19,9 +19,9 @@ export function AnnouncementBanner({ announcement, onDismiss, themeColor }: Anno
 
   useEffect(() => {
     if (announcement) {
-      // Check if user has dismissed this banner in localStorage
+      // Check if user has dismissed this banner in sessionStorage (resets on new session)
       const dismissedBanners = JSON.parse(
-        localStorage.getItem('dismissedBanners') || '[]'
+        sessionStorage.getItem('dismissedBanners') || '[]'
       );
       if (!dismissedBanners.includes(announcement.id)) {
         setVisible(true);
@@ -32,12 +32,12 @@ export function AnnouncementBanner({ announcement, onDismiss, themeColor }: Anno
   const handleDismiss = () => {
     if (!announcement) return;
 
-    // Store dismissal in localStorage
+    // Store dismissal in sessionStorage (only for current session)
     const dismissedBanners = JSON.parse(
-      localStorage.getItem('dismissedBanners') || '[]'
+      sessionStorage.getItem('dismissedBanners') || '[]'
     );
     dismissedBanners.push(announcement.id);
-    localStorage.setItem('dismissedBanners', JSON.stringify(dismissedBanners));
+    sessionStorage.setItem('dismissedBanners', JSON.stringify(dismissedBanners));
 
     // Dispatch custom event to notify other components
     window.dispatchEvent(new Event('announcementDismissed'));
