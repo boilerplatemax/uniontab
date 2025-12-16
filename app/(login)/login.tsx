@@ -24,6 +24,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const [unionName, setUnionName] = useState('');
   const [localNumber, setLocalNumber] = useState('');
   const [publicName, setPublicName] = useState('');
+  const [estimatedMemberCount, setEstimatedMemberCount] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -194,6 +195,36 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 </div>
                 <p className="mt-1 text-xs text-gray-500">
                   Friendly name shown on your public page. Does not affect your URL.
+                </p>
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="estimatedMemberCount"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Estimated Number of Members
+                </Label>
+                <div className="mt-1">
+                  <select
+                    id="estimatedMemberCount"
+                    name="estimatedMemberCount"
+                    value={estimatedMemberCount}
+                    onChange={(e) => setEstimatedMemberCount(e.target.value)}
+                    className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white"
+                  >
+                    <option value="">Select a range...</option>
+                    <option value="1-50">1-50 members</option>
+                    <option value="51-100">51-100 members</option>
+                    <option value="101-250">101-250 members</option>
+                    <option value="251-500">251-500 members</option>
+                    <option value="501-1000">501-1,000 members</option>
+                    <option value="1001-5000">1,001-5,000 members</option>
+                    <option value="5001+">5,001+ members</option>
+                  </select>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Approximate size of your union (helps us understand your needs).
                 </p>
               </div>
             </>
