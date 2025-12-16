@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { Copy, Download, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getContrastColor, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
 
 interface RegistrationShareWidgetProps {
   slug: string;
   unionName: string;
   localNumber?: string | null;
   logoUrl?: string | null;
+  themeColor?: string | null;
 }
 
 export function RegistrationShareWidget({
@@ -17,6 +19,7 @@ export function RegistrationShareWidget({
   unionName,
   localNumber,
   logoUrl,
+  themeColor,
 }: RegistrationShareWidgetProps) {
   const [copied, setCopied] = useState(false);
   const registrationUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${slug}/sign-up`;
@@ -40,6 +43,8 @@ export function RegistrationShareWidget({
       ? `${unionName.toUpperCase()} LOCAL ${localNumber}`
       : unionName.toUpperCase();
     const title = `Join ${fullUnionName}`;
+    const brandColor = themeColor || DEFAULT_THEME_COLOR;
+    const textColor = getContrastColor(brandColor);
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -47,161 +52,163 @@ export function RegistrationShareWidget({
         <head>
           <title>${title}</title>
           <style>
+            @page {
+              margin: 0;
+              size: letter portrait;
+            }
+            @media print {
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+              }
+            }
             * {
               margin: 0;
               padding: 0;
               box-sizing: border-box;
             }
             body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              print-color-adjust: exact !important;
+              -webkit-print-color-adjust: exact !important;
               min-height: 100vh;
-              padding: 40px 20px;
-              line-height: 1.6;
+              display: flex;
+              flex-direction: column;
             }
-            .container {
-              max-width: 800px;
-              margin: 0 auto;
-              background: white;
-              border-radius: 20px;
-              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-              overflow: hidden;
+            .poster-content {
+              display: flex;
+              flex-direction: column;
+              min-height: 100vh;
             }
             .header {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              padding: 50px 40px;
+              background: ${brandColor};
+              color: ${textColor};
+              padding: 1.5rem 2rem;
               text-align: center;
-              color: white;
-              position: relative;
             }
             .logo-container {
-              margin-bottom: 20px;
+              margin-bottom: 0.75rem;
               display: flex;
               justify-content: center;
               align-items: center;
-              min-height: ${logoUrl ? '120px' : '0'};
             }
             .logo {
-              max-width: 200px;
-              max-height: 120px;
+              max-width: 80px;
+              max-height: 60px;
               background: white;
-              padding: 15px;
-              border-radius: 15px;
-              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+              padding: 8px;
+              border-radius: 8px;
             }
             h1 {
-              font-size: 2.5em;
+              font-size: 1.5em;
               font-weight: 700;
-              margin-bottom: 10px;
-              text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+              margin-bottom: 0.25rem;
             }
             .subtitle {
-              font-size: 1.3em;
-              opacity: 0.95;
-              font-weight: 300;
+              font-size: 1em;
+              opacity: 0.9;
             }
             .content {
-              padding: 50px 40px;
+              flex: 1;
+              padding: 1.25rem 1.5rem;
             }
             .intro {
               text-align: center;
-              margin-bottom: 40px;
-              color: #444;
-              font-size: 1.1em;
+              margin-bottom: 1rem;
+              color: #374151;
+              font-size: 0.9em;
             }
             .steps {
-              margin: 30px 0;
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 0.75rem;
             }
             .step {
               display: flex;
-              gap: 20px;
-              margin-bottom: 30px;
-              padding: 25px;
-              background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-              border-radius: 15px;
-              border-left: 5px solid #667eea;
-              box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+              gap: 0.75rem;
+              padding: 0.75rem;
+              background: #f9fafb;
+              border-radius: 8px;
+              border-left: 3px solid ${brandColor};
             }
             .step-number {
               flex-shrink: 0;
-              width: 50px;
-              height: 50px;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
+              width: 28px;
+              height: 28px;
+              background: ${brandColor};
+              color: ${textColor};
               border-radius: 50%;
               display: flex;
               align-items: center;
               justify-content: center;
-              font-size: 1.5em;
+              font-size: 0.875em;
               font-weight: bold;
-              box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
             }
             .step-content h3 {
-              color: #333;
-              margin-bottom: 10px;
-              font-size: 1.3em;
+              color: #111827;
+              margin-bottom: 0.25rem;
+              font-size: 0.875em;
             }
             .step-content p {
-              color: #555;
-              line-height: 1.6;
+              color: #4b5563;
+              font-size: 0.75em;
+              line-height: 1.4;
+            }
+            .url-section {
+              margin-top: 1rem;
+              text-align: center;
+            }
+            .url-label {
+              font-size: 0.75rem;
+              color: ${brandColor};
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              font-weight: 600;
+              margin-bottom: 0.5rem;
             }
             .url-box {
-              background: white;
-              padding: 20px;
-              border-radius: 10px;
-              font-family: 'Courier New', monospace;
-              font-size: 1.1em;
-              color: #667eea;
+              background: ${brandColor}15;
+              padding: 0.75rem 1rem;
+              border-radius: 8px;
+              font-family: monospace;
+              font-size: 0.875em;
+              color: #374151;
               word-break: break-all;
-              border: 2px dashed #667eea;
-              margin-top: 10px;
+              border: 2px dashed ${brandColor}40;
               font-weight: 600;
             }
             .help-box {
-              background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
-              padding: 30px;
-              border-radius: 15px;
-              margin-top: 40px;
+              background: #fef3c7;
+              padding: 0.75rem 1rem;
+              border-radius: 8px;
+              margin-top: 1rem;
               text-align: center;
-              box-shadow: 0 5px 15px rgba(253, 203, 110, 0.3);
+              border-left: 3px solid #f59e0b;
             }
             .help-box h3 {
-              color: #2d3436;
-              margin-bottom: 15px;
-              font-size: 1.5em;
+              color: #92400e;
+              margin-bottom: 0.25rem;
+              font-size: 0.875em;
             }
             .help-box p {
-              color: #2d3436;
-              font-size: 1.1em;
-            }
-            .help-box strong {
-              color: #d63031;
-              font-size: 1.2em;
+              color: #92400e;
+              font-size: 0.75em;
             }
             .footer {
               text-align: center;
-              padding: 30px;
-              background: #f8f9fa;
-              color: #6c757d;
-              font-size: 0.9em;
-            }
-            .icon {
-              display: inline-block;
-              margin-right: 5px;
-            }
-            @media print {
-              body {
-                padding: 0;
-                background: white;
-              }
-              .container {
-                box-shadow: none;
-              }
+              padding: 0.75rem 1.5rem;
+              background: #f3f4f6;
+              color: #6b7280;
+              font-size: 0.75em;
+              border-top: 1px solid #e5e7eb;
+              margin-top: auto;
             }
           </style>
         </head>
         <body>
-          <div class="container">
+          <div class="poster-content">
             <div class="header">
               ${logoUrl ? `
                 <div class="logo-container">
@@ -214,16 +221,15 @@ export function RegistrationShareWidget({
 
             <div class="content">
               <div class="intro">
-                <p><strong>Welcome!</strong> Follow these simple steps to join our union and become part of our community.</p>
+                <p><strong>Welcome!</strong> Follow these steps to join our union.</p>
               </div>
 
               <div class="steps">
                 <div class="step">
                   <div class="step-number">1</div>
                   <div class="step-content">
-                    <h3>🌐 Visit the Registration Link</h3>
-                    <p>Open your web browser and go to:</p>
-                    <div class="url-box">${registrationUrl}</div>
+                    <h3>🌐 Visit Registration Link</h3>
+                    <p>Open your web browser and go to the link below.</p>
                   </div>
                 </div>
 
@@ -231,7 +237,7 @@ export function RegistrationShareWidget({
                   <div class="step-number">2</div>
                   <div class="step-content">
                     <h3>📧 Create Your Account</h3>
-                    <p>Sign up using your <strong>personal email address</strong>. Choose a strong password you'll remember. Do not use your work email.</p>
+                    <p>Sign up using your <strong>personal email</strong> (not work email).</p>
                   </div>
                 </div>
 
@@ -239,7 +245,7 @@ export function RegistrationShareWidget({
                   <div class="step-number">3</div>
                   <div class="step-content">
                     <h3>✉️ Verify Your Email</h3>
-                    <p>Check your email inbox (and spam folder!) for a verification email. Click the verification link to confirm your email address.</p>
+                    <p>Check your inbox and spam folder for the verification email.</p>
                   </div>
                 </div>
 
@@ -247,25 +253,28 @@ export function RegistrationShareWidget({
                   <div class="step-number">4</div>
                   <div class="step-content">
                     <h3>⏳ Wait for Approval</h3>
-                    <p>Your membership application will be reviewed by our administrators. You'll receive an email notification once your account is approved and you can access all union features.</p>
+                    <p>An admin will review and approve your membership.</p>
                   </div>
                 </div>
               </div>
 
+              <div class="url-section">
+                <p class="url-label">Registration Link</p>
+                <div class="url-box">${registrationUrl}</div>
+              </div>
+
               <div class="help-box">
                 <h3>💬 Need Help?</h3>
-                <p>If you encounter any issues during registration, please contact us at:</p>
-                <p><strong>info@uniontab.com</strong></p>
+                <p>Contact us at: <strong>info@uniontab.com</strong></p>
               </div>
             </div>
 
             <div class="footer">
-              <p>Powered by UnionTab • ${new Date().getFullYear()}</p>
+              <p>Powered by UnionTab · ${new Date().getFullYear()}</p>
             </div>
           </div>
 
           <script>
-            // Auto-print when the page loads
             window.onload = function() {
               setTimeout(function() {
                 window.print();

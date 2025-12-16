@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import Image from 'next/image';
+import { getContrastColor, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
 
 interface Meeting {
   id: number;
@@ -27,6 +28,7 @@ interface UnionInfo {
   localNumber: string | null;
   logoUrl: string | null;
   slug: string;
+  themeColor?: string | null;
 }
 
 interface MeetingPosterDialogProps {
@@ -91,6 +93,8 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
 
     const posterContent = posterRef.current.innerHTML;
     const fileName = `Meeting-Poster-${meeting.title.replace(/\s+/g, '-')}`;
+    const themeColor = unionInfo.themeColor || DEFAULT_THEME_COLOR;
+    const textColor = getContrastColor(themeColor);
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -136,8 +140,8 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
               min-height: 100vh;
             }
             .header-banner {
-              background: linear-gradient(to right, #2563eb, #1e40af);
-              color: white;
+              background: ${themeColor};
+              color: ${textColor};
               padding: 1.5rem 2rem;
               text-align: center;
             }
@@ -168,7 +172,8 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
             }
             .subtitle {
               margin-top: 0.25rem;
-              color: #bfdbfe;
+              color: ${textColor};
+              opacity: 0.8;
               font-size: 0.875rem;
             }
             .main-content {
@@ -223,8 +228,8 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
               font-size: 0.75rem;
             }
             .join-section {
-              background: #eff6ff;
-              border: 2px solid #bfdbfe;
+              background: ${themeColor}15;
+              border: 2px solid ${themeColor}40;
               border-radius: 0.75rem;
               padding: 1rem;
               margin-bottom: 1rem;
@@ -232,7 +237,7 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
             }
             .join-label {
               font-size: 0.625rem;
-              color: #2563eb;
+              color: ${themeColor};
               text-transform: uppercase;
               letter-spacing: 0.05em;
               font-weight: 500;
@@ -328,7 +333,13 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
         {/* Poster Content - uses classes that match the print CSS */}
         <div ref={posterRef} className="poster-content bg-white rounded-lg overflow-hidden border">
           {/* Header Banner */}
-          <div className="header-banner bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 text-center">
+          <div
+            className="header-banner p-6 text-center"
+            style={{
+              backgroundColor: unionInfo.themeColor || DEFAULT_THEME_COLOR,
+              color: getContrastColor(unionInfo.themeColor || DEFAULT_THEME_COLOR)
+            }}
+          >
             {unionInfo.logoUrl && (
               <div className="logo-container flex justify-center mb-3">
                 <div className="logo-wrapper relative w-16 h-16 bg-white rounded-full p-1 flex items-center justify-center">
@@ -347,7 +358,7 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
             <h1 className="union-name text-xl font-bold tracking-wide">
               {unionDisplayName}
             </h1>
-            <p className="subtitle mt-1 text-blue-100 text-sm">Online Meeting</p>
+            <p className="subtitle mt-1 text-sm" style={{ opacity: 0.8 }}>Online Meeting</p>
           </div>
 
           {/* Main Content */}
@@ -395,8 +406,17 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
 
             {/* Join Info */}
             {meeting.meetingLink && (
-              <div className="join-section bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4 text-center">
-                <p className="join-label text-xs text-blue-600 uppercase tracking-wide mb-2 font-medium">
+              <div
+                className="join-section rounded-xl p-4 mb-4 text-center"
+                style={{
+                  backgroundColor: `${unionInfo.themeColor || DEFAULT_THEME_COLOR}15`,
+                  border: `2px solid ${unionInfo.themeColor || DEFAULT_THEME_COLOR}40`
+                }}
+              >
+                <p
+                  className="join-label text-xs uppercase tracking-wide mb-2 font-medium"
+                  style={{ color: unionInfo.themeColor || DEFAULT_THEME_COLOR }}
+                >
                   Join the Meeting
                 </p>
                 <p className="join-link font-mono text-sm break-all text-gray-700 mb-2">

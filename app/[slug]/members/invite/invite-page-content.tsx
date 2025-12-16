@@ -16,6 +16,7 @@ interface InvitePageContentProps {
   };
   handleSignOut: () => Promise<void>;
   logoUrl?: string | null;
+  themeColor?: string | null;
 }
 
 export default function InvitePageContent({
@@ -26,6 +27,7 @@ export default function InvitePageContent({
   membership,
   handleSignOut,
   logoUrl,
+  themeColor,
 }: InvitePageContentProps) {
   const fullUnionName = localNumber
     ? `${unionName} Local ${localNumber}`
@@ -62,6 +64,7 @@ export default function InvitePageContent({
           unionName={unionName}
           localNumber={localNumber}
           logoUrl={logoUrl}
+          themeColor={themeColor}
         />
 
         {/* Registration Process Information */}

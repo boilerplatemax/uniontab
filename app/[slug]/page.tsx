@@ -182,8 +182,7 @@ async function getUnionEvents(unionId: number) {
   return eventsWithCreator;
 }
 
-async function getActiveAnnouncements(unionId: number, userId?: number, isOwner: boolean = false) {
-  // Owners don't see auto-popups, but we still fetch for the banner
+async function getActiveAnnouncements(unionId: number, userId?: number) {
   const activeAnnouncementsData = await db
     .select()
     .from(announcements)
@@ -199,7 +198,7 @@ async function getActiveAnnouncements(unionId: number, userId?: number, isOwner:
 
   // Get the most recent active popup (not dismissed by user)
   let popup = null;
-  if (!isOwner && userId) {
+  if (userId) {
     const popupAnnouncements = activeAnnouncementsData.filter(a => a.type === 'popup');
     if (popupAnnouncements.length > 0) {
       // Check if user has dismissed any popups
@@ -277,7 +276,7 @@ export default async function PublicUnionPage({
   const unionEvents = await getUnionEvents(union.id);
 
   // Fetch active announcements
-  const activeAnnouncements = await getActiveAnnouncements(union.id, currentUser?.id, isOwner);
+  const activeAnnouncements = await getActiveAnnouncements(union.id, currentUser?.id);
 
   // Common props for all themes
   const themeProps = {

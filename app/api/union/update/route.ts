@@ -40,6 +40,7 @@ export async function PUT(request: NextRequest) {
       description,
       about,
       theme,
+      themeColor,
     } = body;
 
     // Update the union
@@ -56,6 +57,7 @@ export async function PUT(request: NextRequest) {
         description: description || null,
         about: about || null,
         theme: theme || 'default',
+        themeColor: themeColor || '#2563eb',
       })
       .where(eq(unions.id, membership.unionId))
       .returning();

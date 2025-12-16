@@ -40,6 +40,7 @@ interface UnionInfo {
   localNumber: string | null;
   logoUrl: string | null;
   slug: string;
+  themeColor?: string | null;
 }
 
 interface MeetingCardProps {
