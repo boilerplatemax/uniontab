@@ -27,6 +27,23 @@ import { themeOptions } from '@/lib/themes/config';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+// Calculate contrast color (black or white) based on background color for accessibility
+function getContrastColor(hexColor: string): string {
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+
+  // Parse RGB values
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+
+  // Calculate relative luminance using WCAG formula
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  // Return black for light backgrounds, white for dark backgrounds
+  return luminance > 0.5 ? '#000000' : '#ffffff';
+}
+
 export function SettingsContent() {
   const router = useRouter();
   const { data: union, mutate } = useSWR<UnionDataWithMembers>('/api/team', fetcher);
@@ -41,7 +58,8 @@ export function SettingsContent() {
     website: '',
     description: '',
     about: '',
-    theme: 'default'
+    theme: 'default',
+    themeColor: '#2563eb'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -59,7 +77,8 @@ export function SettingsContent() {
         website: union.website || '',
         description: union.description || '',
         about: union.about || '',
-        theme: union.theme || 'default'
+        theme: union.theme || 'default',
+        themeColor: union.themeColor || '#2563eb'
       });
     }
   }, [union]);
@@ -297,6 +316,60 @@ export function SettingsContent() {
                       />
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Theme Color Picker */}
+              <div className="border-t pt-6 mt-6">
+                <Label htmlFor="themeColor">Brand Color</Label>
+                <p className="text-sm text-gray-500 mb-4">
+                  Choose a custom brand color for banners, posters, and email headers
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <input
+                      type="color"
+                      id="themeColor"
+                      value={formData.themeColor}
+                      onChange={(e) => setFormData({ ...formData, themeColor: e.target.value })}
+                      className="w-16 h-16 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-blue-300 transition-colors"
+                      style={{ padding: '2px' }}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Input
+                        type="text"
+                        value={formData.themeColor}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (/^#[0-9A-Fa-f]{0,6}$/.test(value)) {
+                            setFormData({ ...formData, themeColor: value });
+                          }
+                        }}
+                        placeholder="#2563eb"
+                        className="w-28 font-mono"
+                        maxLength={7}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setFormData({ ...formData, themeColor: '#2563eb' })}
+                      >
+                        Reset to Default
+                      </Button>
+                    </div>
+                    <div
+                      className="h-10 rounded-lg flex items-center justify-center text-sm font-medium"
+                      style={{
+                        backgroundColor: formData.themeColor,
+                        color: getContrastColor(formData.themeColor)
+                      }}
+                    >
+                      Preview Banner
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>

@@ -76,6 +76,7 @@ export default async function InvitePage({ params }: PageProps) {
       }}
       handleSignOut={handleSignOut}
       logoUrl={union.logoUrl}
+      themeColor={union.themeColor}
     />
   );
 }

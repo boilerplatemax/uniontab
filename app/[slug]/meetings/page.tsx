@@ -87,6 +87,7 @@ export default async function MeetingsPage({
     localNumber: union.localNumber,
     logoUrl: union.logoUrl,
     slug: union.slug,
+    themeColor: union.themeColor,
   };
 
   return (
