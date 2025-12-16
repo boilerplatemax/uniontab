@@ -55,6 +55,8 @@ export const unions = pgTable('unions', {
   monthlyEmailsSent: integer('monthly_emails_sent').notNull().default(0),
   emailUsageResetDate: timestamp('email_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
   storageUsedBytes: integer('storage_used_bytes').notNull().default(0),
+  // Estimated member count collected at signup (for internal tracking only)
+  estimatedMemberCount: varchar('estimated_member_count', { length: 50 }),
 });
 
 export const members = pgTable('members', {
