@@ -682,6 +682,7 @@ export function UnionProfileTabs({
                   onEdit={handleEditEvent}
                   onDelete={handleDeleteEvent}
                   slug={union.slug}
+                  themeColor={union.themeColor}
                 />
               )}
             </>

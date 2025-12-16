@@ -102,6 +102,8 @@ export function SettingsContent() {
       }
 
       await mutate();
+      // Refresh the router cache to ensure updated data is shown when navigating
+      router.refresh();
       setSuccess(true);
       // Scroll to top to show success message
       window.scrollTo({ top: 0, behavior: 'smooth' });

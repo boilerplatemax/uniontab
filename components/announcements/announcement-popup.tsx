@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Download, FileText } from 'lucide-react';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import type { Announcement, AnnouncementAttachment } from '@/lib/db/schema';
+import { getContrastColor, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
 
 interface AnnouncementWithAttachments extends Announcement {
   attachments: AnnouncementAttachment[];
@@ -19,10 +20,13 @@ interface AnnouncementWithAttachments extends Announcement {
 interface AnnouncementPopupProps {
   announcement: AnnouncementWithAttachments | null;
   onDismiss: (announcementId: number) => void;
+  themeColor?: string | null;
 }
 
-export function AnnouncementPopup({ announcement, onDismiss }: AnnouncementPopupProps) {
+export function AnnouncementPopup({ announcement, onDismiss, themeColor }: AnnouncementPopupProps) {
   const [open, setOpen] = useState(false);
+  const bgColor = themeColor || DEFAULT_THEME_COLOR;
+  const textColor = getContrastColor(bgColor);
 
   useEffect(() => {
     if (announcement) {
@@ -103,7 +107,8 @@ export function AnnouncementPopup({ announcement, onDismiss }: AnnouncementPopup
         <div className="border-t px-4 sm:px-6 py-4">
           <Button
             onClick={handleClose}
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full"
+            style={{ backgroundColor: bgColor, color: textColor }}
           >
             Got it, thanks!
           </Button>

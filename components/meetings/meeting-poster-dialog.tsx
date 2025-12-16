@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { Printer, Calendar, Clock, Monitor } from 'lucide-react';
 import Image from 'next/image';
 import { getContrastColor, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
 
@@ -212,8 +212,14 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
               flex: 1;
             }
             .info-icon {
-              font-size: 1.5rem;
+              display: flex;
+              justify-content: center;
               margin-bottom: 0.25rem;
+            }
+            .info-icon svg {
+              width: 1.5rem;
+              height: 1.5rem;
+              color: ${themeColor};
             }
             .info-label {
               font-size: 0.625rem;
@@ -379,14 +385,18 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
             <div className="info-grid bg-gray-50 rounded-xl p-4 mb-4">
               <div className="info-items grid grid-cols-3 gap-4 text-center">
                 <div className="info-item">
-                  <div className="info-icon text-2xl mb-1">📅</div>
+                  <div className="info-icon flex justify-center mb-1">
+                    <Calendar className="h-6 w-6" style={{ color: unionInfo.themeColor || DEFAULT_THEME_COLOR }} />
+                  </div>
                   <p className="info-label text-xs text-gray-500 uppercase tracking-wide">Date</p>
                   <p className="info-value font-semibold text-gray-900 text-sm">
                     {formatDate(meeting.scheduledDate)}
                   </p>
                 </div>
                 <div className="info-item">
-                  <div className="info-icon text-2xl mb-1">🕐</div>
+                  <div className="info-icon flex justify-center mb-1">
+                    <Clock className="h-6 w-6" style={{ color: unionInfo.themeColor || DEFAULT_THEME_COLOR }} />
+                  </div>
                   <p className="info-label text-xs text-gray-500 uppercase tracking-wide">Time</p>
                   <p className="info-value font-semibold text-gray-900 text-sm">
                     {formatTime(meeting.startTime)}
@@ -395,7 +405,9 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
                   </p>
                 </div>
                 <div className="info-item">
-                  <div className="info-icon text-2xl mb-1">💻</div>
+                  <div className="info-icon flex justify-center mb-1">
+                    <Monitor className="h-6 w-6" style={{ color: unionInfo.themeColor || DEFAULT_THEME_COLOR }} />
+                  </div>
                   <p className="info-label text-xs text-gray-500 uppercase tracking-wide">Platform</p>
                   <p className="info-value font-semibold text-gray-900 text-sm">
                     {getPlatformName(meeting.platform)}
