@@ -8,6 +8,7 @@ import { AccessibilityWidget } from '@/components/accessibility-widget';
 import type { ThemeProps } from './types';
 import { Users, Settings } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
+import { DEFAULT_THEME_COLOR } from '@/lib/utils/color';
 
 /**
  * Modern Theme (Clean website style)
@@ -39,6 +40,7 @@ export function ModernTheme({
       <AnnouncementClient
         popup={activeAnnouncements.popup}
         banner={activeAnnouncements.banner}
+        themeColor={union.themeColor}
       />
 
       {/* Navigation Bar - Fixed */}
@@ -76,7 +78,12 @@ export function ModernTheme({
       )}
 
       {/* Hero Banner - Modern style with overlay text */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 overflow-hidden">
+      <div
+        className="relative overflow-hidden"
+        style={{
+          background: `linear-gradient(to bottom right, ${union.themeColor || DEFAULT_THEME_COLOR}, ${union.themeColor || DEFAULT_THEME_COLOR}dd, ${union.themeColor || DEFAULT_THEME_COLOR}bb)`
+        }}
+      >
         {/* Background image with overlay */}
         {union.coverPhotoUrl && (
           <div className="absolute inset-0">
@@ -85,7 +92,12 @@ export function ModernTheme({
               alt={`${union.name} cover`}
               className="w-full h-full object-cover opacity-30"
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-blue-800/80" />
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `linear-gradient(to bottom right, ${union.themeColor || DEFAULT_THEME_COLOR}cc, ${union.themeColor || DEFAULT_THEME_COLOR}dd, ${union.themeColor || DEFAULT_THEME_COLOR}ee)`
+              }}
+            />
           </div>
         )}
 

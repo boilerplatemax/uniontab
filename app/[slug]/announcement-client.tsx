@@ -11,9 +11,10 @@ interface AnnouncementWithAttachments extends Announcement {
 interface AnnouncementClientProps {
   popup: AnnouncementWithAttachments | null;
   banner: Announcement | null;
+  themeColor?: string | null;
 }
 
-export function AnnouncementClient({ popup, banner }: AnnouncementClientProps) {
+export function AnnouncementClient({ popup, banner, themeColor }: AnnouncementClientProps) {
   const handleDismiss = async (announcementId: number) => {
     try {
       await fetch('/api/announcements/dismiss', {
@@ -28,8 +29,8 @@ export function AnnouncementClient({ popup, banner }: AnnouncementClientProps) {
 
   return (
     <>
-      <AnnouncementBanner announcement={banner} onDismiss={handleDismiss} />
-      <AnnouncementPopup announcement={popup} onDismiss={handleDismiss} />
+      <AnnouncementBanner announcement={banner} onDismiss={handleDismiss} themeColor={themeColor} />
+      <AnnouncementPopup announcement={popup} onDismiss={handleDismiss} themeColor={themeColor} />
     </>
   );
 }

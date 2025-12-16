@@ -37,6 +37,7 @@ export function DefaultTheme({
       <AnnouncementClient
         popup={activeAnnouncements.popup}
         banner={activeAnnouncements.banner}
+        themeColor={union.themeColor}
       />
 
       {/* Navigation Bar - Fixed */}

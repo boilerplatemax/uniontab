@@ -8,6 +8,7 @@ import { ShareButton } from '@/components/share-button';
 import { MapPin, Clock, Calendar, Edit, Trash2, Loader2 } from 'lucide-react';
 import type { Event } from '@/lib/db/schema';
 import { useState } from 'react';
+import { getContrastColor, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
 
 interface EventsListProps {
   events: (Omit<Event, 'createdBy'> & { createdBy: { name: string } })[];
@@ -16,9 +17,12 @@ interface EventsListProps {
   onEdit?: (event: Omit<Event, 'createdBy'> & { createdBy: { name: string } }) => void;
   onDelete?: (eventId: number) => void;
   slug: string;
+  themeColor?: string | null;
 }
 
-export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, slug }: EventsListProps) {
+export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, slug, themeColor }: EventsListProps) {
+  const bgColor = themeColor || DEFAULT_THEME_COLOR;
+  const textColor = getContrastColor(bgColor);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<number | null>(null);
@@ -114,13 +118,16 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, sl
                 >
                   <CardContent className="p-4">
                     <div className="flex gap-4">
-                      {/* Date Badge */}
+                      {/* Date Badge - Square with centered content */}
                       <div className="flex-shrink-0">
-                        <div className="bg-blue-600 text-white rounded-lg p-3 text-center w-16">
-                          <div className="text-xs font-semibold">
+                        <div
+                          className="rounded-lg text-center w-16 h-16 flex flex-col items-center justify-center"
+                          style={{ backgroundColor: bgColor, color: textColor }}
+                        >
+                          <div className="text-xs font-semibold uppercase">
                             {startDate.toLocaleDateString('en-US', { month: 'short' })}
                           </div>
-                          <div className="text-2xl font-bold">{startDate.getDate()}</div>
+                          <div className="text-2xl font-bold leading-none">{startDate.getDate()}</div>
                         </div>
                       </div>
 

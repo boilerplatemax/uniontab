@@ -64,8 +64,11 @@ export async function PUT(request: NextRequest) {
 
     // Revalidate the union page to show updated content immediately
     if (updatedUnion?.slug) {
-      revalidatePath(`/${updatedUnion.slug}`);
-      revalidatePath(`/${updatedUnion.slug}/settings`);
+      // Revalidate the main union page and all nested paths
+      revalidatePath(`/${updatedUnion.slug}`, 'page');
+      revalidatePath(`/${updatedUnion.slug}/settings`, 'page');
+      // Also revalidate with layout to ensure full page refresh
+      revalidatePath(`/${updatedUnion.slug}`, 'layout');
     }
 
     return NextResponse.json({ success: true });

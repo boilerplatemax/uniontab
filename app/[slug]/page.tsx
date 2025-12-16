@@ -6,7 +6,6 @@ import { getUser, getGrievanceNotificationCount, getStrikeNotificationCount } fr
 import { cookies } from 'next/headers';
 import { DefaultTheme } from './themes/default-theme';
 import { ModernTheme } from './themes/modern-theme';
-import { TwitterTheme } from './themes/twitter-theme';
 import type { ThemeId } from '@/lib/themes/config';
 import { AutoVerifyEmailDomain } from '@/components/auto-verify-email-domain';
 
@@ -304,8 +303,6 @@ export default async function PublicUnionPage({
     switch (theme) {
       case 'modern':
         return <ModernTheme {...themeProps} />;
-      case 'twitter':
-        return <TwitterTheme {...themeProps} />;
       case 'default':
       default:
         return <DefaultTheme {...themeProps} />;

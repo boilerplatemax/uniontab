@@ -5,7 +5,7 @@
  * Each theme has a unique ID, display name, and description.
  */
 
-export type ThemeId = 'default' | 'modern' | 'twitter';
+export type ThemeId = 'default' | 'modern';
 
 export interface ThemeConfig {
   id: ThemeId;
@@ -23,11 +23,6 @@ export const themes: Record<ThemeId, ThemeConfig> = {
     id: 'modern',
     name: 'Modern',
     description: 'Clean website style with hero banner and news-like posts',
-  },
-  twitter: {
-    id: 'twitter',
-    name: 'Social Feed',
-    description: 'Twitter/X style with sidebar navigation',
   },
 };
 
