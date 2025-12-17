@@ -5,6 +5,7 @@ import { NavbarSpacer } from '../navbar-spacer';
 import { UnionProfileTabs } from '../union-profile-tabs';
 import { AnnouncementClient } from '../announcement-client';
 import { AccessibilityWidget } from '@/components/accessibility-widget';
+import { OnboardingReminder } from '@/components/onboarding-reminder';
 import type { ThemeProps } from './types';
 
 /**
@@ -73,6 +74,9 @@ export function DefaultTheme({
           </div>
         </div>
       )}
+
+      {/* Onboarding Reminder for Owners */}
+      <OnboardingReminder union={union} isOwner={isOwner} />
 
       {/* Cover Photo - Facebook style */}
       <div className="relative bg-white">

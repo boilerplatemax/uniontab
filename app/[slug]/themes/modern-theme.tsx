@@ -5,6 +5,7 @@ import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { AnnouncementClient } from '../announcement-client';
 import { AccessibilityWidget } from '@/components/accessibility-widget';
+import { OnboardingReminder } from '@/components/onboarding-reminder';
 import type { ThemeProps } from './types';
 import { Users, Settings } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -80,6 +81,9 @@ export function ModernTheme({
           </div>
         </div>
       )}
+
+      {/* Onboarding Reminder for Owners */}
+      <OnboardingReminder union={union} isOwner={isOwner} />
 
       {/* Hero Banner - Modern style with overlay text */}
       <div
