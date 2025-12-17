@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, Menu } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -189,8 +189,6 @@ export function UnionProfileTabs({
     }
   };
 
-  const [isTabMenuOpen, setIsTabMenuOpen] = useState(false);
-
   const tabs = [
     { id: 'posts' as const, label: 'Posts' },
     { id: 'about' as const, label: 'About' },
@@ -200,64 +198,32 @@ export function UnionProfileTabs({
     ...(isApprovedMember ? [{ id: 'elections' as const, label: 'Elections' }] : []),
   ];
 
-  const activeTabLabel = tabs.find(tab => tab.id === activeTab)?.label || 'Posts';
-
   return (
     <div className="space-y-4">
       {/* Tabs Navigation */}
-      <div className="border-b bg-white rounded-t-lg">
-        {/* Mobile hamburger menu */}
-        <div className="sm:hidden">
-          <Button
-            variant="ghost"
-            className="w-full justify-between px-6 py-4 font-semibold"
-            onClick={() => setIsTabMenuOpen(!isTabMenuOpen)}
-          >
-            {activeTabLabel}
-            <Menu className="h-4 w-4" />
-          </Button>
-          {isTabMenuOpen && (
-            <div className="border-t">
+      <div className="border-b bg-white">
+        {/* Horizontal scrollable tabs - unified for mobile and desktop */}
+        <div className="flex items-center justify-between">
+          <div className="flex-1 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-1 sm:gap-2 px-4 sm:px-6 pt-2 min-w-max">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setIsTabMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-6 py-3 font-medium transition-colors ${
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
                     activeTab === tab.id
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'text-blue-600 border-b-2 border-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Desktop tabs */}
-        <div className="hidden sm:flex items-center justify-between px-6 pt-2">
-          <div className="flex gap-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 font-semibold transition-colors cursor-pointer ${
-                  activeTab === tab.id
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
           </div>
 
-          {/* Action buttons for desktop - positioned on the right */}
-          <div className="flex gap-2 items-center pb-2">
+          {/* Action buttons - hidden on mobile, shown on desktop */}
+          <div className="hidden sm:flex gap-2 items-center pb-2 pr-6 flex-shrink-0">
             {isOwner && (
               <>
                 {activeTab === 'posts' && (

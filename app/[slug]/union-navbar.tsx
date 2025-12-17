@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, Camera, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video } from 'lucide-react';
+import { Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video, Wrench } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import {
@@ -125,80 +125,80 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   </Button>
                 </Link>
 
-                {isOwner && (
-                  <>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="gap-2 relative">
-                          <Users className="h-4 w-4" />
-                          <span className="hidden md:inline">Members</span>
-                          <ChevronDown className="h-3 w-3" />
-                          {pendingMembersCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                              {pendingMembersCount}
-                            </span>
-                          )}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
-                        <Link href={`/${slug}/members`} prefetch={true}>
-                          <DropdownMenuItem>
-                            <Users className="h-4 w-4" />
-                            View Members
-                            {pendingMembersCount > 0 && (
-                              <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                                {pendingMembersCount}
-                              </span>
-                            )}
-                          </DropdownMenuItem>
-                        </Link>
-                        <Link href={`/${slug}/members/invite`} prefetch={true}>
-                          <DropdownMenuItem>
-                            <UserPlus className="h-4 w-4" />
-                            Invite
-                          </DropdownMenuItem>
-                        </Link>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
-                )}
+                {/* Admin Tools Dropdown - for owners/admins */}
                 {isOwnerOrAdmin && (
-                  <>
-                    <Link href={`/${slug}/dues`} prefetch={true}>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <DollarSign className="h-4 w-4" />
-                        <span className="hidden md:inline">Dues</span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="gap-2 relative">
+                        <Wrench className="h-4 w-4" />
+                        <span className="hidden md:inline">Tools</span>
+                        <ChevronDown className="h-3 w-3" />
+                        {pendingMembersCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                            {pendingMembersCount}
+                          </span>
+                        )}
                       </Button>
-                    </Link>
-                    <Link href={`/${slug}/mass-email`} prefetch={true}>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <Mail className="h-4 w-4" />
-                        <span className="hidden md:inline">Emails</span>
-                      </Button>
-                    </Link>
-                  </>
-                )}
-                {isOwner && (
-                  <>
-                    <Link href={`/${slug}/announcements`} prefetch={true}>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <Megaphone className="h-4 w-4" />
-                        <span className="hidden md:inline">News</span>
-                      </Button>
-                    </Link>
-                    <Link href={`/${slug}/settings`} prefetch={true}>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <Settings className="h-4 w-4" />
-                        <span className="hidden md:inline">Settings</span>
-                      </Button>
-                    </Link>
-                    <Link href={`/${slug}/billing`} prefetch={true}>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <CreditCard className="h-4 w-4" />
-                        <span className="hidden md:inline">Billing</span>
-                      </Button>
-                    </Link>
-                  </>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      <DropdownMenuLabel>Member Management</DropdownMenuLabel>
+                      {isOwner && (
+                        <>
+                          <Link href={`/${slug}/members`} prefetch={true}>
+                            <DropdownMenuItem>
+                              <Users className="h-4 w-4" />
+                              View Members
+                              {pendingMembersCount > 0 && (
+                                <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                  {pendingMembersCount}
+                                </span>
+                              )}
+                            </DropdownMenuItem>
+                          </Link>
+                          <Link href={`/${slug}/members/invite`} prefetch={true}>
+                            <DropdownMenuItem>
+                              <UserPlus className="h-4 w-4" />
+                              Invite Members
+                            </DropdownMenuItem>
+                          </Link>
+                        </>
+                      )}
+                      <Link href={`/${slug}/dues`} prefetch={true}>
+                        <DropdownMenuItem>
+                          <DollarSign className="h-4 w-4" />
+                          Dues
+                        </DropdownMenuItem>
+                      </Link>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Communication</DropdownMenuLabel>
+                      <Link href={`/${slug}/mass-email`} prefetch={true}>
+                        <DropdownMenuItem>
+                          <Mail className="h-4 w-4" />
+                          Mass Emails
+                        </DropdownMenuItem>
+                      </Link>
+                      {isOwner && (
+                        <Link href={`/${slug}/announcements`} prefetch={true}>
+                          <DropdownMenuItem>
+                            <Megaphone className="h-4 w-4" />
+                            Announcements
+                          </DropdownMenuItem>
+                        </Link>
+                      )}
+                      {isOwner && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                          <Link href={`/${slug}/settings`} prefetch={true}>
+                            <DropdownMenuItem>
+                              <Settings className="h-4 w-4" />
+                              Union Settings
+                            </DropdownMenuItem>
+                          </Link>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
 
                 {/* Profile Dropdown */}
@@ -223,6 +223,14 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                         Profile
                       </DropdownMenuItem>
                     </Link>
+                    {isOwner && (
+                      <Link href={`/${slug}/billing`} prefetch={true}>
+                        <DropdownMenuItem>
+                          <CreditCard className="h-4 w-4" />
+                          Billing
+                        </DropdownMenuItem>
+                      </Link>
+                    )}
                     <DropdownMenuSeparator />
                     <form action={handleSignOut}>
                       <button type="submit" className="w-full">
@@ -381,7 +389,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   >
                     <Button variant="ghost" className="w-full justify-start gap-2">
                       <Megaphone className="h-4 w-4" />
-                      News
+                      Announcements
                     </Button>
                   </Link>
                   <Link
