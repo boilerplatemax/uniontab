@@ -441,20 +441,20 @@ export function MeetingParticipantSelector({
                   if (!member.user || member.user.id === null) return null;
                   const displayName = getUserDisplayName(member.user);
                   const email = member.user?.email || '';
+                  const isSelected = selectedMemberIds.includes(member.id);
                   return (
-                    <div
+                    <label
                       key={member.id}
                       className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                        selectedMemberIds.includes(member.id)
+                        isSelected
                           ? 'bg-blue-50 border border-blue-200'
-                          : 'hover:bg-gray-50'
+                          : 'hover:bg-gray-50 border border-transparent'
                       }`}
-                      onClick={() => !disabled && toggleMember(member.id)}
                     >
                       <Checkbox
-                        checked={selectedMemberIds.includes(member.id)}
+                        checked={isSelected}
+                        onCheckedChange={() => !disabled && toggleMember(member.id)}
                         disabled={disabled}
-                        className="pointer-events-none"
                       />
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="bg-blue-600 text-white text-xs">
@@ -473,7 +473,7 @@ export function MeetingParticipantSelector({
                       {member.role === 'admin' && (
                         <Badge variant="secondary" className="text-xs">Admin</Badge>
                       )}
-                    </div>
+                    </label>
                   );
                 })}
               </div>
