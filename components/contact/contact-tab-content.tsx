@@ -96,7 +96,7 @@ export function ContactTabContent({ union, isOwner }: ContactTabContentProps) {
       <div className={`grid gap-6 ${showContactInfoColumn && contactFormEnabled ? 'lg:grid-cols-2' : ''}`}>
         {/* Contact Information - Only show for owners or when there's data */}
         {showContactInfoColumn && (
-          <div className="bg-white border border-gray-200 p-6">
+          <div className="bg-white p-6 rounded-lg">
             <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
               <Mail className="h-5 w-5 text-blue-600" />
               Contact Information
@@ -144,7 +144,7 @@ export function ContactTabContent({ union, isOwner }: ContactTabContentProps) {
 
         {/* Contact Form */}
         {contactFormEnabled && (
-          <div className="bg-white border border-gray-200 p-6">
+          <div className="bg-white p-6 rounded-lg">
             <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
               <Mail className="h-5 w-5 text-blue-600" />
               Send us a Message
@@ -155,7 +155,7 @@ export function ContactTabContent({ union, isOwner }: ContactTabContentProps) {
       </div>
 
       {/* Executive Team */}
-      <div className="bg-white border border-gray-200 p-6">
+      <div className="bg-white p-6 rounded-lg">
         <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
           <Users className="h-5 w-5 text-blue-600" />
           Our Leadership Team

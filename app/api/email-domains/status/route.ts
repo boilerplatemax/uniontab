@@ -58,13 +58,10 @@ export async function GET(request: Request) {
       .limit(1);
 
     if (emailDomain.length === 0) {
-      return NextResponse.json(
-        {
-          configured: false,
-          message: 'No email domain configured for this union',
-        },
-        { status: 404 }
-      );
+      return NextResponse.json({
+        configured: false,
+        message: 'No email domain configured for this union',
+      });
     }
 
     const domain = emailDomain[0];

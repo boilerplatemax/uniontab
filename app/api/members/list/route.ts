@@ -80,7 +80,10 @@ export async function GET(request: Request) {
       .leftJoin(users, eq(members.userId, users.id))
       .where(and(...conditions));
 
-    return NextResponse.json({ success: true, members: membersList });
+    // Filter out members with null user data (orphaned members)
+    const validMembers = membersList.filter(m => m.user && m.user.id !== null);
+
+    return NextResponse.json({ success: true, members: validMembers });
   } catch (error) {
     console.error('Error fetching members:', error);
     return NextResponse.json(

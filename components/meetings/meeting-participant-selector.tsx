@@ -437,6 +437,8 @@ export function MeetingParticipantSelector({
             ) : (
               <div className="p-2 space-y-1">
                 {filteredMembers.map(member => {
+                  // Skip rendering if user data is missing
+                  if (!member.user || member.user.id === null) return null;
                   const displayName = getUserDisplayName(member.user);
                   const email = member.user?.email || '';
                   return (
