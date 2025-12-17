@@ -41,8 +41,8 @@ CREATE TABLE "union_executives" (
 	"updated_by" integer
 );
 --> statement-breakpoint
-ALTER TABLE "unions" ADD COLUMN "theme_color" varchar(7) DEFAULT '#2563eb' NOT NULL;--> statement-breakpoint
-ALTER TABLE "unions" ADD COLUMN "estimated_member_count" varchar(50);--> statement-breakpoint
+ALTER TABLE "unions" ADD COLUMN IF NOT EXISTS "theme_color" varchar(7) DEFAULT '#2563eb' NOT NULL;--> statement-breakpoint
+ALTER TABLE "unions" ADD COLUMN IF NOT EXISTS "estimated_member_count" varchar(50);--> statement-breakpoint
 ALTER TABLE "contact_form_submissions" ADD CONSTRAINT "contact_form_submissions_union_id_unions_id_fk" FOREIGN KEY ("union_id") REFERENCES "public"."unions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "union_contact_info" ADD CONSTRAINT "union_contact_info_union_id_unions_id_fk" FOREIGN KEY ("union_id") REFERENCES "public"."unions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "union_contact_info" ADD CONSTRAINT "union_contact_info_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
