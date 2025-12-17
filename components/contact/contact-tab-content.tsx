@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mail, Phone, MapPin, Clock, Settings, Users, Plus } from 'lucide-react';
 import { EditContactInfoDialog } from './edit-contact-info-dialog';
@@ -76,6 +75,9 @@ export function ContactTabContent({ union, isOwner }: ContactTabContentProps) {
                          contactInfo?.contactAddress || contactInfo?.officeHours;
   const contactFormEnabled = contactInfo?.contactFormEnabled ?? true;
 
+  // Show contact info column for owners always, for members only if there's data
+  const showContactInfoColumn = isOwner || hasContactInfo;
+
   return (
     <div className="space-y-6">
       {/* Edit Button for Owners */}
@@ -91,16 +93,14 @@ export function ContactTabContent({ union, isOwner }: ContactTabContentProps) {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Contact Information */}
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
+      <div className={`grid gap-6 ${showContactInfoColumn && contactFormEnabled ? 'lg:grid-cols-2' : ''}`}>
+        {/* Contact Information - Only show for owners or when there's data */}
+        {showContactInfoColumn && (
+          <div className="bg-white border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
               <Mail className="h-5 w-5 text-blue-600" />
               Contact Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </h3>
             {hasContactInfo ? (
               <div className="space-y-4">
                 {contactInfo?.contactEmail && (
@@ -136,47 +136,37 @@ export function ContactTabContent({ union, isOwner }: ContactTabContentProps) {
               </div>
             ) : (
               <p className="text-gray-500 text-center py-6">
-                {isOwner
-                  ? 'No contact information set. Click "Edit Contact Settings" to add your contact details.'
-                  : 'Contact information coming soon.'}
+                No contact information set. Click "Edit Contact Settings" to add your contact details.
               </p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        )}
 
         {/* Contact Form */}
         {contactFormEnabled && (
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Mail className="h-5 w-5 text-blue-600" />
-                Send us a Message
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ContactForm unionId={union.id} />
-            </CardContent>
-          </Card>
+          <div className="bg-white border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
+              <Mail className="h-5 w-5 text-blue-600" />
+              Send us a Message
+            </h3>
+            <ContactForm unionId={union.id} />
+          </div>
         )}
       </div>
 
       {/* Executive Team */}
-      <Card className="shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="h-5 w-5 text-blue-600" />
-            Our Leadership Team
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ExecutiveList
-            unionId={union.id}
-            executives={executives}
-            isOwner={isOwner}
-            onExecutivesChange={handleExecutivesChange}
-          />
-        </CardContent>
-      </Card>
+      <div className="bg-white border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
+          <Users className="h-5 w-5 text-blue-600" />
+          Our Leadership Team
+        </h3>
+        <ExecutiveList
+          unionId={union.id}
+          executives={executives}
+          isOwner={isOwner}
+          onExecutivesChange={handleExecutivesChange}
+        />
+      </div>
 
       {/* Edit Contact Info Dialog */}
       <EditContactInfoDialog
