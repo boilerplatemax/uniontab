@@ -593,6 +593,9 @@ export const unionsRelations = relations(unions, ({ one, many }) => ({
   grievanceCategories: many(grievanceCategories),
   strikes: many(strikes),
   meetings: many(meetings),
+  contactInfo: one(unionContactInfo),
+  executives: many(unionExecutives),
+  contactFormSubmissions: many(contactFormSubmissions),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -1694,3 +1697,116 @@ export enum MeetingParticipantMode {
   ALL = 'all',
   SELECTED = 'selected',
 }
+
+// Union Contact Page Tables
+export const unionContactInfo = pgTable('union_contact_info', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' })
+    .unique(), // One contact info per union
+
+  // Contact information (all optional)
+  contactEmail: varchar('contact_email', { length: 255 }),
+  contactPhone: varchar('contact_phone', { length: 50 }),
+  contactAddress: text('contact_address'),
+  officeHours: text('office_hours'), // e.g., "Monday - Friday: 9am - 5pm"
+
+  // Contact form settings
+  contactFormEnabled: boolean('contact_form_enabled').notNull().default(true),
+  contactFormEmail: varchar('contact_form_email', { length: 255 }), // Where form submissions go
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
+});
+
+export const unionExecutives = pgTable('union_executives', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+
+  // Executive details
+  name: varchar('name', { length: 255 }).notNull(),
+  title: varchar('title', { length: 255 }).notNull(), // Job title/position
+  email: varchar('email', { length: 255 }),
+  phone: varchar('phone', { length: 50 }),
+  photoUrl: text('photo_url'), // Optional photo
+
+  // Display order
+  sortOrder: integer('sort_order').notNull().default(0),
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
+});
+
+// Contact form submissions
+export const contactFormSubmissions = pgTable('contact_form_submissions', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+
+  // Submitter details
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  phone: varchar('phone', { length: 50 }),
+  subject: varchar('subject', { length: 255 }),
+  message: text('message').notNull(),
+
+  // Status tracking
+  status: varchar('status', { length: 20 }).notNull().default('new'), // 'new', 'read', 'replied', 'archived'
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  ipAddress: varchar('ip_address', { length: 45 }),
+});
+
+// Relations
+export const unionContactInfoRelations = relations(unionContactInfo, ({ one }) => ({
+  union: one(unions, {
+    fields: [unionContactInfo.unionId],
+    references: [unions.id],
+  }),
+  updatedBy: one(users, {
+    fields: [unionContactInfo.updatedBy],
+    references: [users.id],
+  }),
+}));
+
+export const unionExecutivesRelations = relations(unionExecutives, ({ one }) => ({
+  union: one(unions, {
+    fields: [unionExecutives.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [unionExecutives.createdBy],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [unionExecutives.updatedBy],
+    references: [users.id],
+  }),
+}));
+
+export const contactFormSubmissionsRelations = relations(contactFormSubmissions, ({ one }) => ({
+  union: one(unions, {
+    fields: [contactFormSubmissions.unionId],
+    references: [unions.id],
+  }),
+}));
+
+// Types
+export type UnionContactInfo = typeof unionContactInfo.$inferSelect;
+export type NewUnionContactInfo = typeof unionContactInfo.$inferInsert;
+export type UnionExecutive = typeof unionExecutives.$inferSelect;
+export type NewUnionExecutive = typeof unionExecutives.$inferInsert;
+export type ContactFormSubmission = typeof contactFormSubmissions.$inferSelect;
+export type NewContactFormSubmission = typeof contactFormSubmissions.$inferInsert;

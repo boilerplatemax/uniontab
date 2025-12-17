@@ -16,6 +16,7 @@ import { EventsCalendar } from '@/components/events/events-calendar';
 import { EventsList } from '@/components/events/events-list';
 import { EventDetailsDialog } from '@/components/events/event-details-dialog';
 import { ElectionsList } from '@/components/elections/elections-list';
+import { ContactTabContent } from '@/components/contact';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { LikeButton } from '@/components/posts/like-button';
 import { ShareButton } from '@/components/share-button';
@@ -48,10 +49,10 @@ export function UnionProfileTabs({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections') || 'posts';
+  const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') || 'posts';
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
 
-  const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events' | 'elections') => {
+  const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') => {
     const params = new URLSearchParams(searchParams);
     if (tab === 'posts') {
       params.delete('tab');
@@ -193,6 +194,7 @@ export function UnionProfileTabs({
   const tabs = [
     { id: 'posts' as const, label: 'Posts' },
     { id: 'about' as const, label: 'About' },
+    { id: 'contact' as const, label: 'Contact' },
     { id: 'files' as const, label: 'Files' },
     { id: 'events' as const, label: 'Events' },
     ...(isApprovedMember ? [{ id: 'elections' as const, label: 'Elections' }] : []),
@@ -686,6 +688,14 @@ export function UnionProfileTabs({
                 />
               )}
             </>
+          )}
+
+          {/* Contact Tab */}
+          {activeTab === 'contact' && (
+            <ContactTabContent
+              union={union}
+              isOwner={isOwner}
+            />
           )}
 
           {/* Elections Tab */}
