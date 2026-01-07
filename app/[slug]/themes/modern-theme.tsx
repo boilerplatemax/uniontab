@@ -60,8 +60,6 @@ export function ModernTheme({
         announcementId={activeAnnouncements.banner?.id}
         grievanceNotificationCount={grievanceNotificationCount}
         strikeNotificationCount={strikeNotificationCount}
-        socialLinks={(union as any).socialLinks}
-        showSocialInHeader={(union as any).showSocialInHeader}
       />
 
       {/* Spacing for fixed navbar and announcement */}
