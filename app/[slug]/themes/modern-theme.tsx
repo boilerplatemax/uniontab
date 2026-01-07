@@ -128,11 +128,11 @@ export function ModernTheme({
         {/* Hero Content */}
         <div className="relative max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-12 sm:py-16 lg:py-20">
           <div className="flex flex-col sm:flex-row items-center sm:items-center gap-6 sm:gap-8">
-            {/* Logo */}
+            {/* Logo - Fixed dimensions to prevent layout shift */}
             {union.logoUrl ? (
               <div className="flex-shrink-0">
                 <div
-                  className="relative h-24 sm:h-28 lg:h-32 backdrop-blur-sm rounded-2xl p-4 shadow-2xl overflow-hidden"
+                  className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 backdrop-blur-sm rounded-2xl p-3 shadow-2xl overflow-hidden flex items-center justify-center"
                   style={{
                     backgroundColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
                     borderWidth: 2,
@@ -142,7 +142,7 @@ export function ModernTheme({
                   <img
                     src={union.logoUrl}
                     alt={`${union.name} logo`}
-                    className="h-full w-auto max-w-[200px] object-contain"
+                    className="max-h-full max-w-full object-contain"
                   />
                 </div>
               </div>

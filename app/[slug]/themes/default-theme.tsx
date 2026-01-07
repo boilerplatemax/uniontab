@@ -111,14 +111,14 @@ export function DefaultTheme({
         <div className="bg-white rounded-lg shadow-sm pb-4">
           {/* Logo and Name */}
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 px-6 pt-6">
-            {/* Logo - Overlapping cover photo with flexible sizing */}
+            {/* Logo - Overlapping cover photo with fixed dimensions to prevent layout shift */}
             <div className="flex-shrink-0 -mt-8 sm:-mt-16 relative z-20">
               {union.logoUrl ? (
-                <div className="relative h-32 sm:h-40 bg-white rounded-xl border-4 border-white shadow-xl overflow-hidden">
+                <div className="relative w-32 h-32 sm:w-40 sm:h-40 bg-white rounded-xl border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">
                   <img
                     src={union.logoUrl}
                     alt={`${union.name} logo`}
-                    className="h-full w-auto max-w-[200px] object-contain"
+                    className="max-h-full max-w-full object-contain"
                   />
                 </div>
               ) : (
