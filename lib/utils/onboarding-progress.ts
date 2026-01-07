@@ -29,12 +29,6 @@ export function calculateOnboardingProgress(union: Pick<Union, 'logoUrl' | 'cove
       settingsSection: 'Branding',
     },
     {
-      key: 'cover',
-      label: 'Cover Photo',
-      complete: Boolean(union.coverPhotoUrl),
-      settingsSection: 'Branding',
-    },
-    {
       key: 'contact',
       label: 'Contact Info',
       complete: Boolean(union.email || union.phone || union.address || union.website),

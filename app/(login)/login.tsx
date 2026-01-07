@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 import { CircleIcon, Loader2, Users } from 'lucide-react';
 import { signIn, signUp } from './actions';
 import { ActionState } from '@/lib/auth/middleware';
@@ -46,12 +47,25 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   }, [mode]);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <Users className="h-12 w-12 text-blue-600" />
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+    <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '4s'}}></div>
+      </div>
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <Link href="/" className="flex justify-center items-center gap-2 group hover:opacity-80 transition-opacity">
+          <div className="relative">
+            <Users className="h-10 w-10 text-blue-600 group-hover:scale-110 transition-transform" />
+            <div className="absolute inset-0 bg-blue-600 opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
+          </div>
+          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            UnionTab
+          </span>
+        </Link>
+        <h2 className="mt-8 text-center text-3xl font-extrabold text-gray-900">
           {mode === 'signin'
             ? 'Sign in to your account'
             : 'Create your union website'}
@@ -63,8 +77,10 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
         )}
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <form
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-8">
+            <form
           className="space-y-6"
           action={formAction}
           onSubmit={(e) => {
@@ -100,7 +116,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                   autoComplete="name"
                   required
                   maxLength={100}
-                  className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -129,7 +145,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                       const value = e.target.value.replace(/\s/g, '');
                       setUnionName(value);
                     }}
-                    className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
                     placeholder="e.g., ATU"
                   />
                 </div>
@@ -165,7 +181,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                         e.preventDefault();
                       }
                     }}
-                    className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
                     placeholder="e.g., 123"
                   />
                 </div>
@@ -189,7 +205,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                     maxLength={255}
                     value={publicName}
                     onChange={(e) => setPublicName(e.target.value)}
-                    className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
                     placeholder="e.g., Barrie Transit Union"
                   />
                 </div>
@@ -211,7 +227,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                     name="estimatedMemberCount"
                     value={estimatedMemberCount}
                     onChange={(e) => setEstimatedMemberCount(e.target.value)}
-                    className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white"
+                    className="h-12 w-full text-base border-2 focus:border-blue-500 rounded-xl bg-white px-3"
                   >
                     <option value="">Select a range...</option>
                     <option value="1-50">1-50 members</option>
@@ -246,7 +262,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 defaultValue={state.email}
                 required
                 maxLength={50}
-                className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
                 placeholder="Enter your email"
               />
             </div>
@@ -286,7 +302,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 required
                 minLength={8}
                 maxLength={100}
-                className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
                 placeholder="Enter your password"
               />
             </div>
@@ -314,7 +330,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                   required
                   minLength={8}
                   maxLength={100}
-                  className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
                   placeholder="Confirm your password"
                 />
               </div>
@@ -371,14 +387,14 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
           <div>
             <Button
               type="submit"
-              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full h-12 text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
               disabled={pending}
             >
               {pending ? (
-                <>
-                  <Loader2 className="animate-spin mr-2 h-4 w-4" />
+                <span className="flex items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   Loading...
-                </>
+                </span>
               ) : mode === 'signin' ? (
                 'Sign in'
               ) : (
@@ -391,10 +407,10 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 text-gray-500">
+              <span className="px-3 bg-white/80 text-gray-500">
                 {mode === 'signin'
                   ? 'New to our platform?'
                   : 'Already have an account?'}
@@ -407,7 +423,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
               href={`${mode === 'signin' ? '/sign-up' : '/sign-in'}${
                 redirect ? `?redirect=${redirect}` : ''
               }${priceId ? `&priceId=${priceId}` : ''}`}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full flex justify-center h-12 items-center border-2 border-gray-200 rounded-xl text-base font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-blue-300 transition-all"
             >
               {mode === 'signin'
                 ? 'Create an account'
@@ -415,6 +431,8 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             </Link>
           </div>
         </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
