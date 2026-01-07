@@ -12,8 +12,286 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
-    id: "streamlining-union-administration-2025",
-    title: "Streamlining Union Administration: Best Practices for Modern Labor Organizations",
+    id: "how-to-send-bulk-emails",
+    title: "How to Send Bulk Emails to Members",
+    excerpt: "Learn how to efficiently communicate with your entire membership using UnionTab's powerful bulk email feature.",
+    content: `
+      <h2>Reaching Your Members at Scale</h2>
+      <p>Effective communication is the backbone of any successful union. Whether you're announcing a contract update, organizing a rally, or sharing important news, getting your message to all members quickly is essential. UnionTab's bulk email feature makes this simple.</p>
+
+      <h2>Step 1: Navigate to the Email Tool</h2>
+      <p>From your union dashboard, click on <strong>Communications</strong> in the left sidebar, then select <strong>Send Email</strong>.</p>
+
+      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic">[Screenshot placeholder: Dashboard showing Communications menu]</p>
+      </div>
+
+      <h2>Step 2: Select Your Recipients</h2>
+      <p>UnionTab gives you flexible options for selecting who receives your email:</p>
+      <ul>
+        <li><strong>All Members</strong> - Send to your entire membership roster</li>
+        <li><strong>Active Members Only</strong> - Exclude members with lapsed dues</li>
+        <li><strong>By Committee</strong> - Target specific groups like stewards or executive board</li>
+        <li><strong>Custom Selection</strong> - Hand-pick individual recipients</li>
+      </ul>
+
+      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic">[Screenshot placeholder: Recipient selection interface]</p>
+      </div>
+
+      <h2>Step 3: Compose Your Message</h2>
+      <p>Use the rich text editor to craft your message. You can:</p>
+      <ul>
+        <li>Add formatting (bold, italic, headers)</li>
+        <li>Insert links and images</li>
+        <li>Use personalization tokens like {member_name} to address each recipient personally</li>
+        <li>Save drafts to continue later</li>
+      </ul>
+
+      <h2>Step 4: Preview and Send</h2>
+      <p>Before sending, always use the <strong>Preview</strong> button to see exactly how your email will appear. You can also send a test email to yourself.</p>
+
+      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic">[Screenshot placeholder: Email preview screen]</p>
+      </div>
+
+      <h2>Tracking Delivery</h2>
+      <p>After sending, UnionTab provides detailed analytics:</p>
+      <ul>
+        <li>Total emails sent</li>
+        <li>Open rates</li>
+        <li>Click-through rates</li>
+        <li>Bounce reports</li>
+      </ul>
+
+      <h2>Best Practices</h2>
+      <p><strong>Keep subject lines clear and concise</strong> - Members should immediately understand the purpose of your email.</p>
+      <p><strong>Use a consistent sender name</strong> - This builds trust and improves open rates.</p>
+      <p><strong>Segment when appropriate</strong> - Not every message needs to go to everyone.</p>
+      <p><strong>Include a call to action</strong> - What do you want members to do after reading?</p>
+
+      <p>With UnionTab's bulk email feature, staying connected with your membership has never been easier. Questions? Contact our support team anytime.</p>
+    `,
+    imageUrl: "https://images.unsplash.com/photo-1596526131083-e8c633c948d2?w=1200&h=630&fit=crop",
+    author: "UnionTab Team",
+    publishedAt: "2025-12-15",
+    readTime: "5 min read",
+    tags: ["Tutorial", "Communication", "Email"]
+  },
+  {
+    id: "uploading-files-and-creating-posts",
+    title: "Sharing Files & Posts: Public vs Private",
+    excerpt: "Understand the difference between public and private content in UnionTab and learn how to share documents and updates effectively.",
+    content: `
+      <h2>Understanding Public vs Private Content</h2>
+      <p>UnionTab gives you complete control over who sees your content. Whether you're uploading important documents or creating posts, understanding the visibility settings is key to effective communication.</p>
+
+      <h2>Part 1: Uploading Files</h2>
+
+      <h3>Accessing the File Manager</h3>
+      <p>Navigate to <strong>Documents</strong> in your dashboard sidebar. Here you can upload, organize, and share files with your membership.</p>
+
+      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic">[Screenshot placeholder: Documents section in dashboard]</p>
+      </div>
+
+      <h3>Uploading a New File</h3>
+      <ol>
+        <li>Click the <strong>Upload</strong> button</li>
+        <li>Select your file (PDFs, Word docs, images, spreadsheets supported)</li>
+        <li>Choose a folder or create a new one</li>
+        <li>Set the visibility (Public or Private)</li>
+        <li>Click <strong>Upload</strong></li>
+      </ol>
+
+      <h3>Public Files</h3>
+      <p><strong>Who can see them:</strong> Anyone visiting your union's public website - members and non-members alike.</p>
+      <p><strong>Best for:</strong></p>
+      <ul>
+        <li>Public-facing documents (bylaws available to prospective members)</li>
+        <li>Press releases</li>
+        <li>General information about your union</li>
+        <li>Recruitment materials</li>
+      </ul>
+
+      <h3>Private Files</h3>
+      <p><strong>Who can see them:</strong> Only logged-in union members.</p>
+      <p><strong>Best for:</strong></p>
+      <ul>
+        <li>Contract documents</li>
+        <li>Meeting minutes</li>
+        <li>Financial reports</li>
+        <li>Member-only resources</li>
+        <li>Internal communications</li>
+      </ul>
+
+      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic">[Screenshot placeholder: File visibility toggle]</p>
+      </div>
+
+      <h2>Part 2: Creating Posts</h2>
+
+      <h3>What Are Posts?</h3>
+      <p>Posts are updates, announcements, or news items that appear on your union's website. Think of them like a blog or news feed for your organization.</p>
+
+      <h3>Creating a New Post</h3>
+      <ol>
+        <li>Go to <strong>Posts</strong> in your dashboard</li>
+        <li>Click <strong>New Post</strong></li>
+        <li>Add a title and content using the rich text editor</li>
+        <li>Upload a featured image (optional but recommended)</li>
+        <li>Set visibility to <strong>Public</strong> or <strong>Members Only</strong></li>
+        <li>Click <strong>Publish</strong> (or <strong>Save Draft</strong> to continue later)</li>
+      </ol>
+
+      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic">[Screenshot placeholder: Post creation interface]</p>
+      </div>
+
+      <h3>Public Posts</h3>
+      <p><strong>Who can see them:</strong> Everyone, including search engines (great for SEO).</p>
+      <p><strong>Best for:</strong></p>
+      <ul>
+        <li>Public announcements</li>
+        <li>News about union victories</li>
+        <li>Community events open to all</li>
+        <li>General updates about your industry</li>
+      </ul>
+
+      <h3>Private Posts (Members Only)</h3>
+      <p><strong>Who can see them:</strong> Only logged-in members.</p>
+      <p><strong>Best for:</strong></p>
+      <ul>
+        <li>Contract negotiation updates</li>
+        <li>Internal strategy discussions</li>
+        <li>Member-specific announcements</li>
+        <li>Sensitive information</li>
+      </ul>
+
+      <h2>Quick Tips</h2>
+      <p><strong>When in doubt, start private.</strong> You can always make content public later, but you can't un-share public content.</p>
+      <p><strong>Use folders to organize files.</strong> Create folders like "Contracts," "Meeting Minutes," and "Training Materials" to keep things tidy.</p>
+      <p><strong>Pin important posts.</strong> Use the pin feature to keep critical announcements at the top of your news feed.</p>
+
+      <p>Need help deciding what should be public vs private? Our support team is happy to discuss best practices for your specific situation.</p>
+    `,
+    imageUrl: "https://images.unsplash.com/photo-1568667256549-094345857637?w=1200&h=630&fit=crop",
+    author: "UnionTab Team",
+    publishedAt: "2025-11-28",
+    readTime: "7 min read",
+    tags: ["Tutorial", "Documents", "Posts", "Privacy"]
+  },
+  {
+    id: "zoom-meetings-and-posters",
+    title: "Schedule Zoom Meetings & Create Posters",
+    excerpt: "Learn how to schedule virtual meetings, automatically generate promotional posters, and invite your members with just a few clicks.",
+    content: `
+      <h2>Virtual Meetings Made Easy</h2>
+      <p>Running a modern union often means coordinating members across different locations and schedules. UnionTab's Zoom integration lets you schedule meetings, create eye-catching promotional posters, and invite members - all from one place.</p>
+
+      <h2>Step 1: Schedule a New Meeting</h2>
+      <p>From your dashboard, navigate to <strong>Events</strong> and click <strong>Create Event</strong>. Select <strong>Zoom Meeting</strong> as the event type.</p>
+
+      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic">[Screenshot placeholder: Event creation screen with Zoom option]</p>
+      </div>
+
+      <h3>Fill in Meeting Details</h3>
+      <ul>
+        <li><strong>Title</strong> - e.g., "Monthly Membership Meeting"</li>
+        <li><strong>Date and Time</strong> - Select your meeting date and time</li>
+        <li><strong>Duration</strong> - How long the meeting will last</li>
+        <li><strong>Description</strong> - Agenda or meeting purpose</li>
+        <li><strong>Recurring</strong> - Set up weekly/monthly recurring meetings</li>
+      </ul>
+
+      <p>UnionTab automatically creates the Zoom meeting link for you - no need to log into Zoom separately!</p>
+
+      <h2>Step 2: Generate a Meeting Poster</h2>
+      <p>One of UnionTab's most popular features is automatic poster generation. Once you've created your meeting, click the <strong>Generate Poster</strong> button.</p>
+
+      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic">[Screenshot placeholder: Poster generation button]</p>
+      </div>
+
+      <h3>Customize Your Poster</h3>
+      <p>The poster generator lets you:</p>
+      <ul>
+        <li>Choose from multiple professional templates</li>
+        <li>Add your union logo</li>
+        <li>Customize colors to match your branding</li>
+        <li>Include a QR code that links directly to the meeting</li>
+        <li>Download in multiple formats (PNG, PDF)</li>
+      </ul>
+
+      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic">[Screenshot placeholder: Poster customization interface]</p>
+      </div>
+
+      <p>Use these posters in your email announcements, post them on bulletin boards, or share on social media to boost attendance.</p>
+
+      <h2>Step 3: Invite Members</h2>
+      <p>UnionTab makes inviting members simple and flexible.</p>
+
+      <h3>Option 1: Invite All Members</h3>
+      <p>Click <strong>Invite All</strong> to send the meeting invitation to your entire membership. Everyone will receive an email with:</p>
+      <ul>
+        <li>Meeting details (date, time, agenda)</li>
+        <li>Direct link to join the Zoom meeting</li>
+        <li>Option to add to their calendar</li>
+        <li>The poster image as an attachment</li>
+      </ul>
+
+      <h3>Option 2: Invite Specific Groups</h3>
+      <p>Need to invite only certain members? Use the <strong>Select Recipients</strong> option to:</p>
+      <ul>
+        <li>Invite by committee (Stewards, Executive Board, etc.)</li>
+        <li>Invite by work location</li>
+        <li>Invite by department</li>
+        <li>Hand-pick individual members</li>
+      </ul>
+
+      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic">[Screenshot placeholder: Member invitation selection]</p>
+      </div>
+
+      <h3>Option 3: Share the Link</h3>
+      <p>Copy the meeting link to share via text message, social media, or any other channel. The public link can also be posted on your union website.</p>
+
+      <h2>Managing RSVPs</h2>
+      <p>Track who's planning to attend:</p>
+      <ul>
+        <li>View RSVP counts in real-time</li>
+        <li>See a list of confirmed attendees</li>
+        <li>Send reminders to those who haven't responded</li>
+        <li>Send last-minute reminders before the meeting</li>
+      </ul>
+
+      <h2>After the Meeting</h2>
+      <p>UnionTab automatically tracks attendance for members who joined via the link. You can:</p>
+      <ul>
+        <li>View attendance reports</li>
+        <li>Follow up with members who missed the meeting</li>
+        <li>Share meeting recordings (if recorded)</li>
+      </ul>
+
+      <h2>Pro Tips</h2>
+      <p><strong>Schedule meetings in advance.</strong> Give members at least a week's notice for better attendance.</p>
+      <p><strong>Send multiple reminders.</strong> UnionTab can automatically send reminders 1 week before, 1 day before, and 1 hour before the meeting.</p>
+      <p><strong>Use the poster!</strong> Visual announcements get 3x more engagement than text-only emails.</p>
+      <p><strong>Record important meetings.</strong> Members who can't attend live can catch up later.</p>
+
+      <p>Ready to run your first virtual meeting? The whole process takes less than 5 minutes. If you need help, our support team is always here.</p>
+    `,
+    imageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=1200&h=630&fit=crop",
+    author: "UnionTab Team",
+    publishedAt: "2025-11-10",
+    readTime: "8 min read",
+    tags: ["Tutorial", "Meetings", "Zoom", "Events"]
+  },
+  {
+    id: "streamlining-union-administration",
+    title: "Modernize Your Union Admin",
     excerpt: "Discover how forward-thinking unions are modernizing their administrative processes to better serve members and reduce operational overhead.",
     content: `
       <h2>The Challenge of Union Administration in the Digital Age</h2>
@@ -54,13 +332,13 @@ export const blogPosts: BlogPost[] = [
     `,
     imageUrl: "https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=1200&h=630&fit=crop",
     author: "UnionTab Team",
-    publishedAt: "2025-01-06",
+    publishedAt: "2025-08-20",
     readTime: "6 min read",
     tags: ["Union Administration", "Digital Transformation", "Best Practices"]
   },
   {
-    id: "running-fair-union-elections-guide",
-    title: "A Complete Guide to Running Fair and Transparent Union Elections",
+    id: "running-fair-union-elections",
+    title: "Run Fair & Transparent Elections",
     excerpt: "Learn the essential steps for conducting democratic union elections that build member trust and comply with federal regulations.",
     content: `
       <h2>Why Election Integrity Matters</h2>
@@ -112,13 +390,13 @@ export const blogPosts: BlogPost[] = [
     `,
     imageUrl: "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=1200&h=630&fit=crop",
     author: "UnionTab Team",
-    publishedAt: "2025-01-03",
+    publishedAt: "2025-07-05",
     readTime: "7 min read",
     tags: ["Union Elections", "Compliance", "Member Engagement"]
   },
   {
-    id: "effective-grievance-management-unions",
-    title: "Effective Grievance Management: Protecting Members and Building Stronger Unions",
+    id: "effective-grievance-management",
+    title: "Master Grievance Handling",
     excerpt: "Master the art of grievance handling with proven strategies that protect member rights while building constructive relationships with management.",
     content: `
       <h2>The Critical Role of Grievance Handling</h2>
@@ -188,7 +466,7 @@ export const blogPosts: BlogPost[] = [
     `,
     imageUrl: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&h=630&fit=crop",
     author: "UnionTab Team",
-    publishedAt: "2024-12-28",
+    publishedAt: "2025-06-12",
     readTime: "8 min read",
     tags: ["Grievance Handling", "Member Rights", "Contract Enforcement"]
   }
