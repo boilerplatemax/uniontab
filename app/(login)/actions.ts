@@ -136,15 +136,31 @@ const signUpSchema = z.object({
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const { name, email, password, inviteId, unionName, localNumber, publicName, estimatedMemberCount } = data;
 
-  const existingUser = await db
-    .select()
+  const existingUserWithUnion = await db
+    .select({
+      user: users,
+      union: unions,
+    })
     .from(users)
+    .leftJoin(members, eq(users.id, members.userId))
+    .leftJoin(unions, eq(members.unionId, unions.id))
     .where(eq(users.email, email))
     .limit(1);
 
-  if (existingUser.length > 0) {
+  if (existingUserWithUnion.length > 0) {
+    const existingUnion = existingUserWithUnion[0].union;
+    if (existingUnion) {
+      const unionDisplay = existingUnion.localNumber
+        ? `${existingUnion.name} ${existingUnion.localNumber}`
+        : existingUnion.name;
+      return {
+        error: `This email is already associated with ${unionDisplay}. Please sign in instead, or use a different email.`,
+        email,
+        password
+      };
+    }
     return {
-      error: 'Failed to create user. Please try again.',
+      error: 'This email is already registered. Please sign in instead, or use a different email.',
       email,
       password
     };
@@ -262,7 +278,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
     if (existingUnion) {
       return {
-        error: `A union with the name "${unionName}"${localNumber ? ` and local number "${localNumber}"` : ''} already exists. Please choose a different combination.`,
+        error: `A union with the name "${unionName}"${localNumber ? ` and local number "${localNumber}"` : ''} already exists. Please choose a different combination, or email info@uniontab.com if you believe someone has taken your union's name.`,
         email,
         password
       };

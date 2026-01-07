@@ -10,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileUpload } from '@/components/ui/file-upload';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { Switch } from '@/components/ui/switch';
 import {
   ArrowLeft,
   Mail,
@@ -77,7 +76,6 @@ export function SettingsContent() {
     theme: 'default',
     themeColor: '#2563eb',
     socialLinks: {} as Record<string, string>,
-    showSocialInHeader: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -99,7 +97,6 @@ export function SettingsContent() {
         theme: union.theme || 'default',
         themeColor: union.themeColor || '#2563eb',
         socialLinks: (union as any).socialLinks || {},
-        showSocialInHeader: (union as any).showSocialInHeader || false,
       });
     }
   }, [union]);
@@ -321,7 +318,7 @@ export function SettingsContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-gray-500">
-                Add your social media profiles to display in the footer, contact page, and optionally in the header/navbar
+                Add your social media profiles to display in the footer and contact page
               </p>
 
               <div className="space-y-4">
@@ -345,24 +342,6 @@ export function SettingsContent() {
                     />
                   </div>
                 ))}
-              </div>
-
-              <div className="border-t pt-4 mt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="showSocialInHeader">Show in Header/Navbar</Label>
-                    <p className="text-sm text-gray-500">
-                      Display social media icons in the navigation bar
-                    </p>
-                  </div>
-                  <Switch
-                    id="showSocialInHeader"
-                    checked={formData.showSocialInHeader}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, showSocialInHeader: checked })
-                    }
-                  />
-                </div>
               </div>
             </CardContent>
           </Card>
