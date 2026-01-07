@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StrikeStatusBadge } from './strike-status-badge';
@@ -10,6 +11,8 @@ import {
   AlertTriangle,
   FileText,
   ChevronRight,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
 import type { Strike, PicketZone, StrikeAnnouncement, StrikeIncident, StrikeResource, User } from '@/lib/db/schema';
 
@@ -24,15 +27,44 @@ type StrikeWithRelations = Strike & {
 interface StrikeCardProps {
   strike: StrikeWithRelations;
   onView: () => void;
+  onDelete?: () => void;
+  isOwner?: boolean;
 }
 
-export function StrikeCard({ strike, onView }: StrikeCardProps) {
+export function StrikeCard({ strike, onView, onDelete, isOwner }: StrikeCardProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Are you sure you want to delete the strike "${strike.title}"? This will also delete all associated zones, shifts, announcements, incidents, and resources.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/strikes/${strike.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete strike');
+      }
+
+      onDelete?.();
+    } catch (error: any) {
+      console.error('Error deleting strike:', error);
+      alert(error.message || 'Failed to delete strike');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const unresolvedIncidents = strike.incidents.filter(i => i.status !== 'resolved').length;
@@ -52,10 +84,28 @@ export function StrikeCard({ strike, onView }: StrikeCardProps) {
               {strike.endDate && ` - ${formatDate(strike.endDate)}`}
             </CardDescription>
           </div>
-          <Button variant="ghost" size="sm" onClick={onView}>
-            View Details
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                title="Delete strike"
+              >
+                {isDeleting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={onView}>
+              View Details
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>

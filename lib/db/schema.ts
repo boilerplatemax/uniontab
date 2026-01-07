@@ -41,9 +41,20 @@ export const unions = pgTable('unions', {
   website: varchar('website', { length: 255 }),
   description: text('description'),
   about: text('about'),
+  aboutImages: json('about_images').$type<string[]>(), // Array of image URLs for about section
   theme: varchar('theme', { length: 50 }).notNull().default('default'),
   themeColor: varchar('theme_color', { length: 7 }).notNull().default('#2563eb'),
   accessibilityWidgetEnabled: boolean('accessibility_widget_enabled').notNull().default(true),
+  // Social media links
+  socialLinks: json('social_links').$type<{
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    linkedin?: string;
+    youtube?: string;
+    tiktok?: string;
+  }>(),
+  showSocialInHeader: boolean('show_social_in_header').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   publishedAt: timestamp('published_at'),

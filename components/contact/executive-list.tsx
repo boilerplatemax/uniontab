@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash2, GripVertical, Mail, Phone, User, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, ChevronUp, ChevronDown, Mail, Phone, User, Loader2 } from 'lucide-react';
 import { ExecutiveDialog } from './executive-dialog';
 import type { UnionExecutive } from '@/lib/db/schema';
 
@@ -23,7 +23,7 @@ export function ExecutiveList({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingExecutive, setEditingExecutive] = useState<UnionExecutive | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [reorderingId, setReorderingId] = useState<number | null>(null);
 
   const handleAdd = () => {
     setEditingExecutive(null);
@@ -59,32 +59,16 @@ export function ExecutiveList({
     }
   };
 
-  const handleDragStart = (e: React.DragEvent, execId: number) => {
-    setDraggedId(execId);
-    e.dataTransfer.effectAllowed = 'move';
-  };
+  const handleMoveUp = async (execId: number) => {
+    const currentIndex = executives.findIndex(e => e.id === execId);
+    if (currentIndex <= 0) return; // Already at top
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = async (e: React.DragEvent, targetId: number) => {
-    e.preventDefault();
-    if (draggedId === null || draggedId === targetId) return;
-
-    const draggedIndex = executives.findIndex(e => e.id === draggedId);
-    const targetIndex = executives.findIndex(e => e.id === targetId);
-
-    if (draggedIndex === -1 || targetIndex === -1) return;
-
-    // Reorder the array
-    const newOrder = [...executives];
-    const [draggedItem] = newOrder.splice(draggedIndex, 1);
-    newOrder.splice(targetIndex, 0, draggedItem);
-
-    // Update server
+    setReorderingId(execId);
     try {
+      // Swap with the executive above
+      const newOrder = [...executives];
+      [newOrder[currentIndex - 1], newOrder[currentIndex]] = [newOrder[currentIndex], newOrder[currentIndex - 1]];
+
       await fetch('/api/executives/reorder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,13 +80,35 @@ export function ExecutiveList({
       onExecutivesChange();
     } catch (error) {
       console.error('Error reordering executives:', error);
+    } finally {
+      setReorderingId(null);
     }
-
-    setDraggedId(null);
   };
 
-  const handleDragEnd = () => {
-    setDraggedId(null);
+  const handleMoveDown = async (execId: number) => {
+    const currentIndex = executives.findIndex(e => e.id === execId);
+    if (currentIndex >= executives.length - 1) return; // Already at bottom
+
+    setReorderingId(execId);
+    try {
+      // Swap with the executive below
+      const newOrder = [...executives];
+      [newOrder[currentIndex], newOrder[currentIndex + 1]] = [newOrder[currentIndex + 1], newOrder[currentIndex]];
+
+      await fetch('/api/executives/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          unionId,
+          executiveIds: newOrder.map(e => e.id),
+        }),
+      });
+      onExecutivesChange();
+    } catch (error) {
+      console.error('Error reordering executives:', error);
+    } finally {
+      setReorderingId(null);
+    }
   };
 
   const handleDialogSuccess = () => {
@@ -136,22 +142,35 @@ export function ExecutiveList({
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {executives.map((exec) => (
+          {executives.map((exec, index) => (
             <Card
               key={exec.id}
-              className={`p-4 relative transition-all ${
-                isOwner ? 'cursor-move' : ''
-              } ${draggedId === exec.id ? 'opacity-50' : ''}`}
-              draggable={isOwner}
-              onDragStart={(e) => handleDragStart(e, exec.id)}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, exec.id)}
-              onDragEnd={handleDragEnd}
+              className={`p-4 relative transition-all ${reorderingId === exec.id ? 'opacity-50' : ''}`}
             >
               <div className="flex items-start gap-4">
+                {/* Reorder Buttons - Only for owners */}
                 {isOwner && (
-                  <div className="flex-shrink-0 text-gray-400 cursor-grab active:cursor-grabbing">
-                    <GripVertical className="h-5 w-5" />
+                  <div className="flex flex-col gap-0.5 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleMoveUp(exec.id)}
+                      disabled={index === 0 || reorderingId !== null}
+                      className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
+                      title="Move up"
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleMoveDown(exec.id)}
+                      disabled={index === executives.length - 1 || reorderingId !== null}
+                      className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
+                      title="Move down"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
                   </div>
                 )}
 
@@ -209,6 +228,7 @@ export function ExecutiveList({
                       size="sm"
                       onClick={() => handleEdit(exec)}
                       className="h-8 w-8 p-0"
+                      title="Edit"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -218,6 +238,7 @@ export function ExecutiveList({
                       onClick={() => handleDelete(exec.id)}
                       disabled={deletingId === exec.id}
                       className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      title="Delete"
                     >
                       {deletingId === exec.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />

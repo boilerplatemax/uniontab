@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileUpload } from '@/components/ui/file-upload';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { Switch } from '@/components/ui/switch';
 import {
   ArrowLeft,
   Mail,
@@ -20,10 +21,24 @@ import {
   Save,
   Palette,
   Check,
+  Plus,
+  X,
+  ImageIcon,
+  Share2,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
 import { themeOptions } from '@/lib/themes/config';
+
+// Social media platform config
+const socialPlatforms = [
+  { id: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/yourpage' },
+  { id: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/yourhandle' },
+  { id: 'twitter', label: 'X (Twitter)', placeholder: 'https://x.com/yourhandle' },
+  { id: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/company/yourpage' },
+  { id: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@yourchannel' },
+  { id: 'tiktok', label: 'TikTok', placeholder: 'https://tiktok.com/@yourhandle' },
+] as const;
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -58,8 +73,11 @@ export function SettingsContent() {
     website: '',
     description: '',
     about: '',
+    aboutImages: [] as string[],
     theme: 'default',
-    themeColor: '#2563eb'
+    themeColor: '#2563eb',
+    socialLinks: {} as Record<string, string>,
+    showSocialInHeader: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -77,8 +95,11 @@ export function SettingsContent() {
         website: union.website || '',
         description: union.description || '',
         about: union.about || '',
+        aboutImages: (union as any).aboutImages || [],
         theme: union.theme || 'default',
-        themeColor: union.themeColor || '#2563eb'
+        themeColor: union.themeColor || '#2563eb',
+        socialLinks: (union as any).socialLinks || {},
+        showSocialInHeader: (union as any).showSocialInHeader || false,
       });
     }
   }, [union]);
@@ -240,6 +261,108 @@ export function SettingsContent() {
                 <p className="text-sm text-gray-500 mt-1">
                   Share your union's story, accomplishments, and goals
                 </p>
+              </div>
+
+              {/* About Images */}
+              <div className="border-t pt-6">
+                <Label className="flex items-center gap-2 mb-4">
+                  <ImageIcon className="h-4 w-4" />
+                  About Section Images
+                </Label>
+                <p className="text-sm text-gray-500 mb-4">
+                  Add images to display alongside your about text (gallery format)
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                  {formData.aboutImages.map((imageUrl, index) => (
+                    <div key={index} className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                      <img
+                        src={imageUrl}
+                        alt={`About image ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newImages = formData.aboutImages.filter((_, i) => i !== index);
+                          setFormData({ ...formData, aboutImages: newImages });
+                        }}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <FileUpload
+                  onFileSelect={(file, url) => {
+                    if (url) {
+                      setFormData({ ...formData, aboutImages: [...formData.aboutImages, url] });
+                    }
+                  }}
+                  accept="image/*"
+                  maxSize={5}
+                  label="Add Image"
+                  hint="Click to browse or drag and drop an image"
+                  bucket="union-files"
+                  path="about-images"
+                  autoResize={true}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Social Media Links */}
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Share2 className="h-5 w-5" />
+                Social Media Links
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-500">
+                Add your social media profiles to display in the footer, contact page, and optionally in the header/navbar
+              </p>
+
+              <div className="space-y-4">
+                {socialPlatforms.map((platform) => (
+                  <div key={platform.id}>
+                    <Label htmlFor={`social-${platform.id}`}>{platform.label}</Label>
+                    <Input
+                      id={`social-${platform.id}`}
+                      type="url"
+                      placeholder={platform.placeholder}
+                      value={formData.socialLinks[platform.id] || ''}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          socialLinks: {
+                            ...formData.socialLinks,
+                            [platform.id]: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t pt-4 mt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="showSocialInHeader">Show in Header/Navbar</Label>
+                    <p className="text-sm text-gray-500">
+                      Display social media icons in the navigation bar
+                    </p>
+                  </div>
+                  <Switch
+                    id="showSocialInHeader"
+                    checked={formData.showSocialInHeader}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, showSocialInHeader: checked })
+                    }
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

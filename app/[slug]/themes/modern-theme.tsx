@@ -6,6 +6,7 @@ import { NavbarSpacer } from '../navbar-spacer';
 import { AnnouncementClient } from '../announcement-client';
 import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
+import { SocialMediaIcons } from '@/components/social-media-icons';
 import type { ThemeProps } from './types';
 import { Users, Settings } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -191,16 +192,25 @@ export function ModernTheme({
 
       {/* Footer - Minimal */}
       <div className="border-t mt-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 text-center text-gray-500 text-sm">
-          <p>
-            Powered by{' '}
-            <a
-              href="/"
-              className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
-            >
-              UnionTab
-            </a>
-          </p>
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6">
+          <div className="flex flex-col items-center gap-4">
+            {/* Social Media Icons */}
+            <SocialMediaIcons
+              socialLinks={(union as any).socialLinks}
+              size="lg"
+            />
+
+            {/* Powered by */}
+            <p className="text-gray-500 text-sm">
+              Powered by{' '}
+              <a
+                href="/"
+                className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
+                UnionTab
+              </a>
+            </p>
+          </div>
         </div>
       </div>
 

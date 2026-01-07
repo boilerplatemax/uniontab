@@ -195,6 +195,8 @@ export function StrikesContent({
               key={strike.id}
               strike={strike}
               onView={() => handleViewStrike(strike.id)}
+              onDelete={() => router.refresh()}
+              isOwner={role === 'owner'}
             />
           ))}
         </div>
