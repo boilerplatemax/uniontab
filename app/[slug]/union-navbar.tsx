@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
+import { SocialMediaIcons, SocialLink } from '@/components/social-media-icons';
 
 interface UnionNavbarProps {
   slug: string;
@@ -27,13 +28,18 @@ interface UnionNavbarProps {
   announcementId?: number | null;
   grievanceNotificationCount?: number;
   strikeNotificationCount?: number;
+  socialLinks?: SocialLink | null;
+  showSocialInHeader?: boolean;
 }
 
-export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0, announcementId, grievanceNotificationCount = 0, strikeNotificationCount = 0 }: UnionNavbarProps) {
+export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0, announcementId, grievanceNotificationCount = 0, strikeNotificationCount = 0, socialLinks, showSocialInHeader = false }: UnionNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
   const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
+
+  // Check if we should display social icons in header
+  const hasSocialLinks = showSocialInHeader && socialLinks && Object.values(socialLinks).some(link => link && link.trim());
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -47,15 +53,23 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
       <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm transition-all duration-300 ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
-            <Link
-              href={`/${slug}`}
-              prefetch={true}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <span className="font-semibold text-gray-900 text-lg">
-                {displayName}
-              </span>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href={`/${slug}`}
+                prefetch={true}
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+              >
+                <span className="font-semibold text-gray-900 text-lg">
+                  {displayName}
+                </span>
+              </Link>
+              {/* Social Media Icons in Header */}
+              {hasSocialLinks && (
+                <div className="hidden sm:flex">
+                  <SocialMediaIcons socialLinks={socialLinks} size="sm" />
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               <Link href={`/${slug}/sign-in`} prefetch={true}>
                 <Button variant="outline" size="sm" className="border-gray-300">
@@ -80,15 +94,23 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
       <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm transition-all duration-300 ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
-            <Link
-              href={`/${slug}`}
-              prefetch={true}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <span className="font-semibold text-gray-900 text-lg">
-                {displayName}
-              </span>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href={`/${slug}`}
+                prefetch={true}
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+              >
+                <span className="font-semibold text-gray-900 text-lg">
+                  {displayName}
+                </span>
+              </Link>
+              {/* Social Media Icons in Header */}
+              {hasSocialLinks && (
+                <div className="hidden sm:flex">
+                  <SocialMediaIcons socialLinks={socialLinks} size="sm" />
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <div className="hidden sm:flex items-center gap-2">
                 {/* Grievances - visible to all members */}
@@ -284,6 +306,13 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 <p className="text-xs text-muted-foreground">Signed in as</p>
                 <p className="text-sm font-medium">{membership.user.name}</p>
               </div>
+
+              {/* Social Media Icons in Mobile Menu */}
+              {hasSocialLinks && (
+                <div className="pb-3 mb-3 border-b flex justify-center">
+                  <SocialMediaIcons socialLinks={socialLinks} size="md" />
+                </div>
+              )}
 
               <Link
                 href={`/${slug}/profile`}
