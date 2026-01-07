@@ -287,14 +287,35 @@ export function UnionProfileTabs({
           {/* About Tab */}
           {activeTab === 'about' && (
             <>
-              {union.about ? (
+              {union.about || ((union as any).aboutImages?.length > 0) ? (
                 <Card className="shadow-sm">
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold text-gray-900 mb-4">About</h2>
-                    <RichTextContent
-                      content={union.about}
-                      className="text-gray-700 leading-relaxed"
-                    />
+
+                    {/* About Images Gallery */}
+                    {(union as any).aboutImages?.length > 0 && (
+                      <div className="mb-6">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {((union as any).aboutImages as string[]).map((imageUrl: string, index: number) => (
+                            <div key={index} className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                              <img
+                                src={imageUrl}
+                                alt={`About image ${index + 1}`}
+                                className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                                onClick={() => window.open(imageUrl, '_blank')}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {union.about && (
+                      <RichTextContent
+                        content={union.about}
+                        className="text-gray-700 leading-relaxed"
+                      />
+                    )}
                   </CardContent>
                 </Card>
               ) : (

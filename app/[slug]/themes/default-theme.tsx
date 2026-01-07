@@ -6,6 +6,7 @@ import { UnionProfileTabs } from '../union-profile-tabs';
 import { AnnouncementClient } from '../announcement-client';
 import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
+import { SocialMediaIcons } from '@/components/social-media-icons';
 import type { ThemeProps } from './types';
 
 /**
@@ -206,16 +207,25 @@ export function DefaultTheme({
 
       {/* Footer */}
       <div className="bg-white border-t mt-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-gray-500 text-sm">
-          <p>
-            Powered by{' '}
-            <a
-              href="/"
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              UnionTab
-            </a>
-          </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col items-center gap-4">
+            {/* Social Media Icons */}
+            <SocialMediaIcons
+              socialLinks={(union as any).socialLinks}
+              size="lg"
+            />
+
+            {/* Powered by */}
+            <p className="text-gray-500 text-sm">
+              Powered by{' '}
+              <a
+                href="/"
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                UnionTab
+              </a>
+            </p>
+          </div>
         </div>
       </div>
 

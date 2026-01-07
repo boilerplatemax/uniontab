@@ -39,8 +39,11 @@ export async function PUT(request: NextRequest) {
       website,
       description,
       about,
+      aboutImages,
       theme,
       themeColor,
+      socialLinks,
+      showSocialInHeader,
     } = body;
 
     // Update the union
@@ -56,8 +59,11 @@ export async function PUT(request: NextRequest) {
         website: website || null,
         description: description || null,
         about: about || null,
+        aboutImages: aboutImages || null,
         theme: theme || 'default',
         themeColor: themeColor || '#2563eb',
+        socialLinks: socialLinks || null,
+        showSocialInHeader: showSocialInHeader ?? false,
       })
       .where(eq(unions.id, membership.unionId))
       .returning();

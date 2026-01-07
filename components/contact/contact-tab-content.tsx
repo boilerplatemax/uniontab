@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mail, Phone, MapPin, Clock, Settings, Users, Plus } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Settings, Users, Plus, Share2 } from 'lucide-react';
 import { EditContactInfoDialog } from './edit-contact-info-dialog';
 import { ExecutiveList } from './executive-list';
 import { ContactForm } from './contact-form';
+import { SocialMediaIcons } from '@/components/social-media-icons';
 import type { Union, UnionContactInfo, UnionExecutive } from '@/lib/db/schema';
 
 interface ContactTabContentProps {
@@ -74,6 +75,8 @@ export function ContactTabContent({ union, isOwner }: ContactTabContentProps) {
   const hasContactInfo = contactInfo?.contactEmail || contactInfo?.contactPhone ||
                          contactInfo?.contactAddress || contactInfo?.officeHours;
   const contactFormEnabled = contactInfo?.contactFormEnabled ?? true;
+  const socialLinks = (union as any).socialLinks;
+  const hasSocialLinks = socialLinks && Object.values(socialLinks).some((link: any) => link && (link as string).trim());
 
   // Show contact info column for owners always, for members only if there's data
   const showContactInfoColumn = isOwner || hasContactInfo;
@@ -131,6 +134,17 @@ export function ContactTabContent({ union, isOwner }: ContactTabContentProps) {
                   <div className="flex items-start gap-3 text-gray-700">
                     <Clock className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
                     <span className="whitespace-pre-line">{contactInfo.officeHours}</span>
+                  </div>
+                )}
+
+                {/* Social Media Links */}
+                {hasSocialLinks && (
+                  <div className="pt-4 border-t mt-4">
+                    <div className="flex items-center gap-2 text-gray-700 mb-3">
+                      <Share2 className="h-5 w-5 text-gray-400" />
+                      <span className="font-medium">Follow Us</span>
+                    </div>
+                    <SocialMediaIcons socialLinks={socialLinks} size="lg" />
                   </div>
                 )}
               </div>
