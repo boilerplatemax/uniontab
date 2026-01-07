@@ -85,7 +85,7 @@ export default function BlogsPage() {
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900">
             The UnionTab
-            <span className="block mt-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="block mt-2 pb-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
               Blog
             </span>
           </h1>
@@ -252,7 +252,7 @@ export default function BlogsPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-            <p>&copy; 2025 UnionTab. All rights reserved.</p>
+            <p>&copy; 2026 UnionTab. All rights reserved.</p>
           </div>
         </div>
       </footer>

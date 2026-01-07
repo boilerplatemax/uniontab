@@ -487,6 +487,11 @@ export default function ContactPage() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/blogs" className="hover:text-white transition-colors">
+                    Blog
+                  </Link>
+                </li>
+                <li>
                   <Link href="/sign-up" className="hover:text-white transition-colors">
                     Get Started
                   </Link>
@@ -525,7 +530,7 @@ export default function ContactPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-            <p>&copy; 2025 UnionTab. All rights reserved.</p>
+            <p>&copy; 2026 UnionTab. All rights reserved.</p>
           </div>
         </div>
       </footer>
