@@ -18,7 +18,6 @@ import {
   Save,
   Palette,
   Check,
-  ImageIcon,
   Share2,
 } from 'lucide-react';
 import useSWR from 'swr';
@@ -244,35 +243,6 @@ export function SettingsContent() {
                 </p>
               </div>
 
-              {/* About Section - Now editable on the About page */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <ImageIcon className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-blue-900">About Section</h4>
-                    <p className="text-sm text-blue-700 mt-1">
-                      The about section can now be edited directly on your public page.
-                      Visit the <strong>About</strong> tab on your union's homepage and click "Edit" to:
-                    </p>
-                    <ul className="text-sm text-blue-700 mt-2 ml-4 list-disc space-y-1">
-                      <li>Add a featured image with position options (above, left, or right of text)</li>
-                      <li>Write rich text content about your union</li>
-                      <li>Add additional gallery images</li>
-                    </ul>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="mt-3 border-blue-300 text-blue-700 hover:bg-blue-100"
-                      onClick={() => router.push(`/${union.slug}?tab=about`)}
-                    >
-                      Go to About Page
-                    </Button>
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
 
