@@ -188,6 +188,16 @@ export function DefaultTheme({
             </div>
           )}
 
+          {/* Social Icons in Hero (conditionally shown) */}
+          {(union as any).showSocialInHero && (union as any).socialLinks && Object.values((union as any).socialLinks).some((v: any) => v) && (
+            <div className="px-6 pb-4 border-t pt-4">
+              <SocialMediaIcons
+                socialLinks={(union as any).socialLinks}
+                size="md"
+              />
+            </div>
+          )}
+
         </div>
       </div>
 

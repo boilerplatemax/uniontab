@@ -18,6 +18,7 @@ import { EventDetailsDialog } from '@/components/events/event-details-dialog';
 import { ElectionsList } from '@/components/elections/elections-list';
 import { ContactTabContent } from '@/components/contact';
 import { RichTextContent } from '@/components/ui/rich-text-content';
+import { InlineAboutEditor } from '@/components/about/inline-about-editor';
 import { LikeButton } from '@/components/posts/like-button';
 import { ShareButton } from '@/components/share-button';
 import type { Union, Post, File as FileType, Event, Member, PostAttachment } from '@/lib/db/schema';
@@ -286,49 +287,7 @@ export function UnionProfileTabs({
       <div className="space-y-4">
           {/* About Tab */}
           {activeTab === 'about' && (
-            <>
-              {union.about || ((union as any).aboutImages?.length > 0) ? (
-                <Card className="shadow-sm">
-                  <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">About</h2>
-
-                    {/* About Images Gallery */}
-                    {(union as any).aboutImages?.length > 0 && (
-                      <div className="mb-6">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          {((union as any).aboutImages as string[]).map((imageUrl: string, index: number) => (
-                            <div key={index} className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                              <img
-                                src={imageUrl}
-                                alt={`About image ${index + 1}`}
-                                className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                                onClick={() => window.open(imageUrl, '_blank')}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {union.about && (
-                      <RichTextContent
-                        content={union.about}
-                        className="text-gray-700 leading-relaxed"
-                      />
-                    )}
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="shadow-sm">
-                  <CardContent className="p-12 text-center">
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      Welcome to {union.publicName || union.name}
-                    </h3>
-                    <p className="text-gray-500">More content coming soon...</p>
-                  </CardContent>
-                </Card>
-              )}
-            </>
+            <InlineAboutEditor union={union} isOwner={isOwner} />
           )}
 
           {/* Posts Tab */}
