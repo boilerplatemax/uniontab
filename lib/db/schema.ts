@@ -42,6 +42,8 @@ export const unions = pgTable('unions', {
   description: text('description'),
   about: text('about'),
   aboutImages: json('about_images').$type<string[]>(), // Array of image URLs for about section
+  aboutImageUrl: text('about_image_url'), // Main featured image for about section
+  aboutImagePosition: varchar('about_image_position', { length: 20 }).default('above'), // 'above', 'left', 'right'
   theme: varchar('theme', { length: 50 }).notNull().default('default'),
   themeColor: varchar('theme_color', { length: 7 }).notNull().default('#2563eb'),
   accessibilityWidgetEnabled: boolean('accessibility_widget_enabled').notNull().default(true),
@@ -54,7 +56,8 @@ export const unions = pgTable('unions', {
     youtube?: string;
     tiktok?: string;
   }>(),
-  showSocialInHeader: boolean('show_social_in_header').notNull().default(false),
+  showSocialInHeader: boolean('show_social_in_header').notNull().default(false), // Deprecated - use showSocialInHero
+  showSocialInHero: boolean('show_social_in_hero').notNull().default(false), // Toggle to show social icons in hero section
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   publishedAt: timestamp('published_at'),

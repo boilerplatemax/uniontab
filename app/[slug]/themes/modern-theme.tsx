@@ -171,6 +171,18 @@ export function ModernTheme({
                   {union.description}
                 </p>
               )}
+
+              {/* Social Icons in Hero (conditionally shown) */}
+              {(union as any).showSocialInHero && (union as any).socialLinks && Object.values((union as any).socialLinks).some((v: any) => v) && (
+                <div className="mt-4 sm:mt-6 flex justify-center sm:justify-start">
+                  <SocialMediaIcons
+                    socialLinks={(union as any).socialLinks}
+                    size="md"
+                    variant="subtle"
+                    subtleColor={heroTextColor}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

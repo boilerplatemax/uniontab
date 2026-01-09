@@ -9,9 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileUpload } from '@/components/ui/file-upload';
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import {
-  ArrowLeft,
   Mail,
   Phone,
   MapPin,
@@ -20,8 +18,6 @@ import {
   Save,
   Palette,
   Check,
-  Plus,
-  X,
   ImageIcon,
   Share2,
 } from 'lucide-react';
@@ -76,6 +72,7 @@ export function SettingsContent() {
     theme: 'default',
     themeColor: '#2563eb',
     socialLinks: {} as Record<string, string>,
+    showSocialInHero: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -97,6 +94,7 @@ export function SettingsContent() {
         theme: union.theme || 'default',
         themeColor: union.themeColor || '#2563eb',
         socialLinks: (union as any).socialLinks || {},
+        showSocialInHero: (union as any).showSocialInHero || false,
       });
     }
   }, [union]);
@@ -246,64 +244,34 @@ export function SettingsContent() {
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="about">About Your Union</Label>
-                <RichTextEditor
-                  content={formData.about}
-                  onChange={(value) =>
-                    setFormData({ ...formData, about: value })
-                  }
-                  placeholder="Tell visitors about your union's history, mission, and values..."
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  Share your union's story, accomplishments, and goals
-                </p>
-              </div>
-
-              {/* About Images */}
-              <div className="border-t pt-6">
-                <Label className="flex items-center gap-2 mb-4">
-                  <ImageIcon className="h-4 w-4" />
-                  About Section Images
-                </Label>
-                <p className="text-sm text-gray-500 mb-4">
-                  Add images to display alongside your about text (gallery format)
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                  {formData.aboutImages.map((imageUrl, index) => (
-                    <div key={index} className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                      <img
-                        src={imageUrl}
-                        alt={`About image ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newImages = formData.aboutImages.filter((_, i) => i !== index);
-                          setFormData({ ...formData, aboutImages: newImages });
-                        }}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
+              {/* About Section - Now editable on the About page */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <ImageIcon className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-blue-900">About Section</h4>
+                    <p className="text-sm text-blue-700 mt-1">
+                      The about section can now be edited directly on your public page.
+                      Visit the <strong>About</strong> tab on your union's homepage and click "Edit" to:
+                    </p>
+                    <ul className="text-sm text-blue-700 mt-2 ml-4 list-disc space-y-1">
+                      <li>Add a featured image with position options (above, left, or right of text)</li>
+                      <li>Write rich text content about your union</li>
+                      <li>Add additional gallery images</li>
+                    </ul>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-3 border-blue-300 text-blue-700 hover:bg-blue-100"
+                      onClick={() => router.push(`/${union.slug}?tab=about`)}
+                    >
+                      Go to About Page
+                    </Button>
+                  </div>
                 </div>
-                <FileUpload
-                  onFileSelect={(file, url) => {
-                    if (url) {
-                      setFormData({ ...formData, aboutImages: [...formData.aboutImages, url] });
-                    }
-                  }}
-                  accept="image/*"
-                  maxSize={5}
-                  label="Add Image"
-                  hint="Click to browse or drag and drop an image"
-                  bucket="union-files"
-                  path="about-images"
-                  autoResize={true}
-                />
               </div>
             </CardContent>
           </Card>
@@ -342,6 +310,44 @@ export function SettingsContent() {
                     />
                   </div>
                 ))}
+              </div>
+
+              {/* Show in Hero Toggle */}
+              <div className="border-t pt-4 mt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="showSocialInHero" className="text-base font-medium">
+                      Show in Hero Section
+                    </Label>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Display social icons prominently in your homepage hero area
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    id="showSocialInHero"
+                    role="switch"
+                    aria-checked={formData.showSocialInHero}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        showSocialInHero: !formData.showSocialInHero,
+                      })
+                    }
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      formData.showSocialInHero ? 'bg-blue-600' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        formData.showSocialInHero ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Social icons always appear in the footer. This option adds them to the hero section as well.
+                </p>
               </div>
             </CardContent>
           </Card>

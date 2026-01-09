@@ -29,6 +29,8 @@ interface SocialMediaIconsProps {
   size?: 'sm' | 'md' | 'lg';
   variant?: 'subtle' | 'vibrant';
   className?: string;
+  /** Custom text color for subtle variant (use with hero sections) */
+  subtleColor?: string;
 }
 
 // Vibrant brand colors with circular backgrounds
@@ -89,7 +91,7 @@ const containerSizeClasses = {
   lg: 'h-10 w-10',
 };
 
-export function SocialMediaIcons({ socialLinks, size = 'md', variant = 'vibrant', className = '' }: SocialMediaIconsProps) {
+export function SocialMediaIcons({ socialLinks, size = 'md', variant = 'vibrant', className = '', subtleColor }: SocialMediaIconsProps) {
   if (!socialLinks) return null;
 
   const hasAnyLinks = Object.values(socialLinks).some(link => link && link.trim());
@@ -120,14 +122,15 @@ export function SocialMediaIcons({ socialLinks, size = 'md', variant = 'vibrant'
           );
         }
 
-        // Subtle variant (original style)
+        // Subtle variant (original style or custom color for hero sections)
         return (
           <a
             key={platform}
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`text-gray-500 transition-colors ${config.subtleColor}`}
+            className={`transition-colors opacity-80 hover:opacity-100 ${!subtleColor ? `text-gray-500 ${config.subtleColor}` : ''}`}
+            style={subtleColor ? { color: subtleColor } : undefined}
             title={config.label}
           >
             <Icon className={sizeClasses[size]} />
