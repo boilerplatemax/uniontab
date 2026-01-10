@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video, Wrench } from 'lucide-react';
+import { Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video, Wrench, MessageSquare } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import {
@@ -137,6 +137,16 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Mail className="h-4 w-4" />
                       <span className="hidden md:inline">Emails</span>
+                    </Button>
+                  </Link>
+                )}
+
+                {/* SMS - standalone for owners/admins */}
+                {isOwnerOrAdmin && (
+                  <Link href={`/${slug}/mass-sms`} prefetch={true}>
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      <span className="hidden md:inline">SMS</span>
                     </Button>
                   </Link>
                 )}
@@ -358,6 +368,20 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <Button variant="ghost" className="w-full justify-start gap-2">
                     <Mail className="h-4 w-4" />
                     Emails
+                  </Button>
+                </Link>
+              )}
+
+              {/* SMS - for owners/admins */}
+              {isOwnerOrAdmin && (
+                <Link
+                  href={`/${slug}/mass-sms`}
+                  prefetch={true}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Button variant="ghost" className="w-full justify-start gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    SMS
                   </Button>
                 </Link>
               )}

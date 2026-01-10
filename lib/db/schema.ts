@@ -68,6 +68,8 @@ export const unions = pgTable('unions', {
   subscriptionStatus: varchar('subscription_status', { length: 20 }),
   monthlyEmailsSent: integer('monthly_emails_sent').notNull().default(0),
   emailUsageResetDate: timestamp('email_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
+  monthlySMSSent: integer('monthly_sms_sent').notNull().default(0),
+  smsUsageResetDate: timestamp('sms_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
   storageUsedBytes: integer('storage_used_bytes').notNull().default(0),
   // Estimated member count collected at signup (for internal tracking only)
   estimatedMemberCount: varchar('estimated_member_count', { length: 50 }),
@@ -598,6 +600,7 @@ export const unionsRelations = relations(unions, ({ one, many }) => ({
   elections: many(elections),
   announcements: many(announcements),
   massEmails: many(massEmails),
+  massSMS: many(massSMS),
   emailDomain: one(unionEmailDomains),
   dues: many(dues),
   duesReceipts: many(duesReceipts),
@@ -858,6 +861,65 @@ export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   }),
   member: one(members, {
     fields: [emailLogs.memberId],
+    references: [members.id],
+  }),
+}));
+
+// Mass SMS System Tables
+export const massSMS = pgTable('mass_sms', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  message: text('message').notNull(),
+  recipientFilter: varchar('recipient_filter', { length: 50 }).notNull(), // 'all', 'approved', 'admin', 'pending', 'rejected', 'custom'
+  customRecipientIds: json('custom_recipient_ids'), // Array of member IDs for custom selection
+  status: varchar('status', { length: 20 }).notNull().default('draft'), // draft, sending, sent, failed
+  totalRecipients: integer('total_recipients'),
+  successCount: integer('success_count').default(0),
+  failureCount: integer('failure_count').default(0),
+  sentAt: timestamp('sent_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const smsLogs = pgTable('sms_logs', {
+  id: serial('id').primaryKey(),
+  massSMSId: integer('mass_sms_id')
+    .notNull()
+    .references(() => massSMS.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  phone: varchar('phone', { length: 20 }).notNull(),
+  status: varchar('status', { length: 20 }).notNull(), // sent, failed, delivered
+  errorMessage: text('error_message'),
+  twilioSid: varchar('twilio_sid', { length: 50 }), // Twilio message SID for tracking
+  sentAt: timestamp('sent_at').notNull().defaultNow(),
+});
+
+export const massSMSRelations = relations(massSMS, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [massSMS.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [massSMS.createdBy],
+    references: [users.id],
+  }),
+  logs: many(smsLogs),
+}));
+
+export const smsLogsRelations = relations(smsLogs, ({ one }) => ({
+  massSMS: one(massSMS, {
+    fields: [smsLogs.massSMSId],
+    references: [massSMS.id],
+  }),
+  member: one(members, {
+    fields: [smsLogs.memberId],
     references: [members.id],
   }),
 }));
@@ -1406,6 +1468,10 @@ export type MassEmail = typeof massEmails.$inferSelect;
 export type NewMassEmail = typeof massEmails.$inferInsert;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type NewEmailLog = typeof emailLogs.$inferInsert;
+export type MassSMS = typeof massSMS.$inferSelect;
+export type NewMassSMS = typeof massSMS.$inferInsert;
+export type SMSLog = typeof smsLogs.$inferSelect;
+export type NewSMSLog = typeof smsLogs.$inferInsert;
 export type Dues = typeof dues.$inferSelect;
 export type NewDues = typeof dues.$inferInsert;
 export type DuesReceipt = typeof duesReceipts.$inferSelect;
