@@ -3,9 +3,36 @@ import { db } from '@/lib/db/drizzle';
 import { contactFormSubmissions, unionContactInfo, unions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { sendEmail } from '@/lib/email/sendgrid';
+import {
+  checkRateLimit,
+  getClientIp,
+  contactFormRateLimit,
+} from '@/lib/utils/rate-limit';
 
 export async function POST(request: Request) {
   try {
+    // Apply rate limiting first to prevent abuse
+    const clientIp = getClientIp(request);
+    const rateLimitResult = checkRateLimit(clientIp, contactFormRateLimit);
+
+    if (!rateLimitResult.success) {
+      const retryAfterSeconds = Math.ceil((rateLimitResult.retryAfterMs || 0) / 1000);
+      return NextResponse.json(
+        {
+          error: 'Too many submissions. Please try again later.',
+          retryAfter: retryAfterSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfterSeconds.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+          },
+        }
+      );
+    }
+
     const { unionId, name, email, phone, subject, message } = await request.json();
 
     if (!unionId || !name || !email || !message) {
