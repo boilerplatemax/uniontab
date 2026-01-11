@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { EditMemberDialog } from './edit-member-dialog';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign } from 'lucide-react';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign, Eye } from 'lucide-react';
 import Link from 'next/link';
 
 interface Member {
@@ -1176,6 +1176,18 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                               )}
                             </Button>
                           )}
+
+                          {/* View Profile button */}
+                          <Link href={`/${slug}/members/${member.member.id}`}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
+                            >
+                              <Eye className="h-4 w-4 sm:mr-1" />
+                              <span className="hidden sm:inline">View</span>
+                            </Button>
+                          </Link>
 
                           {/* Edit button - always visible */}
                           <Button
