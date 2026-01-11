@@ -87,21 +87,61 @@ export const members = pgTable('members', {
   status: varchar('status', { length: 20 }).notNull().default('pending'), // 'pending', 'approved', 'rejected'
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
 
-  // Required fields (collected during sign-up)
-  phone: varchar('phone', { length: 20 }),
+  // Personal Information - Enhanced
+  firstName: varchar('first_name', { length: 100 }),
+  lastName: varchar('last_name', { length: 100 }),
+  middleName: varchar('middle_name', { length: 100 }),
+  preferredName: varchar('preferred_name', { length: 100 }),
+  personalEmail: varchar('personal_email', { length: 255 }),
+  homePhone: varchar('home_phone', { length: 20 }),
+  cellPhone: varchar('cell_phone', { length: 20 }),
+  phone: varchar('phone', { length: 20 }), // Legacy - kept for backward compatibility
+  city: varchar('city', { length: 100 }),
+  province: varchar('province', { length: 100 }),
+  postalCode: varchar('postal_code', { length: 20 }),
+  address: text('address'),
+  dateOfBirth: timestamp('date_of_birth'),
+
+  // Emergency Contact
+  emergencyContactName: varchar('emergency_contact_name', { length: 255 }),
+  emergencyContactPhone: varchar('emergency_contact_phone', { length: 20 }),
+  emergencyContactRelation: varchar('emergency_contact_relation', { length: 100 }),
+
+  // Employment Information - Enhanced
   employer: varchar('employer', { length: 255 }),
   jobTitle: varchar('job_title', { length: 255 }),
   worksite: varchar('worksite', { length: 255 }),
   employmentStatus: varchar('employment_status', { length: 50 }), // 'full-time', 'part-time', 'casual', 'term'
+  startDateWithEmployer: timestamp('start_date_with_employer'),
+  department: varchar('department', { length: 255 }),
+  employeeId: varchar('employee_id', { length: 100 }),
+  shift: varchar('shift', { length: 100 }),
+  supervisor: varchar('supervisor', { length: 255 }),
+  endDateWithEmployer: timestamp('end_date_with_employer'),
+  classification: varchar('classification', { length: 255 }),
+  wageRate: varchar('wage_rate', { length: 50 }),
+  seniorityDate: timestamp('seniority_date'),
 
-  // Optional fields
-  address: text('address'),
-  dateOfBirth: timestamp('date_of_birth'),
+  // Union Information - Enhanced
   memberId: varchar('member_id', { length: 100 }), // Member ID/Number
   membershipStatus: varchar('membership_status', { length: 50 }).default('active'), // 'active', 'inactive', 'retired'
   localChapter: varchar('local_chapter', { length: 255 }),
   bargainingUnit: varchar('bargaining_unit', { length: 255 }),
-  startDateWithEmployer: timestamp('start_date_with_employer'),
+  unionEmail: varchar('union_email', { length: 255 }),
+  votingStatus: varchar('voting_status', { length: 50 }).default('eligible'), // 'eligible', 'ineligible', 'suspended'
+  membershipType: varchar('membership_type', { length: 100 }), // 'full', 'associate', 'retired', 'honorary'
+  joinDate: timestamp('join_date'),
+  seniorityNumber: varchar('seniority_number', { length: 50 }),
+  steward: varchar('steward', { length: 255 }),
+  subUnit: varchar('sub_unit', { length: 255 }),
+
+  // Notification Preferences
+  allowPhoneCalls: boolean('allow_phone_calls').notNull().default(true),
+  allowTextMessages: boolean('allow_text_messages').notNull().default(true),
+  allowEmails: boolean('allow_emails').notNull().default(true),
+  allowPushNotifications: boolean('allow_push_notifications').notNull().default(true),
+  preferredLanguage: varchar('preferred_language', { length: 10 }).default('en'),
+  communicationPreference: varchar('communication_preference', { length: 20 }).default('email'), // 'email', 'text', 'phone'
 
   // Admin-only notes field
   notes: text('notes'), // Only visible to admins/owners
@@ -112,6 +152,92 @@ export const members = pgTable('members', {
 }, (table) => ({
   uniqueUserUnion: unique('idx_members_unique_user_union').on(table.unionId, table.userId),
 }));
+
+// Member Documents Table
+export const memberDocuments = pgTable('member_documents', {
+  id: serial('id').primaryKey(),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  category: varchar('category', { length: 50 }).notNull().default('other'), // 'contract', 'id', 'certification', 'grievance', 'other'
+  fileUrl: text('file_url').notNull(),
+  fileType: varchar('file_type', { length: 50 }),
+  fileSize: integer('file_size'),
+  notes: text('notes'),
+  uploadedAt: timestamp('uploaded_at').notNull().defaultNow(),
+  uploadedBy: integer('uploaded_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
+
+// Member Certifications Table
+export const memberCertifications = pgTable('member_certifications', {
+  id: serial('id').primaryKey(),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  type: varchar('type', { length: 100 }), // 'license', 'certificate', 'training'
+  issuingBody: varchar('issuing_body', { length: 255 }),
+  completedDate: timestamp('completed_date'),
+  expiryDate: timestamp('expiry_date'),
+  documentUrl: text('document_url'),
+  status: varchar('status', { length: 20 }).notNull().default('valid'), // 'valid', 'expired', 'pending_renewal'
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
+
+// Member Positions Table (Executive, Union Positions, Committee Memberships)
+export const memberPositions = pgTable('member_positions', {
+  id: serial('id').primaryKey(),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  positionType: varchar('position_type', { length: 50 }).notNull(), // 'executive', 'union_position', 'committee'
+  title: varchar('title', { length: 255 }).notNull(),
+  area: varchar('area', { length: 255 }),
+  startDate: timestamp('start_date'),
+  endDate: timestamp('end_date'),
+  isCurrent: boolean('is_current').notNull().default(true),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
+
+// Member Notes Table (Multiple timestamped admin notes)
+export const memberNotes = pgTable('member_notes', {
+  id: serial('id').primaryKey(),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  noteType: varchar('note_type', { length: 50 }).default('general'), // 'general', 'warning', 'commendation', 'meeting'
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
 
 export const activityLogs = pgTable('activity_logs', {
   id: serial('id').primaryKey(),
@@ -642,6 +768,74 @@ export const membersRelations = relations(members, ({ one, many }) => ({
   }),
   dues: many(dues),
   duesReceipts: many(duesReceipts),
+  documents: many(memberDocuments),
+  certifications: many(memberCertifications),
+  positions: many(memberPositions),
+  memberNotes: many(memberNotes),
+}));
+
+// Member Documents Relations
+export const memberDocumentsRelations = relations(memberDocuments, ({ one }) => ({
+  member: one(members, {
+    fields: [memberDocuments.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [memberDocuments.unionId],
+    references: [unions.id],
+  }),
+  uploadedBy: one(users, {
+    fields: [memberDocuments.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
+// Member Certifications Relations
+export const memberCertificationsRelations = relations(memberCertifications, ({ one }) => ({
+  member: one(members, {
+    fields: [memberCertifications.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [memberCertifications.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [memberCertifications.createdBy],
+    references: [users.id],
+  }),
+}));
+
+// Member Positions Relations
+export const memberPositionsRelations = relations(memberPositions, ({ one }) => ({
+  member: one(members, {
+    fields: [memberPositions.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [memberPositions.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [memberPositions.createdBy],
+    references: [users.id],
+  }),
+}));
+
+// Member Notes Relations
+export const memberNotesRelations = relations(memberNotes, ({ one }) => ({
+  member: one(members, {
+    fields: [memberNotes.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [memberNotes.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [memberNotes.createdBy],
+    references: [users.id],
+  }),
 }));
 
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
@@ -1430,6 +1624,14 @@ export type Union = typeof unions.$inferSelect;
 export type NewUnion = typeof unions.$inferInsert;
 export type Member = typeof members.$inferSelect;
 export type NewMember = typeof members.$inferInsert;
+export type MemberDocument = typeof memberDocuments.$inferSelect;
+export type NewMemberDocument = typeof memberDocuments.$inferInsert;
+export type MemberCertification = typeof memberCertifications.$inferSelect;
+export type NewMemberCertification = typeof memberCertifications.$inferInsert;
+export type MemberPosition = typeof memberPositions.$inferSelect;
+export type NewMemberPosition = typeof memberPositions.$inferInsert;
+export type MemberNote = typeof memberNotes.$inferSelect;
+export type NewMemberNote = typeof memberNotes.$inferInsert;
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type NewActivityLog = typeof activityLogs.$inferInsert;
 export type Invitation = typeof invitations.$inferSelect;
