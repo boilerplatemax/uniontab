@@ -56,6 +56,8 @@ export function UnionInfoTab({ member, unionId, onUpdate }: UnionInfoTabProps) {
     setSuccess(false);
 
     try {
+      // Destructure to separate memberId (form field) from the rest
+      const { memberId: memberIdNumber, ...restFormData } = formData;
       const response = await fetch('/api/members/update-profile-extended', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,8 +65,8 @@ export function UnionInfoTab({ member, unionId, onUpdate }: UnionInfoTabProps) {
           memberId: member.member.id,
           unionId,
           section: 'union',
-          memberIdNumber: formData.memberId,
-          ...formData,
+          memberIdNumber,
+          ...restFormData,
         }),
       });
 
