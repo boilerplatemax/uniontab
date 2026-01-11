@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -9,13 +10,14 @@ import { sendEmail } from '@/lib/email/sendgrid';
 export const runtime = 'nodejs';
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   try {
-    // Verify user is webmaster
-    const sessionCookie = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
+    // Verify user is webmaster using secure cookies API
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('session')?.value;
 
     if (!sessionCookie) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
