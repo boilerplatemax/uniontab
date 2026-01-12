@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { FileUpload } from '@/components/ui/file-upload';
 import {
   Loader2,
   Plus,
@@ -66,7 +67,8 @@ export function DocumentsTab({
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState<number | null>(null);
   const [error, setError] = useState('');
-  const [file, setFile] = useState<File | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileUrl, setFileUrl] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     category: 'other',
@@ -101,19 +103,17 @@ export function DocumentsTab({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      if (!formData.name) {
-        setFormData((prev) => ({ ...prev, name: selectedFile.name.replace(/\.[^/.]+$/, '') }));
-      }
+  const handleFileSelect = (file: File | null, url?: string) => {
+    setUploadedFile(file);
+    if (url) setFileUrl(url);
+    if (file && !formData.name) {
+      setFormData((prev) => ({ ...prev, name: file.name.replace(/\.[^/.]+$/, '') }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) {
+    if (!uploadedFile || !fileUrl) {
       setError('Please select a file to upload');
       return;
     }
@@ -122,35 +122,19 @@ export function DocumentsTab({
     setError('');
 
     try {
-      // First, upload the file
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
-      uploadFormData.append('unionId', unionId.toString());
-
-      const uploadResponse = await fetch('/api/files/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload file');
-      }
-
-      const uploadData = await uploadResponse.json();
-
-      // Then, create the document record
+      // Create the document record (file already uploaded to Supabase via FileUpload component)
       const response = await fetch('/api/members/documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           memberId: member.member.id,
           unionId,
-          name: formData.name || file.name,
+          name: formData.name || uploadedFile.name,
           category: formData.category,
           notes: formData.notes,
-          fileUrl: uploadData.url,
-          fileType: file.type,
-          fileSize: file.size,
+          fileUrl: fileUrl,
+          fileType: uploadedFile.type,
+          fileSize: uploadedFile.size,
         }),
       });
 
@@ -161,7 +145,8 @@ export function DocumentsTab({
       }
 
       setShowAddDialog(false);
-      setFile(null);
+      setUploadedFile(null);
+      setFileUrl('');
       setFormData({ name: '', category: 'other', notes: '' });
       onUpdate();
     } catch (err: any) {
@@ -283,18 +268,15 @@ export function DocumentsTab({
               <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">{error}</div>
             )}
 
-            <div>
-              <Label htmlFor="file">File</Label>
-              <Input
-                id="file"
-                type="file"
-                onChange={handleFileChange}
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Supported: PDF, Word, Excel, Images (max 10MB)
-              </p>
-            </div>
+            <FileUpload
+              onFileSelect={handleFileSelect}
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp,image/*,application/pdf"
+              maxSize={10}
+              label="File"
+              hint="Click to browse or drag and drop. Supported: PDF, Word, Excel, Images (max 10MB)"
+              bucket="union-files"
+              path={`member-documents/${member.member.id}`}
+            />
 
             <div>
               <Label htmlFor="name">Document Name</Label>
@@ -344,7 +326,7 @@ export function DocumentsTab({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading || !file} className="bg-blue-600 hover:bg-blue-700">
+              <Button type="submit" disabled={loading || !uploadedFile || !fileUrl} className="bg-blue-600 hover:bg-blue-700">
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

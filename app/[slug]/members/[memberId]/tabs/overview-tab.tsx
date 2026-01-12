@@ -10,8 +10,6 @@ import {
   Briefcase,
   Building2,
   Calendar,
-  Award,
-  FileText,
   Users,
   AlertTriangle,
 } from 'lucide-react';
@@ -72,65 +70,6 @@ export function OverviewTab({ member, documents, certifications, positions }: Ov
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-900">Member Overview</h2>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FileText className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{documents.length}</p>
-                <p className="text-sm text-gray-500">Documents</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Award className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{certifications.length}</p>
-                <p className="text-sm text-gray-500">Certifications</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{currentPositions.length}</p>
-                <p className="text-sm text-gray-500">Active Positions</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${expiredCertifications.length > 0 ? 'bg-red-100' : 'bg-gray-100'}`}>
-                <AlertTriangle className={`h-5 w-5 ${expiredCertifications.length > 0 ? 'text-red-600' : 'text-gray-400'}`} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{expiredCertifications.length}</p>
-                <p className="text-sm text-gray-500">Expired Certs</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Contact Information */}

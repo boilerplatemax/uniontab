@@ -129,7 +129,7 @@ export function PersonalInfoTab({ member, unionId, onUpdate }: PersonalInfoTabPr
               id="firstName"
               value={formData.firstName}
               onChange={(e) => updateField('firstName', e.target.value)}
-              placeholder="John"
+              placeholder="First name"
             />
           </div>
           <div>
@@ -138,7 +138,7 @@ export function PersonalInfoTab({ member, unionId, onUpdate }: PersonalInfoTabPr
               id="middleName"
               value={formData.middleName}
               onChange={(e) => updateField('middleName', e.target.value)}
-              placeholder="Robert"
+              placeholder="Middle name"
             />
           </div>
           <div>
@@ -147,7 +147,7 @@ export function PersonalInfoTab({ member, unionId, onUpdate }: PersonalInfoTabPr
               id="lastName"
               value={formData.lastName}
               onChange={(e) => updateField('lastName', e.target.value)}
-              placeholder="Doe"
+              placeholder="Last name"
             />
           </div>
           <div>
@@ -156,7 +156,7 @@ export function PersonalInfoTab({ member, unionId, onUpdate }: PersonalInfoTabPr
               id="preferredName"
               value={formData.preferredName}
               onChange={(e) => updateField('preferredName', e.target.value)}
-              placeholder="Johnny"
+              placeholder="Nickname or preferred name"
             />
           </div>
           <div>
@@ -175,7 +175,7 @@ export function PersonalInfoTab({ member, unionId, onUpdate }: PersonalInfoTabPr
               type="email"
               value={formData.personalEmail}
               onChange={(e) => updateField('personalEmail', e.target.value)}
-              placeholder="john@personal.com"
+              placeholder="email@example.com"
             />
           </div>
         </CardContent>
@@ -278,7 +278,7 @@ export function PersonalInfoTab({ member, unionId, onUpdate }: PersonalInfoTabPr
               id="emergencyContactName"
               value={formData.emergencyContactName}
               onChange={(e) => updateField('emergencyContactName', e.target.value)}
-              placeholder="Jane Doe"
+              placeholder="Full name"
             />
           </div>
           <div>
@@ -288,7 +288,7 @@ export function PersonalInfoTab({ member, unionId, onUpdate }: PersonalInfoTabPr
               type="tel"
               value={formData.emergencyContactPhone}
               onChange={(e) => updateField('emergencyContactPhone', e.target.value)}
-              placeholder="(555) 111-2222"
+              placeholder="(555) 123-4567"
             />
           </div>
           <div>
@@ -297,7 +297,7 @@ export function PersonalInfoTab({ member, unionId, onUpdate }: PersonalInfoTabPr
               id="emergencyContactRelation"
               value={formData.emergencyContactRelation}
               onChange={(e) => updateField('emergencyContactRelation', e.target.value)}
-              placeholder="Spouse"
+              placeholder="e.g., Spouse, Parent, Sibling"
             />
           </div>
         </CardContent>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -99,6 +99,27 @@ export function MemberProfileContent({
   const [positions, setPositions] = useState(initialPositions);
   const [notes, setNotes] = useState(initialNotes);
   const [member, setMember] = useState(memberData);
+
+  // Sync state with props when they change (after router.refresh())
+  useEffect(() => {
+    setDocuments(initialDocuments);
+  }, [initialDocuments]);
+
+  useEffect(() => {
+    setCertifications(initialCertifications);
+  }, [initialCertifications]);
+
+  useEffect(() => {
+    setPositions(initialPositions);
+  }, [initialPositions]);
+
+  useEffect(() => {
+    setNotes(initialNotes);
+  }, [initialNotes]);
+
+  useEffect(() => {
+    setMember(memberData);
+  }, [memberData]);
 
   const displayName = member.user.name || member.user.email;
   const initials = displayName
