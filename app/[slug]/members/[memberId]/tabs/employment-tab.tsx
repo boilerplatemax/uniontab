@@ -226,7 +226,7 @@ export function EmploymentTab({ member, unionId, onUpdate }: EmploymentTabProps)
               id="supervisor"
               value={formData.supervisor}
               onChange={(e) => updateField('supervisor', e.target.value)}
-              placeholder="Manager Name"
+              placeholder="Supervisor name"
             />
           </div>
           <div>

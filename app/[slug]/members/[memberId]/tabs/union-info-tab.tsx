@@ -192,7 +192,7 @@ export function UnionInfoTab({ member, unionId, onUpdate }: UnionInfoTabProps) {
               type="email"
               value={formData.unionEmail}
               onChange={(e) => updateField('unionEmail', e.target.value)}
-              placeholder="john@union.org"
+              placeholder="email@union.org"
             />
           </div>
         </CardContent>
@@ -240,7 +240,7 @@ export function UnionInfoTab({ member, unionId, onUpdate }: UnionInfoTabProps) {
               id="steward"
               value={formData.steward}
               onChange={(e) => updateField('steward', e.target.value)}
-              placeholder="Steward Name"
+              placeholder="Assigned steward"
             />
           </div>
         </CardContent>

@@ -105,7 +105,7 @@ export function UnionMemberSignUp({
                     onChange={(e) =>
                       setFormData({ ...formData, firstName: e.target.value })
                     }
-                    placeholder="John"
+                    placeholder="First name"
                   />
                 </div>
                 <div>
@@ -117,7 +117,7 @@ export function UnionMemberSignUp({
                     onChange={(e) =>
                       setFormData({ ...formData, lastName: e.target.value })
                     }
-                    placeholder="Doe"
+                    placeholder="Last name"
                   />
                 </div>
               </div>
@@ -132,7 +132,7 @@ export function UnionMemberSignUp({
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  placeholder="john.doe@example.com"
+                  placeholder="email@example.com"
                 />
               </div>
 

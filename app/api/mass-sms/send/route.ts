@@ -94,22 +94,32 @@ export async function POST(request: Request) {
     // 'all' filter means no additional conditions
 
     // Get recipients with phone numbers
-    const recipients = await db
+    const allRecipients = await db
       .select({
         memberId: members.id,
         userId: users.id,
         userName: users.name,
         userEmail: users.email,
         phone: members.phone,
+        allowTextMessages: members.allowTextMessages,
       })
       .from(members)
       .innerJoin(users, and(eq(members.userId, users.id), isNull(users.deletedAt)))
       .where(and(...conditions));
 
-    // Filter out recipients with invalid phone numbers
-    const validRecipients = recipients.filter(r => r.phone && isValidPhoneNumber(r.phone));
+    // Filter out recipients with invalid phone numbers or who have opted out of text messages
+    const validRecipients = allRecipients.filter(
+      r => r.phone && isValidPhoneNumber(r.phone) && r.allowTextMessages !== false
+    );
 
     if (validRecipients.length === 0) {
+      const optedOutCount = allRecipients.filter(r => r.allowTextMessages === false).length;
+      if (optedOutCount > 0 && allRecipients.length === optedOutCount) {
+        return NextResponse.json(
+          { error: 'All matching members have opted out of text message communications' },
+          { status: 400 }
+        );
+      }
       return NextResponse.json(
         { error: 'No recipients found with valid phone numbers' },
         { status: 400 }

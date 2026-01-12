@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, Bell, Phone, Mail, MessageSquare, Globe } from 'lucide-react';
+import { Loader2, Save, Bell, Mail, MessageSquare, Globe } from 'lucide-react';
 import type { Member } from '@/lib/db/schema';
 
 interface MemberData {
@@ -29,10 +29,8 @@ export function SettingsTab({ member, unionId, onUpdate }: SettingsTabProps) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
-    allowPhoneCalls: member.member.allowPhoneCalls ?? true,
     allowTextMessages: member.member.allowTextMessages ?? true,
     allowEmails: member.member.allowEmails ?? true,
-    allowPushNotifications: member.member.allowPushNotifications ?? true,
     preferredLanguage: member.member.preferredLanguage || 'en',
     communicationPreference: member.member.communicationPreference || 'email',
   });
@@ -113,55 +111,13 @@ export function SettingsTab({ member, unionId, onUpdate }: SettingsTabProps) {
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Phone className="h-5 w-5 text-gray-400" />
-              <div>
-                <Label htmlFor="allowPhoneCalls" className="font-medium">
-                  Allow Phone Calls
-                </Label>
-                <p className="text-sm text-gray-500">
-                  Member can receive phone calls from the union
-                </p>
-              </div>
-            </div>
-            <Switch
-              id="allowPhoneCalls"
-              checked={formData.allowPhoneCalls}
-              onCheckedChange={(checked) =>
-                setFormData((prev) => ({ ...prev, allowPhoneCalls: checked }))
-              }
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="h-5 w-5 text-gray-400" />
-              <div>
-                <Label htmlFor="allowTextMessages" className="font-medium">
-                  Allow Text Messages
-                </Label>
-                <p className="text-sm text-gray-500">
-                  Member can receive SMS/text messages
-                </p>
-              </div>
-            </div>
-            <Switch
-              id="allowTextMessages"
-              checked={formData.allowTextMessages}
-              onCheckedChange={(checked) =>
-                setFormData((prev) => ({ ...prev, allowTextMessages: checked }))
-              }
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
               <Mail className="h-5 w-5 text-gray-400" />
               <div>
                 <Label htmlFor="allowEmails" className="font-medium">
                   Allow Emails
                 </Label>
                 <p className="text-sm text-gray-500">
-                  Member can receive email communications
+                  Member can receive email communications from the union
                 </p>
               </div>
             </div>
@@ -176,21 +132,21 @@ export function SettingsTab({ member, unionId, onUpdate }: SettingsTabProps) {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Bell className="h-5 w-5 text-gray-400" />
+              <MessageSquare className="h-5 w-5 text-gray-400" />
               <div>
-                <Label htmlFor="allowPushNotifications" className="font-medium">
-                  Allow Push Notifications
+                <Label htmlFor="allowTextMessages" className="font-medium">
+                  Allow Text Messages
                 </Label>
                 <p className="text-sm text-gray-500">
-                  Member can receive push notifications
+                  Member can receive SMS/text messages from the union
                 </p>
               </div>
             </div>
             <Switch
-              id="allowPushNotifications"
-              checked={formData.allowPushNotifications}
+              id="allowTextMessages"
+              checked={formData.allowTextMessages}
               onCheckedChange={(checked) =>
-                setFormData((prev) => ({ ...prev, allowPushNotifications: checked }))
+                setFormData((prev) => ({ ...prev, allowTextMessages: checked }))
               }
             />
           </div>
@@ -223,7 +179,6 @@ export function SettingsTab({ member, unionId, onUpdate }: SettingsTabProps) {
               <SelectContent>
                 <SelectItem value="email">Email</SelectItem>
                 <SelectItem value="text">Text Message</SelectItem>
-                <SelectItem value="phone">Phone Call</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-sm text-gray-500 mt-1">
