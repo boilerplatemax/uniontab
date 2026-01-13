@@ -131,7 +131,6 @@ export function SettingsContent() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
-      setRedirectAfterSave(false);
     }
   };
 
