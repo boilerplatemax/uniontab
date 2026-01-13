@@ -19,7 +19,7 @@ import {
   Palette,
   Check,
   Share2,
-  Home,
+  ArrowLeft,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
@@ -77,7 +77,6 @@ export function SettingsContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [redirectAfterSave, setRedirectAfterSave] = useState(false);
 
   useEffect(() => {
     if (union) {
@@ -122,12 +121,6 @@ export function SettingsContent() {
       // Refresh the router cache to ensure updated data is shown when navigating
       router.refresh();
 
-      // If redirect after save is enabled, go to home page
-      if (redirectAfterSave && union) {
-        router.push(`/${union.slug}`);
-        return;
-      }
-
       setSuccess(true);
       // Scroll to top to show success message
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -164,31 +157,28 @@ export function SettingsContent() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Sticky Save Button */}
+          {/* Sticky Header */}
           <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-200 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-6">
             <div className="flex justify-between items-center">
-              <div className="flex-1">
+              <button
+                type="button"
+                onClick={() => router.push(`/${union.slug}`)}
+                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                <span>return</span>
+              </button>
+              <div className="flex items-center gap-4">
                 {error && (
-                  <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">
+                  <div className="bg-red-50 text-red-700 px-3 py-2 rounded-lg text-sm">
                     {error}
                   </div>
                 )}
                 {success && (
-                  <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm">
-                    Successfully updated union information!
+                  <div className="bg-green-50 text-green-700 px-3 py-2 rounded-lg text-sm">
+                    Saved!
                   </div>
                 )}
-              </div>
-              <div className="flex gap-3 ml-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push(`/${union.slug}`)}
-                  disabled={loading}
-                  size="sm"
-                >
-                  Cancel
-                </Button>
                 <Button
                   type="submit"
                   disabled={loading}
@@ -204,29 +194,6 @@ export function SettingsContent() {
                     <>
                       <Save className="mr-2 h-4 w-4" />
                       Save
-                    </>
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  disabled={loading}
-                  className="bg-green-600 hover:bg-green-700"
-                  size="sm"
-                  onClick={() => {
-                    setRedirectAfterSave(true);
-                    const form = document.querySelector('form');
-                    form?.requestSubmit();
-                  }}
-                >
-                  {loading && redirectAfterSave ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Home className="mr-2 h-4 w-4" />
-                      Save & Home
                     </>
                   )}
                 </Button>
@@ -609,15 +576,15 @@ export function SettingsContent() {
           </Card>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3">
-            <Button
+          <div className="flex justify-between items-center">
+            <button
               type="button"
-              variant="outline"
               onClick={() => router.push(`/${union.slug}`)}
-              disabled={loading}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Cancel
-            </Button>
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              <span>return</span>
+            </button>
             <Button
               type="submit"
               disabled={loading}
@@ -632,28 +599,6 @@ export function SettingsContent() {
                 <>
                   <Save className="mr-2 h-4 w-4" />
                   Save
-                </>
-              )}
-            </Button>
-            <Button
-              type="button"
-              disabled={loading}
-              className="bg-green-600 hover:bg-green-700"
-              onClick={() => {
-                setRedirectAfterSave(true);
-                const form = document.querySelector('form');
-                form?.requestSubmit();
-              }}
-            >
-              {loading && redirectAfterSave ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Home className="mr-2 h-4 w-4" />
-                  Save & Home
                 </>
               )}
             </Button>
