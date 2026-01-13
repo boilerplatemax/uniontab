@@ -295,6 +295,7 @@ export const posts = pgTable('posts', {
   imageUrl: text('image_url'),
   isPrivate: boolean('is_private').notNull().default(false),
   isPinned: boolean('is_pinned').notNull().default(false),
+  authorType: varchar('author_type', { length: 20 }).notNull().default('union'), // 'user' or 'union'
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   createdBy: integer('created_by')

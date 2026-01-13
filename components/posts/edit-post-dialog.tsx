@@ -15,7 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { Loader2, X, File as FileIcon } from 'lucide-react';
+import { Loader2, X, File as FileIcon, User, Building2 } from 'lucide-react';
 
 interface PostAttachment {
   fileName: string;
@@ -30,6 +30,7 @@ interface Post {
   content: string;
   imageUrl: string | null;
   isPrivate: boolean;
+  authorType?: string;
   attachments?: PostAttachment[];
 }
 
@@ -37,6 +38,7 @@ interface EditPostDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   post: Post | null;
+  unionName?: string;
   onSuccess: () => void;
 }
 
@@ -44,6 +46,7 @@ export function EditPostDialog({
   open,
   onOpenChange,
   post,
+  unionName,
   onSuccess,
 }: EditPostDialogProps) {
   const [title, setTitle] = useState('');
@@ -51,6 +54,7 @@ export function EditPostDialog({
   const [imageUrl, setImageUrl] = useState('');
   const [attachments, setAttachments] = useState<PostAttachment[]>([]);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [authorType, setAuthorType] = useState<'user' | 'union'>('union');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -61,6 +65,7 @@ export function EditPostDialog({
       setImageUrl(post.imageUrl || '');
       setAttachments(post.attachments || []);
       setIsPrivate(post.isPrivate);
+      setAuthorType((post.authorType as 'user' | 'union') || 'union');
     }
   }, [post]);
 
@@ -85,6 +90,7 @@ export function EditPostDialog({
           content,
           imageUrl: imageUrl || null,
           isPrivate,
+          authorType,
           attachments,
         }),
       });
@@ -222,6 +228,41 @@ export function EditPostDialog({
                 checked={isPrivate}
                 onCheckedChange={setIsPrivate}
               />
+            </div>
+
+            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+              <div>
+                <Label className="text-base">Post Author</Label>
+                <p className="text-sm text-gray-600">
+                  Choose how the author is displayed on this post
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAuthorType('union')}
+                  className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                    authorType === 'union'
+                      ? 'border-blue-600 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                  }`}
+                >
+                  <Building2 className="h-4 w-4" />
+                  <span className="font-medium">{unionName ? unionName.toUpperCase() : 'Union'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthorType('user')}
+                  className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                    authorType === 'user'
+                      ? 'border-blue-600 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                  }`}
+                >
+                  <User className="h-4 w-4" />
+                  <span className="font-medium">Your Name</span>
+                </button>
+              </div>
             </div>
           </div>
 
