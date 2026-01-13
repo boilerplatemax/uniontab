@@ -8,7 +8,7 @@ import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
 import { SocialMediaIcons } from '@/components/social-media-icons';
 import type { ThemeProps } from './types';
-import { Users, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
 import { DEFAULT_THEME_COLOR, getContrastColor } from '@/lib/utils/color';
 
@@ -127,10 +127,10 @@ export function ModernTheme({
         )}
 
         {/* Hero Content */}
-        <div className="relative max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-12 sm:py-16 lg:py-20">
+        <div className={`relative max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 ${union.coverPhotoUrl ? 'py-12 sm:py-16 lg:py-20' : 'py-8 sm:py-10 lg:py-12'}`}>
           <div className="flex flex-col sm:flex-row items-center sm:items-center gap-6 sm:gap-8">
             {/* Logo - Fixed dimensions to prevent layout shift */}
-            {union.logoUrl ? (
+            {union.logoUrl && (
               <div className="flex-shrink-0">
                 <div
                   className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 backdrop-blur-sm rounded-2xl p-3 shadow-2xl overflow-hidden flex items-center justify-center"
@@ -146,17 +146,6 @@ export function ModernTheme({
                     className="max-h-full max-w-full object-contain"
                   />
                 </div>
-              </div>
-            ) : (
-              <div
-                className="flex-shrink-0 h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32 rounded-2xl backdrop-blur-sm flex items-center justify-center shadow-2xl"
-                style={{
-                  backgroundColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
-                  borderWidth: 2,
-                  borderColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
-                }}
-              >
-                <Users className="h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16" style={{ color: heroTextColor }} />
               </div>
             )}
 

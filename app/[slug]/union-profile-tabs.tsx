@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutList, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -52,6 +52,7 @@ export function UnionProfileTabs({
   const searchParams = useSearchParams();
   const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') || 'posts';
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
+  const [postsView, setPostsView] = useState<'column' | 'grid'>('column');
 
   const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') => {
     const params = new URLSearchParams(searchParams);
@@ -237,6 +238,35 @@ export function UnionProfileTabs({
                     Create Post
                   </Button>
                 )}
+              </>
+            )}
+
+            {/* View toggle for posts (large screens only) */}
+            {activeTab === 'posts' && (
+              <div className={`hidden lg:flex gap-1 ${isOwner ? 'ml-2 border-l pl-2' : ''}`}>
+                <Button
+                  variant={postsView === 'column' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setPostsView('column')}
+                  title="Column view"
+                  className="px-2"
+                >
+                  <LayoutList className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={postsView === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setPostsView('grid')}
+                  title="Grid view"
+                  className="px-2"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
+            {isOwner && (
+              <>
                 {activeTab === 'files' && (
                   <Button
                     size="sm"
@@ -308,7 +338,10 @@ export function UnionProfileTabs({
 
               {/* Posts List */}
               {posts.length > 0 ? (
-                <div className="space-y-4">
+                <div className={postsView === 'grid'
+                  ? 'lg:grid lg:grid-cols-2 xl:grid-cols-3 gap-4 space-y-4 lg:space-y-0'
+                  : 'space-y-4'
+                }>
                   {posts.map((post) => {
                     // Hide private posts from non-approved members
                     if (post.isPrivate && !isApprovedMember) {
@@ -316,30 +349,44 @@ export function UnionProfileTabs({
                     }
 
                     return (
-                      <Card key={post.id} className="shadow-sm hover:shadow-md transition-shadow">
-                        <CardContent className="p-4 sm:p-6">
+                      <Card key={post.id} className={`shadow-sm hover:shadow-md transition-shadow ${postsView === 'grid' ? 'flex flex-col h-full' : ''}`}>
+                        <CardContent className={postsView === 'grid' ? 'p-4 flex flex-col h-full' : 'p-4 sm:p-6'}>
+                          {/* Grid view: Image on top */}
+                          {postsView === 'grid' && post.imageUrl && (
+                            <Link href={`/${union.slug}/post/${post.id}`} className="block -mx-4 -mt-4 mb-4">
+                              <div className="relative aspect-video overflow-hidden rounded-t-lg bg-gray-100">
+                                <img
+                                  src={post.imageUrl}
+                                  alt={post.title}
+                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                  loading="lazy"
+                                />
+                              </div>
+                            </Link>
+                          )}
+
                           {/* Header with title and actions */}
-                          <div className="flex items-start justify-between mb-4">
+                          <div className={`flex items-start justify-between ${postsView === 'grid' ? 'mb-2' : 'mb-4'}`}>
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <Link href={`/${union.slug}/post/${post.id}`} className="flex-1 min-w-0">
-                                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate">
+                                <h3 className={`font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors ${postsView === 'grid' ? 'text-base line-clamp-2' : 'text-lg sm:text-xl truncate'}`}>
                                   {post.title}
                                 </h3>
                               </Link>
                               {(post as any).isPinned && (
                                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1 flex-shrink-0">
                                   <Pin className="h-3 w-3" />
-                                  Pinned
+                                  {postsView !== 'grid' && 'Pinned'}
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                              {post.isPrivate && (
+                            <div className={`flex items-center gap-2 flex-shrink-0 ml-2 ${postsView === 'grid' ? 'gap-1' : ''}`}>
+                              {post.isPrivate && postsView !== 'grid' && (
                                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
                                   Private
                                 </span>
                               )}
-                              {isOwner && (
+                              {isOwner && postsView !== 'grid' && (
                                 <>
                                   <Button
                                     variant="outline"
@@ -377,52 +424,66 @@ export function UnionProfileTabs({
                           </div>
 
                           {/* Content and Image Layout */}
-                          {/* Mobile: Stacked (image on top, text below) */}
-                          {/* Desktop: Text on left, image on right with title above text */}
-                          <div className="mb-4">
-                            {/* Mobile: Image first */}
-                            {post.imageUrl && (
-                              <div className="relative mb-4 sm:hidden rounded-lg overflow-hidden bg-gray-100">
-                                <img
-                                  src={post.imageUrl}
-                                  alt={post.title}
-                                  className="w-full h-auto object-cover"
-                                  loading="lazy"
-                                />
-                              </div>
-                            )}
-
-                            {/* Desktop: Text and Image Side by Side */}
-                            <div className={post.imageUrl ? "sm:flex sm:gap-6 sm:items-start" : ""}>
-                              {/* Content Section - Full width on mobile, left side on desktop */}
-                              <div className="flex-1 min-w-0">
-                                <RichTextContent
-                                  content={post.content}
-                                  className="text-sm sm:text-base line-clamp-6"
-                                />
-                                <Link href={`/${union.slug}/post/${post.id}`}>
-                                  <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700">
-                                    View Full Post →
-                                  </Button>
-                                </Link>
-                              </div>
-
-                              {/* Image Section - Hidden on mobile, right side on desktop */}
+                          {postsView === 'grid' ? (
+                            /* Grid view: Compact content */
+                            <div className="flex-1">
+                              <RichTextContent
+                                content={post.content}
+                                className="text-sm text-gray-600 line-clamp-3"
+                              />
+                              <Link href={`/${union.slug}/post/${post.id}`}>
+                                <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700 text-sm">
+                                  Read more →
+                                </Button>
+                              </Link>
+                            </div>
+                          ) : (
+                            /* Column view: Full content */
+                            <div className="mb-4">
+                              {/* Mobile: Image first */}
                               {post.imageUrl && (
-                                <div className="hidden sm:block sm:w-80 sm:flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                                <div className="relative mb-4 sm:hidden rounded-lg overflow-hidden bg-gray-100">
                                   <img
                                     src={post.imageUrl}
                                     alt={post.title}
-                                    className="w-full h-auto max-h-[250px] object-cover"
+                                    className="w-full h-auto object-cover"
                                     loading="lazy"
                                   />
                                 </div>
                               )}
-                            </div>
-                          </div>
 
-                          {/* Post Attachments */}
-                          {post.attachments && post.attachments.length > 0 && (
+                              {/* Desktop: Text and Image Side by Side */}
+                              <div className={post.imageUrl ? "sm:flex sm:gap-6 sm:items-start" : ""}>
+                                {/* Content Section - Full width on mobile, left side on desktop */}
+                                <div className="flex-1 min-w-0">
+                                  <RichTextContent
+                                    content={post.content}
+                                    className="text-sm sm:text-base line-clamp-6"
+                                  />
+                                  <Link href={`/${union.slug}/post/${post.id}`}>
+                                    <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700">
+                                      View Full Post →
+                                    </Button>
+                                  </Link>
+                                </div>
+
+                                {/* Image Section - Hidden on mobile, right side on desktop */}
+                                {post.imageUrl && (
+                                  <div className="hidden sm:block sm:w-80 sm:flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                                    <img
+                                      src={post.imageUrl}
+                                      alt={post.title}
+                                      className="w-full h-auto max-h-[250px] object-cover"
+                                      loading="lazy"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Post Attachments - hidden in grid view */}
+                          {postsView !== 'grid' && post.attachments && post.attachments.length > 0 && (
                             <div className="mb-4 space-y-2">
                               <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                                 <Paperclip className="h-4 w-4" />
@@ -463,8 +524,16 @@ export function UnionProfileTabs({
                             </div>
                           )}
 
-                          {/* Action Bar - Improved mobile layout */}
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t pt-4 mt-4">
+                          {/* Grid view: Simple attachments indicator */}
+                          {postsView === 'grid' && post.attachments && post.attachments.length > 0 && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
+                              <Paperclip className="h-3 w-3" />
+                              <span>{post.attachments.length} attachment{post.attachments.length > 1 ? 's' : ''}</span>
+                            </div>
+                          )}
+
+                          {/* Action Bar */}
+                          <div className={`flex ${postsView === 'grid' ? 'flex-col gap-2 mt-auto pt-3 border-t' : 'flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t pt-4 mt-4'}`}>
                             <div className="flex items-center gap-3">
                               <LikeButton
                                 postId={post.id}
@@ -472,20 +541,22 @@ export function UnionProfileTabs({
                                 initialCount={(post as any).likeCount || 0}
                                 userId={userId || null}
                               />
-                              <ShareButton
-                                itemType="post"
-                                itemId={post.id}
-                                itemTitle={post.title}
-                                itemUrl={`/${union.slug}/post/${post.id}`}
-                                slug={union.slug}
-                                isOwnerOrAdmin={isOwner}
-                                itemContent={post.content}
-                                itemImageUrl={post.imageUrl || undefined}
-                                itemAttachments={post.attachments}
-                              />
+                              {postsView !== 'grid' && (
+                                <ShareButton
+                                  itemType="post"
+                                  itemId={post.id}
+                                  itemTitle={post.title}
+                                  itemUrl={`/${union.slug}/post/${post.id}`}
+                                  slug={union.slug}
+                                  isOwnerOrAdmin={isOwner}
+                                  itemContent={post.content}
+                                  itemImageUrl={post.imageUrl || undefined}
+                                  itemAttachments={post.attachments}
+                                />
+                              )}
                             </div>
-                            <div className="text-sm text-gray-500">
-                              Posted by {post.createdBy.name} • {formatDate(post.createdAt)}
+                            <div className={`text-gray-500 ${postsView === 'grid' ? 'text-xs' : 'text-sm'}`}>
+                              {postsView === 'grid' ? formatDate(post.createdAt) : `Posted by ${(post as any).authorType === 'user' ? post.createdBy.name : (union.publicName || union.name).toUpperCase()} • ${formatDate(post.createdAt)}`}
                             </div>
                           </div>
                         </CardContent>
@@ -660,12 +731,14 @@ export function UnionProfileTabs({
         onOpenChange={setCreatePostOpen}
         unionId={union.id}
         slug={union.slug}
+        unionName={union.publicName || union.name}
         onSuccess={() => router.refresh()}
       />
       <EditPostDialog
         open={editPostOpen}
         onOpenChange={setEditPostOpen}
         post={selectedPost}
+        unionName={union.publicName || union.name}
         onSuccess={() => router.refresh()}
       />
       <UploadFileDialog

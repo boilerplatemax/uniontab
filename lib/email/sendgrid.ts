@@ -243,7 +243,8 @@ export async function sendEmailVerification(
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const verificationUrl = `${baseUrl}/auth/verify-email?token=${verificationToken}`;
 
-  const unionName = unionInfo ? `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}` : 'UnionTab';
+  const unionNameRaw = unionInfo ? `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}` : 'UnionTab';
+  const unionName = unionInfo ? unionNameRaw.toUpperCase() : unionNameRaw;
   const subject = `Verify Your Email - ${unionName}`;
 
   const text = `
@@ -367,7 +368,7 @@ export async function sendMembershipApprovalEmail(
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const unionUrl = `${baseUrl}/${unionInfo.slug}`;
 
-  const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
+  const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`.toUpperCase();
   const subject = `Membership Approved - ${unionName}`;
 
   const text = `

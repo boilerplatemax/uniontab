@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { EditMemberDialog } from './edit-member-dialog';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign, Eye } from 'lucide-react';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign, Eye, Phone } from 'lucide-react';
 import Link from 'next/link';
 
 interface Member {
@@ -21,6 +21,8 @@ interface Member {
     status: string;
     joinedAt: Date;
     phone: string | null;
+    cellPhone: string | null;
+    homePhone: string | null;
     employer: string | null;
     jobTitle: string | null;
     worksite: string | null;
@@ -107,6 +109,10 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const getMemberPhone = (member: Member['member']) => {
+    return member.cellPhone || member.homePhone || member.phone || null;
   };
 
   // Get unique values for filter dropdowns
@@ -759,37 +765,6 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                   <Download className="h-4 w-4" />
                   Export CSV
                 </Button>
-                <label>
-                  <input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleImportCSV}
-                    className="hidden"
-                    disabled={isImporting}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={isImporting}
-                    className="gap-2"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      (e.currentTarget.parentElement?.querySelector('input[type="file"]') as HTMLInputElement)?.click();
-                    }}
-                  >
-                    {isImporting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Importing...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="h-4 w-4" />
-                        Import CSV
-                      </>
-                    )}
-                  </Button>
-                </label>
               </div>
             )}
           </div>
@@ -1070,8 +1045,21 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                             {getUserDisplayName(member.user)}
                           </p>
                           <p className="text-xs sm:text-sm text-gray-600 truncate">{member.user.email}</p>
+                          {getMemberPhone(member.member) && (
+                            <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                              <Phone className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{getMemberPhone(member.member)}</span>
+                            </div>
+                          )}
                           <span className="text-xs text-gray-500 sm:hidden">
-                            Joined {formatDate(member.member.joinedAt)}
+                            {getMemberPhone(member.member) ? (
+                              <span className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                {getMemberPhone(member.member)}
+                              </span>
+                            ) : (
+                              `Joined ${formatDate(member.member.joinedAt)}`
+                            )}
                           </span>
                         </div>
                       </div>

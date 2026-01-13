@@ -81,17 +81,20 @@ export function DefaultTheme({
 
       {/* Cover Photo - Facebook style */}
       <div className="relative bg-white">
-        <div className="relative h-[300px] sm:h-[400px] bg-gradient-to-r from-blue-600 to-blue-700 overflow-hidden">
-          {union.coverPhotoUrl ? (
+        <div
+          className={`relative overflow-hidden ${union.coverPhotoUrl ? 'h-[300px] sm:h-[400px]' : 'h-[120px] sm:h-[150px]'}`}
+          style={{
+            background: union.coverPhotoUrl
+              ? undefined
+              : `linear-gradient(135deg, ${union.themeColor || '#2563eb'} 0%, ${union.themeColor || '#2563eb'}dd 50%, ${union.themeColor || '#2563eb'}bb 100%)`
+          }}
+        >
+          {union.coverPhotoUrl && (
             <img
               src={union.coverPhotoUrl}
               alt={`${union.name} cover`}
               className="w-full h-full object-cover"
             />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <Users className="h-32 w-32 text-white/30" />
-            </div>
           )}
 
           {/* Edit Button for Owners/Admins */}
@@ -108,12 +111,12 @@ export function DefaultTheme({
       </div>
 
       {/* Profile Section - Facebook style */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${union.coverPhotoUrl ? '-mt-20' : '-mt-10 sm:-mt-12'}`}>
         <div className="bg-white rounded-lg shadow-sm pb-4">
           {/* Logo and Name */}
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 px-6 pt-6">
             {/* Logo - Overlapping cover photo with fixed dimensions to prevent layout shift */}
-            <div className="flex-shrink-0 -mt-8 sm:-mt-16 relative z-20">
+            <div className={`flex-shrink-0 relative z-20 ${union.coverPhotoUrl ? '-mt-8 sm:-mt-16' : '-mt-4 sm:-mt-8'}`}>
               {union.logoUrl ? (
                 <div className="relative w-32 h-32 sm:w-40 sm:h-40 bg-white rounded-xl border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">
                   <img
