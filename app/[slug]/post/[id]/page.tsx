@@ -37,6 +37,7 @@ async function getPost(postId: number, userId?: number) {
       isPinned: posts.isPinned,
       createdAt: posts.createdAt,
       updatedAt: posts.updatedAt,
+      authorType: posts.authorType,
       createdBy: {
         id: users.id,
         name: users.name,
@@ -241,7 +242,7 @@ export default async function PostPage({
                   />
                 </div>
                 <div className="text-sm text-gray-500">
-                  Posted by {post.createdBy.name} •{' '}
+                  Posted by {post.authorType === 'user' ? post.createdBy.name : `${(union.publicName || union.name).toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`} •{' '}
                   {formatDate(post.createdAt)}
                 </div>
               </div>

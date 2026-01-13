@@ -151,8 +151,8 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     const existingUnion = existingUserWithUnion[0].union;
     if (existingUnion) {
       const unionDisplay = existingUnion.localNumber
-        ? `${existingUnion.name} ${existingUnion.localNumber}`
-        : existingUnion.name;
+        ? `${existingUnion.name.toUpperCase()} ${existingUnion.localNumber}`
+        : existingUnion.name.toUpperCase();
       return {
         error: `This email is already associated with ${unionDisplay}. Please sign in instead, or use a different email.`,
         email,
