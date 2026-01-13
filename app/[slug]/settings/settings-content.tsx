@@ -19,6 +19,7 @@ import {
   Palette,
   Check,
   Share2,
+  Home,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
@@ -76,6 +77,7 @@ export function SettingsContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [redirectAfterSave, setRedirectAfterSave] = useState(false);
 
   useEffect(() => {
     if (union) {
@@ -119,6 +121,13 @@ export function SettingsContent() {
       await mutate();
       // Refresh the router cache to ensure updated data is shown when navigating
       router.refresh();
+
+      // If redirect after save is enabled, go to home page
+      if (redirectAfterSave && union) {
+        router.push(`/${union.slug}`);
+        return;
+      }
+
       setSuccess(true);
       // Scroll to top to show success message
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -129,6 +138,7 @@ export function SettingsContent() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
+      setRedirectAfterSave(false);
     }
   };
 
@@ -193,7 +203,30 @@ export function SettingsContent() {
                   ) : (
                     <>
                       <Save className="mr-2 h-4 w-4" />
-                      Save Changes
+                      Save
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  disabled={loading}
+                  className="bg-green-600 hover:bg-green-700"
+                  size="sm"
+                  onClick={() => {
+                    setRedirectAfterSave(true);
+                    const form = document.querySelector('form');
+                    form?.requestSubmit();
+                  }}
+                >
+                  {loading && redirectAfterSave ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Home className="mr-2 h-4 w-4" />
+                      Save & Home
                     </>
                   )}
                 </Button>
@@ -440,14 +473,14 @@ export function SettingsContent() {
                         Reset to Default
                       </Button>
                     </div>
-                    <div
-                      className="h-10 rounded-lg flex items-center justify-center text-sm font-medium"
-                      style={{
-                        backgroundColor: formData.themeColor,
-                        color: getContrastColor(formData.themeColor)
-                      }}
-                    >
-                      Preview Banner
+                    <div className="space-y-1">
+                      <span className="text-xs text-gray-500">Color preview:</span>
+                      <div
+                        className="h-8 rounded"
+                        style={{
+                          backgroundColor: formData.themeColor,
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -598,7 +631,29 @@ export function SettingsContent() {
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                  Save
+                </>
+              )}
+            </Button>
+            <Button
+              type="button"
+              disabled={loading}
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => {
+                setRedirectAfterSave(true);
+                const form = document.querySelector('form');
+                form?.requestSubmit();
+              }}
+            >
+              {loading && redirectAfterSave ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Home className="mr-2 h-4 w-4" />
+                  Save & Home
                 </>
               )}
             </Button>

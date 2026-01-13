@@ -556,7 +556,7 @@ export function UnionProfileTabs({
                               )}
                             </div>
                             <div className={`text-gray-500 ${postsView === 'grid' ? 'text-xs' : 'text-sm'}`}>
-                              {postsView === 'grid' ? formatDate(post.createdAt) : `Posted by ${(post as any).authorType === 'user' ? post.createdBy.name : (union.publicName || union.name).toUpperCase()} • ${formatDate(post.createdAt)}`}
+                              {postsView === 'grid' ? formatDate(post.createdAt) : `Posted by ${(post as any).authorType === 'user' ? post.createdBy.name : `${(union.publicName || union.name).toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`} • ${formatDate(post.createdAt)}`}
                             </div>
                           </div>
                         </CardContent>
