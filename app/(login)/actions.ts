@@ -278,7 +278,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
     if (existingUnion) {
       return {
-        error: `A union with the name "${unionName}"${localNumber ? ` and local number "${localNumber}"` : ''} already exists. Please choose a different combination, or email info@uniontab.com if you believe someone has taken your union's name.`,
+        error: `A union with the name "${unionName.toUpperCase()}"${localNumber ? ` and local number "${localNumber}"` : ''} already exists. Please choose a different combination, or email info@uniontab.com if you believe someone has taken your union's name.`,
         email,
         password
       };
