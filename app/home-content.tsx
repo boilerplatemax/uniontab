@@ -81,6 +81,11 @@ export default function HomePage() {
                   Pricing
                 </Button>
               </Link>
+              <Link href="/blogs" className="hidden sm:block">
+                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  Blog
+                </Button>
+              </Link>
               <Link href="/login">
                 <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
                   Find Your Union

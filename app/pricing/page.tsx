@@ -52,7 +52,7 @@ const pricingPlans: PricingPlan[] = [
     gradient: "from-gray-500 to-gray-600",
     borderColor: "border-gray-200 hover:border-gray-300",
     features: [
-      { name: "Members", included: true, limit: "Up to 50 members" },
+      { name: "Members", included: true, limit: "Up to 150 members" },
       { name: "Email Messages", included: true, limit: "100/month" },
       { name: "SMS Messages", included: true, limit: "50/month" },
       { name: "Elections", included: true, limit: "2/year" },
@@ -70,7 +70,7 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Base",
-    price: "$49",
+    price: "$149",
     interval: "month",
     description: "For growing unions with more members",
     icon: <Zap className="h-6 w-6" />,
@@ -80,7 +80,7 @@ const pricingPlans: PricingPlan[] = [
     features: [
       { name: "Members", included: true, limit: "Up to 500 members" },
       { name: "Email Messages", included: true, limit: "2,500/month" },
-      { name: "SMS Messages", included: true, limit: "500/month" },
+      { name: "SMS Messages", included: true, limit: "1,500/month" },
       { name: "Elections", included: true, limit: "Unlimited" },
       { name: "Storage", included: true, limit: "10 GB" },
       { name: "Custom Pages", included: true, limit: "Unlimited" },
@@ -96,16 +96,16 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Plus",
-    price: "$149",
+    price: "$249",
     interval: "month",
     description: "For large unions with advanced needs",
     icon: <Crown className="h-6 w-6" />,
     gradient: "from-purple-500 to-pink-600",
     borderColor: "border-purple-200 hover:border-purple-400",
     features: [
-      { name: "Members", included: true, limit: "Unlimited" },
+      { name: "Members", included: true, limit: "Up to 2,000 members" },
       { name: "Email Messages", included: true, limit: "10,000/month" },
-      { name: "SMS Messages", included: true, limit: "2,500/month" },
+      { name: "SMS Messages", included: true, limit: "4,000/month" },
       { name: "Elections", included: true, limit: "Unlimited" },
       { name: "Storage", included: true, limit: "30 GB" },
       { name: "Custom Pages", included: true, limit: "Unlimited" },
@@ -151,6 +151,11 @@ export default function PricingPage() {
               <Link href="/pricing">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
                   Pricing
+                </Button>
+              </Link>
+              <Link href="/blogs">
+                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  Blog
                 </Button>
               </Link>
               <Link href="/sign-in">
@@ -296,9 +301,9 @@ export default function PricingPage() {
             </div>
 
             {[
-              { feature: "Members", free: "50", base: "500", plus: "Unlimited" },
+              { feature: "Members", free: "150", base: "500", plus: "2,000" },
               { feature: "Email/month", free: "100", base: "2,500", plus: "10,000" },
-              { feature: "SMS/month", free: "50", base: "500", plus: "2,500" },
+              { feature: "SMS/month", free: "50", base: "1,500", plus: "4,000" },
               { feature: "Elections", free: "2/year", base: "Unlimited", plus: "Unlimited" },
               { feature: "Storage", free: "1 GB", base: "10 GB", plus: "30 GB" },
               { feature: "Custom Pages", free: "5", base: "Unlimited", plus: "Unlimited" },

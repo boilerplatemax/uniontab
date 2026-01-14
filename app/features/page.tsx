@@ -93,6 +93,11 @@ export default function FeaturesPage() {
                   Pricing
                 </Button>
               </Link>
+              <Link href="/blogs" className="hidden sm:block">
+                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  Blog
+                </Button>
+              </Link>
               <Link href="/sign-in">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
                   Sign In

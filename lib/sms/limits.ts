@@ -8,8 +8,8 @@ import { eq } from 'drizzle-orm';
  */
 export const SMS_LIMITS = {
   FREE: 0,         // Free accounts cannot send SMS
-  BASE: 10,        // Base plan - 10 SMS/month
-  PREMIUM: 25,     // Premium/Plus plan - 25 SMS/month
+  BASE: 1500,      // Base plan ($149) - 1,500 SMS/month
+  PREMIUM: 4000,   // Premium/Plus plan ($249) - 4,000 SMS/month
 } as const;
 
 /**
