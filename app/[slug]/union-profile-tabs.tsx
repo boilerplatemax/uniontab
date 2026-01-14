@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutList, LayoutGrid, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -54,6 +54,21 @@ export function UnionProfileTabs({
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
   const [postsView, setPostsView] = useState<'column' | 'grid'>('column');
   const [resourcesDropdownOpen, setResourcesDropdownOpen] = useState(false);
+  const resourcesDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (resourcesDropdownRef.current && !resourcesDropdownRef.current.contains(event.target as Node)) {
+        setResourcesDropdownOpen(false);
+      }
+    }
+
+    if (resourcesDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [resourcesDropdownOpen]);
 
   // Check if Resources dropdown should show as active (any resource tab is selected)
   const isResourcesActive = activeTab === 'files' || activeTab === 'events' || activeTab === 'elections';
@@ -244,10 +259,9 @@ export function UnionProfileTabs({
               </button>
 
               {/* Resources Dropdown */}
-              <div className="relative">
+              <div className="relative" ref={resourcesDropdownRef}>
                 <button
                   onClick={() => setResourcesDropdownOpen(!resourcesDropdownOpen)}
-                  onBlur={() => setTimeout(() => setResourcesDropdownOpen(false), 150)}
                   className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base flex items-center gap-1 ${
                     isResourcesActive
                       ? 'text-blue-600 border-b-2 border-blue-600'
