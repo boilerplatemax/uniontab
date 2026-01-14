@@ -325,8 +325,8 @@ export function MassSMSContent({ slug, union, members }: MassSMSContentProps) {
                   <div className="text-sm text-amber-800">
                     <p className="font-medium">Plan SMS Limits:</p>
                     <ul className="mt-2 space-y-1">
-                      <li>Base Plan: 10 SMS/month</li>
-                      <li>Plus Plan: 25 SMS/month</li>
+                      <li>Base Plan ($149/month): 1,500 SMS/month</li>
+                      <li>Plus Plan ($249/month): 4,000 SMS/month</li>
                     </ul>
                   </div>
                   <Link href={`/${slug}/billing`}>
