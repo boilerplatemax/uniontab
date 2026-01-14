@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutList, LayoutGrid, ChevronDown } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutList, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -53,25 +53,6 @@ export function UnionProfileTabs({
   const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') || 'posts';
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
   const [postsView, setPostsView] = useState<'column' | 'grid'>('column');
-  const [resourcesDropdownOpen, setResourcesDropdownOpen] = useState(false);
-  const resourcesDropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (resourcesDropdownRef.current && !resourcesDropdownRef.current.contains(event.target as Node)) {
-        setResourcesDropdownOpen(false);
-      }
-    }
-
-    if (resourcesDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [resourcesDropdownOpen]);
-
-  // Check if Resources dropdown should show as active (any resource tab is selected)
-  const isResourcesActive = activeTab === 'files' || activeTab === 'events' || activeTab === 'elections';
 
   const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') => {
     const params = new URLSearchParams(searchParams);
@@ -210,21 +191,6 @@ export function UnionProfileTabs({
     }
   };
 
-  // Main tabs (News, About, Resources dropdown, Contact)
-  const mainTabs = [
-    { id: 'posts' as const, label: 'News' },
-    { id: 'about' as const, label: 'About' },
-  ];
-
-  // Resources dropdown items
-  const resourceTabs = [
-    { id: 'files' as const, label: 'Files' },
-    { id: 'events' as const, label: 'Events' },
-    ...(isApprovedMember ? [{ id: 'elections' as const, label: 'Elections' }] : []),
-  ];
-
-  // Get label for currently selected resource tab (for dropdown button text on mobile)
-  const activeResourceLabel = resourceTabs.find(t => t.id === activeTab)?.label;
 
   return (
     <div className="space-y-4">
@@ -258,42 +224,43 @@ export function UnionProfileTabs({
                 About
               </button>
 
-              {/* Resources Dropdown */}
-              <div className="relative" ref={resourcesDropdownRef}>
+              {/* Files Tab */}
+              <button
+                onClick={() => setActiveTab('files')}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === 'files'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Files
+              </button>
+
+              {/* Elections Tab (only for approved members) */}
+              {isApprovedMember && (
                 <button
-                  onClick={() => setResourcesDropdownOpen(!resourcesDropdownOpen)}
-                  className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base flex items-center gap-1 ${
-                    isResourcesActive
+                  onClick={() => setActiveTab('elections')}
+                  className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                    activeTab === 'elections'
                       ? 'text-blue-600 border-b-2 border-blue-600'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  {isResourcesActive ? activeResourceLabel : 'Resources'}
-                  <ChevronDown className={`h-4 w-4 transition-transform ${resourcesDropdownOpen ? 'rotate-180' : ''}`} />
+                  Elections
                 </button>
+              )}
 
-                {/* Dropdown Menu */}
-                {resourcesDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg py-1 min-w-[140px] z-50">
-                    {resourceTabs.map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => {
-                          setActiveTab(tab.id);
-                          setResourcesDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                          activeTab === tab.id
-                            ? 'bg-blue-50 text-blue-600 font-semibold'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {/* Events Tab */}
+              <button
+                onClick={() => setActiveTab('events')}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === 'events'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Events
+              </button>
 
               {/* Contact Tab */}
               <button
