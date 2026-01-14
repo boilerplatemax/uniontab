@@ -71,9 +71,9 @@ export default function HomePage() {
               </span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">
-              <Link href="/blogs" className="hidden sm:block">
+              <Link href="/features" className="hidden sm:block">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Blog
+                  Features
                 </Button>
               </Link>
               <Link href="/pricing" className="hidden sm:block">
@@ -111,20 +111,14 @@ export default function HomePage() {
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 className="space-y-6"
               >
-                <div className="inline-block">
-                  <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold inline-flex items-center gap-2">
-                    <Zap className="h-4 w-4" />
-                    Built for Union Executives
-                  </div>
-                </div>
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                  Empower Your Union with
+                  Your Union,
                   <span className="block mt-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    Modern Digital Tools
+                    Simplified
                   </span>
                 </h1>
-                <p className="text-xl text-gray-600 leading-relaxed">
-                  The all-in-one platform that helps union leaders communicate with members, manage elections, and strengthen solidarity—all in one beautiful, secure place.
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  One platform for member communications, elections, and organizing.
                 </p>
               </motion.div>
 
@@ -133,19 +127,19 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="grid grid-cols-3 gap-6 pt-4"
+                className="flex gap-8 pt-4"
               >
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">100+</div>
-                  <div className="text-sm text-gray-600 mt-1">Active Unions</div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-600">100+</div>
+                  <div className="text-sm text-gray-600">Unions</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-indigo-600">50K+</div>
-                  <div className="text-sm text-gray-600 mt-1">Members</div>
+                <div>
+                  <div className="text-2xl font-bold text-indigo-600">50K+</div>
+                  <div className="text-sm text-gray-600">Members</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">99.9%</div>
-                  <div className="text-sm text-gray-600 mt-1">Uptime</div>
+                <div>
+                  <div className="text-2xl font-bold text-purple-600">99.9%</div>
+                  <div className="text-sm text-gray-600">Uptime</div>
                 </div>
               </motion.div>
             </div>
@@ -157,25 +151,18 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="lg:pl-8"
             >
-              <Card className="shadow-2xl border-2 border-blue-100 bg-white/80 backdrop-blur-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl" />
-                <CardContent className="p-8 relative">
-                  <div className="space-y-6">
+              <Card className="shadow-2xl border-2 border-blue-100 bg-white relative overflow-hidden">
+                <CardContent className="p-6 sm:p-8">
+                  <div className="space-y-5">
                     <div className="text-center space-y-2">
-                      <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mb-4 shadow-lg">
-                        <Users className="h-8 w-8 text-white" />
-                      </div>
-                      <h2 className="text-3xl font-bold text-gray-900">
+                      <h2 className="text-2xl font-bold text-gray-900">
                         Start Free Today
                       </h2>
-                      <p className="text-gray-600">
-                        Join union executives who trust UnionTab
-                      </p>
                     </div>
 
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="unionName" className="text-gray-700 font-semibold">
+                        <Label htmlFor="unionName" className="text-gray-700 font-medium">
                           Union Name *
                         </Label>
                         <Input
@@ -189,8 +176,8 @@ export default function HomePage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="localNumber" className="text-gray-700 font-semibold">
-                          Local Number
+                        <Label htmlFor="localNumber" className="text-gray-700 font-medium">
+                          Local Number <span className="text-gray-400 font-normal">(optional)</span>
                         </Label>
                         <Input
                           id="localNumber"
@@ -199,40 +186,20 @@ export default function HomePage() {
                           onChange={(e) => setLocalNumber(e.target.value)}
                           className="h-12 text-base border-2 focus:border-blue-500 transition-colors"
                         />
-                        <p className="text-xs text-gray-500">
-                          Optional - Add if applicable
-                        </p>
                       </div>
 
                       <Button
                         onClick={handleGetStarted}
-                        className="w-full h-14 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]"
+                        className="w-full h-12 text-base bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
                         size="lg"
                       >
-                        Start Building Your Site
+                        Get Started
                         <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
 
-                      <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                        <Shield className="h-4 w-4 text-green-600" />
-                        <span>Free forever · No credit card required</span>
-                      </div>
-                    </div>
-
-                    {/* Trust indicators */}
-                    <div className="pt-6 border-t space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Zap className="h-4 w-4 text-blue-600" />
-                        <span>Setup in under 5 minutes</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Lock className="h-4 w-4 text-blue-600" />
-                        <span>Bank-level security & encryption</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Users className="h-4 w-4 text-blue-600" />
-                        <span>Dedicated support for executives</span>
-                      </div>
+                      <p className="text-center text-sm text-gray-500">
+                        Free forever · No credit card required
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -583,6 +550,11 @@ export default function HomePage() {
               <h4 className="font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
                 <li>
+                  <Link href="/features" className="hover:text-white transition-colors">
+                    Features
+                  </Link>
+                </li>
+                <li>
                   <Link href="/pricing" className="hover:text-white transition-colors">
                     Pricing
                   </Link>
@@ -590,11 +562,6 @@ export default function HomePage() {
                 <li>
                   <Link href="/blogs" className="hover:text-white transition-colors">
                     Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/sign-up" className="hover:text-white transition-colors">
-                    Get Started
                   </Link>
                 </li>
               </ul>

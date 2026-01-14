@@ -143,9 +143,9 @@ export default function PricingPage() {
               </span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">
-              <Link href="/blogs">
+              <Link href="/features">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Blog
+                  Features
                 </Button>
               </Link>
               <Link href="/pricing">
@@ -423,6 +423,11 @@ export default function PricingPage() {
               <h4 className="font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
                 <li>
+                  <Link href="/features" className="hover:text-white transition-colors">
+                    Features
+                  </Link>
+                </li>
+                <li>
                   <Link href="/pricing" className="hover:text-white transition-colors">
                     Pricing
                   </Link>
@@ -430,11 +435,6 @@ export default function PricingPage() {
                 <li>
                   <Link href="/blogs" className="hover:text-white transition-colors">
                     Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/sign-up" className="hover:text-white transition-colors">
-                    Get Started
                   </Link>
                 </li>
               </ul>
