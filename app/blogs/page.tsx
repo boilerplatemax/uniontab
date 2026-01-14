@@ -34,7 +34,7 @@ export default function BlogsPage() {
       <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/info" className="flex items-center hover:opacity-80 transition-opacity group">
+            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity group">
               <div className="relative">
                 <Users className="h-8 w-8 text-blue-600 group-hover:scale-110 transition-transform" />
                 <div className="absolute -inset-1 bg-blue-600/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
