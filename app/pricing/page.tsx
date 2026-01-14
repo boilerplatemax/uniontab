@@ -54,7 +54,7 @@ const pricingPlans: PricingPlan[] = [
     features: [
       { name: "Members", included: true, limit: "Up to 150 members" },
       { name: "Email Messages", included: true, limit: "100/month" },
-      { name: "SMS Messages", included: true, limit: "50/month" },
+      { name: "SMS Messages", included: false, limit: "Not included" },
       { name: "Elections", included: true, limit: "2/year" },
       { name: "Storage", included: true, limit: "1 GB" },
       { name: "Custom Pages", included: true, limit: "5 pages" },
@@ -303,7 +303,7 @@ export default function PricingPage() {
             {[
               { feature: "Members", free: "150", base: "500", plus: "2,000" },
               { feature: "Email/month", free: "100", base: "2,500", plus: "10,000" },
-              { feature: "SMS/month", free: "50", base: "1,500", plus: "4,000" },
+              { feature: "SMS/month", free: "Not included", base: "1,500", plus: "4,000" },
               { feature: "Elections", free: "2/year", base: "Unlimited", plus: "Unlimited" },
               { feature: "Storage", free: "1 GB", base: "10 GB", plus: "30 GB" },
               { feature: "Custom Pages", free: "5", base: "Unlimited", plus: "Unlimited" },

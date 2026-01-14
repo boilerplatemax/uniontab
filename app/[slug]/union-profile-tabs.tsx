@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutList, LayoutGrid } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutList, LayoutGrid, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -53,6 +53,10 @@ export function UnionProfileTabs({
   const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') || 'posts';
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
   const [postsView, setPostsView] = useState<'column' | 'grid'>('column');
+  const [resourcesDropdownOpen, setResourcesDropdownOpen] = useState(false);
+
+  // Check if Resources dropdown should show as active (any resource tab is selected)
+  const isResourcesActive = activeTab === 'files' || activeTab === 'events' || activeTab === 'elections';
 
   const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') => {
     const params = new URLSearchParams(searchParams);
@@ -191,14 +195,21 @@ export function UnionProfileTabs({
     }
   };
 
-  const tabs = [
-    { id: 'posts' as const, label: 'Posts' },
+  // Main tabs (News, About, Resources dropdown, Contact)
+  const mainTabs = [
+    { id: 'posts' as const, label: 'News' },
     { id: 'about' as const, label: 'About' },
-    { id: 'contact' as const, label: 'Contact' },
+  ];
+
+  // Resources dropdown items
+  const resourceTabs = [
     { id: 'files' as const, label: 'Files' },
     { id: 'events' as const, label: 'Events' },
     ...(isApprovedMember ? [{ id: 'elections' as const, label: 'Elections' }] : []),
   ];
+
+  // Get label for currently selected resource tab (for dropdown button text on mobile)
+  const activeResourceLabel = resourceTabs.find(t => t.id === activeTab)?.label;
 
   return (
     <div className="space-y-4">
@@ -208,19 +219,79 @@ export function UnionProfileTabs({
         <div className="flex items-center justify-between">
           <div className="flex-1 overflow-x-auto scrollbar-hide">
             <div className="flex gap-1 sm:gap-2 px-4 sm:px-6 pt-2 min-w-max">
-              {tabs.map((tab) => (
+              {/* News Tab */}
+              <button
+                onClick={() => setActiveTab('posts')}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === 'posts'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                News
+              </button>
+
+              {/* About Tab */}
+              <button
+                onClick={() => setActiveTab('about')}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === 'about'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                About
+              </button>
+
+              {/* Resources Dropdown */}
+              <div className="relative">
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                    activeTab === tab.id
+                  onClick={() => setResourcesDropdownOpen(!resourcesDropdownOpen)}
+                  onBlur={() => setTimeout(() => setResourcesDropdownOpen(false), 150)}
+                  className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base flex items-center gap-1 ${
+                    isResourcesActive
                       ? 'text-blue-600 border-b-2 border-blue-600'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  {tab.label}
+                  {isResourcesActive ? activeResourceLabel : 'Resources'}
+                  <ChevronDown className={`h-4 w-4 transition-transform ${resourcesDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
-              ))}
+
+                {/* Dropdown Menu */}
+                {resourcesDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg py-1 min-w-[140px] z-50">
+                    {resourceTabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          setResourcesDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                          activeTab === tab.id
+                            ? 'bg-blue-50 text-blue-600 font-semibold'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Contact Tab */}
+              <button
+                onClick={() => setActiveTab('contact')}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === 'contact'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Contact
+              </button>
             </div>
           </div>
 

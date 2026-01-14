@@ -114,7 +114,7 @@ export function ModernTheme({
         {isOwner && (
           <Link
             href={`/${slug}/settings`}
-            className="absolute top-4 right-4 backdrop-blur-sm p-3 rounded-lg shadow-lg transition-all hover:scale-105 group"
+            className="absolute top-4 right-4 z-30 backdrop-blur-sm p-3 rounded-lg shadow-lg transition-all hover:scale-105 group"
             style={{
               backgroundColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
               borderWidth: 1,

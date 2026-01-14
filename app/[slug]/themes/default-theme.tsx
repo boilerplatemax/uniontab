@@ -101,7 +101,7 @@ export function DefaultTheme({
           {isOwner && (
             <Link
               href={`/${slug}/settings`}
-              className="absolute bottom-4 right-4 bg-white/90 hover:bg-white backdrop-blur-sm p-3 rounded-lg shadow-lg transition-all hover:scale-105 group"
+              className="absolute bottom-4 right-4 z-30 bg-white/90 hover:bg-white backdrop-blur-sm p-3 rounded-lg shadow-lg transition-all hover:scale-105 group"
               title="Edit banner and settings"
             >
               <Settings className="h-5 w-5 text-gray-700 group-hover:text-blue-600 transition-colors" />
@@ -193,7 +193,7 @@ export function DefaultTheme({
 
           {/* Social Icons in Hero (conditionally shown) */}
           {(union as any).showSocialInHero && (union as any).socialLinks && Object.values((union as any).socialLinks).some((v: any) => v) && (
-            <div className="px-6 pb-4 border-t pt-4">
+            <div className="px-6 pb-4 border-t pt-4 flex justify-center sm:justify-start">
               <SocialMediaIcons
                 socialLinks={(union as any).socialLinks}
                 size="md"
