@@ -71,6 +71,9 @@ export const unions = pgTable('unions', {
   monthlySMSSent: integer('monthly_sms_sent').notNull().default(0),
   smsUsageResetDate: timestamp('sms_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
   storageUsedBytes: integer('storage_used_bytes').notNull().default(0),
+  // Email invite tracking (separate from general email usage)
+  monthlyEmailInvitesSent: integer('monthly_email_invites_sent').notNull().default(0),
+  emailInviteUsageResetDate: timestamp('email_invite_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
   // Estimated member count collected at signup (for internal tracking only)
   estimatedMemberCount: varchar('estimated_member_count', { length: 50 }),
 });
