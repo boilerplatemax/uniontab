@@ -157,7 +157,7 @@ export async function changeSubscriptionPlan(union: Union, newPriceId: string) {
           stripeSubscriptionId: null,
           stripeProductId: null,
           planName: null,
-          subscriptionStatus: null,
+          subscriptionStatus: "canceled",
         })
         throw new Error("Subscription not found. It may have been canceled externally. Please subscribe to a new plan.")
       }
