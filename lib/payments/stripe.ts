@@ -43,9 +43,6 @@ export async function createCheckoutSession({
     customer: team.stripeCustomerId || undefined,
     client_reference_id: user.id.toString(),
     allow_promotion_codes: true,
-    subscription_data: {
-      trial_period_days: 14,
-    },
   })
 
   redirect(session.url!)

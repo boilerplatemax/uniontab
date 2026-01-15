@@ -188,7 +188,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                   size="lg"
                   className="bg-white text-blue-600 hover:bg-gray-100 font-semibold"
                 >
-                  Start Free Trial
+                  Get Started
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>

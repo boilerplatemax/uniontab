@@ -91,7 +91,7 @@ const pricingPlans: PricingPlan[] = [
       { name: "Event Management", included: true },
       { name: "Document Versioning", included: true },
     ],
-    cta: "Start 14-Day Trial",
+    cta: "Subscribe Now",
     ctaLink: "/sign-up?plan=base",
   },
   {
@@ -119,7 +119,7 @@ const pricingPlans: PricingPlan[] = [
       { name: "API Access", included: true },
       { name: "Dedicated Account Manager", included: true },
     ],
-    cta: "Start 14-Day Trial",
+    cta: "Subscribe Now",
     ctaLink: "/sign-up?plan=plus",
   },
 ];
@@ -194,7 +194,7 @@ export default function PricingPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Start free and upgrade as you grow. All paid plans include a 14-day free trial with no credit card required.
+            Start free and upgrade as you grow. No commitments, cancel anytime.
           </p>
         </motion.div>
       </div>
@@ -223,11 +223,6 @@ export default function PricingPage() {
                       <span className="text-5xl font-bold text-gray-900">{plan.price}</span>
                       <span className="text-gray-600">/{plan.interval}</span>
                     </div>
-                    {plan.name !== "Free" && (
-                      <p className="text-sm text-blue-600 mt-2 font-medium">
-                        14-day free trial included
-                      </p>
-                    )}
                   </div>
                 </CardHeader>
 
@@ -400,7 +395,7 @@ export default function PricingPage() {
                     variant="outline"
                     className="bg-transparent border-2 border-white text-white hover:bg-white/10 h-14 px-8 text-lg font-semibold"
                   >
-                    Start Free Trial
+                    Get Started
                   </Button>
                 </Link>
               </div>
