@@ -57,7 +57,17 @@ export async function createCustomerPortalSession(union: Union) {
   }
 
   let configuration: Stripe.BillingPortal.Configuration
-  const configurations = await stripe.billingPortal.configurations.list()
+  let configurations: Stripe.ApiList<Stripe.BillingPortal.Configuration>
+
+  try {
+    configurations = await stripe.billingPortal.configurations.list()
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      console.error('Failed to list portal configurations:', error.message)
+      throw new Error('Unable to access billing portal. Please try again later.')
+    }
+    throw error
+  }
 
   if (configurations.data.length > 0) {
     configuration = configurations.data[0]
@@ -112,11 +122,22 @@ export async function createCustomerPortalSession(union: Union) {
     })
   }
 
-  return stripe.billingPortal.sessions.create({
-    customer: union.stripeCustomerId,
-    return_url: `${process.env.BASE_URL}/${union.slug}/billing`,
-    configuration: configuration.id,
-  })
+  try {
+    return await stripe.billingPortal.sessions.create({
+      customer: union.stripeCustomerId,
+      return_url: `${process.env.BASE_URL}/${union.slug}/billing`,
+      configuration: configuration.id,
+    })
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      if (error.code === 'resource_missing') {
+        throw new Error('Customer not found in billing system. Please contact support.')
+      }
+      console.error('Failed to create portal session:', error.message)
+      throw new Error('Unable to open billing portal. Please try again later.')
+    }
+    throw error
+  }
 }
 
 export async function changeSubscriptionPlan(union: Union, newPriceId: string) {
@@ -124,7 +145,43 @@ export async function changeSubscriptionPlan(union: Union, newPriceId: string) {
     throw new Error("No active subscription to update")
   }
 
-  const subscription = await stripe.subscriptions.retrieve(union.stripeSubscriptionId)
+  // First, verify the subscription exists and is in a valid state
+  let subscription: Stripe.Subscription
+  try {
+    subscription = await stripe.subscriptions.retrieve(union.stripeSubscriptionId)
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      if (error.code === 'resource_missing') {
+        // Subscription doesn't exist in Stripe - clear it from database
+        await updateTeamSubscription(union.id, {
+          stripeSubscriptionId: null,
+          stripeProductId: null,
+          planName: null,
+          subscriptionStatus: null,
+        })
+        throw new Error("Subscription not found. It may have been canceled externally. Please subscribe to a new plan.")
+      }
+      throw new Error(`Failed to retrieve subscription: ${error.message}`)
+    }
+    throw error
+  }
+
+  // Check if subscription is in a valid state for changes
+  if (subscription.status === 'canceled') {
+    // Clear the invalid subscription from database
+    await updateTeamSubscription(union.id, {
+      stripeSubscriptionId: null,
+      stripeProductId: null,
+      planName: null,
+      subscriptionStatus: "canceled",
+    })
+    throw new Error("This subscription has been canceled. Please subscribe to a new plan.")
+  }
+
+  if (subscription.status !== 'active' && subscription.status !== 'trialing') {
+    throw new Error(`Cannot change plan: subscription is ${subscription.status}. Please resolve any payment issues first.`)
+  }
+
   const currentItemId = subscription.items.data[0]?.id
 
   if (!currentItemId) {
@@ -132,15 +189,26 @@ export async function changeSubscriptionPlan(union: Union, newPriceId: string) {
   }
 
   // Update the subscription with the new price
-  const updatedSubscription = await stripe.subscriptions.update(union.stripeSubscriptionId, {
-    items: [
-      {
-        id: currentItemId,
-        price: newPriceId,
-      },
-    ],
-    proration_behavior: "create_prorations",
-  })
+  let updatedSubscription: Stripe.Subscription
+  try {
+    updatedSubscription = await stripe.subscriptions.update(union.stripeSubscriptionId, {
+      items: [
+        {
+          id: currentItemId,
+          price: newPriceId,
+        },
+      ],
+      proration_behavior: "create_prorations",
+    })
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      if (error.code === 'resource_missing') {
+        throw new Error("The selected plan is no longer available. Please refresh and try again.")
+      }
+      throw new Error(`Failed to update subscription: ${error.message}`)
+    }
+    throw error
+  }
 
   // Get the new product info - handle both string and expanded object cases
   let productId: string
@@ -280,10 +348,52 @@ export async function cancelSubscription(union: Union) {
     throw new Error("No active subscription to cancel")
   }
 
+  // First, verify the subscription exists and check its status
+  let existingSubscription: Stripe.Subscription
+  try {
+    existingSubscription = await stripe.subscriptions.retrieve(union.stripeSubscriptionId)
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      if (error.code === 'resource_missing') {
+        // Subscription doesn't exist in Stripe - clean up database
+        await updateTeamSubscription(union.id, {
+          stripeSubscriptionId: null,
+          stripeProductId: null,
+          planName: null,
+          subscriptionStatus: "canceled",
+        })
+        // Don't throw error - just return as if canceled successfully
+        console.log(`Subscription ${union.stripeSubscriptionId} not found in Stripe, cleaned up database`)
+        return null
+      }
+      throw new Error(`Failed to retrieve subscription: ${error.message}`)
+    }
+    throw error
+  }
+
+  // If already canceled, just update the database
+  if (existingSubscription.status === 'canceled') {
+    await updateTeamSubscription(union.id, {
+      stripeSubscriptionId: null,
+      stripeProductId: null,
+      planName: null,
+      subscriptionStatus: "canceled",
+    })
+    return existingSubscription
+  }
+
   // Cancel the subscription immediately
-  const canceledSubscription = await stripe.subscriptions.cancel(
-    union.stripeSubscriptionId
-  )
+  let canceledSubscription: Stripe.Subscription
+  try {
+    canceledSubscription = await stripe.subscriptions.cancel(
+      union.stripeSubscriptionId
+    )
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      throw new Error(`Failed to cancel subscription: ${error.message}`)
+    }
+    throw error
+  }
 
   // Update the database to reflect cancellation
   await updateTeamSubscription(union.id, {
