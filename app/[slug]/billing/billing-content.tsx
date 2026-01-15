@@ -4,21 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CreditCard, Check, Download, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
-import { customerPortalAction, checkoutAction, changePlanAction, cancelSubscriptionAction } from '@/lib/payments/actions';
+import { customerPortalAction, checkoutAction, changePlanAction } from '@/lib/payments/actions';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
 import { useState, useEffect } from 'react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -167,8 +156,6 @@ export function BillingContent({ slug, union }: BillingContentProps) {
                   <p className="text-sm text-gray-600">
                     {unionData?.subscriptionStatus === 'active'
                       ? 'Billed monthly'
-                      : unionData?.subscriptionStatus === 'trialing'
-                      ? 'Trial period - No charges yet'
                       : unionData?.subscriptionStatus === 'canceled'
                       ? 'Subscription cancelled'
                       : 'No active subscription'}
@@ -187,40 +174,14 @@ export function BillingContent({ slug, union }: BillingContentProps) {
                         {showChangePlan ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </Button>
                     )}
-                    <form action={customerPortalAction}>
-                      <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                        Manage Payment Method
-                      </Button>
-                    </form>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button type="button" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700">
-                          Cancel Subscription
+                    <div className="flex flex-col items-end gap-1">
+                      <form action={customerPortalAction}>
+                        <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                          Manage Payment Method
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to cancel your subscription? This will:
-                            <ul className="list-disc list-inside mt-2 space-y-1">
-                              <li>Immediately cancel your current plan</li>
-                              <li>Downgrade your account to the free tier</li>
-                              <li>Remove access to premium features</li>
-                            </ul>
-                            <p className="mt-2">You can always resubscribe later.</p>
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
-                          <form action={cancelSubscriptionAction}>
-                            <AlertDialogAction type="submit" className="bg-red-600 hover:bg-red-700">
-                              Yes, Cancel Subscription
-                            </AlertDialogAction>
-                          </form>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                      </form>
+                      <p className="text-xs text-gray-500">To cancel, click Manage Payment</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -228,9 +189,7 @@ export function BillingContent({ slug, union }: BillingContentProps) {
               {unionData?.subscriptionStatus && unionData.subscriptionStatus !== 'active' && (
                 <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-900">
-                    {unionData.subscriptionStatus === 'trialing'
-                      ? 'You are currently in your free trial period. Enjoy full access to all features!'
-                      : unionData.subscriptionStatus === 'canceled'
+                    {unionData.subscriptionStatus === 'canceled'
                       ? 'Your subscription has been cancelled. You can reactivate by choosing a plan below.'
                       : 'Upgrade your subscription to unlock premium features for your union.'}
                   </p>
@@ -320,11 +279,6 @@ export function BillingContent({ slug, union }: BillingContentProps) {
                             </div>
                             {price?.interval && (
                               <p className="text-gray-600 mt-1">per {price.interval}</p>
-                            )}
-                            {price?.trialPeriodDays && !hasCancelledSubscription && (
-                              <p className="text-sm text-blue-600 mt-2">
-                                {price.trialPeriodDays}-day free trial
-                              </p>
                             )}
                           </div>
 
@@ -435,7 +389,7 @@ export function BillingContent({ slug, union }: BillingContentProps) {
               </div>
             ) : hasActiveSubscription || hasCancelledSubscription ? (
               <p className="text-sm text-gray-600">
-                No invoices yet. Your first invoice will appear here after your trial ends or first payment.
+                No invoices yet. Your first invoice will appear here after your first payment.
               </p>
             ) : (
               <p className="text-sm text-gray-600">

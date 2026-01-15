@@ -69,11 +69,6 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             ? 'Sign in to your account'
             : 'Create your union website'}
         </h2>
-        {mode === 'signup' && (
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Start your free 7-day trial
-          </p>
-        )}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
