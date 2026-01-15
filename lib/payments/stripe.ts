@@ -148,6 +148,7 @@ export async function changeSubscriptionPlan(union: Union, newPriceId: string) {
 
   // Update the database with new plan info
   await updateTeamSubscription(union.id, {
+    stripeSubscriptionId: union.stripeSubscriptionId,
     stripeProductId: product.id,
     planName: product.name,
     subscriptionStatus: updatedSubscription.status as "active" | "trialing" | "canceled" | "unpaid",
