@@ -8,7 +8,7 @@ import {
 } from "@/lib/db/queries"
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-04-30.basil",
+  apiVersion: "2025-08-27.basil",
 })
 
 export async function createCheckoutSession({
@@ -140,17 +140,34 @@ export async function changeSubscriptionPlan(union: Union, newPriceId: string) {
     proration_behavior: "create_prorations",
   })
 
-  // Get the new product info
+  // Get the new product info - handle both string and expanded object cases
+  let productId: string
+  let productName: string
+
   const newPrice = await stripe.prices.retrieve(newPriceId, {
     expand: ["product"],
   })
-  const product = newPrice.product as Stripe.Product
+
+  if (typeof newPrice.product === "string") {
+    // Product was not expanded, fetch it separately
+    productId = newPrice.product
+    const product = await stripe.products.retrieve(newPrice.product)
+    productName = product.name
+  } else if ("deleted" in newPrice.product && newPrice.product.deleted) {
+    // Product is deleted, use the ID and a fallback name
+    productId = newPrice.product.id
+    productName = "Subscription Plan"
+  } else {
+    // Product is expanded and not deleted
+    productId = newPrice.product.id
+    productName = newPrice.product.name
+  }
 
   // Update the database with new plan info
   await updateTeamSubscription(union.id, {
     stripeSubscriptionId: union.stripeSubscriptionId,
-    stripeProductId: product.id,
-    planName: product.name,
+    stripeProductId: productId,
+    planName: productName,
     subscriptionStatus: updatedSubscription.status as "active" | "trialing" | "canceled" | "unpaid",
   })
 

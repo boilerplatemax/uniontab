@@ -16,6 +16,18 @@ export const customerPortalAction = withTeam(async (_, team) => {
 
 export const changePlanAction = withTeam(async (formData, team) => {
   const priceId = formData.get('priceId') as string;
+
+  if (!priceId || priceId.trim() === '') {
+    throw new Error('Invalid price ID');
+  }
+
+  if (!team.stripeSubscriptionId) {
+    throw new Error('No active subscription found');
+  }
+
   await changeSubscriptionPlan(team, priceId);
-  redirect(`/${team.slug}/billing`);
+
+  // Store the slug before redirect to ensure it's captured
+  const redirectUrl = `/${team.slug}/billing`;
+  redirect(redirectUrl);
 });
