@@ -10,7 +10,7 @@ import {
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   // API version must match the installed stripe package (^18.1.0)
   // Do NOT change this without also updating the stripe package version
-  apiVersion: "2025-04-30.basil",
+  apiVersion: "2025-08-27.basil",
 })
 
 export async function createCheckoutSession({
@@ -262,4 +262,25 @@ export async function getStripeProducts() {
         ? product.default_price
         : product.default_price?.id,
   }))
+}
+
+export async function cancelSubscription(union: Union) {
+  if (!union.stripeSubscriptionId) {
+    throw new Error("No active subscription to cancel")
+  }
+
+  // Cancel the subscription immediately
+  const canceledSubscription = await stripe.subscriptions.cancel(
+    union.stripeSubscriptionId
+  )
+
+  // Update the database to reflect cancellation
+  await updateTeamSubscription(union.id, {
+    stripeSubscriptionId: null,
+    stripeProductId: null,
+    planName: null,
+    subscriptionStatus: "canceled",
+  })
+
+  return canceledSubscription
 }
