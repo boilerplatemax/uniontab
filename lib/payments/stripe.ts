@@ -8,7 +8,7 @@ import {
 } from "@/lib/db/queries"
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-04-30.basil",
+  apiVersion: "2025-08-27.basil",
 })
 
 export async function createCheckoutSession({
@@ -173,10 +173,31 @@ export async function handleSubscriptionChange(
 
   if (status === "active" || status === "trialing") {
     const plan = subscription.items.data[0]?.plan
+
+    // Get product ID and name - product can be either a string ID or expanded object
+    let productId: string | null = null
+    let productName: string | null = null
+
+    if (plan?.product) {
+      if (typeof plan.product === "string") {
+        // Product is not expanded, fetch the product details
+        productId = plan.product
+        const product = await stripe.products.retrieve(plan.product)
+        productName = product.name
+      } else if (!("deleted" in plan.product) || !plan.product.deleted) {
+        // Product is expanded and not deleted
+        productId = plan.product.id
+        productName = plan.product.name
+      } else {
+        // Product is deleted, just use the ID
+        productId = plan.product.id
+      }
+    }
+
     await updateTeamSubscription(union.id, {
       stripeSubscriptionId: subscriptionId,
-      stripeProductId: plan?.product as string,
-      planName: (plan?.product as Stripe.Product).name,
+      stripeProductId: productId,
+      planName: productName,
       subscriptionStatus: status,
     })
   } else if (status === "canceled" || status === "unpaid") {
