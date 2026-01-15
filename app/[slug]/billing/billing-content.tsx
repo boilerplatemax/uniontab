@@ -4,10 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CreditCard, Check, Download, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
-import { customerPortalAction, checkoutAction, changePlanAction } from '@/lib/payments/actions';
+import { customerPortalAction, checkoutAction, changePlanAction, cancelSubscriptionAction } from '@/lib/payments/actions';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
 import { useState, useEffect } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -181,6 +192,35 @@ export function BillingContent({ slug, union }: BillingContentProps) {
                         Manage Payment Method
                       </Button>
                     </form>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button type="button" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700">
+                          Cancel Subscription
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to cancel your subscription? This will:
+                            <ul className="list-disc list-inside mt-2 space-y-1">
+                              <li>Immediately cancel your current plan</li>
+                              <li>Downgrade your account to the free tier</li>
+                              <li>Remove access to premium features</li>
+                            </ul>
+                            <p className="mt-2">You can always resubscribe later.</p>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+                          <form action={cancelSubscriptionAction}>
+                            <AlertDialogAction type="submit" className="bg-red-600 hover:bg-red-700">
+                              Yes, Cancel Subscription
+                            </AlertDialogAction>
+                          </form>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 )}
               </div>
