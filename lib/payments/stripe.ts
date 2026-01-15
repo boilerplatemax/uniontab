@@ -117,6 +117,45 @@ export async function createCustomerPortalSession(union: Union) {
   })
 }
 
+export async function changeSubscriptionPlan(union: Union, newPriceId: string) {
+  if (!union.stripeSubscriptionId) {
+    throw new Error("No active subscription to update")
+  }
+
+  const subscription = await stripe.subscriptions.retrieve(union.stripeSubscriptionId)
+  const currentItemId = subscription.items.data[0]?.id
+
+  if (!currentItemId) {
+    throw new Error("No subscription item found")
+  }
+
+  // Update the subscription with the new price
+  const updatedSubscription = await stripe.subscriptions.update(union.stripeSubscriptionId, {
+    items: [
+      {
+        id: currentItemId,
+        price: newPriceId,
+      },
+    ],
+    proration_behavior: "create_prorations",
+  })
+
+  // Get the new product info
+  const newPrice = await stripe.prices.retrieve(newPriceId, {
+    expand: ["product"],
+  })
+  const product = newPrice.product as Stripe.Product
+
+  // Update the database with new plan info
+  await updateTeamSubscription(union.id, {
+    stripeProductId: product.id,
+    planName: product.name,
+    subscriptionStatus: updatedSubscription.status as "active" | "trialing" | "canceled" | "unpaid",
+  })
+
+  return updatedSubscription
+}
+
 export async function handleSubscriptionChange(
   subscription: Stripe.Subscription
 ) {
