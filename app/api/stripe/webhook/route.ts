@@ -22,9 +22,11 @@ export async function POST(request: NextRequest) {
 
   try {
     switch (event.type) {
+      case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted':
         const subscription = event.data.object as Stripe.Subscription;
+        console.log(`Processing ${event.type} for subscription ${subscription.id}, status: ${subscription.status}`);
         await handleSubscriptionChange(subscription);
         break;
       default:

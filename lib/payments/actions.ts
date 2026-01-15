@@ -50,7 +50,9 @@ export const changePlanAction = withTeam(async (formData, team) => {
   }
 
   try {
+    console.log(`Attempting to change plan for team ${team.id} to price ${priceId}`);
     await changeSubscriptionPlan(team, priceId);
+    console.log(`Successfully changed plan for team ${team.id}`);
   } catch (error) {
     // Re-throw redirect errors - they're intentional
     if (isRedirectError(error)) {
@@ -59,11 +61,19 @@ export const changePlanAction = withTeam(async (formData, team) => {
     console.error('Change plan error:', error);
     // Provide more specific error message
     if (error instanceof Error) {
+      // Pass through errors from our improved Stripe handling
+      if (error.message.includes('Subscription not found') ||
+          error.message.includes('subscription has been canceled') ||
+          error.message.includes('Cannot change plan') ||
+          error.message.includes('plan is no longer available') ||
+          error.message.includes('Failed to')) {
+        throw error;
+      }
       if (error.message.includes('No such price')) {
         throw new Error('Invalid plan selected. Please refresh the page and try again.');
       }
       if (error.message.includes('No such subscription')) {
-        throw new Error('Subscription not found. Please contact support.');
+        throw new Error('Subscription not found. It may have been canceled. Please refresh the page.');
       }
       throw new Error(error.message);
     }
@@ -81,7 +91,9 @@ export const cancelSubscriptionAction = withTeam(async (_, team) => {
   }
 
   try {
+    console.log(`Attempting to cancel subscription for team ${team.id}`);
     await cancelSubscription(team);
+    console.log(`Successfully processed cancellation for team ${team.id}`);
   } catch (error) {
     // Re-throw redirect errors - they're intentional
     if (isRedirectError(error)) {
@@ -89,6 +101,10 @@ export const cancelSubscriptionAction = withTeam(async (_, team) => {
     }
     console.error('Cancel subscription error:', error);
     if (error instanceof Error) {
+      // Pass through errors from our improved Stripe handling
+      if (error.message.includes('Failed to')) {
+        throw error;
+      }
       if (error.message.includes('No such subscription')) {
         throw new Error('Subscription not found. It may have already been canceled.');
       }
