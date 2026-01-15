@@ -190,42 +190,53 @@ export async function handleSubscriptionChange(
     return
   }
 
-  if (status === "active" || status === "trialing") {
-    const plan = subscription.items.data[0]?.plan
+  try {
+    if (status === "active" || status === "trialing") {
+      const plan = subscription.items.data[0]?.plan
 
-    // Get product ID and name - product can be either a string ID or expanded object
-    let productId: string | null = null
-    let productName: string | null = null
+      // Get product ID and name - product can be either a string ID or expanded object
+      let productId: string | null = null
+      let productName: string | null = null
 
-    if (plan?.product) {
-      if (typeof plan.product === "string") {
-        // Product is not expanded, fetch the product details
-        productId = plan.product
-        const product = await stripe.products.retrieve(plan.product)
-        productName = product.name
-      } else if (!("deleted" in plan.product) || !plan.product.deleted) {
-        // Product is expanded and not deleted
-        productId = plan.product.id
-        productName = plan.product.name
-      } else {
-        // Product is deleted, just use the ID
-        productId = plan.product.id
+      if (plan?.product) {
+        if (typeof plan.product === "string") {
+          // Product is not expanded, fetch the product details
+          productId = plan.product
+          try {
+            const product = await stripe.products.retrieve(plan.product)
+            productName = product.name
+          } catch (productError) {
+            console.error("Failed to fetch product details:", productError)
+            productName = "Subscription Plan" // Fallback name
+          }
+        } else if (!("deleted" in plan.product) || !plan.product.deleted) {
+          // Product is expanded and not deleted
+          productId = plan.product.id
+          productName = plan.product.name
+        } else {
+          // Product is deleted, just use the ID
+          productId = plan.product.id
+          productName = "Subscription Plan" // Fallback for deleted product
+        }
       }
-    }
 
-    await updateTeamSubscription(union.id, {
-      stripeSubscriptionId: subscriptionId,
-      stripeProductId: productId,
-      planName: productName,
-      subscriptionStatus: status,
-    })
-  } else if (status === "canceled" || status === "unpaid") {
-    await updateTeamSubscription(union.id, {
-      stripeSubscriptionId: null,
-      stripeProductId: null,
-      planName: null,
-      subscriptionStatus: status,
-    })
+      await updateTeamSubscription(union.id, {
+        stripeSubscriptionId: subscriptionId,
+        stripeProductId: productId,
+        planName: productName,
+        subscriptionStatus: status,
+      })
+    } else if (status === "canceled" || status === "unpaid") {
+      await updateTeamSubscription(union.id, {
+        stripeSubscriptionId: null,
+        stripeProductId: null,
+        planName: null,
+        subscriptionStatus: status,
+      })
+    }
+  } catch (error) {
+    console.error("Error updating subscription in database:", error)
+    throw error // Re-throw to allow webhook to handle retry
   }
 }
 
