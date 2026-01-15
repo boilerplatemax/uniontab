@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { createCheckoutSession, createCustomerPortalSession, changeSubscriptionPlan, cancelSubscription } from './stripe';
 import { withTeam } from '@/lib/auth/middleware';
 
@@ -14,6 +15,10 @@ export const checkoutAction = withTeam(async (formData, team) => {
   try {
     await createCheckoutSession({ team: team, priceId });
   } catch (error) {
+    // Re-throw redirect errors - they're intentional
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('Checkout session error:', error);
     throw new Error(error instanceof Error ? error.message : 'Failed to create checkout session');
   }
@@ -24,6 +29,10 @@ export const customerPortalAction = withTeam(async (_, team) => {
     const portalSession = await createCustomerPortalSession(team);
     redirect(portalSession.url);
   } catch (error) {
+    // Re-throw redirect errors - they're intentional
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('Customer portal error:', error);
     throw new Error(error instanceof Error ? error.message : 'Failed to open billing portal');
   }
@@ -43,6 +52,10 @@ export const changePlanAction = withTeam(async (formData, team) => {
   try {
     await changeSubscriptionPlan(team, priceId);
   } catch (error) {
+    // Re-throw redirect errors - they're intentional
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('Change plan error:', error);
     // Provide more specific error message
     if (error instanceof Error) {
@@ -70,6 +83,10 @@ export const cancelSubscriptionAction = withTeam(async (_, team) => {
   try {
     await cancelSubscription(team);
   } catch (error) {
+    // Re-throw redirect errors - they're intentional
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('Cancel subscription error:', error);
     if (error instanceof Error) {
       if (error.message.includes('No such subscription')) {
