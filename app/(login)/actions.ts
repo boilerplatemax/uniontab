@@ -123,7 +123,8 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 });
 
 const signUpSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
+  firstName: z.string().min(1, 'First name is required').max(50),
+  lastName: z.string().min(1, 'Last name is required').max(50),
   email: z.string().email(),
   password: z.string().min(8),
   inviteId: z.string().optional(),
@@ -134,7 +135,8 @@ const signUpSchema = z.object({
 });
 
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
-  const { name, email, password, inviteId, unionName, localNumber, publicName, estimatedMemberCount } = data;
+  const { firstName, lastName, email, password, inviteId, unionName, localNumber, publicName, estimatedMemberCount } = data;
+  const name = `${firstName} ${lastName}`;
 
   const existingUserWithUnion = await db
     .select({

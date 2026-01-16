@@ -260,6 +260,7 @@ export async function POST(
             localNumber: union.localNumber,
             logoUrl: union.logoUrl,
             slug: union.slug,
+            themeColor: union.themeColor, // Custom brand color for email header
           },
         });
         successCount++;
