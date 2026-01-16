@@ -556,6 +556,29 @@ export function SettingsContent() {
             </CardContent>
           </Card>
 
+          {/* Public Name */}
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle>Public Name</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="publicName">Display Name</Label>
+                <Input
+                  id="publicName"
+                  placeholder="e.g. Barrie Transit Union"
+                  value={formData.publicName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, publicName: e.target.value })
+                  }
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  A longer display name if you don't want to go by your union + local number (e.g. "CUPE 123")
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Actions */}
           <div className="flex justify-between items-center">
             <button
