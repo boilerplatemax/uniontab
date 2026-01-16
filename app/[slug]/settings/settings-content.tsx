@@ -556,33 +556,6 @@ export function SettingsContent() {
             </CardContent>
           </Card>
 
-          {/* Advanced Settings */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle>Advanced Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="publicNameAdvanced">
-                  Public Display Name
-                </Label>
-                <Input
-                  id="publicNameAdvanced"
-                  placeholder="e.g., Barrie Transit Union"
-                  value={formData.publicName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, publicName: e.target.value })
-                  }
-                  maxLength={255}
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  Optional. Use this if you have a longer union name and don't want to display your full union name + local number.
-                  Leave blank to use your default union name.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Actions */}
           <div className="flex justify-between items-center">
             <button

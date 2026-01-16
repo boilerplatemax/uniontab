@@ -76,8 +76,6 @@ export const unions = pgTable('unions', {
   emailInviteUsageResetDate: timestamp('email_invite_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
   // Estimated member count collected at signup (for internal tracking only)
   estimatedMemberCount: varchar('estimated_member_count', { length: 50 }),
-  // Preferred union name for email subdomain generation (e.g., "cupe123" -> notify@cupe123.uniontab.com)
-  preferredUnionName: varchar('preferred_union_name', { length: 100 }),
 });
 
 export const members = pgTable('members', {
