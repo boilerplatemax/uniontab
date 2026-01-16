@@ -2,10 +2,21 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Users, Globe, Shield, Zap, Mail, MessageSquare, Vote, Database, BarChart3, Bell, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck } from 'lucide-react';
+import { ArrowRight, Users, Globe, Shield, Zap, Mail, MessageSquare, Vote, Database, BarChart3, Bell, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, ImageIcon } from 'lucide-react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+
+// Reusable image placeholder component
+function ImagePlaceholder({ label, className = "" }: { label: string; className?: string }) {
+  return (
+    <div className={`bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300 ${className}`}>
+      <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
+      <span className="text-gray-500 text-sm text-center px-4">{label}</span>
+    </div>
+  );
+}
 
 // Animation component for scroll-triggered animations
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -131,66 +142,91 @@ export default function HomePage() {
                   <span className="text-sm font-medium text-gray-700">Free for Small Locals</span>
                 </div>
               </motion.div>
+
+              {/* Desktop CTA Buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="hidden lg:flex gap-4 pt-4"
+              >
+                <Link href="/sign-up">
+                  <Button
+                    className="h-14 px-8 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
+                    size="lg"
+                  >
+                    Start Free Today
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="/features">
+                  <Button
+                    variant="outline"
+                    className="h-14 px-8 text-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
+                    size="lg"
+                  >
+                    See All Features
+                  </Button>
+                </Link>
+              </motion.div>
             </div>
 
-            {/* Right Column - Clean CTA Card */}
+            {/* Right Column - Hero Image */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
               className="lg:pl-8"
             >
-              <Card className="shadow-2xl border-2 border-blue-100 bg-white relative overflow-hidden">
-                <CardContent className="p-8 sm:p-10">
-                  <div className="space-y-6 text-center">
-                    <div className="space-y-3">
-                      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                        Ready to Modernize Your Union?
-                      </h2>
-                      <p className="text-gray-600">
-                        Join unions who are saving time and increasing member engagement.
-                      </p>
+              <div className="relative">
+                {/* Main Hero Image */}
+                <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+                  <Image
+                    src="/assets/landing/hero-workers.jpg"
+                    alt="Union workers gathered around a laptop reviewing engagement dashboard"
+                    width={600}
+                    height={400}
+                    className="w-full h-auto object-cover"
+                    priority
+                  />
+                </div>
+                {/* Floating CTA Card */}
+                <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-xl p-4 border border-gray-100 hidden sm:block">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                      <CheckCircle2 className="h-5 w-5 text-white" />
                     </div>
-
-                    <div className="space-y-4">
-                      <Link href="/sign-up" className="block">
-                        <Button
-                          className="w-full h-14 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
-                          size="lg"
-                        >
-                          Start Free Today
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-                      </Link>
-
-                      <Link href="/features" className="block">
-                        <Button
-                          variant="outline"
-                          className="w-full h-14 text-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
-                          size="lg"
-                        >
-                          See All Features
-                        </Button>
-                      </Link>
-                    </div>
-
-                    <div className="pt-2 space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                        Free forever for locals under 150 members
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                        No credit card required
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                        Setup in under 10 minutes
-                      </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Free for Small Locals</p>
+                      <p className="text-xs text-gray-500">Under 150 members</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                {/* Decorative element */}
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full blur-xl -z-10" />
+              </div>
+
+              {/* CTA Buttons below image on mobile, beside on desktop */}
+              <div className="mt-8 space-y-4 lg:hidden">
+                <Link href="/sign-up" className="block">
+                  <Button
+                    className="w-full h-14 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
+                    size="lg"
+                  >
+                    Start Free Today
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="/features" className="block">
+                  <Button
+                    variant="outline"
+                    className="w-full h-14 text-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
+                    size="lg"
+                  >
+                    See All Features
+                  </Button>
+                </Link>
+              </div>
             </motion.div>
           </div>
         </motion.div>
@@ -224,6 +260,8 @@ export default function HomePage() {
                 <p className="text-gray-600">
                   Set up your union&apos;s portal in minutes. Add your branding, bylaws, and customize your member experience.
                 </p>
+                {/* Screenshot placeholder */}
+                <ImagePlaceholder label="Screenshot: Profile setup wizard" className="h-40 mt-4" />
               </div>
             </AnimatedSection>
 
@@ -236,6 +274,8 @@ export default function HomePage() {
                 <p className="text-gray-600">
                   Upload your member list via CSV or add them manually. We&apos;ll help you migrate from your current system.
                 </p>
+                {/* Screenshot placeholder */}
+                <ImagePlaceholder label="Screenshot: Member import screen" className="h-40 mt-4" />
               </div>
             </AnimatedSection>
 
@@ -248,6 +288,8 @@ export default function HomePage() {
                 <p className="text-gray-600">
                   Send your first communication, schedule an election, or share important documents with your membership.
                 </p>
+                {/* Screenshot placeholder */}
+                <ImagePlaceholder label="Screenshot: Dashboard with features" className="h-40 mt-4" />
               </div>
             </AnimatedSection>
           </div>
@@ -273,6 +315,8 @@ export default function HomePage() {
             <AnimatedSection delay={0.1}>
               <Card className="border-2 hover:border-blue-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-blue-50/30">
                 <CardContent className="p-8 space-y-4">
+                  {/* Feature Screenshot */}
+                  <ImagePlaceholder label="Screenshot: Voting interface" className="h-32 mb-2" />
                   <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <Vote className="h-7 w-7 text-white" />
                   </div>
@@ -304,6 +348,8 @@ export default function HomePage() {
             <AnimatedSection delay={0.2}>
               <Card className="border-2 hover:border-indigo-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-indigo-50/30">
                 <CardContent className="p-8 space-y-4">
+                  {/* Feature Screenshot */}
+                  <ImagePlaceholder label="Screenshot: Email composer" className="h-32 mb-2" />
                   <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <Mail className="h-7 w-7 text-white" />
                   </div>
@@ -335,6 +381,8 @@ export default function HomePage() {
             <AnimatedSection delay={0.3}>
               <Card className="border-2 hover:border-purple-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-purple-50/30">
                 <CardContent className="p-8 space-y-4">
+                  {/* Feature Screenshot */}
+                  <ImagePlaceholder label="Screenshot: Member dashboard" className="h-32 mb-2" />
                   <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <Users className="h-7 w-7 text-white" />
                   </div>
@@ -366,6 +414,8 @@ export default function HomePage() {
             <AnimatedSection delay={0.4}>
               <Card className="border-2 hover:border-cyan-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-cyan-50/30">
                 <CardContent className="p-8 space-y-4">
+                  {/* Feature Screenshot */}
+                  <ImagePlaceholder label="Screenshot: Analytics charts" className="h-32 mb-2" />
                   <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <BarChart3 className="h-7 w-7 text-white" />
                   </div>
@@ -397,6 +447,8 @@ export default function HomePage() {
             <AnimatedSection delay={0.5}>
               <Card className="border-2 hover:border-emerald-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-emerald-50/30">
                 <CardContent className="p-8 space-y-4">
+                  {/* Feature Screenshot */}
+                  <ImagePlaceholder label="Screenshot: Document library" className="h-32 mb-2" />
                   <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <Database className="h-7 w-7 text-white" />
                   </div>
@@ -428,6 +480,8 @@ export default function HomePage() {
             <AnimatedSection delay={0.6}>
               <Card className="border-2 hover:border-pink-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-pink-50/30">
                 <CardContent className="p-8 space-y-4">
+                  {/* Feature Screenshot */}
+                  <ImagePlaceholder label="Screenshot: Event calendar" className="h-32 mb-2" />
                   <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <Calendar className="h-7 w-7 text-white" />
                   </div>
@@ -474,9 +528,18 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <AnimatedSection delay={0.1}>
-              <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
+              <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow overflow-hidden">
+                {/* Image: Union steward with tablet */}
+                <div className="relative h-48 overflow-hidden">
+                  <Image
+                    src="/assets/landing/built-by-union-people.jpg"
+                    alt="Union steward with tablet talking to workers on site"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg -mt-12 relative z-10 border-4 border-white">
                     <UserCheck className="h-7 w-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900">Built by Union People</h3>
@@ -488,9 +551,18 @@ export default function HomePage() {
             </AnimatedSection>
 
             <AnimatedSection delay={0.2}>
-              <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
+              <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow overflow-hidden">
+                {/* Image: Workers gathered around laptop */}
+                <div className="relative h-48 overflow-hidden">
+                  <Image
+                    src="/assets/landing/free-for-small-locals.jpg"
+                    alt="Small group of workers gathered around a laptop reviewing union dashboard"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg -mt-12 relative z-10 border-4 border-white">
                     <Zap className="h-7 w-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900">Free for Small Locals</h3>
@@ -502,9 +574,18 @@ export default function HomePage() {
             </AnimatedSection>
 
             <AnimatedSection delay={0.3}>
-              <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
+              <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow overflow-hidden">
+                {/* Image: Before/after comparison */}
+                <div className="relative h-48 overflow-hidden">
+                  <Image
+                    src="/assets/landing/save-hours.jpg"
+                    alt="Before and after: messy desk with papers versus clean desk with laptop showing dashboard"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg -mt-12 relative z-10 border-4 border-white">
                     <Clock className="h-7 w-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900">Save Hours Every Week</h3>
