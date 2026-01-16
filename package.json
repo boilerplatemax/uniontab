@@ -10,6 +10,7 @@
     "db:seed": "npx tsx lib/db/seed.ts",
     "seed:admin": "npx tsx lib/db/seed-admin.ts",
     "seed:mock-users": "npx tsx lib/db/seed-mock-users.ts",
+    "cleanup:mock-users": "npx tsx lib/db/cleanup-mock-data.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:migrate:elections": "npx tsx lib/db/migrate-elections.ts",

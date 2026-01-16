@@ -38,29 +38,18 @@ async function seedMockUsers() {
   // Hash a common password for all mock users (they can reset it later)
   const passwordHash = await hashPassword('MockUser123!');
 
-  // Find or create the ATU 123 union
-  let union = await db.query.unions.findFirst({
-    where: eq(unions.slug, 'atu-123'),
+  // Find the existing ATU 123 union (slug: atu123)
+  const union = await db.query.unions.findFirst({
+    where: eq(unions.slug, 'atu123'),
   });
 
   if (!union) {
-    console.log('ATU 123 union not found, creating it...');
-    const [newUnion] = await db
-      .insert(unions)
-      .values({
-        name: 'ATU Local 123',
-        slug: 'atu-123',
-        localNumber: '123',
-        description: 'Amalgamated Transit Union Local 123',
-        theme: 'default',
-        themeColor: '#2563eb',
-      })
-      .returning();
-    union = newUnion;
-    console.log('Created ATU Local 123 union');
-  } else {
-    console.log('Found existing ATU 123 union');
+    console.error('ERROR: ATU 123 union (slug: atu123) not found!');
+    console.error('Please make sure the union exists before running this seed.');
+    process.exit(1);
   }
+
+  console.log(`Found union: ${union.name} (id: ${union.id}, slug: ${union.slug})`)
 
   let createdCount = 0;
   let skippedCount = 0;
