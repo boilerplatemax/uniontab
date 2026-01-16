@@ -9,10 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileUpload } from '@/components/ui/file-upload';
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { Switch } from '@/components/ui/switch';
 import {
-  ArrowLeft,
   Mail,
   Phone,
   MapPin,
@@ -21,10 +18,8 @@ import {
   Save,
   Palette,
   Check,
-  Plus,
-  X,
-  ImageIcon,
   Share2,
+  ArrowLeft,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
@@ -77,8 +72,7 @@ export function SettingsContent() {
     theme: 'default',
     themeColor: '#2563eb',
     socialLinks: {} as Record<string, string>,
-    showSocialInHeader: false,
-    preferredUnionName: '',
+    showSocialInHero: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -100,8 +94,7 @@ export function SettingsContent() {
         theme: union.theme || 'default',
         themeColor: union.themeColor || '#2563eb',
         socialLinks: (union as any).socialLinks || {},
-        showSocialInHeader: (union as any).showSocialInHeader || false,
-        preferredUnionName: (union as any).preferredUnionName || '',
+        showSocialInHero: (union as any).showSocialInHero || false,
       });
     }
   }, [union]);
@@ -127,6 +120,7 @@ export function SettingsContent() {
       await mutate();
       // Refresh the router cache to ensure updated data is shown when navigating
       router.refresh();
+
       setSuccess(true);
       // Scroll to top to show success message
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -162,31 +156,28 @@ export function SettingsContent() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Sticky Save Button */}
+          {/* Sticky Header */}
           <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-200 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-6">
             <div className="flex justify-between items-center">
-              <div className="flex-1">
+              <button
+                type="button"
+                onClick={() => router.push(`/${union.slug}`)}
+                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                <span>return</span>
+              </button>
+              <div className="flex items-center gap-4">
                 {error && (
-                  <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">
+                  <div className="bg-red-50 text-red-700 px-3 py-2 rounded-lg text-sm">
                     {error}
                   </div>
                 )}
                 {success && (
-                  <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm">
-                    Successfully updated union information!
+                  <div className="bg-green-50 text-green-700 px-3 py-2 rounded-lg text-sm">
+                    Saved!
                   </div>
                 )}
-              </div>
-              <div className="flex gap-3 ml-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push(`/${union.slug}`)}
-                  disabled={loading}
-                  size="sm"
-                >
-                  Cancel
-                </Button>
                 <Button
                   type="submit"
                   disabled={loading}
@@ -201,7 +192,7 @@ export function SettingsContent() {
                   ) : (
                     <>
                       <Save className="mr-2 h-4 w-4" />
-                      Save Changes
+                      Save
                     </>
                   )}
                 </Button>
@@ -215,24 +206,6 @@ export function SettingsContent() {
               <CardTitle>Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="publicName">
-                  Public Display Name
-                </Label>
-                <Input
-                  id="publicName"
-                  placeholder="e.g., Barrie Transit Union"
-                  value={formData.publicName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, publicName: e.target.value })
-                  }
-                  maxLength={255}
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  This is the friendly name shown on your public page. Leave blank to use "{union.name}" instead.
-                </p>
-              </div>
-
               <div>
                 <Label htmlFor="description">
                   Short Description (One-liner)
@@ -251,65 +224,6 @@ export function SettingsContent() {
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="about">About Your Union</Label>
-                <RichTextEditor
-                  content={formData.about}
-                  onChange={(value) =>
-                    setFormData({ ...formData, about: value })
-                  }
-                  placeholder="Tell visitors about your union's history, mission, and values..."
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  Share your union's story, accomplishments, and goals
-                </p>
-              </div>
-
-              {/* About Images */}
-              <div className="border-t pt-6">
-                <Label className="flex items-center gap-2 mb-4">
-                  <ImageIcon className="h-4 w-4" />
-                  About Section Images
-                </Label>
-                <p className="text-sm text-gray-500 mb-4">
-                  Add images to display alongside your about text (gallery format)
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                  {formData.aboutImages.map((imageUrl, index) => (
-                    <div key={index} className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                      <img
-                        src={imageUrl}
-                        alt={`About image ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newImages = formData.aboutImages.filter((_, i) => i !== index);
-                          setFormData({ ...formData, aboutImages: newImages });
-                        }}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <FileUpload
-                  onFileSelect={(file, url) => {
-                    if (url) {
-                      setFormData({ ...formData, aboutImages: [...formData.aboutImages, url] });
-                    }
-                  }}
-                  accept="image/*"
-                  maxSize={5}
-                  label="Add Image"
-                  hint="Click to browse or drag and drop an image"
-                  bucket="union-files"
-                  path="about-images"
-                  autoResize={true}
-                />
-              </div>
             </CardContent>
           </Card>
 
@@ -323,7 +237,7 @@ export function SettingsContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-gray-500">
-                Add your social media profiles to display in the footer, contact page, and optionally in the header/navbar
+                Add your social media profiles to display in the footer and contact page
               </p>
 
               <div className="space-y-4">
@@ -349,22 +263,42 @@ export function SettingsContent() {
                 ))}
               </div>
 
+              {/* Show in Hero Toggle */}
               <div className="border-t pt-4 mt-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="showSocialInHeader">Show in Header/Navbar</Label>
-                    <p className="text-sm text-gray-500">
-                      Display social media icons in the navigation bar
+                    <Label htmlFor="showSocialInHero" className="text-base font-medium">
+                      Show in Hero Section
+                    </Label>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Display social icons prominently in your homepage hero area
                     </p>
                   </div>
-                  <Switch
-                    id="showSocialInHeader"
-                    checked={formData.showSocialInHeader}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, showSocialInHeader: checked })
+                  <button
+                    type="button"
+                    id="showSocialInHero"
+                    role="switch"
+                    aria-checked={formData.showSocialInHero}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        showSocialInHero: !formData.showSocialInHero,
+                      })
                     }
-                  />
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      formData.showSocialInHero ? 'bg-blue-600' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        formData.showSocialInHero ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
                 </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Social icons always appear in the footer. This option adds them to the hero section as well.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -487,14 +421,14 @@ export function SettingsContent() {
                         Reset to Default
                       </Button>
                     </div>
-                    <div
-                      className="h-10 rounded-lg flex items-center justify-center text-sm font-medium"
-                      style={{
-                        backgroundColor: formData.themeColor,
-                        color: getContrastColor(formData.themeColor)
-                      }}
-                    >
-                      Preview Banner
+                    <div className="space-y-1">
+                      <span className="text-xs text-gray-500">Color preview:</span>
+                      <div
+                        className="h-8 rounded"
+                        style={{
+                          backgroundColor: formData.themeColor,
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -650,15 +584,15 @@ export function SettingsContent() {
           </Card>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3">
-            <Button
+          <div className="flex justify-between items-center">
+            <button
               type="button"
-              variant="outline"
               onClick={() => router.push(`/${union.slug}`)}
-              disabled={loading}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Cancel
-            </Button>
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              <span>return</span>
+            </button>
             <Button
               type="submit"
               disabled={loading}
@@ -672,7 +606,7 @@ export function SettingsContent() {
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                  Save
                 </>
               )}
             </Button>

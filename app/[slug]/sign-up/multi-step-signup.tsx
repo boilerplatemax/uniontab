@@ -221,7 +221,7 @@ export function MultiStepMemberSignUp({
                         required
                         value={formData.firstName}
                         onChange={(e) => updateField('firstName', e.target.value)}
-                        placeholder="John"
+                        placeholder="First name"
                       />
                     </div>
                     <div>
@@ -231,7 +231,7 @@ export function MultiStepMemberSignUp({
                         required
                         value={formData.lastName}
                         onChange={(e) => updateField('lastName', e.target.value)}
-                        placeholder="Doe"
+                        placeholder="Last name"
                       />
                     </div>
                   </div>
@@ -244,7 +244,7 @@ export function MultiStepMemberSignUp({
                       required
                       value={formData.email}
                       onChange={(e) => updateField('email', e.target.value)}
-                      placeholder="john.doe@example.com"
+                      placeholder="email@example.com"
                     />
                   </div>
 
@@ -296,7 +296,7 @@ export function MultiStepMemberSignUp({
                       required
                       value={formData.jobTitle}
                       onChange={(e) => updateField('jobTitle', e.target.value)}
-                      placeholder="Software Engineer"
+                      placeholder="Your job title"
                     />
                   </div>
 

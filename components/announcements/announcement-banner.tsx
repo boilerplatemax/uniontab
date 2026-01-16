@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Announcement } from '@/lib/db/schema';
 import { getContrastColor, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
+import { sanitizeAnnouncementHtml } from '@/lib/utils/sanitize';
 
 interface AnnouncementBannerProps {
   announcement: Announcement | null;
@@ -61,7 +62,7 @@ export function AnnouncementBanner({ announcement, onDismiss, themeColor }: Anno
           <div
             className="flex-1 text-sm"
             style={{ color: textColor }}
-            dangerouslySetInnerHTML={{ __html: announcement.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeAnnouncementHtml(announcement.content) }}
           />
           <Button
             variant="ghost"

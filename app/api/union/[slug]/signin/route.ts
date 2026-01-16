@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db/drizzle';
 import { unions, users, members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -74,6 +75,10 @@ export async function POST(
 
     // Set session
     await setSession(user);
+
+    // Revalidate the union pages to ensure fresh data (especially admin status) is fetched
+    revalidatePath(`/${slug}`, 'layout');
+    revalidatePath(`/${slug}`, 'page');
 
     return NextResponse.json({
       success: true,

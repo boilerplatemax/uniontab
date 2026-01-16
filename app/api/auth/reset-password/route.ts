@@ -57,8 +57,6 @@ export async function POST(request: Request) {
       })
       .where(eq(users.id, user.id));
 
-    console.log(`Password successfully reset for user: ${user.email}`);
-
     // Get the user's union slug for redirect
     const [membership] = await db
       .select({

@@ -4,9 +4,31 @@ import { users, members, unions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { sendPasswordResetEmail } from '@/lib/email/sendgrid';
 import crypto from 'crypto';
+import {
+  checkRateLimit,
+  getClientIp,
+  passwordResetRateLimit,
+} from '@/lib/utils/rate-limit';
 
 export async function POST(request: Request) {
   try {
+    // Apply rate limiting to prevent abuse
+    const clientIp = getClientIp(request);
+    const rateLimitResult = checkRateLimit(clientIp, passwordResetRateLimit);
+
+    if (!rateLimitResult.success) {
+      const retryAfterSeconds = Math.ceil((rateLimitResult.retryAfterMs || 0) / 1000);
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfterSeconds.toString(),
+          },
+        }
+      );
+    }
+
     const { email } = await request.json();
 
     if (!email) {
@@ -26,7 +48,6 @@ export async function POST(request: Request) {
     // Always return success even if user not found (security best practice)
     // This prevents email enumeration attacks
     if (!user) {
-      console.log(`Password reset requested for non-existent email: ${email}`);
       return NextResponse.json({
         message: 'If that email exists in our system, a password reset link has been sent.',
       });
@@ -66,7 +87,6 @@ export async function POST(request: Request) {
     // Send password reset email
     try {
       await sendPasswordResetEmail(user.email, resetToken, user.name, unionInfo);
-      console.log(`Password reset email sent to ${user.email}`);
     } catch (emailError) {
       console.error('Failed to send password reset email:', emailError);
       // Continue anyway - don't reveal that email failed

@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { unionId, title, content, imageUrl, isPrivate, attachments } = await request.json();
+    const { unionId, title, content, imageUrl, isPrivate, authorType, attachments } = await request.json();
 
     if (!unionId || !title || !content) {
       return NextResponse.json(
@@ -51,6 +51,7 @@ export async function POST(request: Request) {
         content,
         imageUrl: imageUrl || null,
         isPrivate: isPrivate || false,
+        authorType: authorType || 'union',
         createdBy: user.id,
       })
       .returning();

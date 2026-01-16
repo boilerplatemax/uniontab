@@ -24,7 +24,6 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   // Get union details from session storage if coming from homepage
   const [unionName, setUnionName] = useState('');
   const [localNumber, setLocalNumber] = useState('');
-  const [publicName, setPublicName] = useState('');
   const [estimatedMemberCount, setEstimatedMemberCount] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -70,11 +69,6 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             ? 'Sign in to your account'
             : 'Create your union website'}
         </h2>
-        {mode === 'signup' && (
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Start your free 7-day trial
-          </p>
-        )}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
@@ -101,24 +95,46 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
           <input type="hidden" name="inviteId" value={inviteId || ''} />
 
           {mode === 'signup' && (
-            <div>
-              <Label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Your Name *
-              </Label>
-              <div className="mt-1">
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  maxLength={100}
-                  className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
-                  placeholder="Enter your full name"
-                />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label
+                  htmlFor="firstName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  First Name *
+                </Label>
+                <div className="mt-1">
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    autoComplete="given-name"
+                    required
+                    maxLength={50}
+                    className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
+                    placeholder="First name"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label
+                  htmlFor="lastName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Last Name *
+                </Label>
+                <div className="mt-1">
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    autoComplete="family-name"
+                    required
+                    maxLength={50}
+                    className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
+                    placeholder="Last name"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -187,30 +203,6 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 </div>
                 <p className="mt-1 text-xs text-gray-500">
                   Numbers only. Your page URL will be: {unionName.toLowerCase().replace(/[^a-z0-9]+/g, '')}{localNumber ? localNumber.toLowerCase().replace(/[^a-z0-9]+/g, '') : ''}
-                </p>
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="publicName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Public Display Name (optional)
-                </Label>
-                <div className="mt-1">
-                  <Input
-                    id="publicName"
-                    name="publicName"
-                    type="text"
-                    maxLength={255}
-                    value={publicName}
-                    onChange={(e) => setPublicName(e.target.value)}
-                    className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
-                    placeholder="e.g., Barrie Transit Union"
-                  />
-                </div>
-                <p className="mt-1 text-xs text-gray-500">
-                  Friendly name shown on your public page. Does not affect your URL.
                 </p>
               </div>
 
@@ -387,8 +379,8 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
           <div>
             <Button
               type="submit"
-              className="w-full h-12 text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
-              disabled={pending}
+              className="w-full h-12 text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              disabled={pending || (mode === 'signup' && !acceptedTerms)}
             >
               {pending ? (
                 <span className="flex items-center gap-2">

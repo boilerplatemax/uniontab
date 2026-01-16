@@ -4,6 +4,21 @@ import { unionEmailDomains } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { checkRateLimit, incrementRateLimitCounters } from './rate-limits';
 import { getEmailAddress } from './subdomain';
+import { getContrastColor, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
+
+/**
+ * Generate a darker shade of a hex color for gradient effects
+ */
+function getDarkerShade(hexColor: string, factor: number = 0.2): string {
+  const hex = hexColor.replace('#', '');
+  if (hex.length !== 6) return '#1e40af'; // Default darker blue
+
+  const r = Math.max(0, Math.floor(parseInt(hex.substr(0, 2), 16) * (1 - factor)));
+  const g = Math.max(0, Math.floor(parseInt(hex.substr(2, 2), 16) * (1 - factor)));
+  const b = Math.max(0, Math.floor(parseInt(hex.substr(4, 2), 16) * (1 - factor)));
+
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
 
 // Initialize SendGrid with API key
 const apiKey = process.env.SENDGRID_API_KEY;
@@ -250,7 +265,8 @@ export async function sendEmailVerification(
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const verificationUrl = `${baseUrl}/auth/verify-email?token=${verificationToken}`;
 
-  const unionName = unionInfo ? `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}` : 'UnionTab';
+  const unionNameRaw = unionInfo ? `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}` : 'UnionTab';
+  const unionName = unionInfo ? unionNameRaw.toUpperCase() : unionNameRaw;
   const subject = `Verify Your Email - ${unionName}`;
 
   const text = `
@@ -374,7 +390,7 @@ export async function sendMembershipApprovalEmail(
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const unionUrl = `${baseUrl}/${unionInfo.slug}`;
 
-  const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
+  const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`.toUpperCase();
   const subject = `Membership Approved - ${unionName}`;
 
   const text = `
@@ -567,6 +583,146 @@ The ${unionName} Team
   await sendEmail({ to: email, subject, text, html });
 }
 
+/**
+ * Send a member invitation email
+ * This is used to directly invite potential members via email
+ */
+export async function sendMemberInviteEmail(
+  email: string,
+  unionInfo: { name: string; localNumber: string | null; slug: string },
+  inviterName?: string
+) {
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  const signUpUrl = `${baseUrl}/${unionInfo.slug}/sign-up`;
+
+  const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`.toUpperCase();
+  const subject = `You're Invited to Join ${unionName}`;
+
+  const invitedByText = inviterName ? `${inviterName} has invited you to join` : 'You have been invited to join';
+
+  const text = `
+${invitedByText} ${unionName}!
+
+Join your fellow union members on our member platform where you can:
+- Stay up-to-date with union news and announcements
+- Access important documents and resources
+- Connect with other members
+- Participate in union events
+
+Click the link below to sign up:
+${signUpUrl}
+
+After signing up, your membership will be reviewed and approved by an administrator.
+
+If you have any questions, please contact your union representatives.
+
+Best regards,
+The ${unionName} Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .container {
+      background-color: #f9fafb;
+      border-radius: 8px;
+      padding: 30px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #2563eb;
+      margin: 0;
+    }
+    .content {
+      background-color: white;
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+    .invite-box {
+      background-color: #dbeafe;
+      border-left: 4px solid #2563eb;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 30px;
+      background-color: #2563eb;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+    .benefits-list {
+      margin: 15px 0;
+      padding-left: 20px;
+    }
+    .benefits-list li {
+      margin: 8px 0;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>${unionName}</h1>
+    </div>
+    <div class="content">
+      <h2>You're Invited!</h2>
+      <div class="invite-box">
+        <p style="margin: 0; font-weight: 600; color: #1e40af;">${invitedByText} ${unionName}!</p>
+      </div>
+      <p>Join your fellow union members on our member platform where you can:</p>
+      <ul class="benefits-list">
+        <li>Stay up-to-date with union news and announcements</li>
+        <li>Access important documents and resources</li>
+        <li>Connect with other members</li>
+        <li>Participate in union events</li>
+      </ul>
+      <p>Click the button below to create your account:</p>
+      <center>
+        <a href="${signUpUrl}" class="button" style="display: inline-block; padding: 12px 30px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin: 20px 0;">Join Now</a>
+      </center>
+      <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
+        Or copy and paste this link into your browser:<br>
+        <a href="${signUpUrl}" style="word-break: break-all;">${signUpUrl}</a>
+      </p>
+      <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
+        After signing up, your membership will be reviewed and approved by an administrator.
+      </p>
+    </div>
+    <div class="footer">
+      <p>© ${new Date().getFullYear()} ${unionName}. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  await sendEmail({ to: email, subject, text, html });
+}
+
 interface SendMassEmailOptions {
   to: string;
   subject: string;
@@ -577,6 +733,7 @@ interface SendMassEmailOptions {
     name: string;
     localNumber: string | null;
     logoUrl?: string | null;
+    themeColor?: string | null; // Custom brand color for email header
   };
   attachments?: Array<{
     content?: string;
@@ -608,6 +765,7 @@ interface SendMeetingInviteOptions {
     localNumber: string | null;
     logoUrl?: string | null;
     slug: string;
+    themeColor?: string | null; // Custom brand color for email header
   };
 }
 
@@ -639,6 +797,11 @@ export async function sendMassEmail({
   const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
   const unionNameUppercase = unionName.toUpperCase();
 
+  // Get theme colors for email header
+  const themeColor = unionInfo.themeColor || DEFAULT_THEME_COLOR;
+  const darkerShade = getDarkerShade(themeColor);
+  const headerTextColor = getContrastColor(themeColor);
+
   // Wrap the user's HTML content in a branded email template
   const brandedHtml = `
 <!DOCTYPE html>
@@ -663,8 +826,8 @@ export async function sendMassEmail({
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     .email-header {
-      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-      color: white;
+      background: linear-gradient(135deg, ${themeColor} 0%, ${darkerShade} 100%);
+      color: ${headerTextColor};
       padding: 30px;
       text-align: center;
     }
@@ -686,7 +849,7 @@ export async function sendMassEmail({
       height: auto;
     }
     .email-body a {
-      color: #2563eb;
+      color: ${themeColor};
       text-decoration: none;
     }
     .email-body a:hover {
@@ -704,9 +867,9 @@ export async function sendMassEmail({
 </head>
 <body>
   <div class="email-container">
-    <div class="email-header">
+    <div class="email-header" style="background: linear-gradient(135deg, ${themeColor} 0%, ${darkerShade} 100%); color: ${headerTextColor};">
       ${unionInfo.logoUrl ? `<img src="${unionInfo.logoUrl}" alt="${unionNameUppercase} Logo">` : ''}
-      <h1>${unionNameUppercase}</h1>
+      <h1 style="color: ${headerTextColor};">${unionNameUppercase}</h1>
     </div>
     <div class="email-body">
       ${htmlContent}
@@ -780,6 +943,11 @@ export async function sendMeetingInviteEmail({
 
   const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
   const unionNameUppercase = unionName.toUpperCase();
+
+  // Get theme colors for email header
+  const themeColor = unionInfo.themeColor || DEFAULT_THEME_COLOR;
+  const darkerShade = getDarkerShade(themeColor);
+  const headerTextColor = getContrastColor(themeColor);
 
   // Format date and time
   const meetingDate = new Date(meeting.scheduledDate).toLocaleDateString('en-US', {
@@ -857,8 +1025,8 @@ The ${unionName} Team
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     .email-header {
-      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-      color: white;
+      background: linear-gradient(135deg, ${themeColor} 0%, ${darkerShade} 100%);
+      color: ${headerTextColor};
       padding: 30px;
       text-align: center;
     }
@@ -885,7 +1053,7 @@ The ${unionName} Team
     .meeting-title {
       font-size: 22px;
       font-weight: bold;
-      color: #1e40af;
+      color: ${darkerShade};
       margin-bottom: 15px;
     }
     .meeting-detail {
@@ -897,20 +1065,20 @@ The ${unionName} Team
     .meeting-detail-icon {
       width: 20px;
       margin-right: 10px;
-      color: #2563eb;
+      color: ${themeColor};
     }
     .join-button {
       display: inline-block;
       padding: 14px 30px;
-      background-color: #2563eb;
-      color: #ffffff !important;
+      background-color: ${themeColor};
+      color: ${headerTextColor} !important;
       text-decoration: none;
       border-radius: 6px;
       font-weight: 600;
       margin: 20px 0;
     }
     .join-button:hover {
-      background-color: #1d4ed8;
+      background-color: ${darkerShade};
     }
     .password-box {
       background-color: #fef3c7;
@@ -938,35 +1106,35 @@ The ${unionName} Team
 </head>
 <body>
   <div class="email-container">
-    <div class="email-header">
+    <div class="email-header" style="background: linear-gradient(135deg, ${themeColor} 0%, ${darkerShade} 100%); color: ${headerTextColor};">
       ${unionInfo.logoUrl ? `<img src="${unionInfo.logoUrl}" alt="${unionNameUppercase} Logo">` : ''}
-      <h1>${unionNameUppercase}</h1>
+      <h1 style="color: ${headerTextColor};">${unionNameUppercase}</h1>
     </div>
     <div class="email-body">
       <p>Hi ${memberName},</p>
       <p>You are invited to an online meeting!</p>
 
       <div class="meeting-card">
-        <div class="meeting-title">${meeting.title}</div>
+        <div class="meeting-title" style="color: ${darkerShade};">${meeting.title}</div>
 
         <div class="meeting-detail">
-          <span class="meeting-detail-icon">&#128197;</span>
+          <span class="meeting-detail-icon" style="color: ${themeColor};">&#128197;</span>
           <strong>${meetingDate}</strong>
         </div>
 
         <div class="meeting-detail">
-          <span class="meeting-detail-icon">&#128336;</span>
+          <span class="meeting-detail-icon" style="color: ${themeColor};">&#128336;</span>
           <span>${timeRange} (${meeting.timezone})</span>
         </div>
 
         <div class="meeting-detail">
-          <span class="meeting-detail-icon">&#128187;</span>
+          <span class="meeting-detail-icon" style="color: ${themeColor};">&#128187;</span>
           <span>${platformName}</span>
         </div>
 
         ${meeting.meetingLink ? `
         <center>
-          <a href="${meeting.meetingLink}" class="join-button">Join Meeting</a>
+          <a href="${meeting.meetingLink}" class="join-button" style="background-color: ${themeColor}; color: ${headerTextColor};">Join Meeting</a>
         </center>
         ` : ''}
 
@@ -987,7 +1155,7 @@ The ${unionName} Team
       <p style="margin-top: 20px;">We hope to see you there!</p>
 
       <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
-        <a href="${meetingPageUrl}">View all meetings</a>
+        <a href="${meetingPageUrl}" style="color: ${themeColor};">View all meetings</a>
       </p>
     </div>
     <div class="email-footer">

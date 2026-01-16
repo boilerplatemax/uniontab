@@ -42,6 +42,8 @@ export const unions = pgTable('unions', {
   description: text('description'),
   about: text('about'),
   aboutImages: json('about_images').$type<string[]>(), // Array of image URLs for about section
+  aboutImageUrl: text('about_image_url'), // Main featured image for about section
+  aboutImagePosition: varchar('about_image_position', { length: 20 }).default('above'), // 'above', 'left', 'right'
   theme: varchar('theme', { length: 50 }).notNull().default('default'),
   themeColor: varchar('theme_color', { length: 7 }).notNull().default('#2563eb'),
   accessibilityWidgetEnabled: boolean('accessibility_widget_enabled').notNull().default(true),
@@ -54,7 +56,8 @@ export const unions = pgTable('unions', {
     youtube?: string;
     tiktok?: string;
   }>(),
-  showSocialInHeader: boolean('show_social_in_header').notNull().default(false),
+  showSocialInHeader: boolean('show_social_in_header').notNull().default(false), // Deprecated - use showSocialInHero
+  showSocialInHero: boolean('show_social_in_hero').notNull().default(false), // Toggle to show social icons in hero section
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   publishedAt: timestamp('published_at'),
@@ -65,7 +68,12 @@ export const unions = pgTable('unions', {
   subscriptionStatus: varchar('subscription_status', { length: 20 }),
   monthlyEmailsSent: integer('monthly_emails_sent').notNull().default(0),
   emailUsageResetDate: timestamp('email_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
+  monthlySMSSent: integer('monthly_sms_sent').notNull().default(0),
+  smsUsageResetDate: timestamp('sms_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
   storageUsedBytes: integer('storage_used_bytes').notNull().default(0),
+  // Email invite tracking (separate from general email usage)
+  monthlyEmailInvitesSent: integer('monthly_email_invites_sent').notNull().default(0),
+  emailInviteUsageResetDate: timestamp('email_invite_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
   // Estimated member count collected at signup (for internal tracking only)
   estimatedMemberCount: varchar('estimated_member_count', { length: 50 }),
   // Preferred union name for email subdomain generation (e.g., "cupe123" -> notify@cupe123.uniontab.com)
@@ -84,21 +92,61 @@ export const members = pgTable('members', {
   status: varchar('status', { length: 20 }).notNull().default('pending'), // 'pending', 'approved', 'rejected'
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
 
-  // Required fields (collected during sign-up)
-  phone: varchar('phone', { length: 20 }),
+  // Personal Information - Enhanced
+  firstName: varchar('first_name', { length: 100 }),
+  lastName: varchar('last_name', { length: 100 }),
+  middleName: varchar('middle_name', { length: 100 }),
+  preferredName: varchar('preferred_name', { length: 100 }),
+  personalEmail: varchar('personal_email', { length: 255 }),
+  homePhone: varchar('home_phone', { length: 20 }),
+  cellPhone: varchar('cell_phone', { length: 20 }),
+  phone: varchar('phone', { length: 20 }), // Legacy - kept for backward compatibility
+  city: varchar('city', { length: 100 }),
+  province: varchar('province', { length: 100 }),
+  postalCode: varchar('postal_code', { length: 20 }),
+  address: text('address'),
+  dateOfBirth: timestamp('date_of_birth'),
+
+  // Emergency Contact
+  emergencyContactName: varchar('emergency_contact_name', { length: 255 }),
+  emergencyContactPhone: varchar('emergency_contact_phone', { length: 20 }),
+  emergencyContactRelation: varchar('emergency_contact_relation', { length: 100 }),
+
+  // Employment Information - Enhanced
   employer: varchar('employer', { length: 255 }),
   jobTitle: varchar('job_title', { length: 255 }),
   worksite: varchar('worksite', { length: 255 }),
   employmentStatus: varchar('employment_status', { length: 50 }), // 'full-time', 'part-time', 'casual', 'term'
+  startDateWithEmployer: timestamp('start_date_with_employer'),
+  department: varchar('department', { length: 255 }),
+  employeeId: varchar('employee_id', { length: 100 }),
+  shift: varchar('shift', { length: 100 }),
+  supervisor: varchar('supervisor', { length: 255 }),
+  endDateWithEmployer: timestamp('end_date_with_employer'),
+  classification: varchar('classification', { length: 255 }),
+  wageRate: varchar('wage_rate', { length: 50 }),
+  seniorityDate: timestamp('seniority_date'),
 
-  // Optional fields
-  address: text('address'),
-  dateOfBirth: timestamp('date_of_birth'),
+  // Union Information - Enhanced
   memberId: varchar('member_id', { length: 100 }), // Member ID/Number
   membershipStatus: varchar('membership_status', { length: 50 }).default('active'), // 'active', 'inactive', 'retired'
   localChapter: varchar('local_chapter', { length: 255 }),
   bargainingUnit: varchar('bargaining_unit', { length: 255 }),
-  startDateWithEmployer: timestamp('start_date_with_employer'),
+  unionEmail: varchar('union_email', { length: 255 }),
+  votingStatus: varchar('voting_status', { length: 50 }).default('eligible'), // 'eligible', 'ineligible', 'suspended'
+  membershipType: varchar('membership_type', { length: 100 }), // 'full', 'associate', 'retired', 'honorary'
+  joinDate: timestamp('join_date'),
+  seniorityNumber: varchar('seniority_number', { length: 50 }),
+  steward: varchar('steward', { length: 255 }),
+  subUnit: varchar('sub_unit', { length: 255 }),
+
+  // Notification Preferences
+  allowPhoneCalls: boolean('allow_phone_calls').notNull().default(true),
+  allowTextMessages: boolean('allow_text_messages').notNull().default(true),
+  allowEmails: boolean('allow_emails').notNull().default(true),
+  allowPushNotifications: boolean('allow_push_notifications').notNull().default(true),
+  preferredLanguage: varchar('preferred_language', { length: 10 }).default('en'),
+  communicationPreference: varchar('communication_preference', { length: 20 }).default('email'), // 'email', 'text', 'phone'
 
   // Admin-only notes field
   notes: text('notes'), // Only visible to admins/owners
@@ -109,6 +157,92 @@ export const members = pgTable('members', {
 }, (table) => ({
   uniqueUserUnion: unique('idx_members_unique_user_union').on(table.unionId, table.userId),
 }));
+
+// Member Documents Table
+export const memberDocuments = pgTable('member_documents', {
+  id: serial('id').primaryKey(),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  category: varchar('category', { length: 50 }).notNull().default('other'), // 'contract', 'id', 'certification', 'grievance', 'other'
+  fileUrl: text('file_url').notNull(),
+  fileType: varchar('file_type', { length: 50 }),
+  fileSize: integer('file_size'),
+  notes: text('notes'),
+  uploadedAt: timestamp('uploaded_at').notNull().defaultNow(),
+  uploadedBy: integer('uploaded_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
+
+// Member Certifications Table
+export const memberCertifications = pgTable('member_certifications', {
+  id: serial('id').primaryKey(),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  type: varchar('type', { length: 100 }), // 'license', 'certificate', 'training'
+  issuingBody: varchar('issuing_body', { length: 255 }),
+  completedDate: timestamp('completed_date'),
+  expiryDate: timestamp('expiry_date'),
+  documentUrl: text('document_url'),
+  status: varchar('status', { length: 20 }).notNull().default('valid'), // 'valid', 'expired', 'pending_renewal'
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
+
+// Member Positions Table (Executive, Union Positions, Committee Memberships)
+export const memberPositions = pgTable('member_positions', {
+  id: serial('id').primaryKey(),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  positionType: varchar('position_type', { length: 50 }).notNull(), // 'executive', 'union_position', 'committee'
+  title: varchar('title', { length: 255 }).notNull(),
+  area: varchar('area', { length: 255 }),
+  startDate: timestamp('start_date'),
+  endDate: timestamp('end_date'),
+  isCurrent: boolean('is_current').notNull().default(true),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
+
+// Member Notes Table (Multiple timestamped admin notes)
+export const memberNotes = pgTable('member_notes', {
+  id: serial('id').primaryKey(),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  noteType: varchar('note_type', { length: 50 }).default('general'), // 'general', 'warning', 'commendation', 'meeting'
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+});
 
 export const activityLogs = pgTable('activity_logs', {
   id: serial('id').primaryKey(),
@@ -166,6 +300,7 @@ export const posts = pgTable('posts', {
   imageUrl: text('image_url'),
   isPrivate: boolean('is_private').notNull().default(false),
   isPinned: boolean('is_pinned').notNull().default(false),
+  authorType: varchar('author_type', { length: 20 }).notNull().default('union'), // 'user' or 'union'
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   createdBy: integer('created_by')
@@ -597,6 +732,7 @@ export const unionsRelations = relations(unions, ({ one, many }) => ({
   elections: many(elections),
   announcements: many(announcements),
   massEmails: many(massEmails),
+  massSMS: many(massSMS),
   emailDomain: one(unionEmailDomains),
   dues: many(dues),
   duesReceipts: many(duesReceipts),
@@ -638,6 +774,74 @@ export const membersRelations = relations(members, ({ one, many }) => ({
   }),
   dues: many(dues),
   duesReceipts: many(duesReceipts),
+  documents: many(memberDocuments),
+  certifications: many(memberCertifications),
+  positions: many(memberPositions),
+  memberNotes: many(memberNotes),
+}));
+
+// Member Documents Relations
+export const memberDocumentsRelations = relations(memberDocuments, ({ one }) => ({
+  member: one(members, {
+    fields: [memberDocuments.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [memberDocuments.unionId],
+    references: [unions.id],
+  }),
+  uploadedBy: one(users, {
+    fields: [memberDocuments.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
+// Member Certifications Relations
+export const memberCertificationsRelations = relations(memberCertifications, ({ one }) => ({
+  member: one(members, {
+    fields: [memberCertifications.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [memberCertifications.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [memberCertifications.createdBy],
+    references: [users.id],
+  }),
+}));
+
+// Member Positions Relations
+export const memberPositionsRelations = relations(memberPositions, ({ one }) => ({
+  member: one(members, {
+    fields: [memberPositions.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [memberPositions.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [memberPositions.createdBy],
+    references: [users.id],
+  }),
+}));
+
+// Member Notes Relations
+export const memberNotesRelations = relations(memberNotes, ({ one }) => ({
+  member: one(members, {
+    fields: [memberNotes.memberId],
+    references: [members.id],
+  }),
+  union: one(unions, {
+    fields: [memberNotes.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [memberNotes.createdBy],
+    references: [users.id],
+  }),
 }));
 
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
@@ -857,6 +1061,65 @@ export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   }),
   member: one(members, {
     fields: [emailLogs.memberId],
+    references: [members.id],
+  }),
+}));
+
+// Mass SMS System Tables
+export const massSMS = pgTable('mass_sms', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  message: text('message').notNull(),
+  recipientFilter: varchar('recipient_filter', { length: 50 }).notNull(), // 'all', 'approved', 'admin', 'pending', 'rejected', 'custom'
+  customRecipientIds: json('custom_recipient_ids'), // Array of member IDs for custom selection
+  status: varchar('status', { length: 20 }).notNull().default('draft'), // draft, sending, sent, failed
+  totalRecipients: integer('total_recipients'),
+  successCount: integer('success_count').default(0),
+  failureCount: integer('failure_count').default(0),
+  sentAt: timestamp('sent_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const smsLogs = pgTable('sms_logs', {
+  id: serial('id').primaryKey(),
+  massSMSId: integer('mass_sms_id')
+    .notNull()
+    .references(() => massSMS.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  phone: varchar('phone', { length: 20 }).notNull(),
+  status: varchar('status', { length: 20 }).notNull(), // sent, failed, delivered
+  errorMessage: text('error_message'),
+  twilioSid: varchar('twilio_sid', { length: 50 }), // Twilio message SID for tracking
+  sentAt: timestamp('sent_at').notNull().defaultNow(),
+});
+
+export const massSMSRelations = relations(massSMS, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [massSMS.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [massSMS.createdBy],
+    references: [users.id],
+  }),
+  logs: many(smsLogs),
+}));
+
+export const smsLogsRelations = relations(smsLogs, ({ one }) => ({
+  massSMS: one(massSMS, {
+    fields: [smsLogs.massSMSId],
+    references: [massSMS.id],
+  }),
+  member: one(members, {
+    fields: [smsLogs.memberId],
     references: [members.id],
   }),
 }));
@@ -1367,6 +1630,14 @@ export type Union = typeof unions.$inferSelect;
 export type NewUnion = typeof unions.$inferInsert;
 export type Member = typeof members.$inferSelect;
 export type NewMember = typeof members.$inferInsert;
+export type MemberDocument = typeof memberDocuments.$inferSelect;
+export type NewMemberDocument = typeof memberDocuments.$inferInsert;
+export type MemberCertification = typeof memberCertifications.$inferSelect;
+export type NewMemberCertification = typeof memberCertifications.$inferInsert;
+export type MemberPosition = typeof memberPositions.$inferSelect;
+export type NewMemberPosition = typeof memberPositions.$inferInsert;
+export type MemberNote = typeof memberNotes.$inferSelect;
+export type NewMemberNote = typeof memberNotes.$inferInsert;
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type NewActivityLog = typeof activityLogs.$inferInsert;
 export type Invitation = typeof invitations.$inferSelect;
@@ -1405,6 +1676,10 @@ export type MassEmail = typeof massEmails.$inferSelect;
 export type NewMassEmail = typeof massEmails.$inferInsert;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type NewEmailLog = typeof emailLogs.$inferInsert;
+export type MassSMS = typeof massSMS.$inferSelect;
+export type NewMassSMS = typeof massSMS.$inferInsert;
+export type SMSLog = typeof smsLogs.$inferSelect;
+export type NewSMSLog = typeof smsLogs.$inferInsert;
 export type Dues = typeof dues.$inferSelect;
 export type NewDues = typeof dues.$inferInsert;
 export type DuesReceipt = typeof duesReceipts.$inferSelect;

@@ -4,9 +4,31 @@ import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { sendEmailVerification } from '@/lib/email/sendgrid';
 import crypto from 'crypto';
+import {
+  checkRateLimit,
+  getClientIp,
+  emailVerificationRateLimit,
+} from '@/lib/utils/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting to prevent abuse
+    const clientIp = getClientIp(request);
+    const rateLimitResult = checkRateLimit(clientIp, emailVerificationRateLimit);
+
+    if (!rateLimitResult.success) {
+      const retryAfterSeconds = Math.ceil((rateLimitResult.retryAfterMs || 0) / 1000);
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfterSeconds.toString(),
+          },
+        }
+      );
+    }
+
     const { email } = await request.json();
 
     if (!email) {

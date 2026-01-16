@@ -4,6 +4,7 @@ import { members, users, unions } from '@/lib/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { sendMembershipApprovalEmail, sendMembershipRejectionEmail } from '@/lib/email/sendgrid';
+import { checkMemberLimit } from '@/lib/membership/limits';
 
 export async function POST(request: Request) {
   try {
@@ -80,6 +81,33 @@ export async function POST(request: Request) {
         { error: 'Union not found' },
         { status: 404 }
       );
+    }
+
+    // Check member limit if approving
+    if (status === 'approved') {
+      // Count how many members are not already approved
+      const newApprovalsCount = membersToUpdate.filter(m => m.status !== 'approved').length;
+
+      if (newApprovalsCount > 0) {
+        const limitCheck = await checkMemberLimit(unionId, newApprovalsCount);
+
+        if (!limitCheck.canApprove) {
+          return NextResponse.json(
+            {
+              error: 'Union membership limit reached',
+              details: {
+                message: `Your union has reached its membership limit of ${limitCheck.limit} approved members. You can only approve ${limitCheck.remaining} more member(s). Please upgrade your plan to approve more members.`,
+                limit: limitCheck.limit,
+                current: limitCheck.current,
+                remaining: limitCheck.remaining,
+                requested: newApprovalsCount,
+                tierName: limitCheck.tierName,
+              }
+            },
+            { status: 403 }
+          );
+        }
+      }
     }
 
     // Update all members at once

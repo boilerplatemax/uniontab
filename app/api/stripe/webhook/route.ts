@@ -20,14 +20,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  switch (event.type) {
-    case 'customer.subscription.updated':
-    case 'customer.subscription.deleted':
-      const subscription = event.data.object as Stripe.Subscription;
-      await handleSubscriptionChange(subscription);
-      break;
-    default:
-      console.log(`Unhandled event type ${event.type}`);
+  try {
+    switch (event.type) {
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted':
+        const subscription = event.data.object as Stripe.Subscription;
+        console.log(`Processing ${event.type} for subscription ${subscription.id}, status: ${subscription.status}`);
+        await handleSubscriptionChange(subscription);
+        break;
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+  } catch (error) {
+    console.error(`Error handling webhook event ${event.type}:`, error);
+    // Return 500 so Stripe will retry the webhook
+    return NextResponse.json(
+      { error: 'Webhook handler failed' },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ received: true });

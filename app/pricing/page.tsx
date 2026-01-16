@@ -52,9 +52,9 @@ const pricingPlans: PricingPlan[] = [
     gradient: "from-gray-500 to-gray-600",
     borderColor: "border-gray-200 hover:border-gray-300",
     features: [
-      { name: "Members", included: true, limit: "Up to 50 members" },
+      { name: "Members", included: true, limit: "Up to 150 members" },
       { name: "Email Messages", included: true, limit: "100/month" },
-      { name: "SMS Messages", included: true, limit: "50/month" },
+      { name: "SMS Messages", included: false, limit: "Not included" },
       { name: "Elections", included: true, limit: "2/year" },
       { name: "Storage", included: true, limit: "1 GB" },
       { name: "Custom Pages", included: true, limit: "5 pages" },
@@ -70,7 +70,7 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Base",
-    price: "$49",
+    price: "$149",
     interval: "month",
     description: "For growing unions with more members",
     icon: <Zap className="h-6 w-6" />,
@@ -80,7 +80,7 @@ const pricingPlans: PricingPlan[] = [
     features: [
       { name: "Members", included: true, limit: "Up to 500 members" },
       { name: "Email Messages", included: true, limit: "2,500/month" },
-      { name: "SMS Messages", included: true, limit: "500/month" },
+      { name: "SMS Messages", included: true, limit: "1,500/month" },
       { name: "Elections", included: true, limit: "Unlimited" },
       { name: "Storage", included: true, limit: "10 GB" },
       { name: "Custom Pages", included: true, limit: "Unlimited" },
@@ -91,21 +91,21 @@ const pricingPlans: PricingPlan[] = [
       { name: "Event Management", included: true },
       { name: "Document Versioning", included: true },
     ],
-    cta: "Start 14-Day Trial",
+    cta: "Subscribe Now",
     ctaLink: "/sign-up?plan=base",
   },
   {
     name: "Plus",
-    price: "$149",
+    price: "$249",
     interval: "month",
     description: "For large unions with advanced needs",
     icon: <Crown className="h-6 w-6" />,
     gradient: "from-purple-500 to-pink-600",
     borderColor: "border-purple-200 hover:border-purple-400",
     features: [
-      { name: "Members", included: true, limit: "Unlimited" },
+      { name: "Members", included: true, limit: "Up to 2,000 members" },
       { name: "Email Messages", included: true, limit: "10,000/month" },
-      { name: "SMS Messages", included: true, limit: "2,500/month" },
+      { name: "SMS Messages", included: true, limit: "4,000/month" },
       { name: "Elections", included: true, limit: "Unlimited" },
       { name: "Storage", included: true, limit: "30 GB" },
       { name: "Custom Pages", included: true, limit: "Unlimited" },
@@ -119,7 +119,7 @@ const pricingPlans: PricingPlan[] = [
       { name: "API Access", included: true },
       { name: "Dedicated Account Manager", included: true },
     ],
-    cta: "Start 14-Day Trial",
+    cta: "Subscribe Now",
     ctaLink: "/sign-up?plan=plus",
   },
 ];
@@ -133,7 +133,7 @@ export default function PricingPage() {
       <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/info" className="flex items-center hover:opacity-80 transition-opacity group">
+            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity group">
               <div className="relative">
                 <Users className="h-8 w-8 text-blue-600 group-hover:scale-110 transition-transform" />
                 <div className="absolute -inset-1 bg-blue-600/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -143,14 +143,19 @@ export default function PricingPage() {
               </span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">
-              <Link href="/blogs">
+              <Link href="/features">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Blog
+                  Features
                 </Button>
               </Link>
               <Link href="/pricing">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
                   Pricing
+                </Button>
+              </Link>
+              <Link href="/blogs">
+                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  Blog
                 </Button>
               </Link>
               <Link href="/sign-in">
@@ -189,7 +194,7 @@ export default function PricingPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Start free and upgrade as you grow. All paid plans include a 14-day free trial with no credit card required.
+            Start free and upgrade as you grow. No commitments, cancel anytime.
           </p>
         </motion.div>
       </div>
@@ -218,11 +223,6 @@ export default function PricingPage() {
                       <span className="text-5xl font-bold text-gray-900">{plan.price}</span>
                       <span className="text-gray-600">/{plan.interval}</span>
                     </div>
-                    {plan.name !== "Free" && (
-                      <p className="text-sm text-blue-600 mt-2 font-medium">
-                        14-day free trial included
-                      </p>
-                    )}
                   </div>
                 </CardHeader>
 
@@ -296,9 +296,9 @@ export default function PricingPage() {
             </div>
 
             {[
-              { feature: "Members", free: "50", base: "500", plus: "Unlimited" },
+              { feature: "Members", free: "150", base: "500", plus: "2,000" },
               { feature: "Email/month", free: "100", base: "2,500", plus: "10,000" },
-              { feature: "SMS/month", free: "50", base: "500", plus: "2,500" },
+              { feature: "SMS/month", free: "Not included", base: "1,500", plus: "4,000" },
               { feature: "Elections", free: "2/year", base: "Unlimited", plus: "Unlimited" },
               { feature: "Storage", free: "1 GB", base: "10 GB", plus: "30 GB" },
               { feature: "Custom Pages", free: "5", base: "Unlimited", plus: "Unlimited" },
@@ -395,7 +395,7 @@ export default function PricingPage() {
                     variant="outline"
                     className="bg-transparent border-2 border-white text-white hover:bg-white/10 h-14 px-8 text-lg font-semibold"
                   >
-                    Start Free Trial
+                    Get Started
                   </Button>
                 </Link>
               </div>
@@ -423,6 +423,11 @@ export default function PricingPage() {
               <h4 className="font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
                 <li>
+                  <Link href="/features" className="hover:text-white transition-colors">
+                    Features
+                  </Link>
+                </li>
+                <li>
                   <Link href="/pricing" className="hover:text-white transition-colors">
                     Pricing
                   </Link>
@@ -430,11 +435,6 @@ export default function PricingPage() {
                 <li>
                   <Link href="/blogs" className="hover:text-white transition-colors">
                     Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/sign-up" className="hover:text-white transition-colors">
-                    Get Started
                   </Link>
                 </li>
               </ul>

@@ -77,19 +77,30 @@ export async function POST(request: Request) {
     }
     // 'all' filter means no additional conditions
 
-    // Get recipients
-    const recipients = await db
+    // Get recipients (only those who have allowEmails enabled)
+    const allRecipients = await db
       .select({
         memberId: members.id,
         userId: users.id,
         userName: users.name,
         userEmail: users.email,
+        allowEmails: members.allowEmails,
       })
       .from(members)
       .innerJoin(users, and(eq(members.userId, users.id), isNull(users.deletedAt)))
       .where(and(...conditions));
 
+    // Filter out members who have opted out of emails
+    const recipients = allRecipients.filter(r => r.allowEmails !== false);
+
     if (recipients.length === 0) {
+      const optedOutCount = allRecipients.length - recipients.length;
+      if (optedOutCount > 0 && allRecipients.length === optedOutCount) {
+        return NextResponse.json(
+          { error: 'All matching members have opted out of email communications' },
+          { status: 400 }
+        );
+      }
       return NextResponse.json(
         { error: 'No recipients found matching the criteria' },
         { status: 400 }
@@ -150,6 +161,7 @@ export async function POST(request: Request) {
       name: union.name,
       localNumber: union.localNumber,
       logoUrl: union.logoUrl,
+      themeColor: union.themeColor, // Custom brand color for email header
     };
 
     // Convert URL-based attachments to base64
