@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video, Wrench, MessageSquare } from 'lucide-react';
+import { Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video, Wrench, MessageSquare, BarChart3 } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import {
@@ -157,6 +157,16 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Settings className="h-4 w-4" />
                       <span className="hidden md:inline">Settings</span>
+                    </Button>
+                  </Link>
+                )}
+
+                {/* Analytics - standalone for owners */}
+                {isOwner && (
+                  <Link href={`/${slug}/analytics`} prefetch={true}>
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      <span className="hidden md:inline">Analytics</span>
                     </Button>
                   </Link>
                 )}
@@ -396,6 +406,20 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <Button variant="ghost" className="w-full justify-start gap-2">
                     <Settings className="h-4 w-4" />
                     Settings
+                  </Button>
+                </Link>
+              )}
+
+              {/* Analytics - for owners */}
+              {isOwner && (
+                <Link
+                  href={`/${slug}/analytics`}
+                  prefetch={true}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Button variant="ghost" className="w-full justify-start gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Analytics
                   </Button>
                 </Link>
               )}
