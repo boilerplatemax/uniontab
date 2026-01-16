@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { EditMemberDialog } from './edit-member-dialog';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign, Eye, Phone, TrendingUp, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
 interface Member {
@@ -21,6 +22,8 @@ interface Member {
     status: string;
     joinedAt: Date;
     phone: string | null;
+    cellPhone: string | null;
+    homePhone: string | null;
     employer: string | null;
     jobTitle: string | null;
     worksite: string | null;
@@ -89,6 +92,40 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [memberToEdit, setMemberToEdit] = useState<Member | null>(null);
 
+  // Member usage state
+  const [memberUsage, setMemberUsage] = useState<{
+    limit: number;
+    current: number;
+    remaining: number;
+    percentUsed: number;
+    isNearLimit: boolean;
+    tierName: string;
+  } | null>(null);
+  const [isLoadingUsage, setIsLoadingUsage] = useState(true);
+  const [showLimitWarning, setShowLimitWarning] = useState(true);
+
+  // Fetch member usage
+  useEffect(() => {
+    const fetchMemberUsage = async () => {
+      try {
+        setIsLoadingUsage(true);
+        const response = await fetch(`/api/members/usage?unionId=${union.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMemberUsage(data.usage);
+        }
+      } catch (error) {
+        console.error('Error fetching member usage:', error);
+      } finally {
+        setIsLoadingUsage(false);
+      }
+    };
+
+    if (isOwner) {
+      fetchMemberUsage();
+    }
+  }, [union.id, isOwner]);
+
   const getUserDisplayName = (user: { name: string | null; email: string }) => {
     return user.name || user.email;
   };
@@ -107,6 +144,10 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const getMemberPhone = (member: Member['member']) => {
+    return member.cellPhone || member.homePhone || member.phone || null;
   };
 
   // Get unique values for filter dropdowns
@@ -625,6 +666,94 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
           </p>
         </div>
 
+        {/* Member Limit Warning (dismissible) */}
+        {isOwner && memberUsage && memberUsage.isNearLimit && showLimitWarning && (
+          <Card className={`mb-6 ${memberUsage.percentUsed >= 100 ? 'border-red-500 bg-red-50' : 'border-yellow-500 bg-yellow-50'}`}>
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className={`p-2 rounded-lg ${memberUsage.percentUsed >= 100 ? 'bg-red-100' : 'bg-yellow-100'}`}>
+                    <AlertTriangle className={`h-5 w-5 ${memberUsage.percentUsed >= 100 ? 'text-red-600' : 'text-yellow-600'}`} />
+                  </div>
+                  <div>
+                    <p className={`font-medium ${memberUsage.percentUsed >= 100 ? 'text-red-900' : 'text-yellow-900'}`}>
+                      {memberUsage.percentUsed >= 100
+                        ? 'Membership Limit Reached'
+                        : 'Approaching Membership Limit'}
+                    </p>
+                    <p className={`text-sm mt-1 ${memberUsage.percentUsed >= 100 ? 'text-red-700' : 'text-yellow-700'}`}>
+                      {memberUsage.percentUsed >= 100
+                        ? `Your ${memberUsage.tierName} plan has reached its limit of ${memberUsage.limit} approved members. Upgrade to approve more members.`
+                        : `You have ${memberUsage.remaining} member slot${memberUsage.remaining !== 1 ? 's' : ''} remaining on your ${memberUsage.tierName} plan (${memberUsage.current}/${memberUsage.limit}).`}
+                    </p>
+                    <Link href={`/${slug}/billing`}>
+                      <Button
+                        size="sm"
+                        className={`mt-3 ${memberUsage.percentUsed >= 100 ? 'bg-red-600 hover:bg-red-700' : 'bg-yellow-600 hover:bg-yellow-700'}`}
+                      >
+                        Upgrade Plan
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowLimitWarning(false)}
+                  className={`${memberUsage.percentUsed >= 100 ? 'text-red-600 hover:bg-red-100' : 'text-yellow-600 hover:bg-yellow-100'}`}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Member Capacity Progress Bar */}
+        {isOwner && memberUsage && (
+          <Card className="mb-6">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <TrendingUp className="h-5 w-5" />
+                Member Capacity ({memberUsage.tierName} Plan)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-gray-700">
+                    {memberUsage.current} / {memberUsage.limit} approved members
+                  </span>
+                  <span className={`font-medium ${
+                    memberUsage.percentUsed >= 100
+                      ? 'text-red-600'
+                      : memberUsage.percentUsed >= 80
+                      ? 'text-yellow-600'
+                      : 'text-green-600'
+                  }`}>
+                    {memberUsage.percentUsed}%
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(memberUsage.percentUsed, 100)}
+                  className={`h-3 ${
+                    memberUsage.percentUsed >= 100
+                      ? '[&>div]:bg-red-500'
+                      : memberUsage.percentUsed >= 80
+                      ? '[&>div]:bg-yellow-500'
+                      : '[&>div]:bg-green-500'
+                  }`}
+                />
+                <p className="text-xs text-gray-500">
+                  {memberUsage.remaining > 0
+                    ? `${memberUsage.remaining} slot${memberUsage.remaining !== 1 ? 's' : ''} remaining`
+                    : 'No slots remaining - upgrade to approve more members'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card
@@ -759,37 +888,6 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                   <Download className="h-4 w-4" />
                   Export CSV
                 </Button>
-                <label>
-                  <input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleImportCSV}
-                    className="hidden"
-                    disabled={isImporting}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={isImporting}
-                    className="gap-2"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      (e.currentTarget.parentElement?.querySelector('input[type="file"]') as HTMLInputElement)?.click();
-                    }}
-                  >
-                    {isImporting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Importing...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="h-4 w-4" />
-                        Import CSV
-                      </>
-                    )}
-                  </Button>
-                </label>
               </div>
             )}
           </div>
@@ -1070,8 +1168,21 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                             {getUserDisplayName(member.user)}
                           </p>
                           <p className="text-xs sm:text-sm text-gray-600 truncate">{member.user.email}</p>
+                          {getMemberPhone(member.member) && (
+                            <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                              <Phone className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{getMemberPhone(member.member)}</span>
+                            </div>
+                          )}
                           <span className="text-xs text-gray-500 sm:hidden">
-                            Joined {formatDate(member.member.joinedAt)}
+                            {getMemberPhone(member.member) ? (
+                              <span className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                {getMemberPhone(member.member)}
+                              </span>
+                            ) : (
+                              `Joined ${formatDate(member.member.joinedAt)}`
+                            )}
                           </span>
                         </div>
                       </div>
@@ -1176,6 +1287,18 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                               )}
                             </Button>
                           )}
+
+                          {/* View Profile button */}
+                          <Link href={`/${slug}/members/${member.member.id}`}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
+                            >
+                              <Eye className="h-4 w-4 sm:mr-1" />
+                              <span className="hidden sm:inline">View</span>
+                            </Button>
+                          </Link>
 
                           {/* Edit button - always visible */}
                           <Button

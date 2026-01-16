@@ -14,7 +14,7 @@ export function NavbarSpacer({ announcementId }: NavbarSpacerProps) {
       {/* Spacing for fixed navbar */}
       <div className="h-14" />
       {/* Additional spacing for announcement banner */}
-      {hasVisibleAnnouncement && <div className="h-12 transition-all duration-300" />}
+      {hasVisibleAnnouncement && <div className="h-12" />}
     </>
   );
 }

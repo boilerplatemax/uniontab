@@ -55,6 +55,7 @@ async function getUnionPosts(unionId: number, userId?: number) {
       imageUrl: posts.imageUrl,
       isPrivate: posts.isPrivate,
       isPinned: posts.isPinned,
+      authorType: posts.authorType,
       createdAt: posts.createdAt,
       updatedAt: posts.updatedAt,
       updatedBy: posts.updatedBy,

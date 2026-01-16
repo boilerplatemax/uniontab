@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video, Wrench } from 'lucide-react';
+import { Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video, Wrench, MessageSquare } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,18 +44,20 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
   // Simplified navbar for non-signed-in users
   if (!membership) {
     return (
-      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm transition-all duration-300 ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
+      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
-            <Link
-              href={`/${slug}`}
-              prefetch={true}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <span className="font-semibold text-gray-900 text-lg">
-                {displayName}
-              </span>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href={`/${slug}`}
+                prefetch={true}
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+              >
+                <span className="font-semibold text-gray-900 text-lg">
+                  {displayName}
+                </span>
+              </Link>
+            </div>
             <div className="flex items-center gap-3">
               <Link href={`/${slug}/sign-in`} prefetch={true}>
                 <Button variant="outline" size="sm" className="border-gray-300">
@@ -77,18 +79,20 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
   // Full navbar for signed-in users
   return (
     <>
-      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm transition-all duration-300 ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
+      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
-            <Link
-              href={`/${slug}`}
-              prefetch={true}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <span className="font-semibold text-gray-900 text-lg">
-                {displayName}
-              </span>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href={`/${slug}`}
+                prefetch={true}
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+              >
+                <span className="font-semibold text-gray-900 text-lg">
+                  {displayName}
+                </span>
+              </Link>
+            </div>
             <div className="flex items-center gap-2">
               <div className="hidden sm:flex items-center gap-2">
                 {/* Grievances - visible to all members */}
@@ -133,6 +137,16 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Mail className="h-4 w-4" />
                       <span className="hidden md:inline">Emails</span>
+                    </Button>
+                  </Link>
+                )}
+
+                {/* SMS - standalone for owners/admins */}
+                {isOwnerOrAdmin && (
+                  <Link href={`/${slug}/mass-sms`} prefetch={true}>
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      <span className="hidden md:inline">SMS</span>
                     </Button>
                   </Link>
                 )}
@@ -354,6 +368,20 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <Button variant="ghost" className="w-full justify-start gap-2">
                     <Mail className="h-4 w-4" />
                     Emails
+                  </Button>
+                </Link>
+              )}
+
+              {/* SMS - for owners/admins */}
+              {isOwnerOrAdmin && (
+                <Link
+                  href={`/${slug}/mass-sms`}
+                  prefetch={true}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Button variant="ghost" className="w-full justify-start gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    SMS
                   </Button>
                 </Link>
               )}
