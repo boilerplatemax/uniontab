@@ -48,12 +48,7 @@ interface SendEmailOptions {
 
 /**
  * Get FROM email address for a union
- * Uses union's custom subdomain if available and not blocked, falls back to default.
- *
- * Note: We use the custom subdomain even if verification is still pending/failed,
- * as long as DNS records are created in Cloudflare. SendGrid can still send emails
- * from unverified domains - verification primarily affects DKIM signing which
- * improves deliverability but isn't required for sending.
+ * Uses verified subdomain if available, falls back to default
  */
 async function getFromEmail(
   unionId?: number,
@@ -68,17 +63,15 @@ async function getFromEmail(
   }
 
   try {
-    // Check if union has a configured email domain
+    // Check if union has a verified email domain
     const emailDomain = await db
       .select()
       .from(unionEmailDomains)
       .where(eq(unionEmailDomains.unionId, unionId))
       .limit(1);
 
-    // If domain exists and is not blocked, use it (regardless of verification status)
-    // The subdomain DNS records should be set up in Cloudflare for sending to work
-    if (emailDomain.length > 0 && !emailDomain[0].isBlocked) {
-      console.log(`Using custom domain for union ${unionId}: ${emailDomain[0].subdomain} (verification: ${emailDomain[0].verificationStatus})`);
+    // If domain exists and is verified, use it
+    if (emailDomain.length > 0 && emailDomain[0].verificationStatus === 'verified') {
       return {
         email: getEmailAddress(emailDomain[0].subdomain, fromLocalPart),
         name: FROM_NAME,
