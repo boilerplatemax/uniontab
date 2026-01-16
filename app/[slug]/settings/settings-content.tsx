@@ -78,6 +78,7 @@ export function SettingsContent() {
     themeColor: '#2563eb',
     socialLinks: {} as Record<string, string>,
     showSocialInHeader: false,
+    preferredUnionName: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -100,6 +101,7 @@ export function SettingsContent() {
         themeColor: union.themeColor || '#2563eb',
         socialLinks: (union as any).socialLinks || {},
         showSocialInHeader: (union as any).showSocialInHeader || false,
+        preferredUnionName: (union as any).preferredUnionName || '',
       });
     }
   }, [union]);
@@ -616,6 +618,33 @@ export function SettingsContent() {
                     setFormData({ ...formData, website: e.target.value })
                   }
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Advanced Settings */}
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle>Advanced Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="preferredUnionName">
+                  Preferred Union Name (for Email Subdomain)
+                </Label>
+                <Input
+                  id="preferredUnionName"
+                  placeholder="e.g., cupe123"
+                  value={formData.preferredUnionName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, preferredUnionName: e.target.value })
+                  }
+                  maxLength={100}
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  This name is used to generate your union's email subdomain (e.g., notify@cupe123.uniontab.com).
+                  Leave blank to auto-generate from your union name and local number.
+                </p>
               </div>
             </CardContent>
           </Card>

@@ -44,6 +44,7 @@ export async function PUT(request: NextRequest) {
       themeColor,
       socialLinks,
       showSocialInHeader,
+      preferredUnionName,
     } = body;
 
     // Update the union
@@ -64,6 +65,7 @@ export async function PUT(request: NextRequest) {
         themeColor: themeColor || '#2563eb',
         socialLinks: socialLinks || null,
         showSocialInHeader: showSocialInHeader ?? false,
+        preferredUnionName: preferredUnionName || null,
       })
       .where(eq(unions.id, membership.unionId))
       .returning();
