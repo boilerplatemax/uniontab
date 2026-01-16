@@ -30,8 +30,9 @@ export default function HomePage() {
     target: heroRef,
     offset: ["start start", "end start"]
   });
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
+  // Keep minimum opacity of 1 on mobile to prevent faded/transparent appearance
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 1]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.98]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -62,6 +63,11 @@ export default function HomePage() {
               <Link href="/blogs" className="hidden sm:block">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
                   Blog
+                </Button>
+              </Link>
+              <Link href="/contact" className="hidden sm:block">
+                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  Contact
                 </Button>
               </Link>
               <Link href="/member-login">
@@ -169,16 +175,16 @@ export default function HomePage() {
                     </div>
 
                     <div className="pt-2 space-y-2">
-                      <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
                         Free forever for locals under 150 members
                       </div>
-                      <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
                         No credit card required
                       </div>
-                      <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
                         Setup in under 10 minutes
                       </div>
                     </div>
@@ -539,7 +545,7 @@ export default function HomePage() {
               <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
                 <FileCheck className="h-10 w-10 text-indigo-600 mx-auto mb-3" />
                 <h4 className="font-semibold text-gray-900 mb-2">Audit Trails</h4>
-                <p className="text-sm text-gray-600">Complete records for DOL compliance</p>
+                <p className="text-sm text-gray-600">Complete records for regulatory compliance</p>
               </div>
             </AnimatedSection>
 
@@ -562,32 +568,32 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Union Logos Placeholder - For Future Use */}
-      <section className="py-12 bg-gray-50 border-b border-gray-100">
+      {/* Union Logos Banner */}
+      <section className="py-10 bg-gray-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center">
               <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-8">
-                Trusted by Union Locals Across Industries
+                Trusted by Union Locals
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 opacity-60">
-                {/* Placeholder logos - these would be replaced with actual union logos when available */}
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Users className="h-8 w-8" />
-                  <span className="font-semibold">Your Union</span>
+              <div className="flex items-center justify-center gap-8 sm:gap-12 md:gap-16">
+                {/* Placeholder logos - replace with actual union logos */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-400 text-xs">Logo</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Users className="h-8 w-8" />
-                  <span className="font-semibold">Could Be</span>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-400 text-xs">Logo</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Users className="h-8 w-8" />
-                  <span className="font-semibold">Featured Here</span>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-400 text-xs">Logo</span>
+                </div>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center hidden sm:flex">
+                  <span className="text-gray-400 text-xs">Logo</span>
+                </div>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center hidden md:flex">
+                  <span className="text-gray-400 text-xs">Logo</span>
                 </div>
               </div>
-              <p className="mt-6 text-sm text-gray-500">
-                Want to be featured? <Link href="/sign-up" className="text-blue-600 hover:text-blue-700 font-medium">Get started today</Link>
-              </p>
             </div>
           </AnimatedSection>
         </div>
