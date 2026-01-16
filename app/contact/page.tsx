@@ -111,33 +111,24 @@ export default function ContactPage() {
       </nav>
 
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center space-y-6"
+          className="text-center space-y-4"
         >
-          <div className="inline-block">
-            <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold inline-flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" />
-              We're Here to Help
-            </div>
-          </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900">
-            Get in
-            <span className="block mt-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Touch With Us
-            </span>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+            Get in Touch
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Have questions about UnionTab? Our team is ready to help you find the perfect solution for your union.
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Have questions about UnionTab? Our team is ready to help.
           </p>
         </motion.div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Contact Info Cards */}
           <div className="lg:col-span-1 space-y-6">

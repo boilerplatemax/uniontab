@@ -46,7 +46,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   }, [mode]);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
+    <div className="min-h-[100dvh] flex flex-col justify-start pt-8 pb-12 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -57,23 +57,23 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <Link href="/" className="flex justify-center items-center gap-2 group hover:opacity-80 transition-opacity">
           <div className="relative">
-            <Users className="h-10 w-10 text-blue-600 group-hover:scale-110 transition-transform" />
+            <Users className="h-8 w-8 text-blue-600 group-hover:scale-110 transition-transform" />
             <div className="absolute inset-0 bg-blue-600 opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             UnionTab
           </span>
         </Link>
-        <h2 className="mt-8 text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="mt-4 text-center text-2xl font-extrabold text-gray-900">
           {mode === 'signin'
             ? 'Sign in to your account'
             : 'Create your union website'}
         </h2>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+      <div className="mt-4 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardContent className="p-8">
+          <CardContent className="p-6">
             <form
           className="space-y-6"
           action={formAction}
