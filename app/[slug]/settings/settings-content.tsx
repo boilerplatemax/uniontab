@@ -62,7 +62,6 @@ export function SettingsContent() {
     publicName: '',
     logoUrl: '',
     coverPhotoUrl: '',
-    faviconUrl: '',
     email: '',
     phone: '',
     address: '',
@@ -85,7 +84,6 @@ export function SettingsContent() {
         publicName: union.publicName || '',
         logoUrl: union.logoUrl || '',
         coverPhotoUrl: union.coverPhotoUrl || '',
-        faviconUrl: (union as any).faviconUrl || '',
         email: union.email || '',
         phone: union.phone || '',
         address: union.address || '',
@@ -481,26 +479,6 @@ export function SettingsContent() {
                 bucket="union-files"
                 path="covers"
                 recommendedDimensions={{ width: 1500, height: 500 }}
-                autoResize={true}
-              />
-
-              <FileUpload
-                onFileSelect={(file, url) => {
-                  if (url) {
-                    setFormData({ ...formData, faviconUrl: url });
-                  } else if (file === null) {
-                    // Handle removal
-                    setFormData({ ...formData, faviconUrl: '' });
-                  }
-                }}
-                accept="image/*,.ico"
-                maxSize={1}
-                currentUrl={formData.faviconUrl}
-                label="Favicon"
-                hint="Upload a favicon for your union page (appears in browser tabs). ICO, PNG, or JPG format."
-                bucket="union-files"
-                path="favicons"
-                recommendedDimensions={{ width: 32, height: 32 }}
                 autoResize={true}
               />
             </CardContent>

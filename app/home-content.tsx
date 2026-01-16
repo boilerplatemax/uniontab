@@ -1,22 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Users, Globe, Shield, Zap, Mail, MessageSquare, Vote, Database, BarChart3, Bell, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, ImageIcon } from 'lucide-react';
+import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck } from 'lucide-react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-
-// Reusable image placeholder component
-function ImagePlaceholder({ label, className = "" }: { label: string; className?: string }) {
-  return (
-    <div className={`bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300 ${className}`}>
-      <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
-      <span className="text-gray-500 text-sm text-center px-4">{label}</span>
-    </div>
-  );
-}
 
 // Animation component for scroll-triggered animations
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -112,10 +102,10 @@ export default function HomePage() {
                 className="space-y-6"
               >
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                  Stop Managing Your Union with
-                  <span className="block mt-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    Spreadsheets & Email Chains
-                  </span>
+                  <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    Modern Tools
+                  </span>{' '}
+                  for Modern Unions
                 </h1>
                 <p className="text-xl text-gray-600 leading-relaxed">
                   One platform to engage members, run secure elections, and save hours every week.
@@ -252,44 +242,65 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <AnimatedSection delay={0.1}>
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+              <div className="text-center space-y-4 h-full flex flex-col">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg flex-shrink-0">
                   <span className="text-2xl font-bold text-white">1</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">Create Your Union Profile</h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 flex-grow">
                   Set up your union&apos;s portal in minutes. Add your branding, bylaws, and customize your member experience.
                 </p>
-                {/* Screenshot placeholder */}
-                <ImagePlaceholder label="Screenshot: Profile setup wizard" className="h-40 mt-4" />
+                {/* Screenshot */}
+                <div className="relative h-40 mt-4 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                  <Image
+                    src="/assets/landing/step-1-profile.png"
+                    alt="Profile setup wizard screenshot"
+                    fill
+                    className="object-cover object-top"
+                  />
+                </div>
               </div>
             </AnimatedSection>
 
             <AnimatedSection delay={0.2}>
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+              <div className="text-center space-y-4 h-full flex flex-col">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg flex-shrink-0">
                   <span className="text-2xl font-bold text-white">2</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">Import Your Members</h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 flex-grow">
                   Upload your member list via CSV or add them manually. We&apos;ll help you migrate from your current system.
                 </p>
-                {/* Screenshot placeholder */}
-                <ImagePlaceholder label="Screenshot: Member import screen" className="h-40 mt-4" />
+                {/* Screenshot */}
+                <div className="relative h-40 mt-4 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                  <Image
+                    src="/assets/landing/step-2-import.png"
+                    alt="Member import screen screenshot"
+                    fill
+                    className="object-cover object-top"
+                  />
+                </div>
               </div>
             </AnimatedSection>
 
             <AnimatedSection delay={0.3}>
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+              <div className="text-center space-y-4 h-full flex flex-col">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg flex-shrink-0">
                   <span className="text-2xl font-bold text-white">3</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">Start Engaging</h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 flex-grow">
                   Send your first communication, schedule an election, or share important documents with your membership.
                 </p>
-                {/* Screenshot placeholder */}
-                <ImagePlaceholder label="Screenshot: Dashboard with features" className="h-40 mt-4" />
+                {/* Screenshot */}
+                <div className="relative h-40 mt-4 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                  <Image
+                    src="/assets/landing/step-3-dashboard.png"
+                    alt="Dashboard with features screenshot"
+                    fill
+                    className="object-cover object-top"
+                  />
+                </div>
               </div>
             </AnimatedSection>
           </div>
@@ -313,198 +324,252 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 - Secure Elections (Lead with this - key differentiator) */}
             <AnimatedSection delay={0.1}>
-              <Card className="border-2 hover:border-blue-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-blue-50/30">
-                <CardContent className="p-8 space-y-4">
+              <Card className="border-2 hover:border-blue-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-blue-50/30 overflow-hidden">
+                <CardContent className="p-0 h-full flex flex-col">
                   {/* Feature Screenshot */}
-                  <ImagePlaceholder label="Screenshot: Voting interface" className="h-32 mb-2" />
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                    <Vote className="h-7 w-7 text-white" />
+                  <div className="relative h-36 w-full overflow-hidden">
+                    <Image
+                      src="/assets/features/elections.png"
+                      alt="Voting interface screenshot"
+                      fill
+                      className="object-cover object-top"
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Secure Elections
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Run democratic elections with confidence. Our secure voting platform ensures transparency and integrity for all union decisions.
-                  </p>
-                  <ul className="space-y-2 pt-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                      Anonymous & verifiable voting
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                      Real-time results tracking
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                      Audit trails & compliance
-                    </li>
-                  </ul>
+                  <div className="p-6 space-y-4 flex-grow">
+                    <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
+                      <Vote className="h-7 w-7 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      Secure Elections
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Run democratic elections with confidence. Our secure voting platform ensures transparency and integrity for all union decisions.
+                    </p>
+                    <ul className="space-y-2 pt-2">
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                        Anonymous & verifiable voting
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                        Real-time results tracking
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                        Audit trails & compliance
+                      </li>
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
             </AnimatedSection>
 
             {/* Feature 2 - Mass Communications */}
             <AnimatedSection delay={0.2}>
-              <Card className="border-2 hover:border-indigo-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-indigo-50/30">
-                <CardContent className="p-8 space-y-4">
+              <Card className="border-2 hover:border-indigo-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-indigo-50/30 overflow-hidden">
+                <CardContent className="p-0 h-full flex flex-col">
                   {/* Feature Screenshot */}
-                  <ImagePlaceholder label="Screenshot: Email composer" className="h-32 mb-2" />
-                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                    <Mail className="h-7 w-7 text-white" />
+                  <div className="relative h-36 w-full overflow-hidden">
+                    <Image
+                      src="/assets/features/communications.png"
+                      alt="Email composer screenshot"
+                      fill
+                      className="object-cover object-top"
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Mass Communications
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Send email and SMS updates to your entire membership or specific groups. Keep everyone informed with professional newsletters and urgent alerts.
-                  </p>
-                  <ul className="space-y-2 pt-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
-                      Bulk email & SMS messaging
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
-                      Customizable templates
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
-                      Delivery tracking & analytics
-                    </li>
-                  </ul>
+                  <div className="p-6 space-y-4 flex-grow">
+                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
+                      <Mail className="h-7 w-7 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      Mass Communications
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Send email and SMS updates to your entire membership or specific groups. Keep everyone informed with professional newsletters and urgent alerts.
+                    </p>
+                    <ul className="space-y-2 pt-2">
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                        Bulk email & SMS messaging
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                        Customizable templates
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                        Delivery tracking & analytics
+                      </li>
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
             </AnimatedSection>
 
             {/* Feature 3 - Member Portal */}
             <AnimatedSection delay={0.3}>
-              <Card className="border-2 hover:border-purple-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-purple-50/30">
-                <CardContent className="p-8 space-y-4">
+              <Card className="border-2 hover:border-purple-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-purple-50/30 overflow-hidden">
+                <CardContent className="p-0 h-full flex flex-col">
                   {/* Feature Screenshot */}
-                  <ImagePlaceholder label="Screenshot: Member dashboard" className="h-32 mb-2" />
-                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                    <Users className="h-7 w-7 text-white" />
+                  <div className="relative h-36 w-full overflow-hidden">
+                    <Image
+                      src="/assets/features/member-portal.png"
+                      alt="Member dashboard screenshot"
+                      fill
+                      className="object-cover object-top"
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Member Portal
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Give your members a secure space to access union resources, view their benefits, and stay connected with leadership.
-                  </p>
-                  <ul className="space-y-2 pt-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
-                      Secure member authentication
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
-                      Document library & resources
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
-                      Personal member dashboard
-                    </li>
-                  </ul>
+                  <div className="p-6 space-y-4 flex-grow">
+                    <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
+                      <Users className="h-7 w-7 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      Member Portal
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Give your members a secure space to access union resources, view their benefits, and stay connected with leadership.
+                    </p>
+                    <ul className="space-y-2 pt-2">
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
+                        Secure member authentication
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
+                        Document library & resources
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
+                        Personal member dashboard
+                      </li>
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
             </AnimatedSection>
 
             {/* Feature 4 - Analytics */}
             <AnimatedSection delay={0.4}>
-              <Card className="border-2 hover:border-cyan-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-cyan-50/30">
-                <CardContent className="p-8 space-y-4">
+              <Card className="border-2 hover:border-cyan-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-cyan-50/30 overflow-hidden">
+                <CardContent className="p-0 h-full flex flex-col">
                   {/* Feature Screenshot */}
-                  <ImagePlaceholder label="Screenshot: Analytics charts" className="h-32 mb-2" />
-                  <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                    <BarChart3 className="h-7 w-7 text-white" />
+                  <div className="relative h-36 w-full overflow-hidden">
+                    <Image
+                      src="/assets/features/analytics.png"
+                      alt="Analytics charts screenshot"
+                      fill
+                      className="object-cover object-top"
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Analytics & Insights
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Make data-driven decisions with comprehensive analytics on member engagement, event attendance, and communication effectiveness.
-                  </p>
-                  <ul className="space-y-2 pt-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
-                      Engagement metrics
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
-                      Custom reports & exports
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
-                      Trend analysis
-                    </li>
-                  </ul>
+                  <div className="p-6 space-y-4 flex-grow">
+                    <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
+                      <BarChart3 className="h-7 w-7 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      Analytics & Insights
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Make data-driven decisions with comprehensive analytics on member engagement, event attendance, and communication effectiveness.
+                    </p>
+                    <ul className="space-y-2 pt-2">
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
+                        Engagement metrics
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
+                        Custom reports & exports
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
+                        Trend analysis
+                      </li>
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
             </AnimatedSection>
 
             {/* Feature 5 - Secure Storage */}
             <AnimatedSection delay={0.5}>
-              <Card className="border-2 hover:border-emerald-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-emerald-50/30">
-                <CardContent className="p-8 space-y-4">
+              <Card className="border-2 hover:border-emerald-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-emerald-50/30 overflow-hidden">
+                <CardContent className="p-0 h-full flex flex-col">
                   {/* Feature Screenshot */}
-                  <ImagePlaceholder label="Screenshot: Document library" className="h-32 mb-2" />
-                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                    <Database className="h-7 w-7 text-white" />
+                  <div className="relative h-36 w-full overflow-hidden">
+                    <Image
+                      src="/assets/features/documents.png"
+                      alt="Document library screenshot"
+                      fill
+                      className="object-cover object-top"
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Secure Document Storage
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Store contracts, bylaws, and important documents in a secure, organized system. Control who can access what with granular permissions.
-                  </p>
-                  <ul className="space-y-2 pt-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
-                      Encrypted cloud storage
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
-                      Version control & history
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
-                      Permission management
-                    </li>
-                  </ul>
+                  <div className="p-6 space-y-4 flex-grow">
+                    <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
+                      <Database className="h-7 w-7 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      Secure Document Storage
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Store contracts, bylaws, and important documents in a secure, organized system. Control who can access what with granular permissions.
+                    </p>
+                    <ul className="space-y-2 pt-2">
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
+                        Encrypted cloud storage
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
+                        Version control & history
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
+                        Permission management
+                      </li>
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
             </AnimatedSection>
 
             {/* Feature 6 - Event Management */}
             <AnimatedSection delay={0.6}>
-              <Card className="border-2 hover:border-pink-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-pink-50/30">
-                <CardContent className="p-8 space-y-4">
+              <Card className="border-2 hover:border-pink-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-pink-50/30 overflow-hidden">
+                <CardContent className="p-0 h-full flex flex-col">
                   {/* Feature Screenshot */}
-                  <ImagePlaceholder label="Screenshot: Event calendar" className="h-32 mb-2" />
-                  <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                    <Calendar className="h-7 w-7 text-white" />
+                  <div className="relative h-36 w-full overflow-hidden">
+                    <Image
+                      src="/assets/features/events.png"
+                      alt="Event calendar screenshot"
+                      fill
+                      className="object-cover object-top"
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Event Management
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Plan meetings, rallies, and events with built-in RSVP tracking and automated reminders for all your union activities.
-                  </p>
-                  <ul className="space-y-2 pt-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
-                      Event calendar & RSVP
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
-                      Automated reminders
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
-                      Attendance tracking
-                    </li>
-                  </ul>
+                  <div className="p-6 space-y-4 flex-grow">
+                    <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
+                      <Calendar className="h-7 w-7 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      Event Management
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Plan meetings, rallies, and events with built-in RSVP tracking and automated reminders for all your union activities.
+                    </p>
+                    <ul className="space-y-2 pt-2">
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
+                        Event calendar & RSVP
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
+                        Automated reminders
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
+                        Attendance tracking
+                      </li>
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
             </AnimatedSection>
@@ -530,7 +595,7 @@ export default function HomePage() {
             <AnimatedSection delay={0.1}>
               <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow overflow-hidden">
                 {/* Image: Union steward with tablet */}
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-52 overflow-hidden">
                   <Image
                     src="/assets/landing/built-by-union-people.jpg"
                     alt="Union steward with tablet talking to workers on site"
@@ -538,8 +603,8 @@ export default function HomePage() {
                     className="object-cover"
                   />
                 </div>
-                <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg -mt-12 relative z-10 border-4 border-white">
+                <CardContent className="p-6 pt-0 space-y-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg -mt-7 relative z-10 border-4 border-white">
                     <UserCheck className="h-7 w-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900">Built by Union People</h3>
@@ -553,7 +618,7 @@ export default function HomePage() {
             <AnimatedSection delay={0.2}>
               <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow overflow-hidden">
                 {/* Image: Workers gathered around laptop */}
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-52 overflow-hidden">
                   <Image
                     src="/assets/landing/free-for-small-locals.jpg"
                     alt="Small group of workers gathered around a laptop reviewing union dashboard"
@@ -561,8 +626,8 @@ export default function HomePage() {
                     className="object-cover"
                   />
                 </div>
-                <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg -mt-12 relative z-10 border-4 border-white">
+                <CardContent className="p-6 pt-0 space-y-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg -mt-7 relative z-10 border-4 border-white">
                     <Zap className="h-7 w-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900">Free for Small Locals</h3>
@@ -576,16 +641,16 @@ export default function HomePage() {
             <AnimatedSection delay={0.3}>
               <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow overflow-hidden">
                 {/* Image: Before/after comparison */}
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-52 overflow-hidden">
                   <Image
-                    src="/assets/landing/save-hours.jpg"
+                    src="/assets/landing/save-hours.png"
                     alt="Before and after: messy desk with papers versus clean desk with laptop showing dashboard"
                     fill
                     className="object-cover"
                   />
                 </div>
-                <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg -mt-12 relative z-10 border-4 border-white">
+                <CardContent className="p-6 pt-0 space-y-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg -mt-7 relative z-10 border-4 border-white">
                     <Clock className="h-7 w-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900">Save Hours Every Week</h3>
@@ -657,22 +722,47 @@ export default function HomePage() {
               <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-8">
                 Trusted by Union Locals
               </p>
-              <div className="flex items-center justify-center gap-8 sm:gap-12 md:gap-16">
-                {/* Placeholder logos - replace with actual union logos */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-400 text-xs">Logo</span>
+              <div className="flex items-center justify-center gap-6 sm:gap-10 md:gap-12">
+                {/* Union logos with consistent sizing */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 relative flex items-center justify-center">
+                  <Image
+                    src="/assets/logos/union-1.png"
+                    alt="Union partner logo"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-400 text-xs">Logo</span>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 relative flex items-center justify-center">
+                  <Image
+                    src="/assets/logos/union-2.png"
+                    alt="Union partner logo"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-400 text-xs">Logo</span>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 relative flex items-center justify-center">
+                  <Image
+                    src="/assets/logos/union-3.png"
+                    alt="Union partner logo"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center hidden sm:flex">
-                  <span className="text-gray-400 text-xs">Logo</span>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 relative hidden sm:flex items-center justify-center">
+                  <Image
+                    src="/assets/logos/union-4.png"
+                    alt="Union partner logo"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center hidden md:flex">
-                  <span className="text-gray-400 text-xs">Logo</span>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 relative hidden md:flex items-center justify-center">
+                  <Image
+                    src="/assets/logos/union-5.png"
+                    alt="Union partner logo"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
               </div>
             </div>
