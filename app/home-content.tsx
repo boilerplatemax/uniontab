@@ -3,10 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Users, Globe, Shield, Zap, Mail, MessageSquare, Vote, Database, BarChart3, Bell, Calendar, Lock } from 'lucide-react';
+import { ArrowRight, Users, Globe, Shield, Zap, Mail, MessageSquare, Vote, Database, BarChart3, Bell, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck } from 'lucide-react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 
 // Animation component for scroll-triggered animations
@@ -27,8 +25,6 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
 }
 
 export default function HomePage() {
-  const [unionName, setUnionName] = useState('');
-  const [localNumber, setLocalNumber] = useState('');
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -36,24 +32,6 @@ export default function HomePage() {
   });
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
-
-  const handleGetStarted = () => {
-    // Store the union details in session storage for the sign-up flow
-    if (unionName || localNumber) {
-      sessionStorage.setItem('unionName', unionName);
-      sessionStorage.setItem('localNumber', localNumber);
-    }
-    window.location.href = '/sign-up';
-  };
-
-  // Floating animation for hero elements
-  const [floatOffset, setFloatOffset] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setFloatOffset((prev) => (prev + 1) % 360);
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -86,9 +64,9 @@ export default function HomePage() {
                   Blog
                 </Button>
               </Link>
-              <Link href="/login">
+              <Link href="/member-login">
                 <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                  Find Your Union
+                  Member Login
                 </Button>
               </Link>
               <Link href="/sign-up">
@@ -117,39 +95,39 @@ export default function HomePage() {
                 className="space-y-6"
               >
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                  Your Union,
+                  Stop Managing Your Union with
                   <span className="block mt-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    Simplified
+                    Spreadsheets & Email Chains
                   </span>
                 </h1>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  One platform for member communications, elections, and organizing.
+                <p className="text-xl text-gray-600 leading-relaxed">
+                  One platform to engage members, run secure elections, and save hours every week.
                 </p>
               </motion.div>
 
-              {/* Key Stats */}
+              {/* Key Stats - Honest early-stage metrics */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="flex gap-8 pt-4"
+                className="flex flex-wrap gap-6 sm:gap-8 pt-4"
               >
-                <div>
-                  <div className="text-2xl font-bold text-blue-600">100+</div>
-                  <div className="text-sm text-gray-600">Unions</div>
+                <div className="flex items-center gap-2">
+                  <UserCheck className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-medium text-gray-700">Built by Union Leaders</span>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-indigo-600">50K+</div>
-                  <div className="text-sm text-gray-600">Members</div>
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-indigo-600" />
+                  <span className="text-sm font-medium text-gray-700">99.9% Uptime</span>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-purple-600">99.9%</div>
-                  <div className="text-sm text-gray-600">Uptime</div>
+                <div className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-purple-600" />
+                  <span className="text-sm font-medium text-gray-700">Free for Small Locals</span>
                 </div>
               </motion.div>
             </div>
 
-            {/* Right Column - Enhanced CTA Card */}
+            {/* Right Column - Clean CTA Card */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -157,54 +135,52 @@ export default function HomePage() {
               className="lg:pl-8"
             >
               <Card className="shadow-2xl border-2 border-blue-100 bg-white relative overflow-hidden">
-                <CardContent className="p-6 sm:p-8">
-                  <div className="space-y-5">
-                    <div className="text-center space-y-2">
-                      <h2 className="text-2xl font-bold text-gray-900">
-                        Start Free Today
+                <CardContent className="p-8 sm:p-10">
+                  <div className="space-y-6 text-center">
+                    <div className="space-y-3">
+                      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                        Ready to Modernize Your Union?
                       </h2>
+                      <p className="text-gray-600">
+                        Join unions who are saving time and increasing member engagement.
+                      </p>
                     </div>
 
                     <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="unionName" className="text-gray-700 font-medium">
-                          Union Name *
-                        </Label>
-                        <Input
-                          id="unionName"
-                          placeholder="e.g., United Workers of America"
-                          value={unionName}
-                          onChange={(e) => setUnionName(e.target.value)}
-                          className="h-12 text-base border-2 focus:border-blue-500 transition-colors"
-                          required
-                        />
+                      <Link href="/sign-up" className="block">
+                        <Button
+                          className="w-full h-14 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
+                          size="lg"
+                        >
+                          Start Free Today
+                          <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                      </Link>
+
+                      <Link href="/features" className="block">
+                        <Button
+                          variant="outline"
+                          className="w-full h-14 text-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
+                          size="lg"
+                        >
+                          See All Features
+                        </Button>
+                      </Link>
+                    </div>
+
+                    <div className="pt-2 space-y-2">
+                      <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        Free forever for locals under 150 members
                       </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="localNumber" className="text-gray-700 font-medium">
-                          Local Number <span className="text-gray-400 font-normal">(optional)</span>
-                        </Label>
-                        <Input
-                          id="localNumber"
-                          placeholder="e.g., Local 123"
-                          value={localNumber}
-                          onChange={(e) => setLocalNumber(e.target.value)}
-                          className="h-12 text-base border-2 focus:border-blue-500 transition-colors"
-                        />
+                      <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        No credit card required
                       </div>
-
-                      <Button
-                        onClick={handleGetStarted}
-                        className="w-full h-12 text-base bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
-                        size="lg"
-                      >
-                        Get Started
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
-
-                      <p className="text-center text-sm text-gray-500">
-                        Free forever · No credit card required
-                      </p>
+                      <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        Setup in under 10 minutes
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -216,6 +192,60 @@ export default function HomePage() {
         {/* Decorative elements */}
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl -z-10" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl -z-10" />
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-16 bg-white border-y border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimatedSection>
+            <div className="text-center space-y-4 mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+                Get Started in 3 Simple Steps
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Most unions are fully set up and running in under 30 minutes.
+              </p>
+            </div>
+          </AnimatedSection>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <AnimatedSection delay={0.1}>
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                  <span className="text-2xl font-bold text-white">1</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">Create Your Union Profile</h3>
+                <p className="text-gray-600">
+                  Set up your union&apos;s portal in minutes. Add your branding, bylaws, and customize your member experience.
+                </p>
+              </div>
+            </AnimatedSection>
+
+            <AnimatedSection delay={0.2}>
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                  <span className="text-2xl font-bold text-white">2</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">Import Your Members</h3>
+                <p className="text-gray-600">
+                  Upload your member list via CSV or add them manually. We&apos;ll help you migrate from your current system.
+                </p>
+              </div>
+            </AnimatedSection>
+
+            <AnimatedSection delay={0.3}>
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                  <span className="text-2xl font-bold text-white">3</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">Start Engaging</h3>
+                <p className="text-gray-600">
+                  Send your first communication, schedule an election, or share important documents with your membership.
+                </p>
+              </div>
+            </AnimatedSection>
+          </div>
+        </div>
       </section>
 
       {/* Features Showcase Section */}
@@ -233,42 +263,11 @@ export default function HomePage() {
           </AnimatedSection>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 - Member Communications */}
+            {/* Feature 1 - Secure Elections (Lead with this - key differentiator) */}
             <AnimatedSection delay={0.1}>
               <Card className="border-2 hover:border-blue-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-blue-50/30">
                 <CardContent className="p-8 space-y-4">
                   <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                    <Mail className="h-7 w-7 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Mass Communications
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Send email and SMS updates to your entire membership or specific groups. Keep everyone informed with professional newsletters and urgent alerts.
-                  </p>
-                  <ul className="space-y-2 pt-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                      Bulk email & SMS messaging
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                      Customizable templates
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                      Delivery tracking & analytics
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-
-            {/* Feature 2 - Elections & Voting */}
-            <AnimatedSection delay={0.2}>
-              <Card className="border-2 hover:border-indigo-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-indigo-50/30">
-                <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <Vote className="h-7 w-7 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900">
@@ -279,16 +278,47 @@ export default function HomePage() {
                   </p>
                   <ul className="space-y-2 pt-2">
                     <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
                       Anonymous & verifiable voting
                     </li>
                     <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
                       Real-time results tracking
                     </li>
                     <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
                       Audit trails & compliance
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </AnimatedSection>
+
+            {/* Feature 2 - Mass Communications */}
+            <AnimatedSection delay={0.2}>
+              <Card className="border-2 hover:border-indigo-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-indigo-50/30">
+                <CardContent className="p-8 space-y-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                    <Mail className="h-7 w-7 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    Mass Communications
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Send email and SMS updates to your entire membership or specific groups. Keep everyone informed with professional newsletters and urgent alerts.
+                  </p>
+                  <ul className="space-y-2 pt-2">
+                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                      Bulk email & SMS messaging
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                      Customizable templates
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                      Delivery tracking & analytics
                     </li>
                   </ul>
                 </CardContent>
@@ -326,39 +356,8 @@ export default function HomePage() {
               </Card>
             </AnimatedSection>
 
-            {/* Feature 4 - Event Management */}
+            {/* Feature 4 - Analytics */}
             <AnimatedSection delay={0.4}>
-              <Card className="border-2 hover:border-pink-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-pink-50/30">
-                <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                    <Calendar className="h-7 w-7 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Event Management
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Plan meetings, rallies, and events with built-in RSVP tracking and automated reminders for all your union activities.
-                  </p>
-                  <ul className="space-y-2 pt-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
-                      Event calendar & RSVP
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
-                      Automated reminders
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
-                      Attendance tracking
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-
-            {/* Feature 5 - Analytics */}
-            <AnimatedSection delay={0.5}>
               <Card className="border-2 hover:border-cyan-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-cyan-50/30">
                 <CardContent className="p-8 space-y-4">
                   <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
@@ -388,8 +387,8 @@ export default function HomePage() {
               </Card>
             </AnimatedSection>
 
-            {/* Feature 6 - Secure Storage */}
-            <AnimatedSection delay={0.6}>
+            {/* Feature 5 - Secure Storage */}
+            <AnimatedSection delay={0.5}>
               <Card className="border-2 hover:border-emerald-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-emerald-50/30">
                 <CardContent className="p-8 space-y-4">
                   <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
@@ -418,20 +417,51 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             </AnimatedSection>
+
+            {/* Feature 6 - Event Management */}
+            <AnimatedSection delay={0.6}>
+              <Card className="border-2 hover:border-pink-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-pink-50/30">
+                <CardContent className="p-8 space-y-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                    <Calendar className="h-7 w-7 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    Event Management
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Plan meetings, rallies, and events with built-in RSVP tracking and automated reminders for all your union activities.
+                  </p>
+                  <ul className="space-y-2 pt-2">
+                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
+                      Event calendar & RSVP
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
+                      Automated reminders
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
+                      Attendance tracking
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </AnimatedSection>
           </div>
         </div>
       </section>
 
-      {/* Social Proof / Testimonials Section */}
+      {/* Why Unions Choose Us Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-4xl sm:text-5xl font-bold text-gray-900">
-                Trusted by Union Leaders
+                Why Unions Choose UnionTab
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                See what executives are saying about UnionTab
+                Built specifically for union leadership by people who understand your challenges
               </p>
             </div>
           </AnimatedSection>
@@ -440,15 +470,12 @@ export default function HomePage() {
             <AnimatedSection delay={0.1}>
               <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
                 <CardContent className="p-8 space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full" />
-                    <div>
-                      <div className="font-semibold text-gray-900">Sarah Mitchell</div>
-                      <div className="text-sm text-gray-600">President, Local 247</div>
-                    </div>
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <UserCheck className="h-7 w-7 text-white" />
                   </div>
-                  <p className="text-gray-700 italic leading-relaxed">
-                    "UnionTab transformed how we communicate with our 2,000+ members. The SMS alerts during our strike were invaluable."
+                  <h3 className="text-xl font-bold text-gray-900">Built by Union People</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    We understand the unique challenges of union leadership because we&apos;ve lived them. Every feature is designed with your real needs in mind.
                   </p>
                 </CardContent>
               </Card>
@@ -457,15 +484,12 @@ export default function HomePage() {
             <AnimatedSection delay={0.2}>
               <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
                 <CardContent className="p-8 space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full" />
-                    <div>
-                      <div className="font-semibold text-gray-900">Marcus Chen</div>
-                      <div className="text-sm text-gray-600">Secretary-Treasurer, Local 89</div>
-                    </div>
+                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Zap className="h-7 w-7 text-white" />
                   </div>
-                  <p className="text-gray-700 italic leading-relaxed">
-                    "Running elections used to be a nightmare. Now it takes minutes to set up and members love the transparency."
+                  <h3 className="text-xl font-bold text-gray-900">Free for Small Locals</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    We believe every union deserves modern tools. Locals with under 150 members get full access to core features at no cost, forever.
                   </p>
                 </CardContent>
               </Card>
@@ -474,20 +498,98 @@ export default function HomePage() {
             <AnimatedSection delay={0.3}>
               <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
                 <CardContent className="p-8 space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full" />
-                    <div>
-                      <div className="font-semibold text-gray-900">Diana Rodriguez</div>
-                      <div className="text-sm text-gray-600">Vice President, Local 156</div>
-                    </div>
+                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Clock className="h-7 w-7 text-white" />
                   </div>
-                  <p className="text-gray-700 italic leading-relaxed">
-                    "The member portal has increased engagement by 300%. Our members finally have easy access to their benefits and documents."
+                  <h3 className="text-xl font-bold text-gray-900">Save Hours Every Week</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Stop juggling spreadsheets, email lists, and paper ballots. Consolidate your operations into one platform and reclaim your time.
                   </p>
                 </CardContent>
               </Card>
             </AnimatedSection>
           </div>
+        </div>
+      </section>
+
+      {/* Security & Compliance Section */}
+      <section className="py-16 bg-white border-y border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimatedSection>
+            <div className="text-center space-y-4 mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+                Built for Security & Compliance
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Your members&apos; data and election integrity are our top priorities
+              </p>
+            </div>
+          </AnimatedSection>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <AnimatedSection delay={0.1}>
+              <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
+                <Shield className="h-10 w-10 text-blue-600 mx-auto mb-3" />
+                <h4 className="font-semibold text-gray-900 mb-2">End-to-End Encryption</h4>
+                <p className="text-sm text-gray-600">All data encrypted in transit and at rest</p>
+              </div>
+            </AnimatedSection>
+
+            <AnimatedSection delay={0.2}>
+              <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
+                <FileCheck className="h-10 w-10 text-indigo-600 mx-auto mb-3" />
+                <h4 className="font-semibold text-gray-900 mb-2">Audit Trails</h4>
+                <p className="text-sm text-gray-600">Complete records for DOL compliance</p>
+              </div>
+            </AnimatedSection>
+
+            <AnimatedSection delay={0.3}>
+              <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
+                <Lock className="h-10 w-10 text-purple-600 mx-auto mb-3" />
+                <h4 className="font-semibold text-gray-900 mb-2">Anonymous Voting</h4>
+                <p className="text-sm text-gray-600">Verifiable results, protected privacy</p>
+              </div>
+            </AnimatedSection>
+
+            <AnimatedSection delay={0.4}>
+              <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
+                <Globe className="h-10 w-10 text-cyan-600 mx-auto mb-3" />
+                <h4 className="font-semibold text-gray-900 mb-2">99.9% Uptime</h4>
+                <p className="text-sm text-gray-600">Reliable access when you need it most</p>
+              </div>
+            </AnimatedSection>
+          </div>
+        </div>
+      </section>
+
+      {/* Union Logos Placeholder - For Future Use */}
+      <section className="py-12 bg-gray-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimatedSection>
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-8">
+                Trusted by Union Locals Across Industries
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 opacity-60">
+                {/* Placeholder logos - these would be replaced with actual union logos when available */}
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Users className="h-8 w-8" />
+                  <span className="font-semibold">Your Union</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Users className="h-8 w-8" />
+                  <span className="font-semibold">Could Be</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Users className="h-8 w-8" />
+                  <span className="font-semibold">Featured Here</span>
+                </div>
+              </div>
+              <p className="mt-6 text-sm text-gray-500">
+                Want to be featured? <Link href="/sign-up" className="text-blue-600 hover:text-blue-700 font-medium">Get started today</Link>
+              </p>
+            </div>
+          </AnimatedSection>
         </div>
       </section>
 
@@ -503,10 +605,10 @@ export default function HomePage() {
                 <Users className="h-10 w-10 text-white" />
               </div>
               <h2 className="text-4xl sm:text-5xl font-bold text-white">
-                Ready to Empower Your Union?
+                Ready to Modernize Your Union?
               </h2>
               <p className="text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
-                Join hundreds of union executives who are building stronger, more connected communities with UnionTab.
+                Start building a stronger, more connected membership today. Most unions are up and running in under 30 minutes.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                 <Link href="/sign-up">
@@ -529,7 +631,7 @@ export default function HomePage() {
                 </Link>
               </div>
               <p className="text-sm text-blue-100 pt-4">
-                ✓ Free forever plan available &nbsp;·&nbsp; ✓ No credit card required &nbsp;·&nbsp; ✓ Setup in 5 minutes
+                Free for locals under 150 members &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Setup in under 30 minutes
               </p>
             </div>
           </AnimatedSection>
