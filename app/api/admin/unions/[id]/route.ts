@@ -371,14 +371,17 @@ export async function DELETE(
     // =====================================================
     // STEP 5: Send notification emails to all affected members
     // =====================================================
+    // Format union name for email (uppercase name + local number)
+    const unionDisplayName = `${union.name.toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`;
+
     const emailPromises = unionMembers.map(async (member) => {
       try {
         await sendEmail({
           to: member.userEmail,
-          subject: `Important: ${union.publicName || union.name} Account Deleted`,
+          subject: `Important: ${unionDisplayName} Account Deleted`,
           text: `Dear ${member.userName},
 
-This email is to inform you that the union account "${union.publicName || union.name}" has been deleted from UnionTab.
+This email is to inform you that the union account "${unionDisplayName}" has been deleted from UnionTab.
 
 All data associated with this union, including posts, events, files, and member information, has been permanently removed from our system.
 
@@ -392,7 +395,7 @@ The UnionTab Team`,
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h2>Important: Union Account Deleted</h2>
               <p>Dear ${member.userName},</p>
-              <p>This email is to inform you that the union account "<strong>${union.publicName || union.name}</strong>" has been deleted from UnionTab.</p>
+              <p>This email is to inform you that the union account "<strong>${unionDisplayName}</strong>" has been deleted from UnionTab.</p>
               <p>All data associated with this union, including posts, events, files, and member information, has been permanently removed from our system.</p>
               <p>If you believe this was done in error or have any questions, please contact us at <a href="mailto:info@uniontab.com">info@uniontab.com</a> and we will be happy to assist you.</p>
               <p>Thank you for your understanding.</p>

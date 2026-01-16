@@ -214,24 +214,6 @@ export function SettingsContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="publicName">
-                  Public Display Name
-                </Label>
-                <Input
-                  id="publicName"
-                  placeholder="e.g., Barrie Transit Union"
-                  value={formData.publicName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, publicName: e.target.value })
-                  }
-                  maxLength={255}
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  This is the friendly name shown on your public page. Leave blank to use "{union.name}" instead.
-                </p>
-              </div>
-
-              <div>
                 <Label htmlFor="description">
                   Short Description (One-liner)
                 </Label>
@@ -307,6 +289,26 @@ export function SettingsContent() {
                   path="about-images"
                   autoResize={true}
                 />
+              </div>
+
+              {/* Public Display Name - at bottom of Basic Info */}
+              <div className="border-t pt-6">
+                <Label htmlFor="publicName">
+                  Public Display Name
+                </Label>
+                <Input
+                  id="publicName"
+                  placeholder="e.g., Barrie Transit Union"
+                  value={formData.publicName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, publicName: e.target.value })
+                  }
+                  maxLength={255}
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  This is the friendly name shown on your public page.{' '}
+                  <strong>Leave blank to use "{union.name.toUpperCase()}{union.localNumber ? ` ${union.localNumber}` : ''}" instead.</strong>
+                </p>
               </div>
             </CardContent>
           </Card>

@@ -101,24 +101,46 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
           <input type="hidden" name="inviteId" value={inviteId || ''} />
 
           {mode === 'signup' && (
-            <div>
-              <Label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Your Name *
-              </Label>
-              <div className="mt-1">
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  maxLength={100}
-                  className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
-                  placeholder="Enter your full name"
-                />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label
+                  htmlFor="firstName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  First Name *
+                </Label>
+                <div className="mt-1">
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    autoComplete="given-name"
+                    required
+                    maxLength={50}
+                    className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
+                    placeholder="First name"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label
+                  htmlFor="lastName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Last Name *
+                </Label>
+                <div className="mt-1">
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    autoComplete="family-name"
+                    required
+                    maxLength={50}
+                    className="h-12 text-base border-2 focus:border-blue-500 rounded-xl"
+                    placeholder="Last name"
+                  />
+                </div>
               </div>
             </div>
           )}

@@ -150,6 +150,7 @@ export async function POST(request: Request) {
       name: union.name,
       localNumber: union.localNumber,
       logoUrl: union.logoUrl,
+      themeColor: union.themeColor, // Custom brand color for email header
     };
 
     // Convert URL-based attachments to base64
