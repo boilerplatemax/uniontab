@@ -563,21 +563,21 @@ export function SettingsContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="preferredUnionName">
-                  Preferred Union Name (for Email Subdomain)
+                <Label htmlFor="publicNameAdvanced">
+                  Public Display Name
                 </Label>
                 <Input
-                  id="preferredUnionName"
-                  placeholder="e.g., cupe123"
-                  value={formData.preferredUnionName}
+                  id="publicNameAdvanced"
+                  placeholder="e.g., Barrie Transit Union"
+                  value={formData.publicName}
                   onChange={(e) =>
-                    setFormData({ ...formData, preferredUnionName: e.target.value })
+                    setFormData({ ...formData, publicName: e.target.value })
                   }
-                  maxLength={100}
+                  maxLength={255}
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  This name is used to generate your union's email subdomain (e.g., notify@cupe123.uniontab.com).
-                  Leave blank to auto-generate from your union name and local number.
+                  Optional. Use this if you have a longer union name and don't want to display your full union name + local number.
+                  Leave blank to use your default union name.
                 </p>
               </div>
             </CardContent>
