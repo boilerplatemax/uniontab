@@ -10,6 +10,7 @@
     "db:seed": "npx tsx lib/db/seed.ts",
     "seed:admin": "npx tsx lib/db/seed-admin.ts",
     "seed:mock-users": "npx tsx lib/db/seed-mock-users.ts",
+    "seed:atu123-events": "npx tsx lib/db/seed-atu123-events.ts",
     "cleanup:mock-users": "npx tsx lib/db/cleanup-mock-data.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -66,6 +67,7 @@
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.8",
+    "tsx": "^4.21.0",
     "typescript": "^5.8.3"
   }
 }
