@@ -258,28 +258,68 @@ function StatCard({
 export default function AnalyticsPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
   const [unionId, setUnionId] = useState<number | null>(null);
+  const [loadingUnion, setLoadingUnion] = useState(true);
+  const [unionError, setUnionError] = useState<string | null>(null);
 
-  // Get union ID from the slug
+  // Get union ID from the team API (same as other pages)
   useEffect(() => {
     async function fetchUnionId() {
       try {
-        const res = await fetch(`/api/check-union?slug=${resolvedParams.slug}`);
-        const data = await res.json();
-        if (data.id) {
-          setUnionId(data.id);
+        const res = await fetch('/api/team');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.id) {
+            setUnionId(data.id);
+          } else {
+            setUnionError('Could not find union');
+          }
+        } else {
+          setUnionError('Failed to load union data');
         }
       } catch (error) {
         console.error('Error fetching union:', error);
+        setUnionError('Error loading union');
+      } finally {
+        setLoadingUnion(false);
       }
     }
     fetchUnionId();
-  }, [resolvedParams.slug]);
+  }, []);
 
   const { data, error, isLoading, mutate } = useSWR<AnalyticsData>(
     unionId ? `/api/analytics?unionId=${unionId}` : null,
     fetcher,
     { refreshInterval: 60000 } // Refresh every minute
   );
+
+  if (loadingUnion) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (unionError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to load analytics</h2>
+          <p className="text-gray-600 mb-4">{unionError}</p>
+          <Link href={`/${resolvedParams.slug}`}>
+            <Button>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
