@@ -72,7 +72,7 @@ export const blogPosts: BlogPost[] = [
 
       <p>With UnionTab's bulk email feature, staying connected with your membership has never been easier. Questions? Contact our support team anytime.</p>
     `,
-    imageUrl: "https://images.unsplash.com/photo-1596526131083-e8c633c948d2?w=1200&h=630&fit=crop",
+    imageUrl: "/assets/blog/bulk-emails.png",
     author: "UnionTab Team",
     publishedAt: "2025-12-15",
     readTime: "5 min read",
@@ -175,7 +175,7 @@ export const blogPosts: BlogPost[] = [
 
       <p>Need help deciding what should be public vs private? Our support team is happy to discuss best practices for your specific situation.</p>
     `,
-    imageUrl: "https://images.unsplash.com/photo-1568667256549-094345857637?w=1200&h=630&fit=crop",
+    imageUrl: "/assets/blog/files-posts.png",
     author: "UnionTab Team",
     publishedAt: "2025-11-28",
     readTime: "7 min read",
@@ -283,7 +283,7 @@ export const blogPosts: BlogPost[] = [
 
       <p>Ready to run your first virtual meeting? The whole process takes less than 5 minutes. If you need help, our support team is always here.</p>
     `,
-    imageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=1200&h=630&fit=crop",
+    imageUrl: "/assets/blog/zoom-meetings.png",
     author: "UnionTab Team",
     publishedAt: "2025-11-10",
     readTime: "8 min read",
@@ -330,7 +330,7 @@ export const blogPosts: BlogPost[] = [
 
       <p>The goal isn't technology for technology's sake. It's about freeing up time and energy so union leaders can focus on what matters most: fighting for their members.</p>
     `,
-    imageUrl: "https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=1200&h=630&fit=crop",
+    imageUrl: "/assets/blog/modernize-admin.jpg",
     author: "UnionTab Team",
     publishedAt: "2025-08-20",
     readTime: "6 min read",
@@ -388,7 +388,7 @@ export const blogPosts: BlogPost[] = [
       <h2>Building Long-Term Trust</h2>
       <p>Each successful election builds confidence in your union's democratic processes. By consistently running fair, transparent elections, you create a culture of accountability that strengthens the entire organization.</p>
     `,
-    imageUrl: "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=1200&h=630&fit=crop",
+    imageUrl: "/assets/blog/elections.jpg",
     author: "UnionTab Team",
     publishedAt: "2025-07-05",
     readTime: "7 min read",
@@ -464,7 +464,7 @@ export const blogPosts: BlogPost[] = [
 
       <p>Strong grievance handling is ultimately about showing members that their union has their back. Every well-handled case builds solidarity and demonstrates the value of collective representation.</p>
     `,
-    imageUrl: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&h=630&fit=crop",
+    imageUrl: "/assets/blog/grievance.jpg",
     author: "UnionTab Team",
     publishedAt: "2025-06-12",
     readTime: "8 min read",
