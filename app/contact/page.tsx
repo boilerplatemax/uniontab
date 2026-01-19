@@ -143,8 +143,8 @@ export default function ContactPage() {
                     <p className="text-sm text-gray-600 mb-3">
                       Send us an email anytime
                     </p>
-                    <a href="mailto:support@uniontab.com" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                      support@uniontab.com
+                    <a href="mailto:info@uniontab.com" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                      info@uniontab.com
                     </a>
                   </div>
                 </CardContent>
@@ -162,8 +162,8 @@ export default function ContactPage() {
                     <p className="text-sm text-gray-600 mb-3">
                       Mon-Fri from 9am to 6pm EST
                     </p>
-                    <a href="tel:+15551234567" className="text-indigo-600 hover:text-indigo-700 font-medium text-sm">
-                      +1 (555) 123-4567
+                    <a href="tel:+12896700500" className="text-indigo-600 hover:text-indigo-700 font-medium text-sm">
+                      +1 (289) 670-0500
                     </a>
                   </div>
                 </CardContent>
@@ -374,7 +374,7 @@ export default function ContactPage() {
                           Oops! Something went wrong.
                         </p>
                         <p className="text-red-700 text-sm mt-1">
-                          Please try again or email us directly at support@uniontab.com
+                          Please try again or email us directly at info@uniontab.com
                         </p>
                       </motion.div>
                     )}

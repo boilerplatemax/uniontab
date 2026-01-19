@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { members } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { members, unions } from '@/lib/db/schema';
+import { eq, and, or, inArray } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
+
+// Admin limits per plan (owners + admins combined)
+const ADMIN_LIMITS: Record<string, number> = {
+  'Free': 2,      // Free tier - small taste of the feature
+  'Base': 5,      // Base tier
+  'Plus': 10,     // Plus tier
+  'Pro': 999,     // Pro - effectively unlimited
+  'Enterprise': 999, // Enterprise - effectively unlimited
+};
 
 export async function POST(request: Request) {
   try {
@@ -61,6 +70,43 @@ export async function POST(request: Request) {
         { error: 'Only union owners can modify member roles' },
         { status: 403 }
       );
+    }
+
+    // If promoting to admin, check admin limits
+    if (role === 'admin') {
+      // Get the union's plan
+      const [union] = await db
+        .select({ planName: unions.planName })
+        .from(unions)
+        .where(eq(unions.id, memberToUpdate.unionId))
+        .limit(1);
+
+      const planName = union?.planName || 'Free';
+      const adminLimit = ADMIN_LIMITS[planName] ?? ADMIN_LIMITS['Free'];
+
+      // Count current admins and owners
+      const currentAdmins = await db
+        .select()
+        .from(members)
+        .where(
+          and(
+            eq(members.unionId, memberToUpdate.unionId),
+            or(eq(members.role, 'admin'), eq(members.role, 'owner'))
+          )
+        );
+
+      if (currentAdmins.length >= adminLimit) {
+        return NextResponse.json(
+          {
+            error: `Admin limit reached for your plan. ${planName} plan allows up to ${adminLimit} admins/owners. Please upgrade your plan to add more admins.`,
+            limitReached: true,
+            currentCount: currentAdmins.length,
+            limit: adminLimit,
+            planName
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Update the member role

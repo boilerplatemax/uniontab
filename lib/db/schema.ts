@@ -58,6 +58,7 @@ export const unions = pgTable('unions', {
   }>(),
   showSocialInHeader: boolean('show_social_in_header').notNull().default(false), // Deprecated - use showSocialInHero
   showSocialInHero: boolean('show_social_in_hero').notNull().default(false), // Toggle to show social icons in hero section
+  hidePoweredBy: boolean('hide_powered_by').notNull().default(false), // Allow paid users to hide "Powered by UnionTab" in footer
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   publishedAt: timestamp('published_at'),

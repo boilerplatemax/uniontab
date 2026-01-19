@@ -20,6 +20,8 @@ import {
   Check,
   Share2,
   ArrowLeft,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
@@ -73,6 +75,7 @@ export function SettingsContent() {
     themeColor: '#2563eb',
     socialLinks: {} as Record<string, string>,
     showSocialInHero: false,
+    hidePoweredBy: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -95,6 +98,7 @@ export function SettingsContent() {
         themeColor: union.themeColor || '#2563eb',
         socialLinks: (union as any).socialLinks || {},
         showSocialInHero: (union as any).showSocialInHero || false,
+        hidePoweredBy: (union as any).hidePoweredBy || false,
       });
     }
   }, [union]);
@@ -435,6 +439,51 @@ export function SettingsContent() {
               </div>
             </CardContent>
           </Card>
+
+          {/* White Label Branding - Only for Paid Plans */}
+          {union && (union as any).planName && (union as any).planName !== 'Free' && (
+            <Card className="shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {formData.hidePoweredBy ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  White Label
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="hidePoweredBy" className="text-base font-medium">
+                      Hide "Powered by UnionTab"
+                    </Label>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Remove the UnionTab branding from your union's footer
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    id="hidePoweredBy"
+                    role="switch"
+                    aria-checked={formData.hidePoweredBy}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        hidePoweredBy: !formData.hidePoweredBy,
+                      })
+                    }
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      formData.hidePoweredBy ? 'bg-blue-600' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        formData.hidePoweredBy ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Branding */}
           <Card className="shadow-xl">
