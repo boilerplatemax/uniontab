@@ -6,7 +6,9 @@ import { getUser, getGrievanceNotificationCount, getStrikeNotificationCount } fr
 import { cookies } from 'next/headers';
 import { DefaultTheme } from './themes/default-theme';
 import { ModernTheme } from './themes/modern-theme';
+import { PrestigeTheme } from './themes/prestige-theme';
 import type { ThemeId } from '@/lib/themes/config';
+import { canAccessTheme } from '@/lib/themes/config';
 import { AutoVerifyEmailDomain } from '@/components/auto-verify-email-domain';
 
 async function getUnionBySlug(slug: string) {
@@ -298,12 +300,17 @@ export default async function PublicUnionPage({
   };
 
   // Render the appropriate theme based on union.theme
-  const theme = (union.theme || 'default') as ThemeId;
+  // Check if union has access to the selected theme (premium themes require paid plans)
+  const requestedTheme = (union.theme || 'default') as ThemeId;
+  const hasAccess = canAccessTheme(requestedTheme, (union as any).planName);
+  const theme = hasAccess ? requestedTheme : 'default';
 
   const ThemeComponent = (() => {
     switch (theme) {
       case 'modern':
         return <ModernTheme {...themeProps} />;
+      case 'prestige':
+        return <PrestigeTheme {...themeProps} />;
       case 'default':
       default:
         return <DefaultTheme {...themeProps} />;

@@ -35,6 +35,7 @@ interface UnionProfileTabsProps {
   isOwner: boolean;
   isApprovedMember: boolean;
   userId?: number | null;
+  prestigeMode?: boolean;
 }
 
 export function UnionProfileTabs({
@@ -46,6 +47,7 @@ export function UnionProfileTabs({
   isOwner,
   isApprovedMember,
   userId,
+  prestigeMode = false,
 }: UnionProfileTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -192,10 +194,19 @@ export function UnionProfileTabs({
   };
 
 
+  // Prestige mode styling
+  const goldAccent = '#D4AF37';
+  const tabActiveClass = prestigeMode
+    ? `border-b-2 text-amber-400`
+    : 'text-blue-600 border-b-2 border-blue-600';
+  const tabInactiveClass = prestigeMode
+    ? 'text-slate-400 hover:text-slate-200'
+    : 'text-gray-600 hover:text-gray-900';
+
   return (
     <div className="space-y-4">
       {/* Tabs Navigation */}
-      <div className="border-b bg-white">
+      <div className={`border-b ${prestigeMode ? 'border-amber-500/20 bg-transparent' : 'bg-white'}`}>
         {/* Horizontal scrollable tabs - unified for mobile and desktop */}
         <div className="flex items-center justify-between">
           <div className="flex-1 overflow-x-auto scrollbar-hide">
@@ -204,10 +215,9 @@ export function UnionProfileTabs({
               <button
                 onClick={() => setActiveTab('posts')}
                 className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'posts'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                  activeTab === 'posts' ? tabActiveClass : tabInactiveClass
                 }`}
+                style={activeTab === 'posts' && prestigeMode ? { borderColor: goldAccent, color: goldAccent } : undefined}
               >
                 News
               </button>
@@ -216,10 +226,9 @@ export function UnionProfileTabs({
               <button
                 onClick={() => setActiveTab('about')}
                 className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'about'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                  activeTab === 'about' ? tabActiveClass : tabInactiveClass
                 }`}
+                style={activeTab === 'about' && prestigeMode ? { borderColor: goldAccent, color: goldAccent } : undefined}
               >
                 About
               </button>
@@ -228,10 +237,9 @@ export function UnionProfileTabs({
               <button
                 onClick={() => setActiveTab('files')}
                 className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'files'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                  activeTab === 'files' ? tabActiveClass : tabInactiveClass
                 }`}
+                style={activeTab === 'files' && prestigeMode ? { borderColor: goldAccent, color: goldAccent } : undefined}
               >
                 Files
               </button>
@@ -241,10 +249,9 @@ export function UnionProfileTabs({
                 <button
                   onClick={() => setActiveTab('elections')}
                   className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                    activeTab === 'elections'
-                      ? 'text-blue-600 border-b-2 border-blue-600'
-                      : 'text-gray-600 hover:text-gray-900'
+                    activeTab === 'elections' ? tabActiveClass : tabInactiveClass
                   }`}
+                  style={activeTab === 'elections' && prestigeMode ? { borderColor: goldAccent, color: goldAccent } : undefined}
                 >
                   Elections
                 </button>
@@ -254,10 +261,9 @@ export function UnionProfileTabs({
               <button
                 onClick={() => setActiveTab('events')}
                 className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'events'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                  activeTab === 'events' ? tabActiveClass : tabInactiveClass
                 }`}
+                style={activeTab === 'events' && prestigeMode ? { borderColor: goldAccent, color: goldAccent } : undefined}
               >
                 Events
               </button>
@@ -266,10 +272,9 @@ export function UnionProfileTabs({
               <button
                 onClick={() => setActiveTab('contact')}
                 className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'contact'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                  activeTab === 'contact' ? tabActiveClass : tabInactiveClass
                 }`}
+                style={activeTab === 'contact' && prestigeMode ? { borderColor: goldAccent, color: goldAccent } : undefined}
               >
                 Contact
               </button>

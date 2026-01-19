@@ -22,10 +22,12 @@ import {
   ArrowLeft,
   Eye,
   EyeOff,
+  Lock,
+  Sparkles,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
-import { themeOptions } from '@/lib/themes/config';
+import { themeOptions, canAccessTheme } from '@/lib/themes/config';
 
 // Social media platform config
 const socialPlatforms = [
@@ -322,65 +324,123 @@ export function SettingsContent() {
                   Choose how your union's homepage and tabs are displayed to visitors
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {themeOptions.map((theme) => (
-                    <div
-                      key={theme.id}
-                      onClick={() => setFormData({ ...formData, theme: theme.id })}
-                      className={`relative cursor-pointer group rounded-lg overflow-hidden border-2 transition-all ${
-                        formData.theme === theme.id
-                          ? 'border-blue-500 ring-2 ring-blue-200'
-                          : 'border-gray-200 hover:border-blue-300'
-                      }`}
-                    >
-                      {/* Thumbnail Image */}
-                      <div className="relative aspect-[4/3] bg-gray-100">
-                        <Image
-                          src={`/assets/themes/${theme.id}.svg`}
-                          alt={`${theme.name} theme preview`}
-                          fill
-                          className="object-cover"
+                  {themeOptions.map((theme) => {
+                    const hasAccess = canAccessTheme(theme.id, (union as any)?.planName);
+                    const isLocked = theme.isPremium && !hasAccess;
+
+                    return (
+                      <div
+                        key={theme.id}
+                        onClick={() => {
+                          if (!isLocked) {
+                            setFormData({ ...formData, theme: theme.id });
+                          }
+                        }}
+                        className={`relative group rounded-lg overflow-hidden border-2 transition-all ${
+                          isLocked
+                            ? 'cursor-not-allowed opacity-75 border-gray-200'
+                            : 'cursor-pointer'
+                        } ${
+                          !isLocked && formData.theme === theme.id
+                            ? theme.isPremium
+                              ? 'border-amber-500 ring-2 ring-amber-200'
+                              : 'border-blue-500 ring-2 ring-blue-200'
+                            : !isLocked
+                            ? 'border-gray-200 hover:border-blue-300'
+                            : ''
+                        }`}
+                      >
+                        {/* Thumbnail Image */}
+                        <div className={`relative aspect-[4/3] ${theme.isPremium ? 'bg-slate-900' : 'bg-gray-100'}`}>
+                          <Image
+                            src={`/assets/themes/${theme.id}.svg`}
+                            alt={`${theme.name} theme preview`}
+                            fill
+                            className={`object-cover ${isLocked ? 'grayscale' : ''}`}
+                          />
+
+                          {/* Premium Badge */}
+                          {theme.isPremium && (
+                            <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full px-2.5 py-1 flex items-center gap-1 shadow-lg">
+                              <Sparkles className="h-3 w-3" />
+                              <span className="text-xs font-semibold">PREMIUM</span>
+                            </div>
+                          )}
+
+                          {/* Locked Overlay */}
+                          {isLocked && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                              <div className="bg-white/90 rounded-lg px-4 py-2 flex items-center gap-2 shadow-lg">
+                                <Lock className="h-4 w-4 text-gray-600" />
+                                <span className="text-sm font-medium text-gray-700">Base or Plus Plan</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Selected Badge */}
+                          {formData.theme === theme.id && !isLocked && (
+                            <div className={`absolute top-2 right-2 ${theme.isPremium ? 'bg-amber-500' : 'bg-blue-500'} text-white rounded-full p-1.5`}>
+                              <Check className="h-4 w-4" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Theme Info */}
+                        <div className={`p-4 ${
+                          formData.theme === theme.id && !isLocked
+                            ? theme.isPremium
+                              ? 'bg-amber-50 border-t-2 border-amber-500'
+                              : 'bg-blue-50 border-t-2 border-blue-500'
+                            : theme.isPremium
+                            ? 'bg-slate-800 border-t-2 border-slate-700'
+                            : 'bg-white border-t-2 border-gray-100'
+                        }`}>
+                          <h3 className={`font-semibold mb-1 flex items-center gap-2 ${
+                            formData.theme === theme.id && !isLocked
+                              ? theme.isPremium
+                                ? 'text-amber-900'
+                                : 'text-blue-900'
+                              : theme.isPremium
+                              ? 'text-amber-400'
+                              : 'text-gray-900'
+                          }`}>
+                            {theme.name}
+                          </h3>
+                          <p className={`text-sm ${
+                            formData.theme === theme.id && !isLocked
+                              ? theme.isPremium
+                                ? 'text-amber-700'
+                                : 'text-blue-700'
+                              : theme.isPremium
+                              ? 'text-slate-400'
+                              : 'text-gray-600'
+                          }`}>
+                            {theme.description}
+                          </p>
+                          {theme.isPremium && theme.requiredPlans && (
+                            <p className={`text-xs mt-2 ${
+                              formData.theme === theme.id && !isLocked
+                                ? 'text-amber-600'
+                                : 'text-slate-500'
+                            }`}>
+                              Requires {theme.requiredPlans.join(' or ')} plan
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Hidden radio input for form */}
+                        <input
+                          type="radio"
+                          name="theme"
+                          value={theme.id}
+                          checked={formData.theme === theme.id}
+                          onChange={() => {}}
+                          className="sr-only"
+                          disabled={isLocked}
                         />
-                        {/* Selected Badge */}
-                        {formData.theme === theme.id && (
-                          <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1.5">
-                            <Check className="h-4 w-4" />
-                          </div>
-                        )}
                       </div>
-
-                      {/* Theme Info */}
-                      <div className={`p-4 ${
-                        formData.theme === theme.id
-                          ? 'bg-blue-50 border-t-2 border-blue-500'
-                          : 'bg-white border-t-2 border-gray-100'
-                      }`}>
-                        <h3 className={`font-semibold mb-1 ${
-                          formData.theme === theme.id
-                            ? 'text-blue-900'
-                            : 'text-gray-900'
-                        }`}>
-                          {theme.name}
-                        </h3>
-                        <p className={`text-sm ${
-                          formData.theme === theme.id
-                            ? 'text-blue-700'
-                            : 'text-gray-600'
-                        }`}>
-                          {theme.description}
-                        </p>
-                      </div>
-
-                      {/* Hidden radio input for form */}
-                      <input
-                        type="radio"
-                        name="theme"
-                        value={theme.id}
-                        checked={formData.theme === theme.id}
-                        onChange={() => {}}
-                        className="sr-only"
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
