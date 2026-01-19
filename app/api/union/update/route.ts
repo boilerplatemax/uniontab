@@ -47,6 +47,7 @@ export async function PUT(request: NextRequest) {
       socialLinks,
       showSocialInHeader,
       showSocialInHero,
+      hidePoweredBy,
     } = body;
 
     // Update the union
@@ -70,6 +71,7 @@ export async function PUT(request: NextRequest) {
         socialLinks: socialLinks || null,
         showSocialInHeader: showSocialInHeader ?? false,
         showSocialInHero: showSocialInHero ?? false,
+        hidePoweredBy: hidePoweredBy ?? false,
       })
       .where(eq(unions.id, membership.unionId))
       .returning();

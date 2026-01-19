@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck } from 'lucide-react';
+import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video } from 'lucide-react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 
 // Animation component for scroll-triggered animations
@@ -810,6 +810,21 @@ export default function HomePage() {
               <p className="text-sm text-blue-100 pt-4">
                 Free for locals under 150 members &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Setup in under 30 minutes
               </p>
+              <div className="pt-6 border-t border-white/20 mt-6">
+                <p className="text-sm text-blue-100 mb-3">
+                  Want to see it in action first? We encourage you to try it yourself, but we&apos;re happy to walk you through it.
+                </p>
+                <a
+                  href="DEMO_LINK_PLACEHOLDER"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-white hover:text-blue-200 transition-colors text-sm font-medium"
+                >
+                  <Video className="h-4 w-4" />
+                  Book a Demo
+                  <ArrowRight className="h-3 w-3" />
+                </a>
+              </div>
             </div>
           </AnimatedSection>
         </div>

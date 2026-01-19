@@ -228,16 +228,18 @@ export function DefaultTheme({
               size="lg"
             />
 
-            {/* Powered by */}
-            <p className="text-gray-500 text-sm">
-              Powered by{' '}
-              <a
-                href="/"
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                UnionTab
-              </a>
-            </p>
+            {/* Powered by - Only hide for paid plans with hidePoweredBy enabled */}
+            {(!((union as any).hidePoweredBy && (union as any).planName && (union as any).planName !== 'Free')) && (
+              <p className="text-gray-500 text-sm">
+                Powered by{' '}
+                <a
+                  href="/"
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  UnionTab
+                </a>
+              </p>
+            )}
           </div>
         </div>
       </div>
