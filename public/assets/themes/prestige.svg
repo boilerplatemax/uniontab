@@ -1,0 +1,73 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Definitions -->
+  <defs>
+    <linearGradient id="prestigeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#D4AF37;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#F4E4BA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D4AF37;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:0.9" />
+    </linearGradient>
+    <!-- Subtle pattern -->
+    <pattern id="dots" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="15" cy="15" r="1" fill="#D4AF37" opacity="0.1"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#prestigeBg)"/>
+  <rect width="400" height="300" fill="url(#dots)"/>
+
+  <!-- Gold accent line at top -->
+  <rect y="0" width="400" height="3" fill="url(#goldGradient)"/>
+
+  <!-- Hero Section -->
+  <rect x="0" y="3" width="400" height="130" fill="#0f172a" opacity="0.5"/>
+
+  <!-- Logo placeholder with gold border -->
+  <rect x="168" y="35" width="64" height="64" fill="#0f172a" stroke="url(#goldGradient)" stroke-width="2" rx="12"/>
+  <text x="200" y="75" font-family="Arial" font-size="24" fill="#D4AF37" text-anchor="middle" font-weight="bold">U</text>
+
+  <!-- Premium badge -->
+  <rect x="150" y="105" width="100" height="20" fill="#D4AF37" opacity="0.2" rx="10"/>
+  <text x="200" y="119" font-family="Arial" font-size="9" fill="#F4E4BA" text-anchor="middle" font-weight="bold">PREMIUM UNION</text>
+
+  <!-- Gold accent line below hero -->
+  <rect y="133" width="400" height="1" fill="#D4AF37" opacity="0.3"/>
+
+  <!-- Navigation Tabs on dark background -->
+  <rect y="134" width="400" height="40" fill="#1e293b" opacity="0.6"/>
+  <text x="50" y="160" font-family="Arial" font-size="11" fill="#D4AF37" font-weight="bold">News</text>
+  <rect x="40" y="168" width="30" height="2" fill="#D4AF37"/>
+  <text x="110" y="160" font-family="Arial" font-size="11" fill="#94a3b8">About</text>
+  <text x="165" y="160" font-family="Arial" font-size="11" fill="#94a3b8">Files</text>
+  <text x="215" y="160" font-family="Arial" font-size="11" fill="#94a3b8">Events</text>
+  <text x="275" y="160" font-family="Arial" font-size="11" fill="#94a3b8">Contact</text>
+
+  <!-- Content area - glass morphism card -->
+  <rect x="15" y="185" width="370" height="100" fill="url(#cardBg)" rx="16" stroke="#D4AF37" stroke-opacity="0.2"/>
+
+  <!-- Post Card 1 - Premium style -->
+  <rect x="30" y="200" width="340" height="35" fill="#0f172a" opacity="0.5" rx="8"/>
+  <rect x="40" y="208" width="4" height="18" fill="#D4AF37" rx="2"/>
+  <text x="55" y="220" font-family="Arial" font-size="11" fill="#f8fafc" font-weight="bold">Important Announcement</text>
+  <text x="55" y="232" font-family="Arial" font-size="9" fill="#94a3b8">Posted 1 day ago</text>
+  <text x="340" y="220" font-family="Arial" font-size="10" fill="#D4AF37">12</text>
+
+  <!-- Post Card 2 - Premium style -->
+  <rect x="30" y="245" width="340" height="35" fill="#0f172a" opacity="0.5" rx="8"/>
+  <rect x="40" y="253" width="4" height="18" fill="#F4E4BA" rx="2"/>
+  <text x="55" y="265" font-family="Arial" font-size="11" fill="#f8fafc" font-weight="bold">Member Benefits Update</text>
+  <text x="55" y="277" font-family="Arial" font-size="9" fill="#94a3b8">Posted 3 days ago</text>
+  <text x="340" y="265" font-family="Arial" font-size="10" fill="#D4AF37">8</text>
+
+  <!-- Bottom decorative line -->
+  <rect y="297" width="400" height="3" fill="url(#goldGradient)" opacity="0.5"/>
+</svg>
