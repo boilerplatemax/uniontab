@@ -9,9 +9,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { EditMemberDialog } from './edit-member-dialog';
+import { AdminPermissionsDialog } from '@/components/members/admin-permissions-dialog';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign, Eye, Phone, TrendingUp, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign, Eye, Phone, TrendingUp, AlertTriangle, Settings2 } from 'lucide-react';
 import Link from 'next/link';
+import type { AdminPermissions } from '@/lib/db/schema';
+import { getPermissionCount } from '@/lib/admin-permissions';
 
 interface Member {
   member: {
@@ -38,6 +41,7 @@ interface Member {
     notes: string | null;
     isDelinquent: boolean;
     delinquentSince: Date | null;
+    adminPermissions: AdminPermissions | null;
   };
   user: {
     id: number;
@@ -91,6 +95,11 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
   // Edit member dialog states
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [memberToEdit, setMemberToEdit] = useState<Member | null>(null);
+
+  // Admin permissions dialog states
+  const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
+  const [permissionsDialogMode, setPermissionsDialogMode] = useState<'make-admin' | 'edit-permissions'>('make-admin');
+  const [memberForPermissions, setMemberForPermissions] = useState<Member | null>(null);
 
   // Member usage state
   const [memberUsage, setMemberUsage] = useState<{
@@ -363,35 +372,108 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
     }
   };
 
-  const handleToggleAdmin = async (memberId: number, currentRole: string) => {
-    const newRole = currentRole === 'admin' ? 'member' : 'admin';
+  const handleToggleAdmin = async (member: Member) => {
+    const currentRole = member.member.role;
+    const memberId = member.member.id;
+
+    if (currentRole === 'admin') {
+      // Demoting from admin - no dialog needed
+      setLoadingMembers((prev) => ({ ...prev, [memberId]: true }));
+
+      try {
+        const response = await fetch('/api/members/toggle-admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberId, role: 'member' }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update member role');
+        }
+
+        // Update local state
+        setMembersList((prev) =>
+          prev.map((m) =>
+            m.member.id === memberId
+              ? { ...m, member: { ...m.member, role: 'member', adminPermissions: null } }
+              : m
+          )
+        );
+        setSuccessMessage('Admin role removed successfully');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } catch (error) {
+        console.error('Error updating member role:', error);
+        setErrorMessage('Failed to update member role. Please try again.');
+        setTimeout(() => setErrorMessage(''), 3000);
+      } finally {
+        setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
+      }
+    } else {
+      // Promoting to admin - show permissions dialog
+      setMemberForPermissions(member);
+      setPermissionsDialogMode('make-admin');
+      setPermissionsDialogOpen(true);
+    }
+  };
+
+  const handleEditPermissions = (member: Member) => {
+    setMemberForPermissions(member);
+    setPermissionsDialogMode('edit-permissions');
+    setPermissionsDialogOpen(true);
+  };
+
+  const handlePermissionsConfirm = async (permissions: AdminPermissions) => {
+    if (!memberForPermissions) return;
+
+    const memberId = memberForPermissions.member.id;
     setLoadingMembers((prev) => ({ ...prev, [memberId]: true }));
 
     try {
-      const response = await fetch('/api/members/toggle-admin', {
+      const endpoint = permissionsDialogMode === 'make-admin'
+        ? '/api/members/toggle-admin'
+        : '/api/members/edit-permissions';
+
+      const body = permissionsDialogMode === 'make-admin'
+        ? { memberId, role: 'admin', permissions }
+        : { memberId, permissions };
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memberId, role: newRole }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update member role');
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update permissions');
       }
 
       // Update local state
       setMembersList((prev) =>
         prev.map((m) =>
           m.member.id === memberId
-            ? { ...m, member: { ...m.member, role: newRole } }
+            ? {
+                ...m,
+                member: {
+                  ...m.member,
+                  role: permissionsDialogMode === 'make-admin' ? 'admin' : m.member.role,
+                  adminPermissions: permissions
+                }
+              }
             : m
         )
       );
-      setSuccessMessage(`Member role updated to ${newRole} successfully`);
+
+      const message = permissionsDialogMode === 'make-admin'
+        ? `${getUserDisplayName(memberForPermissions.user)} is now an admin`
+        : 'Permissions updated successfully';
+      setSuccessMessage(message);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      console.error('Error updating member role:', error);
-      setErrorMessage('Failed to update member role. Please try again.');
+      console.error('Error updating permissions:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to update permissions');
       setTimeout(() => setErrorMessage(''), 3000);
+      throw error; // Re-throw so dialog stays open
     } finally {
       setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
     }
@@ -1313,27 +1395,43 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
 
                           {/* Admin toggle for approved members */}
                           {member.member.status === 'approved' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleToggleAdmin(member.member.id, member.member.role)}
-                              disabled={loadingMembers[member.member.id]}
-                              className="hidden sm:inline-flex"
-                            >
-                              {loadingMembers[member.member.id] ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : member.member.role === 'admin' ? (
-                                <>
-                                  <ShieldOff className="h-4 w-4 mr-1" />
-                                  Remove Admin
-                                </>
-                              ) : (
-                                <>
-                                  <Shield className="h-4 w-4 mr-1" />
-                                  Make Admin
-                                </>
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleToggleAdmin(member)}
+                                disabled={loadingMembers[member.member.id]}
+                                className="hidden sm:inline-flex"
+                              >
+                                {loadingMembers[member.member.id] ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : member.member.role === 'admin' ? (
+                                  <>
+                                    <ShieldOff className="h-4 w-4 mr-1" />
+                                    Remove Admin
+                                  </>
+                                ) : (
+                                  <>
+                                    <Shield className="h-4 w-4 mr-1" />
+                                    Make Admin
+                                  </>
+                                )}
+                              </Button>
+                              {/* Edit Permissions button for existing admins */}
+                              {member.member.role === 'admin' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleEditPermissions(member)}
+                                  disabled={loadingMembers[member.member.id]}
+                                  className="hidden sm:inline-flex bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                                  title="Edit Permissions"
+                                >
+                                  <Settings2 className="h-4 w-4 mr-1" />
+                                  Permissions
+                                </Button>
                               )}
-                            </Button>
+                            </>
                           )}
 
                           {/* Delete button for non-pending members */}
@@ -1485,6 +1583,17 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
         member={memberToEdit}
         unionId={union.id}
         onSave={handleEditSave}
+      />
+
+      {/* Admin Permissions Dialog */}
+      <AdminPermissionsDialog
+        open={permissionsDialogOpen}
+        onOpenChange={setPermissionsDialogOpen}
+        mode={permissionsDialogMode}
+        memberName={memberForPermissions ? getUserDisplayName(memberForPermissions.user) : ''}
+        memberId={memberForPermissions?.member.id || 0}
+        currentPermissions={memberForPermissions?.member.adminPermissions}
+        onConfirm={handlePermissionsConfirm}
       />
     </div>
   );

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { members, unions } from '@/lib/db/schema';
+import { members, unions, type AdminPermissions } from '@/lib/db/schema';
 import { eq, and, or, inArray } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
+import { DEFAULT_ADMIN_PERMISSIONS } from '@/lib/admin-permissions';
 
 // Admin limits per plan (owners + admins combined)
 const ADMIN_LIMITS: Record<string, number> = {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { memberId, role } = await request.json();
+    const { memberId, role, permissions } = await request.json();
 
     if (!memberId || !role) {
       return NextResponse.json(
@@ -109,13 +110,27 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update the member role
+    // Update the member role and permissions
+    const updateData: { role: string; adminPermissions?: AdminPermissions | null } = { role };
+
+    if (role === 'admin') {
+      // Set permissions (use provided permissions or defaults)
+      updateData.adminPermissions = permissions || DEFAULT_ADMIN_PERMISSIONS;
+    } else {
+      // Clear permissions when demoting from admin
+      updateData.adminPermissions = null;
+    }
+
     await db
       .update(members)
-      .set({ role })
+      .set(updateData)
       .where(eq(members.id, memberId));
 
-    return NextResponse.json({ success: true, role });
+    return NextResponse.json({
+      success: true,
+      role,
+      permissions: updateData.adminPermissions
+    });
   } catch (error) {
     console.error('Error updating member role:', error);
     return NextResponse.json(

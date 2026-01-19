@@ -150,6 +150,21 @@ export const members = pgTable('members', {
   // Admin-only notes field
   notes: text('notes'), // Only visible to admins/owners
 
+  // Admin permissions (only applicable when role is 'admin')
+  // JSON object with permission flags: { members, communications, dues, strikes, grievances, meetings, announcements, elections, settings, analytics }
+  adminPermissions: json('admin_permissions').$type<{
+    members?: boolean;      // View/manage members list
+    communications?: boolean; // Send mass emails/SMS
+    dues?: boolean;         // Manage dues
+    strikes?: boolean;      // Manage strikes
+    grievances?: boolean;   // Manage grievances
+    meetings?: boolean;     // Manage meetings
+    announcements?: boolean; // Manage announcements
+    elections?: boolean;    // Manage elections
+    settings?: boolean;     // Access union settings
+    analytics?: boolean;    // View analytics
+  }>(),
+
   // Dues tracking fields
   isDelinquent: boolean('is_delinquent').notNull().default(false),
   delinquentSince: timestamp('delinquent_since'),
@@ -1629,6 +1644,7 @@ export type Union = typeof unions.$inferSelect;
 export type NewUnion = typeof unions.$inferInsert;
 export type Member = typeof members.$inferSelect;
 export type NewMember = typeof members.$inferInsert;
+export type AdminPermissions = NonNullable<Member['adminPermissions']>;
 export type MemberDocument = typeof memberDocuments.$inferSelect;
 export type NewMemberDocument = typeof memberDocuments.$inferInsert;
 export type MemberCertification = typeof memberCertifications.$inferSelect;
