@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
+import { hasPermission, type AdminPermissionKey } from '@/lib/admin-permissions';
+import type { AdminPermissions } from '@/lib/db/schema';
 
 interface UnionNavbarProps {
   slug: string;
@@ -20,7 +22,7 @@ interface UnionNavbarProps {
   localNumber: string | null;
   membership: {
     user: { name: string | null };
-    member: { role: string };
+    member: { role: string; adminPermissions?: AdminPermissions | null };
   } | null;
   handleSignOut: () => Promise<void>;
   pendingMembersCount?: number;
@@ -34,6 +36,11 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
   const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
+
+  // Helper to check if user has a specific permission
+  const canAccess = (permission: AdminPermissionKey): boolean => {
+    return hasPermission(membership?.member.role, membership?.member.adminPermissions, permission);
+  };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -116,8 +123,8 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   </Button>
                 </Link>
 
-                {/* Members - standalone for owners */}
-                {isOwner && (
+                {/* Members - for users with members permission */}
+                {canAccess('members') && (
                   <Link href={`/${slug}/members`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2 relative">
                       <Users className="h-4 w-4" />
@@ -131,8 +138,8 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   </Link>
                 )}
 
-                {/* Mass Emails - standalone for owners/admins */}
-                {isOwnerOrAdmin && (
+                {/* Mass Emails - for users with communications permission */}
+                {canAccess('communications') && (
                   <Link href={`/${slug}/mass-email`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Mail className="h-4 w-4" />
@@ -141,8 +148,8 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   </Link>
                 )}
 
-                {/* SMS - standalone for owners/admins */}
-                {isOwnerOrAdmin && (
+                {/* SMS - for users with communications permission */}
+                {canAccess('communications') && (
                   <Link href={`/${slug}/mass-sms`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <MessageSquare className="h-4 w-4" />
@@ -151,8 +158,8 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   </Link>
                 )}
 
-                {/* Settings - standalone for owners */}
-                {isOwner && (
+                {/* Settings - for users with settings permission */}
+                {canAccess('settings') && (
                   <Link href={`/${slug}/settings`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Settings className="h-4 w-4" />
@@ -161,8 +168,8 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   </Link>
                 )}
 
-                {/* Analytics - standalone for owners */}
-                {isOwner && (
+                {/* Analytics - for users with analytics permission */}
+                {canAccess('analytics') && (
                   <Link href={`/${slug}/analytics`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <BarChart3 className="h-4 w-4" />
@@ -172,14 +179,14 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 )}
 
                 {/* More Dropdown - for less frequently used items */}
-                {isOwnerOrAdmin && (
+                {(canAccess('strikes') || canAccess('dues') || canAccess('announcements') || canAccess('members')) && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="gap-2 relative">
                         <Wrench className="h-4 w-4" />
                         <span className="hidden md:inline">More</span>
                         <ChevronDown className="h-3 w-3" />
-                        {strikeNotificationCount > 0 && (
+                        {strikeNotificationCount > 0 && canAccess('strikes') && (
                           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                             {strikeNotificationCount}
                           </span>
@@ -187,38 +194,46 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-56">
-                      <Link href={`/${slug}/strikes`} prefetch={true}>
-                        <DropdownMenuItem>
-                          <Zap className="h-4 w-4" />
-                          Strikes
-                          {strikeNotificationCount > 0 && (
-                            <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                              {strikeNotificationCount}
-                            </span>
-                          )}
-                        </DropdownMenuItem>
-                      </Link>
-                      <Link href={`/${slug}/dues`} prefetch={true}>
-                        <DropdownMenuItem>
-                          <DollarSign className="h-4 w-4" />
-                          Dues
-                        </DropdownMenuItem>
-                      </Link>
-                      {isOwner && (
+                      {canAccess('strikes') && (
+                        <Link href={`/${slug}/strikes`} prefetch={true}>
+                          <DropdownMenuItem>
+                            <Zap className="h-4 w-4" />
+                            Strikes
+                            {strikeNotificationCount > 0 && (
+                              <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                {strikeNotificationCount}
+                              </span>
+                            )}
+                          </DropdownMenuItem>
+                        </Link>
+                      )}
+                      {canAccess('dues') && (
+                        <Link href={`/${slug}/dues`} prefetch={true}>
+                          <DropdownMenuItem>
+                            <DollarSign className="h-4 w-4" />
+                            Dues
+                          </DropdownMenuItem>
+                        </Link>
+                      )}
+                      {(canAccess('announcements') || canAccess('members')) && (
                         <>
                           <DropdownMenuSeparator />
-                          <Link href={`/${slug}/announcements`} prefetch={true}>
-                            <DropdownMenuItem>
-                              <Megaphone className="h-4 w-4" />
-                              Announcements
-                            </DropdownMenuItem>
-                          </Link>
-                          <Link href={`/${slug}/members/invite`} prefetch={true}>
-                            <DropdownMenuItem>
-                              <UserPlus className="h-4 w-4" />
-                              Invite Members
-                            </DropdownMenuItem>
-                          </Link>
+                          {canAccess('announcements') && (
+                            <Link href={`/${slug}/announcements`} prefetch={true}>
+                              <DropdownMenuItem>
+                                <Megaphone className="h-4 w-4" />
+                                Announcements
+                              </DropdownMenuItem>
+                            </Link>
+                          )}
+                          {canAccess('members') && (
+                            <Link href={`/${slug}/members/invite`} prefetch={true}>
+                              <DropdownMenuItem>
+                                <UserPlus className="h-4 w-4" />
+                                Invite Members
+                              </DropdownMenuItem>
+                            </Link>
+                          )}
                         </>
                       )}
                     </DropdownMenuContent>
@@ -349,8 +364,8 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </Button>
               </Link>
 
-              {/* Members - for owners (primary actions) */}
-              {isOwner && (
+              {/* Members - for users with members permission */}
+              {canAccess('members') && (
                 <Link
                   href={`/${slug}/members`}
                   prefetch={true}
@@ -368,8 +383,8 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </Link>
               )}
 
-              {/* Mass Emails - for owners/admins */}
-              {isOwnerOrAdmin && (
+              {/* Mass Emails - for users with communications permission */}
+              {canAccess('communications') && (
                 <Link
                   href={`/${slug}/mass-email`}
                   prefetch={true}
@@ -382,8 +397,8 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </Link>
               )}
 
-              {/* SMS - for owners/admins */}
-              {isOwnerOrAdmin && (
+              {/* SMS - for users with communications permission */}
+              {canAccess('communications') && (
                 <Link
                   href={`/${slug}/mass-sms`}
                   prefetch={true}
@@ -396,8 +411,8 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </Link>
               )}
 
-              {/* Settings - for owners */}
-              {isOwner && (
+              {/* Settings - for users with settings permission */}
+              {canAccess('settings') && (
                 <Link
                   href={`/${slug}/settings`}
                   prefetch={true}
@@ -410,8 +425,8 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </Link>
               )}
 
-              {/* Analytics - for owners */}
-              {isOwner && (
+              {/* Analytics - for users with analytics permission */}
+              {canAccess('analytics') && (
                 <Link
                   href={`/${slug}/analytics`}
                   prefetch={true}
@@ -425,72 +440,78 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
               )}
 
               {/* Less frequently used items section */}
-              {isOwnerOrAdmin && (
+              {(canAccess('strikes') || canAccess('dues') || canAccess('announcements') || canAccess('members') || isOwner) && (
                 <div className="pt-2 border-t">
                   <p className="text-xs text-muted-foreground mb-2 px-2">More</p>
 
                   {/* Strikes */}
-                  <Link
-                    href={`/${slug}/strikes`}
-                    prefetch={true}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button variant="ghost" className="w-full justify-start gap-2 relative">
-                      <Zap className="h-4 w-4" />
-                      Strikes
-                      {strikeNotificationCount > 0 && (
-                        <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                          {strikeNotificationCount}
-                        </span>
-                      )}
-                    </Button>
-                  </Link>
+                  {canAccess('strikes') && (
+                    <Link
+                      href={`/${slug}/strikes`}
+                      prefetch={true}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button variant="ghost" className="w-full justify-start gap-2 relative">
+                        <Zap className="h-4 w-4" />
+                        Strikes
+                        {strikeNotificationCount > 0 && (
+                          <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                            {strikeNotificationCount}
+                          </span>
+                        )}
+                      </Button>
+                    </Link>
+                  )}
 
                   {/* Dues */}
-                  <Link
-                    href={`/${slug}/dues`}
-                    prefetch={true}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button variant="ghost" className="w-full justify-start gap-2">
-                      <DollarSign className="h-4 w-4" />
-                      Dues
-                    </Button>
-                  </Link>
+                  {canAccess('dues') && (
+                    <Link
+                      href={`/${slug}/dues`}
+                      prefetch={true}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button variant="ghost" className="w-full justify-start gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Dues
+                      </Button>
+                    </Link>
+                  )}
 
+                  {canAccess('announcements') && (
+                    <Link
+                      href={`/${slug}/announcements`}
+                      prefetch={true}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button variant="ghost" className="w-full justify-start gap-2">
+                        <Megaphone className="h-4 w-4" />
+                        Announcements
+                      </Button>
+                    </Link>
+                  )}
+                  {canAccess('members') && (
+                    <Link
+                      href={`/${slug}/members/invite`}
+                      prefetch={true}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button variant="ghost" className="w-full justify-start gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        Invite Members
+                      </Button>
+                    </Link>
+                  )}
                   {isOwner && (
-                    <>
-                      <Link
-                        href={`/${slug}/announcements`}
-                        prefetch={true}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Button variant="ghost" className="w-full justify-start gap-2">
-                          <Megaphone className="h-4 w-4" />
-                          Announcements
-                        </Button>
-                      </Link>
-                      <Link
-                        href={`/${slug}/members/invite`}
-                        prefetch={true}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Button variant="ghost" className="w-full justify-start gap-2">
-                          <UserPlus className="h-4 w-4" />
-                          Invite Members
-                        </Button>
-                      </Link>
-                      <Link
-                        href={`/${slug}/billing`}
-                        prefetch={true}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Button variant="ghost" className="w-full justify-start gap-2">
-                          <CreditCard className="h-4 w-4" />
-                          Billing
-                        </Button>
-                      </Link>
-                    </>
+                    <Link
+                      href={`/${slug}/billing`}
+                      prefetch={true}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button variant="ghost" className="w-full justify-start gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        Billing
+                      </Button>
+                    </Link>
                   )}
                 </div>
               )}
