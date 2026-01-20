@@ -8,16 +8,16 @@ import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
 import { SocialMediaIcons } from '@/components/social-media-icons';
 import type { ThemeProps } from './types';
-import { Settings, Mail, Phone, MapPin, Globe, Sparkles } from 'lucide-react';
+import { Settings, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
 
 /**
- * Prestige Theme (Premium Airbnb-inspired design)
+ * Prestige Theme (Fresh masonry-focused design)
  * - Clean white backgrounds with generous spacing
- * - Rose/coral accent color for premium feel
- * - Modern rounded cards with subtle shadows
+ * - Rose/coral accent color for warmth
+ * - Pill-style tab navigation with unique tab backgrounds
+ * - Grid/masonry layout for posts
  * - Refined typography and smooth transitions
- * - Requires Base or Plus subscription
  */
 export function PrestigeTheme({
   union,
@@ -152,19 +152,6 @@ export function PrestigeTheme({
               </div>
             )}
 
-            {/* Premium badge - minimal and elegant */}
-            <div
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-6 backdrop-blur-sm"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              }}
-            >
-              <Sparkles className="h-3.5 w-3.5 text-white" />
-              <span className="text-xs font-semibold tracking-widest text-white uppercase">
-                Premium
-              </span>
-            </div>
-
             {/* Title - UPPERCASE */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 tracking-tight text-white uppercase">
               {union.publicName || union.name}
@@ -243,27 +230,19 @@ export function PrestigeTheme({
         </div>
       )}
 
-      {/* Main Content - Clean card design */}
+      {/* Main Content - Open airy design */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Card container for tabs */}
-        <div
-          className="rounded-3xl border shadow-sm overflow-hidden bg-white"
-          style={{ borderColor: borderLight }}
-        >
-          <div className="p-4 sm:p-6 lg:p-8">
-            <UnionProfileTabs
-              union={union}
-              posts={posts}
-              files={files}
-              events={events}
-              membership={membership}
-              isOwner={isOwner}
-              isApprovedMember={isApprovedMember}
-              userId={userId}
-              prestigeMode={true}
-            />
-          </div>
-        </div>
+        <UnionProfileTabs
+          union={union}
+          posts={posts}
+          files={files}
+          events={events}
+          membership={membership}
+          isOwner={isOwner}
+          isApprovedMember={isApprovedMember}
+          userId={userId}
+          prestigeMode={true}
+        />
       </div>
 
       {/* Footer - Minimal elegant */}

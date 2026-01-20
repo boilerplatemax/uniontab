@@ -54,7 +54,8 @@ export function UnionProfileTabs({
   const searchParams = useSearchParams();
   const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') || 'posts';
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
-  const [postsView, setPostsView] = useState<'column' | 'grid'>('column');
+  // Default to grid view in prestige mode for masonry-style layout
+  const [postsView, setPostsView] = useState<'column' | 'grid'>(prestigeMode ? 'grid' : 'column');
 
   const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') => {
     const params = new URLSearchParams(searchParams);
@@ -194,194 +195,311 @@ export function UnionProfileTabs({
   };
 
 
-  // Prestige mode styling - Airbnb-inspired rose accent
+  // Prestige mode styling - Rose accent
   const roseAccent = '#E11D48';
+
+  // Prestige tab styling - pill-style navigation
+  const getPrestigeTabClass = (isActive: boolean) => {
+    if (isActive) {
+      return 'bg-rose-600 text-white';
+    }
+    return 'text-gray-600 hover:text-gray-900 hover:bg-gray-100';
+  };
+
+  // Standard tab styling
   const tabActiveClass = prestigeMode
-    ? `border-b-2`
+    ? getPrestigeTabClass(true)
     : 'text-blue-600 border-b-2 border-blue-600';
   const tabInactiveClass = prestigeMode
-    ? 'text-gray-500 hover:text-gray-900'
+    ? getPrestigeTabClass(false)
     : 'text-gray-600 hover:text-gray-900';
+
+  // Prestige mode tab navigation
+  const PrestigeTabNav = () => (
+    <div className="mb-8">
+      {/* Centered pill-style tabs */}
+      <div className="flex justify-center">
+        <div className="inline-flex flex-wrap justify-center gap-2 p-1.5 bg-gray-100/80 rounded-2xl">
+          <button
+            onClick={() => setActiveTab('posts')}
+            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'posts')}`}
+          >
+            News
+          </button>
+          <button
+            onClick={() => setActiveTab('about')}
+            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'about')}`}
+          >
+            About
+          </button>
+          <button
+            onClick={() => setActiveTab('files')}
+            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'files')}`}
+          >
+            Files
+          </button>
+          {isApprovedMember && (
+            <button
+              onClick={() => setActiveTab('elections')}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'elections')}`}
+            >
+              Elections
+            </button>
+          )}
+          <button
+            onClick={() => setActiveTab('events')}
+            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'events')}`}
+          >
+            Events
+          </button>
+          <button
+            onClick={() => setActiveTab('contact')}
+            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'contact')}`}
+          >
+            Contact
+          </button>
+        </div>
+      </div>
+
+      {/* Action bar below tabs */}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+        {isOwner && activeTab === 'posts' && (
+          <Button
+            size="sm"
+            className="bg-rose-600 hover:bg-rose-700 rounded-full px-5"
+            onClick={() => setCreatePostOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Post
+          </Button>
+        )}
+
+        {activeTab === 'posts' && (
+          <div className="flex gap-1 bg-white border border-gray-200 rounded-full p-1">
+            <button
+              onClick={() => setPostsView('grid')}
+              className={`p-2 rounded-full transition-colors ${postsView === 'grid' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+              title="Grid view"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setPostsView('column')}
+              className={`p-2 rounded-full transition-colors ${postsView === 'column' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+              title="List view"
+            >
+              <LayoutList className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {isOwner && activeTab === 'files' && (
+          <Button
+            size="sm"
+            className="bg-rose-600 hover:bg-rose-700 rounded-full px-5"
+            onClick={() => setUploadFileOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Upload File
+          </Button>
+        )}
+
+        {isOwner && activeTab === 'events' && (
+          <Button
+            size="sm"
+            className="bg-rose-600 hover:bg-rose-700 rounded-full px-5"
+            onClick={() => setCreateEventOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Event
+          </Button>
+        )}
+
+        {activeTab === 'events' && (
+          <div className="flex gap-1 bg-white border border-gray-200 rounded-full p-1">
+            <button
+              onClick={() => setEventsView('list')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${eventsView === 'list' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              List
+            </button>
+            <button
+              onClick={() => setEventsView('calendar')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${eventsView === 'calendar' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Calendar
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // Standard tab navigation (non-prestige)
+  const StandardTabNav = () => (
+    <div className="border-b bg-white">
+      <div className="flex items-center justify-between">
+        <div className="flex-1 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-1 sm:gap-2 px-4 sm:px-6 pt-2 min-w-max">
+            <button
+              onClick={() => setActiveTab('posts')}
+              className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                activeTab === 'posts' ? tabActiveClass : tabInactiveClass
+              }`}
+            >
+              News
+            </button>
+            <button
+              onClick={() => setActiveTab('about')}
+              className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                activeTab === 'about' ? tabActiveClass : tabInactiveClass
+              }`}
+            >
+              About
+            </button>
+            <button
+              onClick={() => setActiveTab('files')}
+              className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                activeTab === 'files' ? tabActiveClass : tabInactiveClass
+              }`}
+            >
+              Files
+            </button>
+            {isApprovedMember && (
+              <button
+                onClick={() => setActiveTab('elections')}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === 'elections' ? tabActiveClass : tabInactiveClass
+                }`}
+              >
+                Elections
+              </button>
+            )}
+            <button
+              onClick={() => setActiveTab('events')}
+              className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                activeTab === 'events' ? tabActiveClass : tabInactiveClass
+              }`}
+            >
+              Events
+            </button>
+            <button
+              onClick={() => setActiveTab('contact')}
+              className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
+                activeTab === 'contact' ? tabActiveClass : tabInactiveClass
+              }`}
+            >
+              Contact
+            </button>
+          </div>
+        </div>
+
+        <div className="hidden sm:flex gap-2 items-center pb-2 pr-6 flex-shrink-0">
+          {isOwner && (
+            <>
+              {activeTab === 'posts' && (
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => setCreatePostOpen(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Post
+                </Button>
+              )}
+            </>
+          )}
+
+          {activeTab === 'posts' && (
+            <div className={`hidden lg:flex gap-1 ${isOwner ? 'ml-2 border-l pl-2' : ''}`}>
+              <Button
+                variant={postsView === 'column' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setPostsView('column')}
+                title="Column view"
+                className="px-2"
+              >
+                <LayoutList className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={postsView === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setPostsView('grid')}
+                title="Grid view"
+                className="px-2"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {isOwner && (
+            <>
+              {activeTab === 'files' && (
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => setUploadFileOpen(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Upload File
+                </Button>
+              )}
+              {activeTab === 'events' && (
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => setCreateEventOpen(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Event
+                </Button>
+              )}
+            </>
+          )}
+
+          {activeTab === 'events' && (
+            <div className={`flex gap-2 ${isOwner ? 'ml-2 border-l pl-2' : ''}`}>
+              <Button
+                variant={eventsView === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setEventsView('list')}
+              >
+                List
+              </Button>
+              <Button
+                variant={eventsView === 'calendar' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setEventsView('calendar')}
+              >
+                Calendar
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-4">
       {/* Tabs Navigation */}
-      <div className={`border-b ${prestigeMode ? 'border-gray-200 bg-transparent' : 'bg-white'}`}>
-        {/* Horizontal scrollable tabs - unified for mobile and desktop */}
-        <div className="flex items-center justify-between">
-          <div className="flex-1 overflow-x-auto scrollbar-hide">
-            <div className="flex gap-1 sm:gap-2 px-4 sm:px-6 pt-2 min-w-max">
-              {/* News Tab */}
-              <button
-                onClick={() => setActiveTab('posts')}
-                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'posts' ? tabActiveClass : tabInactiveClass
-                }`}
-                style={activeTab === 'posts' && prestigeMode ? { borderColor: roseAccent, color: roseAccent } : undefined}
-              >
-                News
-              </button>
-
-              {/* About Tab */}
-              <button
-                onClick={() => setActiveTab('about')}
-                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'about' ? tabActiveClass : tabInactiveClass
-                }`}
-                style={activeTab === 'about' && prestigeMode ? { borderColor: roseAccent, color: roseAccent } : undefined}
-              >
-                About
-              </button>
-
-              {/* Files Tab */}
-              <button
-                onClick={() => setActiveTab('files')}
-                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'files' ? tabActiveClass : tabInactiveClass
-                }`}
-                style={activeTab === 'files' && prestigeMode ? { borderColor: roseAccent, color: roseAccent } : undefined}
-              >
-                Files
-              </button>
-
-              {/* Elections Tab (only for approved members) */}
-              {isApprovedMember && (
-                <button
-                  onClick={() => setActiveTab('elections')}
-                  className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                    activeTab === 'elections' ? tabActiveClass : tabInactiveClass
-                  }`}
-                  style={activeTab === 'elections' && prestigeMode ? { borderColor: roseAccent, color: roseAccent } : undefined}
-                >
-                  Elections
-                </button>
-              )}
-
-              {/* Events Tab */}
-              <button
-                onClick={() => setActiveTab('events')}
-                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'events' ? tabActiveClass : tabInactiveClass
-                }`}
-                style={activeTab === 'events' && prestigeMode ? { borderColor: roseAccent, color: roseAccent } : undefined}
-              >
-                Events
-              </button>
-
-              {/* Contact Tab */}
-              <button
-                onClick={() => setActiveTab('contact')}
-                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'contact' ? tabActiveClass : tabInactiveClass
-                }`}
-                style={activeTab === 'contact' && prestigeMode ? { borderColor: roseAccent, color: roseAccent } : undefined}
-              >
-                Contact
-              </button>
-            </div>
-          </div>
-
-          {/* Action buttons - hidden on mobile, shown on desktop */}
-          <div className="hidden sm:flex gap-2 items-center pb-2 pr-6 flex-shrink-0">
-            {isOwner && (
-              <>
-                {activeTab === 'posts' && (
-                  <Button
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => setCreatePostOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Post
-                  </Button>
-                )}
-              </>
-            )}
-
-            {/* View toggle for posts (large screens only) */}
-            {activeTab === 'posts' && (
-              <div className={`hidden lg:flex gap-1 ${isOwner ? 'ml-2 border-l pl-2' : ''}`}>
-                <Button
-                  variant={postsView === 'column' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setPostsView('column')}
-                  title="Column view"
-                  className="px-2"
-                >
-                  <LayoutList className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={postsView === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setPostsView('grid')}
-                  title="Grid view"
-                  className="px-2"
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-
-            {isOwner && (
-              <>
-                {activeTab === 'files' && (
-                  <Button
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => setUploadFileOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Upload File
-                  </Button>
-                )}
-                {activeTab === 'events' && (
-                  <Button
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => setCreateEventOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Event
-                  </Button>
-                )}
-              </>
-            )}
-
-            {/* View toggle for events (for all users on desktop) */}
-            {activeTab === 'events' && (
-              <div className={`flex gap-2 ${isOwner ? 'ml-2 border-l pl-2' : ''}`}>
-                <Button
-                  variant={eventsView === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setEventsView('list')}
-                >
-                  List
-                </Button>
-                <Button
-                  variant={eventsView === 'calendar' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setEventsView('calendar')}
-                >
-                  Calendar
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      {prestigeMode ? <PrestigeTabNav /> : <StandardTabNav />}
 
       {/* Tab Content */}
       <div className="space-y-4">
           {/* About Tab */}
           {activeTab === 'about' && (
-            <InlineAboutEditor union={union} isOwner={isOwner} />
+            <div className={prestigeMode ? 'bg-gradient-to-br from-violet-50/40 via-white to-rose-50/30 rounded-2xl p-6 sm:p-8' : ''}>
+              <InlineAboutEditor union={union} isOwner={isOwner} />
+            </div>
           )}
 
           {/* Posts Tab */}
           {activeTab === 'posts' && (
             <>
-              {/* Create Post Button (Mobile only) */}
-              {isOwner && (
+              {/* Create Post Button (Mobile only - non-prestige) */}
+              {!prestigeMode && isOwner && (
                 <div className="flex justify-start sm:hidden">
                   <Button
                     className="bg-blue-600 hover:bg-blue-700"
@@ -395,244 +513,356 @@ export function UnionProfileTabs({
 
               {/* Posts List */}
               {posts.length > 0 ? (
-                <div className={postsView === 'grid'
-                  ? 'lg:grid lg:grid-cols-2 xl:grid-cols-3 gap-4 space-y-4 lg:space-y-0'
-                  : 'space-y-4'
-                }>
-                  {posts.map((post) => {
-                    // Hide private posts from non-approved members
-                    if (post.isPrivate && !isApprovedMember) {
-                      return null;
-                    }
+                prestigeMode ? (
+                  /* Prestige Mode: Masonry-style grid */
+                  <div className={postsView === 'grid'
+                    ? 'columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5 space-y-5'
+                    : 'space-y-6 max-w-3xl mx-auto'
+                  }>
+                    {posts.map((post) => {
+                      if (post.isPrivate && !isApprovedMember) return null;
 
-                    return (
-                      <Card key={post.id} className={`shadow-sm hover:shadow-md transition-shadow ${postsView === 'grid' ? 'flex flex-col h-full' : ''}`}>
-                        <CardContent className={postsView === 'grid' ? 'p-4 flex flex-col h-full' : 'p-4 sm:p-6'}>
-                          {/* Grid view: Image on top */}
-                          {postsView === 'grid' && post.imageUrl && (
-                            <Link href={`/${union.slug}/post/${post.id}`} className="block -mx-4 -mt-4 mb-4">
-                              <div className="relative aspect-video overflow-hidden rounded-t-lg bg-gray-100">
+                      return postsView === 'grid' ? (
+                        /* Prestige Grid Card */
+                        <article key={post.id} className="break-inside-avoid mb-5 group">
+                          <Link href={`/${union.slug}/post/${post.id}`} className="block">
+                            {post.imageUrl && (
+                              <div className="relative overflow-hidden rounded-2xl bg-gray-100 mb-3">
                                 <img
                                   src={post.imageUrl}
                                   alt={post.title}
-                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                  className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500"
                                   loading="lazy"
                                 />
-                              </div>
-                            </Link>
-                          )}
-
-                          {/* Header with title and actions */}
-                          <div className={`flex items-start justify-between ${postsView === 'grid' ? 'mb-2' : 'mb-4'}`}>
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <Link href={`/${union.slug}/post/${post.id}`} className="flex-1 min-w-0">
-                                <h3 className={`font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors ${postsView === 'grid' ? 'text-base line-clamp-2' : 'text-lg sm:text-xl truncate'}`}>
-                                  {post.title}
-                                </h3>
-                              </Link>
-                              {(post as any).isPinned && (
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1 flex-shrink-0">
-                                  <Pin className="h-3 w-3" />
-                                  {postsView !== 'grid' && 'Pinned'}
-                                </span>
-                              )}
-                            </div>
-                            <div className={`flex items-center gap-2 flex-shrink-0 ml-2 ${postsView === 'grid' ? 'gap-1' : ''}`}>
-                              {post.isPrivate && postsView !== 'grid' && (
-                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                  Private
-                                </span>
-                              )}
-                              {isOwner && postsView !== 'grid' && (
-                                <>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)}
-                                    title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}
-                                  >
-                                    <Pin className={`h-4 w-4 ${(post as any).isPinned ? 'fill-current' : ''}`} />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedPost(post);
-                                      setEditPostOpen(true);
-                                    }}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleDeletePost(post.id)}
-                                    disabled={deletingPost === post.id}
-                                  >
-                                    {deletingPost === post.id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <Trash2 className="h-4 w-4" />
-                                    )}
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Content and Image Layout */}
-                          {postsView === 'grid' ? (
-                            /* Grid view: Compact content */
-                            <div className="flex-1">
-                              <RichTextContent
-                                content={post.content}
-                                className="text-sm text-gray-600 line-clamp-3"
-                              />
-                              <Link href={`/${union.slug}/post/${post.id}`}>
-                                <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700 text-sm">
-                                  Read more →
-                                </Button>
-                              </Link>
-                            </div>
-                          ) : (
-                            /* Column view: Full content */
-                            <div className="mb-4">
-                              {/* Mobile: Image first */}
-                              {post.imageUrl && (
-                                <div className="relative mb-4 sm:hidden rounded-lg overflow-hidden bg-gray-100">
-                                  <img
-                                    src={post.imageUrl}
-                                    alt={post.title}
-                                    className="w-full h-auto object-cover"
-                                    loading="lazy"
-                                  />
-                                </div>
-                              )}
-
-                              {/* Desktop: Text and Image Side by Side */}
-                              <div className={post.imageUrl ? "sm:flex sm:gap-6 sm:items-start" : ""}>
-                                {/* Content Section - Full width on mobile, left side on desktop */}
-                                <div className="flex-1 min-w-0">
-                                  <RichTextContent
-                                    content={post.content}
-                                    className="text-sm sm:text-base line-clamp-6"
-                                  />
-                                  <Link href={`/${union.slug}/post/${post.id}`}>
-                                    <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700">
-                                      View Full Post →
-                                    </Button>
-                                  </Link>
-                                </div>
-
-                                {/* Image Section - Hidden on mobile, right side on desktop */}
-                                {post.imageUrl && (
-                                  <div className="hidden sm:block sm:w-80 sm:flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                                    <img
-                                      src={post.imageUrl}
-                                      alt={post.title}
-                                      className="w-full h-auto max-h-[250px] object-cover"
-                                      loading="lazy"
-                                    />
+                                {(post as any).isPinned && (
+                                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
+                                    <Pin className="h-3 w-3 text-rose-600 fill-current" />
+                                    <span className="text-xs font-medium text-gray-800">Pinned</span>
                                   </div>
                                 )}
                               </div>
+                            )}
+                            <div className={!post.imageUrl ? 'p-5 bg-gradient-to-br from-rose-50 to-orange-50 rounded-2xl' : ''}>
+                              {!post.imageUrl && (post as any).isPinned && (
+                                <div className="inline-flex items-center gap-1 bg-white rounded-full px-2.5 py-1 mb-3">
+                                  <Pin className="h-3 w-3 text-rose-600 fill-current" />
+                                  <span className="text-xs font-medium text-gray-800">Pinned</span>
+                                </div>
+                              )}
+                              <h3 className="font-semibold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 text-base leading-snug">
+                                {post.title}
+                              </h3>
+                              <div className="mt-2 text-sm text-gray-500 line-clamp-2">
+                                <RichTextContent content={post.content} className="line-clamp-2" />
+                              </div>
+                              <div className="mt-3 flex items-center justify-between">
+                                <span className="text-xs text-gray-400">{formatDate(post.createdAt)}</span>
+                                <div className="flex items-center gap-2">
+                                  {post.attachments && post.attachments.length > 0 && (
+                                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                                      <Paperclip className="h-3 w-3" />
+                                      {post.attachments.length}
+                                    </span>
+                                  )}
+                                  <LikeButton
+                                    postId={post.id}
+                                    initialLiked={(post as any).isLikedByUser || false}
+                                    initialCount={(post as any).likeCount || 0}
+                                    userId={userId || null}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+                          {isOwner && (
+                            <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={(e) => { e.preventDefault(); handleTogglePin(post.id, (post as any).isPinned || false); }}
+                                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                                title={(post as any).isPinned ? 'Unpin' : 'Pin'}
+                              >
+                                <Pin className={`h-3.5 w-3.5 ${(post as any).isPinned ? 'fill-current text-rose-600' : ''}`} />
+                              </button>
+                              <button
+                                onClick={(e) => { e.preventDefault(); setSelectedPost(post); setEditPostOpen(true); }}
+                                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                                title="Edit"
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.preventDefault(); handleDeletePost(post.id); }}
+                                disabled={deletingPost === post.id}
+                                className="p-1.5 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-600"
+                                title="Delete"
+                              >
+                                {deletingPost === post.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                              </button>
                             </div>
                           )}
-
-                          {/* Post Attachments - hidden in grid view */}
-                          {postsView !== 'grid' && post.attachments && post.attachments.length > 0 && (
-                            <div className="mb-4 space-y-2">
-                              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                                <Paperclip className="h-4 w-4" />
-                                <span>Attachments ({post.attachments.length})</span>
+                        </article>
+                      ) : (
+                        /* Prestige Column/List View */
+                        <article key={post.id} className="group border-b border-gray-100 pb-6 last:border-0">
+                          <div className="flex gap-6">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                {(post as any).isPinned && (
+                                  <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-600 rounded-full px-2 py-0.5 text-xs font-medium">
+                                    <Pin className="h-3 w-3 fill-current" />
+                                    Pinned
+                                  </span>
+                                )}
+                                {post.isPrivate && (
+                                  <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Private</span>
+                                )}
                               </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {post.attachments.map((attachment) => (
-                                  <div
-                                    key={attachment.id}
-                                    className="flex items-center gap-3 p-2 bg-gray-50 hover:bg-gray-100 rounded border border-gray-200 transition-colors"
-                                  >
-                                    <FileText className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium text-gray-900 truncate">
-                                        {attachment.fileName}
-                                      </p>
-                                      <p className="text-xs text-gray-500">
-                                        {(attachment.fileSize / 1024 / 1024).toFixed(2)} MB
-                                      </p>
-                                    </div>
+                              <Link href={`/${union.slug}/post/${post.id}`}>
+                                <h3 className="text-xl font-semibold text-gray-900 group-hover:text-rose-600 transition-colors mb-2">
+                                  {post.title}
+                                </h3>
+                              </Link>
+                              <RichTextContent content={post.content} className="text-gray-600 line-clamp-3 mb-3" />
+
+                              {post.attachments && post.attachments.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                  {post.attachments.map((attachment) => (
                                     <a
+                                      key={attachment.id}
                                       href={attachment.fileUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="flex-shrink-0"
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm text-gray-600 transition-colors"
                                     >
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        title="Download"
-                                      >
-                                        <Download className="h-4 w-4" />
-                                      </Button>
+                                      <FileText className="h-4 w-4 text-rose-500" />
+                                      <span className="truncate max-w-[120px]">{attachment.fileName}</span>
                                     </a>
-                                  </div>
-                                ))}
+                                  ))}
+                                </div>
+                              )}
+
+                              <div className="flex items-center gap-4 text-sm text-gray-500">
+                                <span>{formatDate(post.createdAt)}</span>
+                                <span>·</span>
+                                <span>{(post as any).authorType === 'user' ? post.createdBy.name : (union.publicName || union.name)}</span>
+                                <div className="flex items-center gap-2 ml-auto">
+                                  <LikeButton
+                                    postId={post.id}
+                                    initialLiked={(post as any).isLikedByUser || false}
+                                    initialCount={(post as any).likeCount || 0}
+                                    userId={userId || null}
+                                  />
+                                  <ShareButton
+                                    itemType="post"
+                                    itemId={post.id}
+                                    itemTitle={post.title}
+                                    itemUrl={`/${union.slug}/post/${post.id}`}
+                                    slug={union.slug}
+                                    isOwnerOrAdmin={isOwner}
+                                    itemContent={post.content}
+                                    itemImageUrl={post.imageUrl || undefined}
+                                    itemAttachments={post.attachments}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          )}
 
-                          {/* Grid view: Simple attachments indicator */}
-                          {postsView === 'grid' && post.attachments && post.attachments.length > 0 && (
-                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
-                              <Paperclip className="h-3 w-3" />
-                              <span>{post.attachments.length} attachment{post.attachments.length > 1 ? 's' : ''}</span>
-                            </div>
-                          )}
-
-                          {/* Action Bar */}
-                          <div className={`flex ${postsView === 'grid' ? 'flex-col gap-2 mt-auto pt-3 border-t' : 'flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t pt-4 mt-4'}`}>
-                            <div className="flex items-center gap-3">
-                              <LikeButton
-                                postId={post.id}
-                                initialLiked={(post as any).isLikedByUser || false}
-                                initialCount={(post as any).likeCount || 0}
-                                userId={userId || null}
-                              />
-                              {postsView !== 'grid' && (
-                                <ShareButton
-                                  itemType="post"
-                                  itemId={post.id}
-                                  itemTitle={post.title}
-                                  itemUrl={`/${union.slug}/post/${post.id}`}
-                                  slug={union.slug}
-                                  isOwnerOrAdmin={isOwner}
-                                  itemContent={post.content}
-                                  itemImageUrl={post.imageUrl || undefined}
-                                  itemAttachments={post.attachments}
-                                />
+                              {isOwner && (
+                                <div className="flex items-center gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)}
+                                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 text-sm flex items-center gap-1.5"
+                                  >
+                                    <Pin className={`h-4 w-4 ${(post as any).isPinned ? 'fill-current text-rose-600' : ''}`} />
+                                    {(post as any).isPinned ? 'Unpin' : 'Pin'}
+                                  </button>
+                                  <button
+                                    onClick={() => { setSelectedPost(post); setEditPostOpen(true); }}
+                                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 text-sm flex items-center gap-1.5"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeletePost(post.id)}
+                                    disabled={deletingPost === post.id}
+                                    className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 text-sm flex items-center gap-1.5"
+                                  >
+                                    {deletingPost === post.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                    Delete
+                                  </button>
+                                </div>
                               )}
                             </div>
-                            <div className={`text-gray-500 ${postsView === 'grid' ? 'text-xs' : 'text-sm'}`}>
-                              {postsView === 'grid' ? formatDate(post.createdAt) : `Posted by ${(post as any).authorType === 'user' ? post.createdBy.name : `${(union.publicName || union.name).toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`} • ${formatDate(post.createdAt)}`}
-                            </div>
+                            {post.imageUrl && (
+                              <Link href={`/${union.slug}/post/${post.id}`} className="hidden sm:block flex-shrink-0">
+                                <div className="w-40 h-28 rounded-xl overflow-hidden bg-gray-100">
+                                  <img
+                                    src={post.imageUrl}
+                                    alt={post.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    loading="lazy"
+                                  />
+                                </div>
+                              </Link>
+                            )}
                           </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* Standard Mode Grid/Column */
+                  <div className={postsView === 'grid'
+                    ? 'lg:grid lg:grid-cols-2 xl:grid-cols-3 gap-4 space-y-4 lg:space-y-0'
+                    : 'space-y-4'
+                  }>
+                    {posts.map((post) => {
+                      if (post.isPrivate && !isApprovedMember) return null;
+
+                      return (
+                        <Card key={post.id} className={`shadow-sm hover:shadow-md transition-shadow ${postsView === 'grid' ? 'flex flex-col h-full' : ''}`}>
+                          <CardContent className={postsView === 'grid' ? 'p-4 flex flex-col h-full' : 'p-4 sm:p-6'}>
+                            {postsView === 'grid' && post.imageUrl && (
+                              <Link href={`/${union.slug}/post/${post.id}`} className="block -mx-4 -mt-4 mb-4">
+                                <div className="relative aspect-video overflow-hidden rounded-t-lg bg-gray-100">
+                                  <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" loading="lazy" />
+                                </div>
+                              </Link>
+                            )}
+                            <div className={`flex items-start justify-between ${postsView === 'grid' ? 'mb-2' : 'mb-4'}`}>
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <Link href={`/${union.slug}/post/${post.id}`} className="flex-1 min-w-0">
+                                  <h3 className={`font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors ${postsView === 'grid' ? 'text-base line-clamp-2' : 'text-lg sm:text-xl truncate'}`}>
+                                    {post.title}
+                                  </h3>
+                                </Link>
+                                {(post as any).isPinned && (
+                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1 flex-shrink-0">
+                                    <Pin className="h-3 w-3" />
+                                    {postsView !== 'grid' && 'Pinned'}
+                                  </span>
+                                )}
+                              </div>
+                              <div className={`flex items-center gap-2 flex-shrink-0 ml-2 ${postsView === 'grid' ? 'gap-1' : ''}`}>
+                                {post.isPrivate && postsView !== 'grid' && (
+                                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Private</span>
+                                )}
+                                {isOwner && postsView !== 'grid' && (
+                                  <>
+                                    <Button variant="outline" size="sm" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}>
+                                      <Pin className={`h-4 w-4 ${(post as any).isPinned ? 'fill-current' : ''}`} />
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => { setSelectedPost(post); setEditPostOpen(true); }}>
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="destructive" size="sm" onClick={() => handleDeletePost(post.id)} disabled={deletingPost === post.id}>
+                                      {deletingPost === post.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            {postsView === 'grid' ? (
+                              <div className="flex-1">
+                                <RichTextContent content={post.content} className="text-sm text-gray-600 line-clamp-3" />
+                                <Link href={`/${union.slug}/post/${post.id}`}>
+                                  <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700 text-sm">Read more →</Button>
+                                </Link>
+                              </div>
+                            ) : (
+                              <div className="mb-4">
+                                {post.imageUrl && (
+                                  <div className="relative mb-4 sm:hidden rounded-lg overflow-hidden bg-gray-100">
+                                    <img src={post.imageUrl} alt={post.title} className="w-full h-auto object-cover" loading="lazy" />
+                                  </div>
+                                )}
+                                <div className={post.imageUrl ? "sm:flex sm:gap-6 sm:items-start" : ""}>
+                                  <div className="flex-1 min-w-0">
+                                    <RichTextContent content={post.content} className="text-sm sm:text-base line-clamp-6" />
+                                    <Link href={`/${union.slug}/post/${post.id}`}>
+                                      <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700">View Full Post →</Button>
+                                    </Link>
+                                  </div>
+                                  {post.imageUrl && (
+                                    <div className="hidden sm:block sm:w-80 sm:flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                                      <img src={post.imageUrl} alt={post.title} className="w-full h-auto max-h-[250px] object-cover" loading="lazy" />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            {postsView !== 'grid' && post.attachments && post.attachments.length > 0 && (
+                              <div className="mb-4 space-y-2">
+                                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                  <Paperclip className="h-4 w-4" />
+                                  <span>Attachments ({post.attachments.length})</span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {post.attachments.map((attachment) => (
+                                    <div key={attachment.id} className="flex items-center gap-3 p-2 bg-gray-50 hover:bg-gray-100 rounded border border-gray-200 transition-colors">
+                                      <FileText className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900 truncate">{attachment.fileName}</p>
+                                        <p className="text-xs text-gray-500">{(attachment.fileSize / 1024 / 1024).toFixed(2)} MB</p>
+                                      </div>
+                                      <a href={attachment.fileUrl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+                                        <Button variant="outline" size="sm" title="Download"><Download className="h-4 w-4" /></Button>
+                                      </a>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {postsView === 'grid' && post.attachments && post.attachments.length > 0 && (
+                              <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
+                                <Paperclip className="h-3 w-3" />
+                                <span>{post.attachments.length} attachment{post.attachments.length > 1 ? 's' : ''}</span>
+                              </div>
+                            )}
+                            <div className={`flex ${postsView === 'grid' ? 'flex-col gap-2 mt-auto pt-3 border-t' : 'flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t pt-4 mt-4'}`}>
+                              <div className="flex items-center gap-3">
+                                <LikeButton postId={post.id} initialLiked={(post as any).isLikedByUser || false} initialCount={(post as any).likeCount || 0} userId={userId || null} />
+                                {postsView !== 'grid' && (
+                                  <ShareButton itemType="post" itemId={post.id} itemTitle={post.title} itemUrl={`/${union.slug}/post/${post.id}`} slug={union.slug} isOwnerOrAdmin={isOwner} itemContent={post.content} itemImageUrl={post.imageUrl || undefined} itemAttachments={post.attachments} />
+                                )}
+                              </div>
+                              <div className={`text-gray-500 ${postsView === 'grid' ? 'text-xs' : 'text-sm'}`}>
+                                {postsView === 'grid' ? formatDate(post.createdAt) : `Posted by ${(post as any).authorType === 'user' ? post.createdBy.name : `${(union.publicName || union.name).toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`} • ${formatDate(post.createdAt)}`}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )
               ) : (
-                <Card className="shadow-sm">
-                  <CardContent className="p-12 text-center">
-                    <Image className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No posts yet</h3>
-                    <p className="text-gray-500">
+                prestigeMode ? (
+                  /* Prestige Empty State */
+                  <div className="text-center py-16">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-rose-50 flex items-center justify-center">
+                      <Image className="h-10 w-10 text-rose-300" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No posts yet</h3>
+                    <p className="text-gray-500 max-w-sm mx-auto">
                       {isOwner
-                        ? 'Create your first post to get started!'
-                        : 'Check back later for updates.'}
+                        ? 'Share your first update with your community.'
+                        : 'Check back soon for the latest news and updates.'}
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                ) : (
+                  <Card className="shadow-sm">
+                    <CardContent className="p-12 text-center">
+                      <Image className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No posts yet</h3>
+                      <p className="text-gray-500">
+                        {isOwner
+                          ? 'Create your first post to get started!'
+                          : 'Check back later for updates.'}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )
               )}
             </>
           )}
@@ -640,8 +870,8 @@ export function UnionProfileTabs({
           {/* Files Tab */}
           {activeTab === 'files' && (
             <>
-              {/* Upload File Button (Mobile only) */}
-              {isOwner && (
+              {/* Upload File Button (Mobile only - non-prestige) */}
+              {!prestigeMode && isOwner && (
                 <div className="flex justify-start sm:hidden">
                   <Button
                     className="bg-blue-600 hover:bg-blue-700"
@@ -660,33 +890,49 @@ export function UnionProfileTabs({
 
               {/* Files List */}
               {files.length > 0 ? (
-                <CategorizedFilesList
-                  files={files}
-                  isOwner={isOwner}
-                  isApprovedMember={isApprovedMember}
-                  onEdit={(file) => {
-                    setSelectedFile(file);
-                    setEditFileOpen(true);
-                  }}
-                  onDelete={handleDeleteFile}
-                  deletingFile={deletingFile}
-                  unionId={union.id}
-                  slug={union.slug}
-                />
+                <div className={prestigeMode ? 'bg-gradient-to-b from-gray-50/50 to-white rounded-2xl p-6' : ''}>
+                  <CategorizedFilesList
+                    files={files}
+                    isOwner={isOwner}
+                    isApprovedMember={isApprovedMember}
+                    onEdit={(file) => {
+                      setSelectedFile(file);
+                      setEditFileOpen(true);
+                    }}
+                    onDelete={handleDeleteFile}
+                    deletingFile={deletingFile}
+                    unionId={union.id}
+                    slug={union.slug}
+                  />
+                </div>
               ) : (
-                <Card className="shadow-sm">
-                  <CardContent className="p-12 text-center">
-                    <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No files yet
-                    </h3>
-                    <p className="text-gray-500">
+                prestigeMode ? (
+                  <div className="text-center py-16 bg-gradient-to-b from-blue-50/50 to-white rounded-2xl">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-blue-50 flex items-center justify-center">
+                      <FileText className="h-10 w-10 text-blue-300" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No files yet</h3>
+                    <p className="text-gray-500 max-w-sm mx-auto">
                       {isOwner
-                        ? 'Upload your first file to get started!'
-                        : 'Check back later for documents.'}
+                        ? 'Upload documents, contracts, and resources for your members.'
+                        : 'Documents and resources will appear here.'}
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                ) : (
+                  <Card className="shadow-sm">
+                    <CardContent className="p-12 text-center">
+                      <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No files yet
+                      </h3>
+                      <p className="text-gray-500">
+                        {isOwner
+                          ? 'Upload your first file to get started!'
+                          : 'Check back later for documents.'}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )
               )}
             </>
           )}
@@ -694,91 +940,92 @@ export function UnionProfileTabs({
           {/* Events Tab */}
           {activeTab === 'events' && (
             <>
-              {/* Create Event Button & View Toggle (Mobile only) */}
-              {isOwner && (
-                <div className="flex items-center justify-between sm:hidden">
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => setCreateEventOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Event
-                  </Button>
-
-                  <div className="flex gap-2">
-                    <Button
-                      variant={eventsView === 'list' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setEventsView('list')}
-                    >
-                      List
-                    </Button>
-                    <Button
-                      variant={eventsView === 'calendar' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setEventsView('calendar')}
-                    >
-                      Calendar
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* View Toggle for non-owners on mobile */}
-              {!isOwner && (
-                <div className="flex justify-end gap-2 sm:hidden">
-                  <Button
-                    variant={eventsView === 'list' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setEventsView('list')}
-                  >
-                    List
-                  </Button>
-                  <Button
-                    variant={eventsView === 'calendar' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setEventsView('calendar')}
-                  >
-                    Calendar
-                  </Button>
-                </div>
+              {/* Non-prestige mobile controls */}
+              {!prestigeMode && (
+                <>
+                  {isOwner && (
+                    <div className="flex items-center justify-between sm:hidden">
+                      <Button
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={() => setCreateEventOpen(true)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Event
+                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant={eventsView === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('list')}>List</Button>
+                        <Button variant={eventsView === 'calendar' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('calendar')}>Calendar</Button>
+                      </div>
+                    </div>
+                  )}
+                  {!isOwner && (
+                    <div className="flex justify-end gap-2 sm:hidden">
+                      <Button variant={eventsView === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('list')}>List</Button>
+                      <Button variant={eventsView === 'calendar' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('calendar')}>Calendar</Button>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Events View */}
-              {eventsView === 'calendar' ? (
-                <EventsCalendar
-                  events={events.filter((e) => !e.isPrivate || isApprovedMember)}
-                  onEventClick={handleEventClick}
-                />
-              ) : (
-                <EventsList
-                  events={events.filter((e) => !e.isPrivate || isApprovedMember)}
-                  isOwner={isOwner}
-                  onEventClick={handleEventClick}
-                  onEdit={handleEditEvent}
-                  onDelete={handleDeleteEvent}
-                  slug={union.slug}
-                  themeColor={union.themeColor}
-                />
-              )}
+              <div className={prestigeMode ? 'bg-gradient-to-b from-amber-50/30 to-white rounded-2xl p-6' : ''}>
+                {eventsView === 'calendar' ? (
+                  <EventsCalendar
+                    events={events.filter((e) => !e.isPrivate || isApprovedMember)}
+                    onEventClick={handleEventClick}
+                  />
+                ) : events.filter((e) => !e.isPrivate || isApprovedMember).length > 0 ? (
+                  <EventsList
+                    events={events.filter((e) => !e.isPrivate || isApprovedMember)}
+                    isOwner={isOwner}
+                    onEventClick={handleEventClick}
+                    onEdit={handleEditEvent}
+                    onDelete={handleDeleteEvent}
+                    slug={union.slug}
+                    themeColor={prestigeMode ? '#E11D48' : union.themeColor}
+                  />
+                ) : (
+                  prestigeMode ? (
+                    <div className="text-center py-16">
+                      <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-amber-50 flex items-center justify-center">
+                        <Calendar className="h-10 w-10 text-amber-300" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No upcoming events</h3>
+                      <p className="text-gray-500 max-w-sm mx-auto">
+                        {isOwner
+                          ? 'Create events to keep your members informed about meetings and activities.'
+                          : 'Check back for upcoming events and gatherings.'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      No upcoming events
+                    </div>
+                  )
+                )}
+              </div>
             </>
           )}
 
           {/* Contact Tab */}
           {activeTab === 'contact' && (
-            <ContactTabContent
-              union={union}
-              isOwner={isOwner}
-            />
+            <div className={prestigeMode ? 'bg-gradient-to-br from-emerald-50/40 via-white to-teal-50/30 rounded-2xl p-6 sm:p-8' : ''}>
+              <ContactTabContent
+                union={union}
+                isOwner={isOwner}
+              />
+            </div>
           )}
 
           {/* Elections Tab */}
           {activeTab === 'elections' && isApprovedMember && (
-            <ElectionsList
-              slug={union.slug}
-              unionId={union.id}
-              isOwner={isOwner}
-            />
+            <div className={prestigeMode ? 'bg-gradient-to-br from-indigo-50/40 via-white to-purple-50/30 rounded-2xl p-6 sm:p-8' : ''}>
+              <ElectionsList
+                slug={union.slug}
+                unionId={union.id}
+                isOwner={isOwner}
+              />
+            </div>
           )}
       </div>
 
