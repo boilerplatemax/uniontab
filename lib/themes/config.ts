@@ -30,7 +30,7 @@ export const themes: Record<ThemeId, ThemeConfig> = {
   prestige: {
     id: 'prestige',
     name: 'Prestige',
-    description: 'Premium dark theme with elegant glass effects and gold accents',
+    description: 'Premium academic theme with scholarly navy accents and classic styling',
     isPremium: true,
     requiredPlans: ['Base', 'Plus'],
   },

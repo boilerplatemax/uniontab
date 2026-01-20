@@ -36,7 +36,6 @@ const socialPlatforms = [
   { id: 'twitter', label: 'X (Twitter)', placeholder: 'https://x.com/yourhandle' },
   { id: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/company/yourpage' },
   { id: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@yourchannel' },
-  { id: 'tiktok', label: 'TikTok', placeholder: 'https://tiktok.com/@yourhandle' },
 ] as const;
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());

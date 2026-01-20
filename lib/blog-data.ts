@@ -281,7 +281,7 @@ export const blogPosts: BlogPost[] = [
       <p><strong>Use the poster!</strong> Visual announcements get 3x more engagement than text-only emails.</p>
       <p><strong>Record important meetings.</strong> Members who can't attend live can catch up later.</p>
 
-      <p>Ready to run your first virtual meeting? The whole process takes less than 5 minutes. If you need help, our support team is always here.</p>
+      <p>Ready to run your first virtual meeting? The whole process takes less than 10 minutes. If you need help, our support team is always here.</p>
     `,
     imageUrl: "/assets/blog/zoom-meetings.png",
     author: "UnionTab Team",
