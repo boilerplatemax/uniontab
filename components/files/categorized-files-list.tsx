@@ -79,7 +79,6 @@ function FileItem({
           {file.originalName}
         </p>
         <p className="text-sm text-gray-500">
-          Uploaded by {file.createdBy.name} •{' '}
           {formatDate(file.createdAt)} •{' '}
           {(file.fileSize / 1024 / 1024).toFixed(2)} MB
         </p>

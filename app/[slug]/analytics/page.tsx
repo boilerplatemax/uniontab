@@ -21,11 +21,8 @@ import {
   ArrowLeft,
   RefreshCw,
   HardDrive,
-  BarChart3,
-  PieChart,
   Clock,
   CheckCircle2,
-  XCircle,
   AlertCircle,
   ThumbsUp,
 } from 'lucide-react';
@@ -349,16 +346,6 @@ export default function AnalyticsPage({ params }: { params: Promise<{ slug: stri
   }
 
   // Prepare data for charts
-  const memberStatusData = data.members.byStatus.map((item) => ({
-    name: item.status.charAt(0).toUpperCase() + item.status.slice(1),
-    value: item.count,
-  }));
-
-  const memberRoleData = data.members.byRole.map((item) => ({
-    name: item.role.charAt(0).toUpperCase() + item.role.slice(1),
-    value: item.count,
-  }));
-
   const memberGrowthData = data.members.growth.map((item) => ({
     month: formatMonthLabel(item.month),
     members: item.count,
@@ -405,13 +392,6 @@ export default function AnalyticsPage({ params }: { params: Promise<{ slug: stri
     { name: 'Partial', value: data.operations.dues.partial, color: CHART_COLORS.warning },
     { name: 'Waived', value: data.operations.dues.waived, color: CHART_COLORS.purple },
   ].filter((item) => item.value > 0);
-
-  const commPrefsData = [
-    { name: 'Email', value: data.members.communicationPrefs.allowEmails },
-    { name: 'SMS', value: data.members.communicationPrefs.allowTextMessages },
-    { name: 'Phone', value: data.members.communicationPrefs.allowPhoneCalls },
-    { name: 'Push', value: data.members.communicationPrefs.allowPushNotifications },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -473,149 +453,62 @@ export default function AnalyticsPage({ params }: { params: Promise<{ slug: stri
           />
         </div>
 
-        {/* Member Growth & Status */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
-                Member Growth
-              </CardTitle>
-              <CardDescription>New members over the last 6 months</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={memberGrowthData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Area
-                      type="monotone"
-                      dataKey="members"
-                      stroke={CHART_COLORS.primary}
-                      fill={CHART_COLORS.primary}
-                      fillOpacity={0.2}
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Member Growth */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              Member Growth
+            </CardTitle>
+            <CardDescription>New members over the last 6 months</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={memberGrowthData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Area
+                    type="monotone"
+                    dataKey="members"
+                    stroke={CHART_COLORS.primary}
+                    fill={CHART_COLORS.primary}
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PieChart className="h-5 w-5 text-purple-600" />
-                Member Distribution
-              </CardTitle>
-              <CardDescription>By status and role</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="h-48">
-                  <p className="text-sm font-medium text-gray-700 mb-2 text-center">By Status</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPie>
-                      <Pie
-                        data={memberStatusData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={60}
-                        paddingAngle={2}
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                        labelLine={false}
-                      >
-                        {memberStatusData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </RechartsPie>
-                  </ResponsiveContainer>
-                </div>
-                <div className="h-48">
-                  <p className="text-sm font-medium text-gray-700 mb-2 text-center">By Role</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPie>
-                      <Pie
-                        data={memberRoleData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={60}
-                        paddingAngle={2}
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                        labelLine={false}
-                      >
-                        {memberRoleData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[(index + 3) % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </RechartsPie>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Communication Stats */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5 text-green-600" />
-                Communication History
-              </CardTitle>
-              <CardDescription>Emails and SMS sent over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={communicationData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="emails" name="Emails" fill={CHART_COLORS.success} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="sms" name="SMS" fill={CHART_COLORS.purple} radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-blue-600" />
-                Communication Preferences
-              </CardTitle>
-              <CardDescription>How members prefer to be contacted</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={commPrefsData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis type="number" tick={{ fontSize: 12 }} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={60} />
-                    <Tooltip />
-                    <Bar dataKey="value" name="Members" fill={CHART_COLORS.primary} radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Communication History */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-green-600" />
+              Communication History
+            </CardTitle>
+            <CardDescription>Emails and SMS sent over time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={communicationData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="emails" name="Emails" fill={CHART_COLORS.success} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="sms" name="SMS" fill={CHART_COLORS.purple} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Activity & Engagement */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
