@@ -8,16 +8,15 @@ import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
 import { SocialMediaIcons } from '@/components/social-media-icons';
 import type { ThemeProps } from './types';
-import { Settings, Mail, Phone, MapPin, Globe, GraduationCap } from 'lucide-react';
+import { Settings, Mail, Phone, MapPin, Globe, Sparkles } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
 
 /**
- * Prestige Theme (Premium academic theme)
- * - Warm cream backgrounds with scholarly feel
- * - Navy blue accents for institutional look
- * - Classic typography and elegant spacing
- * - Premium card designs with refined borders
- * - Academic, professional aesthetic
+ * Prestige Theme (Premium Airbnb-inspired design)
+ * - Clean white backgrounds with generous spacing
+ * - Rose/coral accent color for premium feel
+ * - Modern rounded cards with subtle shadows
+ * - Refined typography and smooth transitions
  * - Requires Base or Plus subscription
  */
 export function PrestigeTheme({
@@ -37,29 +36,20 @@ export function PrestigeTheme({
   activeAnnouncements,
   accessibilityWidgetEnabled,
 }: ThemeProps) {
-  // Academic navy color scheme
-  const navyPrimary = '#1e3a5f';
-  const navyLight = '#2d4a6f';
-  const navyDark = '#152a47';
-  const cream = '#faf8f5';
-  const warmWhite = '#fffefa';
+  // Airbnb-inspired color palette
+  const roseAccent = '#E11D48'; // Rose-600 - warm coral accent
+  const roseSoft = '#FFF1F2'; // Rose-50 - subtle rose tint
+  const textPrimary = '#222222'; // Near-black for headers
+  const textSecondary = '#717171'; // Medium gray for body
+  const borderLight = '#EBEBEB'; // Light border
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: cream }}>
-      {/* Subtle pattern overlay */}
-      <div
-        className="fixed inset-0 opacity-[0.02] pointer-events-none"
-        style={{
-          backgroundImage: `radial-gradient(circle at 25% 25%, ${navyPrimary} 1px, transparent 1px)`,
-          backgroundSize: '40px 40px',
-        }}
-      />
-
+    <div className="min-h-screen bg-white">
       {/* Announcement Banner - Above navbar */}
       <AnnouncementClient
         popup={activeAnnouncements.popup}
         banner={activeAnnouncements.banner}
-        themeColor={navyPrimary}
+        themeColor={roseAccent}
       />
 
       {/* Navigation Bar - Fixed */}
@@ -83,18 +73,18 @@ export function PrestigeTheme({
         <div
           className="border-b"
           style={{
-            backgroundColor: 'rgba(30, 58, 95, 0.08)',
-            borderColor: 'rgba(30, 58, 95, 0.2)',
+            backgroundColor: roseSoft,
+            borderColor: 'rgba(225, 29, 72, 0.2)',
           }}
         >
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5" style={{ color: navyPrimary }} viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5" style={{ color: roseAccent }} viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
               </div>
-              <p className="text-sm font-medium" style={{ color: navyPrimary }}>
+              <p className="text-sm font-medium" style={{ color: textPrimary }}>
                 Your account has not been approved yet - some content may not be visible until an admin approves your membership.
               </p>
             </div>
@@ -105,158 +95,87 @@ export function PrestigeTheme({
       {/* Onboarding Reminder for Owners */}
       <OnboardingReminder union={union} isOwner={isOwner} />
 
-      {/* Hero Section - Academic design */}
+      {/* Hero Section - Clean Airbnb-inspired design */}
       <div className="relative overflow-hidden">
-        {/* Background gradient */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(135deg, ${navyPrimary} 0%, ${navyLight} 50%, ${navyPrimary} 100%)`,
-          }}
-        />
-
-        {/* Cover photo with overlay */}
-        {union.coverPhotoUrl && (
-          <div className="absolute inset-0">
-            <img
-              src={union.coverPhotoUrl}
-              alt={`${union.name} cover`}
-              className="w-full h-full object-cover opacity-20"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `linear-gradient(135deg, ${navyPrimary}ee 0%, ${navyLight}dd 50%, ${navyPrimary}ee 100%)`,
-              }}
-            />
-          </div>
+        {/* Background - solid rose gradient or cover photo */}
+        {union.coverPhotoUrl ? (
+          <>
+            {/* Cover photo with reduced overlay for better visibility */}
+            <div className="absolute inset-0">
+              <img
+                src={union.coverPhotoUrl}
+                alt={`${union.name} cover`}
+                className="w-full h-full object-cover"
+              />
+              {/* Light gradient overlay - much more transparent to show the image */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.4) 100%)',
+                }}
+              />
+            </div>
+          </>
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(135deg, ${roseAccent} 0%, #BE123C 100%)`,
+            }}
+          />
         )}
-
-        {/* Decorative top border */}
-        <div
-          className="absolute top-0 left-0 right-0 h-1"
-          style={{
-            background: `linear-gradient(90deg, transparent 0%, ${cream} 20%, ${warmWhite} 50%, ${cream} 80%, transparent 100%)`,
-          }}
-        />
 
         {/* Edit Button for Owners/Admins */}
         {isOwner && (
           <Link
             href={`/${slug}/settings`}
-            className="absolute top-6 right-6 z-30 p-3 rounded-xl shadow-lg transition-all hover:scale-105 group border"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.15)',
-              borderColor: 'rgba(255, 255, 255, 0.25)',
-            }}
+            className="absolute top-6 right-6 z-30 p-3 rounded-full shadow-lg transition-all hover:scale-105 hover:shadow-xl group bg-white/90 backdrop-blur-sm"
             title="Edit banner and settings"
           >
-            <Settings className="h-5 w-5 text-white/90 transition-colors group-hover:text-white" />
+            <Settings className="h-5 w-5 text-gray-700 group-hover:text-gray-900 transition-colors" />
           </Link>
         )}
 
         {/* Hero Content */}
-        <div className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${union.coverPhotoUrl ? 'py-16 sm:py-20 lg:py-28' : 'py-12 sm:py-16 lg:py-20'}`}>
+        <div className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${union.coverPhotoUrl ? 'py-20 sm:py-28 lg:py-36' : 'py-16 sm:py-20 lg:py-24'}`}>
           <div className="flex flex-col items-center text-center">
-            {/* Logo with classic frame */}
+            {/* Logo with clean white frame */}
             {union.logoUrl && (
               <div className="mb-8">
-                <div
-                  className="relative p-1 rounded-2xl"
-                  style={{
-                    background: `linear-gradient(135deg, ${cream} 0%, ${warmWhite} 50%, ${cream} 100%)`,
-                  }}
-                >
-                  <div
-                    className="relative w-28 h-28 sm:w-36 sm:h-36 lg:w-44 lg:h-44 rounded-xl overflow-hidden flex items-center justify-center"
-                    style={{
-                      backgroundColor: warmWhite,
-                    }}
-                  >
-                    <img
-                      src={union.logoUrl}
-                      alt={`${union.name} logo`}
-                      className="max-h-[85%] max-w-[85%] object-contain"
-                    />
-                  </div>
+                <div className="relative w-28 h-28 sm:w-36 sm:h-36 lg:w-44 lg:h-44 rounded-3xl overflow-hidden shadow-2xl bg-white p-2 flex items-center justify-center">
+                  <img
+                    src={union.logoUrl}
+                    alt={`${union.name} logo`}
+                    className="max-h-[90%] max-w-[90%] object-contain"
+                  />
                 </div>
               </div>
             )}
 
-            {/* Academic badge */}
+            {/* Premium badge - minimal and elegant */}
             <div
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 border"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-6 backdrop-blur-sm"
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                borderColor: 'rgba(255, 255, 255, 0.25)',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
               }}
             >
-              <GraduationCap className="h-4 w-4 text-white/90" />
-              <span className="text-sm font-medium tracking-wide text-white/90">
-                MEMBER ORGANIZATION
+              <Sparkles className="h-3.5 w-3.5 text-white" />
+              <span className="text-xs font-semibold tracking-widest text-white uppercase">
+                Premium
               </span>
             </div>
 
-            {/* Title */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 tracking-tight text-white">
+            {/* Title - UPPERCASE */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 tracking-tight text-white uppercase">
               {union.publicName || union.name}
               {union.localNumber && !union.publicName && ` ${union.localNumber}`}
             </h1>
 
             {/* Description */}
             {union.description && (
-              <p className="text-lg sm:text-xl lg:text-2xl max-w-3xl text-white/85 leading-relaxed">
+              <p className="text-lg sm:text-xl lg:text-2xl max-w-3xl text-white/90 leading-relaxed font-light">
                 {union.description}
               </p>
-            )}
-
-            {/* Contact info bar */}
-            {(union.email || union.phone || union.address || union.website) && (
-              <div
-                className="mt-8 flex flex-wrap justify-center gap-4 sm:gap-6 px-6 py-4 rounded-2xl border"
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  borderColor: 'rgba(255, 255, 255, 0.2)',
-                }}
-              >
-                {union.email && (
-                  <a
-                    href={`mailto:${union.email}`}
-                    className="flex items-center gap-2 text-white/80 hover:text-white transition-colors group"
-                  >
-                    <Mail className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm">{union.email}</span>
-                  </a>
-                )}
-                {union.phone && (
-                  <a
-                    href={`tel:${union.phone}`}
-                    className="flex items-center gap-2 text-white/80 hover:text-white transition-colors group"
-                  >
-                    <Phone className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm">{union.phone}</span>
-                  </a>
-                )}
-                {union.address && (
-                  <div className="flex items-center gap-2 text-white/80">
-                    <MapPin className="h-4 w-4" />
-                    <span className="text-sm">{union.address}</span>
-                  </div>
-                )}
-                {union.website && (
-                  <a
-                    href={union.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-white/80 hover:text-white transition-colors group"
-                  >
-                    <Globe className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm hover:underline">
-                      {union.website.replace(/^https?:\/\//, '')}
-                    </span>
-                  </a>
-                )}
-              </div>
             )}
 
             {/* Social Icons in Hero (conditionally shown) */}
@@ -272,25 +191,64 @@ export function PrestigeTheme({
             )}
           </div>
         </div>
-
-        {/* Bottom decorative line */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-px"
-          style={{
-            background: `linear-gradient(90deg, transparent 0%, ${cream}40 20%, ${cream}60 50%, ${cream}40 80%, transparent 100%)`,
-          }}
-        />
       </div>
 
-      {/* Main Content - Academic card design */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      {/* Contact Bar - Clean horizontal strip */}
+      {(union.email || union.phone || union.address || union.website) && (
+        <div className="border-b" style={{ borderColor: borderLight }}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
+              {union.email && (
+                <a
+                  href={`mailto:${union.email}`}
+                  className="flex items-center gap-2 transition-colors group"
+                  style={{ color: textSecondary }}
+                >
+                  <Mail className="h-4 w-4 group-hover:text-rose-600 transition-colors" />
+                  <span className="text-sm group-hover:text-gray-900 transition-colors">{union.email}</span>
+                </a>
+              )}
+              {union.phone && (
+                <a
+                  href={`tel:${union.phone}`}
+                  className="flex items-center gap-2 transition-colors group"
+                  style={{ color: textSecondary }}
+                >
+                  <Phone className="h-4 w-4 group-hover:text-rose-600 transition-colors" />
+                  <span className="text-sm group-hover:text-gray-900 transition-colors">{union.phone}</span>
+                </a>
+              )}
+              {union.address && (
+                <div className="flex items-center gap-2" style={{ color: textSecondary }}>
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-sm">{union.address}</span>
+                </div>
+              )}
+              {union.website && (
+                <a
+                  href={union.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 transition-colors group"
+                  style={{ color: textSecondary }}
+                >
+                  <Globe className="h-4 w-4 group-hover:text-rose-600 transition-colors" />
+                  <span className="text-sm hover:underline group-hover:text-gray-900 transition-colors">
+                    {union.website.replace(/^https?:\/\//, '')}
+                  </span>
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content - Clean card design */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Card container for tabs */}
         <div
-          className="rounded-2xl border shadow-lg overflow-hidden"
-          style={{
-            backgroundColor: warmWhite,
-            borderColor: 'rgba(30, 58, 95, 0.1)',
-          }}
+          className="rounded-3xl border shadow-sm overflow-hidden bg-white"
+          style={{ borderColor: borderLight }}
         >
           <div className="p-4 sm:p-6 lg:p-8">
             <UnionProfileTabs
@@ -308,40 +266,29 @@ export function PrestigeTheme({
         </div>
       </div>
 
-      {/* Footer - Academic style */}
+      {/* Footer - Minimal elegant */}
       <div
         className="border-t mt-8"
-        style={{
-          borderColor: 'rgba(30, 58, 95, 0.1)',
-          backgroundColor: warmWhite,
-        }}
+        style={{ borderColor: borderLight }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex flex-col items-center gap-6">
-            {/* Decorative element */}
-            <div
-              className="w-24 h-1 rounded-full"
-              style={{
-                background: `linear-gradient(90deg, transparent, ${navyPrimary}, transparent)`,
-              }}
-            />
-
             {/* Social Media Icons */}
             <SocialMediaIcons
               socialLinks={(union as any).socialLinks}
               size="lg"
               variant="subtle"
-              subtleColor={navyPrimary}
+              subtleColor={textSecondary}
             />
 
             {/* Powered by - Only hide for paid plans with hidePoweredBy enabled */}
             {(!((union as any).hidePoweredBy && (union as any).planName && (union as any).planName !== 'Free')) && (
-              <p className="text-sm" style={{ color: 'rgba(30, 58, 95, 0.6)' }}>
+              <p className="text-sm" style={{ color: textSecondary }}>
                 Powered by{' '}
                 <a
                   href="/"
-                  className="transition-colors font-medium hover:opacity-80"
-                  style={{ color: navyPrimary }}
+                  className="transition-colors font-medium hover:text-gray-900"
+                  style={{ color: textPrimary }}
                 >
                   UnionTab
                 </a>
@@ -349,8 +296,8 @@ export function PrestigeTheme({
             )}
 
             {/* Copyright with union name */}
-            <p className="text-xs" style={{ color: 'rgba(30, 58, 95, 0.5)' }}>
-              &copy; {new Date().getFullYear()} {union.publicName || union.name}
+            <p className="text-xs" style={{ color: textSecondary }}>
+              &copy; {new Date().getFullYear()} {(union.publicName || union.name).toUpperCase()}
               {union.localNumber && !union.publicName && ` ${union.localNumber}`}
             </p>
           </div>

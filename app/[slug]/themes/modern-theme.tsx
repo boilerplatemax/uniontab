@@ -93,18 +93,18 @@ export function ModernTheme({
           background: `linear-gradient(to bottom right, ${union.themeColor || DEFAULT_THEME_COLOR}, ${union.themeColor || DEFAULT_THEME_COLOR}dd, ${union.themeColor || DEFAULT_THEME_COLOR}bb)`
         }}
       >
-        {/* Background image with overlay */}
+        {/* Background image with overlay - reduced opacity for better image visibility */}
         {union.coverPhotoUrl && (
           <div className="absolute inset-0">
             <img
               src={union.coverPhotoUrl}
               alt={`${union.name} cover`}
-              className="w-full h-full object-cover opacity-30"
+              className="w-full h-full object-cover"
             />
             <div
               className="absolute inset-0"
               style={{
-                background: `linear-gradient(to bottom right, ${union.themeColor || DEFAULT_THEME_COLOR}cc, ${union.themeColor || DEFAULT_THEME_COLOR}dd, ${union.themeColor || DEFAULT_THEME_COLOR}ee)`
+                background: `linear-gradient(to bottom right, ${union.themeColor || DEFAULT_THEME_COLOR}80, ${union.themeColor || DEFAULT_THEME_COLOR}90, ${union.themeColor || DEFAULT_THEME_COLOR}a0)`
               }}
             />
           </div>
