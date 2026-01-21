@@ -814,16 +814,14 @@ export default function HomePage() {
                 <p className="text-sm text-blue-100 mb-3">
                   Want to see it in action first? We encourage you to try it yourself, but we&apos;re happy to walk you through it.
                 </p>
-                <a
-                  href="DEMO_LINK_PLACEHOLDER"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/contact"
                   className="inline-flex items-center gap-2 text-white hover:text-blue-200 transition-colors text-sm font-medium"
                 >
                   <Video className="h-4 w-4" />
                   Book a Demo
                   <ArrowRight className="h-3 w-3" />
-                </a>
+                </Link>
               </div>
             </div>
           </AnimatedSection>

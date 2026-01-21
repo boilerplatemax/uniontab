@@ -222,39 +222,39 @@ export function UnionProfileTabs({
         <div className="inline-flex flex-wrap justify-center gap-2 p-1.5 bg-gray-100/80 rounded-2xl">
           <button
             onClick={() => setActiveTab('posts')}
-            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'posts')}`}
+            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'posts')}`}
           >
             News
           </button>
           <button
             onClick={() => setActiveTab('about')}
-            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'about')}`}
+            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'about')}`}
           >
             About
           </button>
           <button
             onClick={() => setActiveTab('files')}
-            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'files')}`}
+            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'files')}`}
           >
             Files
           </button>
           {isApprovedMember && (
             <button
               onClick={() => setActiveTab('elections')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'elections')}`}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'elections')}`}
             >
               Elections
             </button>
           )}
           <button
             onClick={() => setActiveTab('events')}
-            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'events')}`}
+            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'events')}`}
           >
             Events
           </button>
           <button
             onClick={() => setActiveTab('contact')}
-            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${getPrestigeTabClass(activeTab === 'contact')}`}
+            className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'contact')}`}
           >
             Contact
           </button>
@@ -278,14 +278,14 @@ export function UnionProfileTabs({
           <div className="flex gap-1 bg-white border border-gray-200 rounded-full p-1">
             <button
               onClick={() => setPostsView('grid')}
-              className={`p-2 rounded-full transition-colors ${postsView === 'grid' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`p-2 rounded-full transition-colors cursor-pointer ${postsView === 'grid' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
               title="Grid view"
             >
               <LayoutGrid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setPostsView('column')}
-              className={`p-2 rounded-full transition-colors ${postsView === 'column' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`p-2 rounded-full transition-colors cursor-pointer ${postsView === 'column' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
               title="List view"
             >
               <LayoutList className="h-4 w-4" />
@@ -319,13 +319,13 @@ export function UnionProfileTabs({
           <div className="flex gap-1 bg-white border border-gray-200 rounded-full p-1">
             <button
               onClick={() => setEventsView('list')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${eventsView === 'list' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${eventsView === 'list' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
             >
               List
             </button>
             <button
               onClick={() => setEventsView('calendar')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${eventsView === 'calendar' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${eventsView === 'calendar' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
             >
               Calendar
             </button>
