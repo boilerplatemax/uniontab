@@ -160,7 +160,7 @@ export default async function PostPage({
           className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to {union.publicName || union.name}
+          Back to {union.publicName || `${union.name.toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`}
         </Link>
 
         <Card className="shadow-sm">

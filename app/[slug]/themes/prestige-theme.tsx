@@ -10,6 +10,7 @@ import { SocialMediaIcons } from '@/components/social-media-icons';
 import type { ThemeProps } from './types';
 import { Settings, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
+import { getLightTint, getDarkerShade, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
 
 /**
  * Prestige Theme (Fresh masonry-focused design)
@@ -36,9 +37,10 @@ export function PrestigeTheme({
   activeAnnouncements,
   accessibilityWidgetEnabled,
 }: ThemeProps) {
-  // Airbnb-inspired color palette
-  const roseAccent = '#E11D48'; // Rose-600 - warm coral accent
-  const roseSoft = '#FFF1F2'; // Rose-50 - subtle rose tint
+  // Dynamic color palette based on theme color from settings
+  const themeColor = union.themeColor || DEFAULT_THEME_COLOR;
+  const themeColorLight = getLightTint(themeColor, 97); // Very light tint for backgrounds
+  const themeColorDark = getDarkerShade(themeColor, 15); // Darker shade for gradients
   const textPrimary = '#222222'; // Near-black for headers
   const textSecondary = '#717171'; // Medium gray for body
   const borderLight = '#EBEBEB'; // Light border
@@ -49,7 +51,7 @@ export function PrestigeTheme({
       <AnnouncementClient
         popup={activeAnnouncements.popup}
         banner={activeAnnouncements.banner}
-        themeColor={roseAccent}
+        themeColor={themeColor}
       />
 
       {/* Navigation Bar - Fixed */}
@@ -73,14 +75,14 @@ export function PrestigeTheme({
         <div
           className="border-b"
           style={{
-            backgroundColor: roseSoft,
-            borderColor: 'rgba(225, 29, 72, 0.2)',
+            backgroundColor: themeColorLight,
+            borderColor: `${themeColor}33`,
           }}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5" style={{ color: roseAccent }} viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5" style={{ color: themeColor }} viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -120,7 +122,7 @@ export function PrestigeTheme({
           <div
             className="absolute inset-0"
             style={{
-              background: `linear-gradient(135deg, ${roseAccent} 0%, #BE123C 100%)`,
+              background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColorDark} 100%)`,
             }}
           />
         )}
@@ -188,10 +190,10 @@ export function PrestigeTheme({
               {union.email && (
                 <a
                   href={`mailto:${union.email}`}
-                  className="flex items-center gap-2 transition-colors group"
-                  style={{ color: textSecondary }}
+                  className="flex items-center gap-2 transition-colors group contact-link"
+                  style={{ color: textSecondary, ['--theme-color' as string]: themeColor }}
                 >
-                  <Mail className="h-4 w-4 group-hover:text-rose-600 transition-colors" />
+                  <Mail className="h-4 w-4 transition-colors group-hover:[color:var(--theme-color)]" />
                   <span className="text-sm group-hover:text-gray-900 transition-colors">{union.email}</span>
                 </a>
               )}
@@ -199,9 +201,9 @@ export function PrestigeTheme({
                 <a
                   href={`tel:${union.phone}`}
                   className="flex items-center gap-2 transition-colors group"
-                  style={{ color: textSecondary }}
+                  style={{ color: textSecondary, ['--theme-color' as string]: themeColor }}
                 >
-                  <Phone className="h-4 w-4 group-hover:text-rose-600 transition-colors" />
+                  <Phone className="h-4 w-4 transition-colors group-hover:[color:var(--theme-color)]" />
                   <span className="text-sm group-hover:text-gray-900 transition-colors">{union.phone}</span>
                 </a>
               )}
@@ -217,9 +219,9 @@ export function PrestigeTheme({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 transition-colors group"
-                  style={{ color: textSecondary }}
+                  style={{ color: textSecondary, ['--theme-color' as string]: themeColor }}
                 >
-                  <Globe className="h-4 w-4 group-hover:text-rose-600 transition-colors" />
+                  <Globe className="h-4 w-4 transition-colors group-hover:[color:var(--theme-color)]" />
                   <span className="text-sm hover:underline group-hover:text-gray-900 transition-colors">
                     {union.website.replace(/^https?:\/\//, '')}
                   </span>
