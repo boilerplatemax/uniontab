@@ -307,11 +307,15 @@ export function InlineAboutEditor({ union, isOwner }: InlineAboutEditorProps) {
   const hasContent = union.about || aboutImageUrl || (aboutImages && aboutImages.length > 0);
 
   if (!hasContent) {
+    const displayName = union.publicName
+      ? union.publicName.toUpperCase()
+      : `${union.name.toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`;
+
     return (
       <Card className="shadow-sm">
         <CardContent className="p-12 text-center">
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Welcome to {union.publicName || union.name}
+            Welcome to {displayName}
           </h3>
           <p className="text-gray-500 mb-4">More content coming soon...</p>
           {isOwner && (

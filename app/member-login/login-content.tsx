@@ -169,8 +169,8 @@ export default function LoginPage() {
           <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '4s'}}></div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
-          <div className="text-center space-y-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
+          <div className="text-center space-y-6">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-full text-sm font-medium text-blue-700">
               <Zap className="h-4 w-4" />
@@ -178,15 +178,12 @@ export default function LoginPage() {
             </div>
 
             {/* Main Heading */}
-            <div className="space-y-6">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-gray-900 leading-tight tracking-tight">
-                Your Union,
-                <br />
-                <span className="gradient-text">Digitally Unified</span>
+            <div className="space-y-4">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight tracking-tight">
+                Find Your <span className="gradient-text">Union</span>
               </h1>
-              <p className="text-xl sm:text-2xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                Empower your members with a centralized platform for communication,
-                events, documents, and democratic participation.
+              <p className="text-base sm:text-lg text-gray-600 max-w-xl mx-auto leading-relaxed">
+                Enter your union name to access your member portal
               </p>
             </div>
 
@@ -410,15 +407,15 @@ export default function LoginPage() {
             <div className="grid md:grid-cols-3 gap-12">
               <div className={`text-center animate-on-scroll stagger-1 ${statsAnimation.isVisible ? 'visible' : ''}`}>
                 <div className="text-5xl font-extrabold mb-2">100%</div>
-                <div className="text-blue-100 text-lg">Member Owned</div>
+                <div className="text-blue-100 text-lg">Secure & Private</div>
               </div>
               <div className={`text-center animate-on-scroll stagger-2 ${statsAnimation.isVisible ? 'visible' : ''}`}>
                 <div className="text-5xl font-extrabold mb-2">24/7</div>
                 <div className="text-blue-100 text-lg">Platform Access</div>
               </div>
               <div className={`text-center animate-on-scroll stagger-3 ${statsAnimation.isVisible ? 'visible' : ''}`}>
-                <div className="text-5xl font-extrabold mb-2">Unlimited</div>
-                <div className="text-blue-100 text-lg">Members & Storage</div>
+                <div className="text-5xl font-extrabold mb-2">Easy</div>
+                <div className="text-blue-100 text-lg">Setup & Management</div>
               </div>
             </div>
           </div>

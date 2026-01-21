@@ -5,9 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, ArrowRight, Clock, Calendar, BookOpen } from 'lucide-react';
+import { Users, ArrowRight, Clock, Calendar, BookOpen, Home } from 'lucide-react';
 import { motion, useInView } from 'framer-motion';
 import { getAllBlogPosts } from '@/lib/blog-data';
+import { useUserMembership } from '@/hooks/use-user-membership';
 
 function AnimatedCard({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef(null);
@@ -27,6 +28,7 @@ function AnimatedCard({ children, delay = 0 }: { children: React.ReactNode; dela
 
 export default function BlogsPage() {
   const posts = getAllBlogPosts();
+  const { isLoggedIn, membership } = useUserMembership();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -54,16 +56,32 @@ export default function BlogsPage() {
                   Pricing
                 </Button>
               </Link>
-              <Link href="/sign-in">
+              <Link href="/contact">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Sign In
+                  Contact
                 </Button>
               </Link>
-              <Link href="/sign-up">
-                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
-                  Get Started
-                </Button>
-              </Link>
+              {isLoggedIn && membership ? (
+                <Link href={`/${membership.unionSlug}`}>
+                  <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
+                    <Home className="h-4 w-4 mr-2" />
+                    My Union
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/sign-in">
+                    <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/sign-up">
+                    <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -146,44 +164,46 @@ export default function BlogsPage() {
         </div>
       </div>
 
-      {/* CTA Section */}
-      <section className="relative py-20 overflow-hidden mt-12">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTZ6TTI0IDQyYzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNnoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ii8+PC9nPjwvc3ZnPg==')] opacity-20" />
+      {/* CTA Section - Only shown to non-logged-in users */}
+      {!isLoggedIn && (
+        <section className="relative py-20 overflow-hidden mt-12">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTZ6TTI0IDQyYzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNnoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ii8+PC9nPjwvc3ZnPg==')] opacity-20" />
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <AnimatedCard>
-            <div className="space-y-8">
-              <h2 className="text-4xl sm:text-5xl font-bold text-white">
-                Ready to Modernize Your Union?
-              </h2>
-              <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-                Join hundreds of unions already using UnionTab to streamline operations and better serve their members.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="/sign-up">
-                  <Button
-                    size="lg"
-                    className="bg-white text-blue-600 hover:bg-gray-50 h-14 px-8 text-lg font-semibold shadow-xl"
-                  >
-                    Get Started
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href="/pricing">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="bg-transparent border-2 border-white text-white hover:bg-white/10 h-14 px-8 text-lg font-semibold"
-                  >
-                    View Pricing
-                  </Button>
-                </Link>
+          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <AnimatedCard>
+              <div className="space-y-8">
+                <h2 className="text-4xl sm:text-5xl font-bold text-white">
+                  Ready to Modernize Your Union?
+                </h2>
+                <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+                  Join hundreds of unions already using UnionTab to streamline operations and better serve their members.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <Link href="/sign-up">
+                    <Button
+                      size="lg"
+                      className="bg-white text-blue-600 hover:bg-gray-50 h-14 px-8 text-lg font-semibold shadow-xl"
+                    >
+                      Get Started
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
+                  <Link href="/pricing">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="bg-transparent border-2 border-white text-white hover:bg-white/10 h-14 px-8 text-lg font-semibold"
+                    >
+                      View Pricing
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </div>
-          </AnimatedCard>
-        </div>
-      </section>
+            </AnimatedCard>
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-300 py-12">
