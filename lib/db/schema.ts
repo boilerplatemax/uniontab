@@ -2106,6 +2106,111 @@ export const contactFormSubmissionsRelations = relations(contactFormSubmissions,
   }),
 }));
 
+// Support Ticket System Tables
+export const supportTickets = pgTable('support_tickets', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  // Ticket details
+  subject: varchar('subject', { length: 255 }).notNull(),
+  description: text('description').notNull(),
+  category: varchar('category', { length: 50 }).notNull(), // 'bug_report', 'feature_request', 'general_inquiry', 'billing', 'technical_issue'
+
+  // Status tracking
+  status: varchar('status', { length: 20 }).notNull().default('open'), // 'open', 'in_progress', 'awaiting_response', 'resolved', 'closed'
+  priority: varchar('priority', { length: 20 }).notNull().default('normal'), // 'low', 'normal', 'high', 'urgent'
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  resolvedAt: timestamp('resolved_at'),
+  closedAt: timestamp('closed_at'),
+});
+
+export const supportTicketReplies = pgTable('support_ticket_replies', {
+  id: serial('id').primaryKey(),
+  ticketId: integer('ticket_id')
+    .notNull()
+    .references(() => supportTickets.id, { onDelete: 'cascade' }),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  // Reply content
+  message: text('message').notNull(),
+  isStaffReply: boolean('is_staff_reply').notNull().default(false), // True if reply is from webmaster/support
+
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const supportTicketAttachments = pgTable('support_ticket_attachments', {
+  id: serial('id').primaryKey(),
+  ticketId: integer('ticket_id')
+    .notNull()
+    .references(() => supportTickets.id, { onDelete: 'cascade' }),
+  replyId: integer('reply_id')
+    .references(() => supportTicketReplies.id, { onDelete: 'cascade' }), // Optional - can be attached to initial ticket or a reply
+
+  // File details
+  fileName: varchar('file_name', { length: 255 }).notNull(),
+  fileUrl: text('file_url').notNull(),
+  fileType: varchar('file_type', { length: 100 }).notNull(),
+  fileSize: integer('file_size').notNull(),
+
+  // Metadata
+  uploadedBy: integer('uploaded_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// Support Ticket Relations
+export const supportTicketsRelations = relations(supportTickets, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [supportTickets.unionId],
+    references: [unions.id],
+  }),
+  user: one(users, {
+    fields: [supportTickets.userId],
+    references: [users.id],
+  }),
+  replies: many(supportTicketReplies),
+  attachments: many(supportTicketAttachments),
+}));
+
+export const supportTicketRepliesRelations = relations(supportTicketReplies, ({ one, many }) => ({
+  ticket: one(supportTickets, {
+    fields: [supportTicketReplies.ticketId],
+    references: [supportTickets.id],
+  }),
+  user: one(users, {
+    fields: [supportTicketReplies.userId],
+    references: [users.id],
+  }),
+  attachments: many(supportTicketAttachments),
+}));
+
+export const supportTicketAttachmentsRelations = relations(supportTicketAttachments, ({ one }) => ({
+  ticket: one(supportTickets, {
+    fields: [supportTicketAttachments.ticketId],
+    references: [supportTickets.id],
+  }),
+  reply: one(supportTicketReplies, {
+    fields: [supportTicketAttachments.replyId],
+    references: [supportTicketReplies.id],
+  }),
+  uploadedBy: one(users, {
+    fields: [supportTicketAttachments.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
 // Types
 export type UnionContactInfo = typeof unionContactInfo.$inferSelect;
 export type NewUnionContactInfo = typeof unionContactInfo.$inferInsert;
@@ -2113,3 +2218,32 @@ export type UnionExecutive = typeof unionExecutives.$inferSelect;
 export type NewUnionExecutive = typeof unionExecutives.$inferInsert;
 export type ContactFormSubmission = typeof contactFormSubmissions.$inferSelect;
 export type NewContactFormSubmission = typeof contactFormSubmissions.$inferInsert;
+export type SupportTicket = typeof supportTickets.$inferSelect;
+export type NewSupportTicket = typeof supportTickets.$inferInsert;
+export type SupportTicketReply = typeof supportTicketReplies.$inferSelect;
+export type NewSupportTicketReply = typeof supportTicketReplies.$inferInsert;
+export type SupportTicketAttachment = typeof supportTicketAttachments.$inferSelect;
+export type NewSupportTicketAttachment = typeof supportTicketAttachments.$inferInsert;
+
+export enum SupportTicketCategory {
+  BUG_REPORT = 'bug_report',
+  FEATURE_REQUEST = 'feature_request',
+  GENERAL_INQUIRY = 'general_inquiry',
+  BILLING = 'billing',
+  TECHNICAL_ISSUE = 'technical_issue',
+}
+
+export enum SupportTicketStatus {
+  OPEN = 'open',
+  IN_PROGRESS = 'in_progress',
+  AWAITING_RESPONSE = 'awaiting_response',
+  RESOLVED = 'resolved',
+  CLOSED = 'closed',
+}
+
+export enum SupportTicketPriority {
+  LOW = 'low',
+  NORMAL = 'normal',
+  HIGH = 'high',
+  URGENT = 'urgent',
+}
