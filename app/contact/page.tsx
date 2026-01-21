@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Users, Mail, MessageCircle, Clock, Send, CheckCircle2 } from 'lucide-react';
 import { motion, useInView } from 'framer-motion';
+import { PublicNavbar } from '@/components/public-navbar';
 
 // Animation component for scroll-triggered animations
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -76,39 +77,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      {/* Enhanced Navbar */}
-      <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity group">
-              <div className="relative">
-                <Users className="h-8 w-8 text-blue-600 group-hover:scale-110 transition-transform" />
-                <div className="absolute -inset-1 bg-blue-600/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <span className="ml-2 text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                UnionTab
-              </span>
-            </Link>
-            <div className="flex items-center gap-2 sm:gap-4">
-              <Link href="/pricing">
-                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Pricing
-                </Button>
-              </Link>
-              <Link href="/sign-in">
-                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/sign-up">
-                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <PublicNavbar />
 
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
