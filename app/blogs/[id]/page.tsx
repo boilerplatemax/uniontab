@@ -84,6 +84,11 @@ export default async function BlogPostPage({ params }: PageProps) {
                   Pricing
                 </Button>
               </Link>
+              <Link href="/contact">
+                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  Contact
+                </Button>
+              </Link>
               <Link href="/sign-in">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
                   Sign In

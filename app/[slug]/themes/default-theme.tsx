@@ -5,6 +5,7 @@ import { NavbarSpacer } from '../navbar-spacer';
 import { UnionProfileTabs } from '../union-profile-tabs';
 import { AnnouncementClient } from '../announcement-client';
 import { AccessibilityWidget } from '@/components/accessibility-widget';
+import { AdminHelpWidget } from '@/components/admin-help-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
 import { SocialMediaIcons } from '@/components/social-media-icons';
 import type { ThemeProps } from './types';
@@ -246,6 +247,9 @@ export function DefaultTheme({
 
       {/* Accessibility Widget */}
       <AccessibilityWidget enabled={accessibilityWidgetEnabled} />
+
+      {/* Admin Help Widget */}
+      <AdminHelpWidget slug={slug} isAdmin={isOwner} />
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, Mail, MessageCircle, MapPin, Phone, Clock, Send, CheckCircle2 } from 'lucide-react';
+import { Users, Mail, MessageCircle, Clock, Send, CheckCircle2 } from 'lucide-react';
 import { motion, useInView } from 'framer-motion';
 
 // Animation component for scroll-triggered animations
@@ -152,55 +152,34 @@ export default function ContactPage() {
             </AnimatedSection>
 
             <AnimatedSection delay={0.1}>
-              <Card className="border-2 border-indigo-100 hover:border-indigo-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-indigo-50/30">
-                <CardContent className="p-6 space-y-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <Phone className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Call Us</h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Mon-Fri from 9am to 6pm EST
-                    </p>
-                    <a href="tel:+12896700500" className="text-indigo-600 hover:text-indigo-700 font-medium text-sm">
-                      +1 (289) 670-0500
-                    </a>
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.2}>
               <Card className="border-2 border-purple-100 hover:border-purple-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-purple-50/30">
                 <CardContent className="p-6 space-y-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                     <Clock className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Office Hours</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Response Time</h3>
                     <p className="text-sm text-gray-600 mb-2">
-                      Monday - Friday
+                      We typically respond within
                     </p>
                     <p className="text-sm text-gray-900 font-medium">
-                      9:00 AM - 6:00 PM EST
+                      24 hours on business days
                     </p>
                   </div>
                 </CardContent>
               </Card>
             </AnimatedSection>
 
-            <AnimatedSection delay={0.3}>
-              <Card className="border-2 border-pink-100 hover:border-pink-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-pink-50/30">
+            <AnimatedSection delay={0.2}>
+              <Card className="border-2 border-indigo-100 hover:border-indigo-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-indigo-50/30">
                 <CardContent className="p-6 space-y-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <MapPin className="h-6 w-6 text-white" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <MessageCircle className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Visit Us</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Schedule a Demo</h3>
                     <p className="text-sm text-gray-600">
-                      123 Union Street<br />
-                      Suite 456<br />
-                      New York, NY 10001
+                      Mention it in your message and we'll schedule a personalized demo for your union
                     </p>
                   </div>
                 </CardContent>

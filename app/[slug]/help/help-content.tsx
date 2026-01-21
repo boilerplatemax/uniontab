@@ -91,14 +91,6 @@ const faqs = [
     question: 'Can members file grievances through UnionTab?',
     answer: 'Yes! The Grievances feature allows members to submit grievances, attach documents, and track the status. Admins can assign grievances to stewards and manage the resolution process.',
   },
-  {
-    question: 'How do I publish my union site?',
-    answer: 'Your union site needs to be published to be visible to the public. Go to Settings and look for the "Publish Site" option. Make sure you\'ve added essential information like your union name, description, and logo before publishing.',
-  },
-  {
-    question: 'What\'s the difference between the plans?',
-    answer: 'The Free plan includes basic features for small unions. The Base plan adds more members, email/SMS capacity, and premium themes. The Plus plan unlocks advanced features like unlimited members, priority support, and the Strike Hub.',
-  },
 ];
 
 export function HelpContent({
@@ -130,23 +122,29 @@ export function HelpContent({
           </p>
         </div>
 
-        {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Link href={`/${slug}/support`}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <LifeBuoy className="h-6 w-6 text-blue-600" />
+        {/* Support Ticket Highlight */}
+        <Link href={`/${slug}/support`}>
+          <Card className="mb-8 border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 hover:shadow-lg transition-shadow cursor-pointer">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-4 bg-blue-600 rounded-xl">
+                  <LifeBuoy className="h-8 w-8 text-white" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Need Help?</h3>
-                  <p className="text-sm text-gray-600">Submit a support ticket</p>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900">Need Personalized Help?</h3>
+                  <p className="text-gray-600">Submit a support ticket and our team will assist you directly with any questions or issues.</p>
                 </div>
-                <ChevronRight className="h-5 w-5 text-gray-400 ml-auto" />
-              </CardContent>
-            </Card>
-          </Link>
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Open Support Ticket
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
 
+        {/* Quick Links */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <Link href={`/${slug}/settings`}>
             <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
               <CardContent className="p-6 flex items-center gap-4">
