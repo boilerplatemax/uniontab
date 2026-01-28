@@ -11,6 +11,7 @@
     "seed:admin": "npx tsx lib/db/seed-admin.ts",
     "seed:mock-users": "npx tsx lib/db/seed-mock-users.ts",
     "seed:atu123-events": "npx tsx lib/db/seed-atu123-events.ts",
+    "seed:atu1587-members": "npx tsx lib/db/seed-atu1587-members.ts",
     "cleanup:mock-users": "npx tsx lib/db/cleanup-mock-data.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
