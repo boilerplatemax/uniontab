@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video } from 'lucide-react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useLanguage } from '@/lib/i18n';
+import { LanguageToggle } from '@/components/ui/language-toggle';
 
 // Animation component for scroll-triggered animations
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -35,6 +37,9 @@ export default function HomePage() {
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 1]);
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.98]);
 
+  const { t } = useLanguage();
+  const landing = t.landing;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Enhanced Navbar */}
@@ -53,38 +58,44 @@ export default function HomePage() {
             <div className="flex items-center gap-2 sm:gap-4">
               <Link href="/features" className="hidden sm:block">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Features
+                  {landing.nav.features}
                 </Button>
               </Link>
               <Link href="/pricing" className="hidden sm:block">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Pricing
+                  {landing.nav.pricing}
                 </Button>
               </Link>
               <Link href="/blogs" className="hidden sm:block">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Blog
+                  {landing.nav.blog}
                 </Button>
               </Link>
               <Link href="/contact" className="hidden sm:block">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Contact
+                  {landing.nav.contact}
                 </Button>
               </Link>
+              <LanguageToggle variant="pill" className="hidden sm:flex" />
               <Link href="/member-login">
                 <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                  Member Login
+                  {landing.nav.memberLogin}
                 </Button>
               </Link>
               <Link href="/sign-up">
                 <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
-                  Get Started
+                  {landing.nav.getStarted}
                 </Button>
               </Link>
             </div>
           </div>
         </div>
       </nav>
+
+      {/* Mobile language toggle */}
+      <div className="sm:hidden flex justify-center py-2 bg-white border-b">
+        <LanguageToggle variant="pill" />
+      </div>
 
       {/* Hero Section with Parallax */}
       <section ref={heroRef} className="relative overflow-hidden">
@@ -103,12 +114,12 @@ export default function HomePage() {
               >
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                   <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    Modern Tools
+                    {landing.hero.title.highlight}
                   </span>{' '}
-                  for Modern Unions
+                  {landing.hero.title.rest}
                 </h1>
                 <p className="text-xl text-gray-600 leading-relaxed">
-                  One platform to engage members, run secure elections, and save hours every week.
+                  {landing.hero.subtitle}
                 </p>
               </motion.div>
 
@@ -121,15 +132,15 @@ export default function HomePage() {
               >
                 <div className="flex items-center gap-2">
                   <UserCheck className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-700">Built by Union Leaders</span>
+                  <span className="text-sm font-medium text-gray-700">{landing.hero.stats.builtByUnion}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-indigo-600" />
-                  <span className="text-sm font-medium text-gray-700">99.9% Uptime</span>
+                  <span className="text-sm font-medium text-gray-700">{landing.hero.stats.uptime}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Zap className="h-5 w-5 text-purple-600" />
-                  <span className="text-sm font-medium text-gray-700">Free for Small Locals</span>
+                  <span className="text-sm font-medium text-gray-700">{landing.hero.stats.freeForSmall}</span>
                 </div>
               </motion.div>
 
@@ -145,7 +156,7 @@ export default function HomePage() {
                     className="h-14 px-8 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
                     size="lg"
                   >
-                    Start Free Today
+                    {landing.hero.cta.startFree}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
@@ -155,7 +166,7 @@ export default function HomePage() {
                     className="h-14 px-8 text-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
                     size="lg"
                   >
-                    See All Features
+                    {landing.hero.cta.seeFeatures}
                   </Button>
                 </Link>
               </motion.div>
@@ -187,8 +198,8 @@ export default function HomePage() {
                       <CheckCircle2 className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">Free for Small Locals</p>
-                      <p className="text-xs text-gray-500">Under 150 members</p>
+                      <p className="text-sm font-semibold text-gray-900">{landing.hero.floatingCard.title}</p>
+                      <p className="text-xs text-gray-500">{landing.hero.floatingCard.subtitle}</p>
                     </div>
                   </div>
                 </div>
@@ -203,7 +214,7 @@ export default function HomePage() {
                     className="w-full h-14 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
                     size="lg"
                   >
-                    Start Free Today
+                    {landing.hero.cta.startFree}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
@@ -213,7 +224,7 @@ export default function HomePage() {
                     className="w-full h-14 text-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
                     size="lg"
                   >
-                    See All Features
+                    {landing.hero.cta.seeFeatures}
                   </Button>
                 </Link>
               </div>
@@ -232,10 +243,10 @@ export default function HomePage() {
           <AnimatedSection>
             <div className="text-center space-y-4 mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                Get Started in 3 Simple Steps
+                {landing.howItWorks.title}
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Most unions are fully set up and running in under 30 minutes.
+                {landing.howItWorks.subtitle}
               </p>
             </div>
           </AnimatedSection>
@@ -246,9 +257,9 @@ export default function HomePage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg flex-shrink-0">
                   <span className="text-2xl font-bold text-white">1</span>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">Create Your Union Profile</h3>
+                <h3 className="text-xl font-semibold text-gray-900">{landing.howItWorks.steps.step1.title}</h3>
                 <p className="text-gray-600 flex-grow">
-                  Set up your union&apos;s portal in minutes. Add your branding, bylaws, and customize your member experience.
+                  {landing.howItWorks.steps.step1.description}
                 </p>
                 {/* Screenshot */}
                 <div className="relative h-40 mt-4 rounded-xl overflow-hidden shadow-lg border border-gray-200">
@@ -267,9 +278,9 @@ export default function HomePage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg flex-shrink-0">
                   <span className="text-2xl font-bold text-white">2</span>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">Import Your Members</h3>
+                <h3 className="text-xl font-semibold text-gray-900">{landing.howItWorks.steps.step2.title}</h3>
                 <p className="text-gray-600 flex-grow">
-                  Upload your member list via CSV or add them manually. We&apos;ll help you migrate from your current system.
+                  {landing.howItWorks.steps.step2.description}
                 </p>
                 {/* Screenshot */}
                 <div className="relative h-40 mt-4 rounded-xl overflow-hidden shadow-lg border border-gray-200">
@@ -288,9 +299,9 @@ export default function HomePage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg flex-shrink-0">
                   <span className="text-2xl font-bold text-white">3</span>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">Start Engaging</h3>
+                <h3 className="text-xl font-semibold text-gray-900">{landing.howItWorks.steps.step3.title}</h3>
                 <p className="text-gray-600 flex-grow">
-                  Send your first communication, schedule an election, or share important documents with your membership.
+                  {landing.howItWorks.steps.step3.description}
                 </p>
                 {/* Screenshot */}
                 <div className="relative h-40 mt-4 rounded-xl overflow-hidden shadow-lg border border-gray-200">
@@ -313,10 +324,10 @@ export default function HomePage() {
           <AnimatedSection>
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-4xl sm:text-5xl font-bold text-gray-900">
-                Everything You Need to Lead
+                {landing.features.title}
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Powerful tools designed specifically for union executives to engage members, run elections, and build stronger communities.
+                {landing.features.subtitle}
               </p>
             </div>
           </AnimatedSection>
@@ -340,24 +351,18 @@ export default function HomePage() {
                       <Vote className="h-7 w-7 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      Secure Elections
+                      {landing.features.elections.title}
                     </h3>
                     <p className="text-gray-600 leading-relaxed">
-                      Run democratic elections with confidence. Our secure voting platform ensures transparency and integrity for all union decisions.
+                      {landing.features.elections.description}
                     </p>
                     <ul className="space-y-2 pt-2">
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                        Anonymous & verifiable voting
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                        Real-time results tracking
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                        Audit trails & compliance
-                      </li>
+                      {landing.features.elections.points.map((point, index) => (
+                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                          {point}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </CardContent>
@@ -382,24 +387,18 @@ export default function HomePage() {
                       <Mail className="h-7 w-7 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      Mass Communications
+                      {landing.features.communications.title}
                     </h3>
                     <p className="text-gray-600 leading-relaxed">
-                      Send email and SMS updates to your entire membership or specific groups. Keep everyone informed with professional newsletters and urgent alerts.
+                      {landing.features.communications.description}
                     </p>
                     <ul className="space-y-2 pt-2">
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
-                        Bulk email & SMS messaging
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
-                        Customizable templates
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
-                        Delivery tracking & analytics
-                      </li>
+                      {landing.features.communications.points.map((point, index) => (
+                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
+                          <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                          {point}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </CardContent>
@@ -424,24 +423,18 @@ export default function HomePage() {
                       <Users className="h-7 w-7 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      Member Portal
+                      {landing.features.memberPortal.title}
                     </h3>
                     <p className="text-gray-600 leading-relaxed">
-                      Give your members a secure space to access union resources, view their benefits, and stay connected with leadership.
+                      {landing.features.memberPortal.description}
                     </p>
                     <ul className="space-y-2 pt-2">
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
-                        Secure member authentication
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
-                        Document library & resources
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
-                        Personal member dashboard
-                      </li>
+                      {landing.features.memberPortal.points.map((point, index) => (
+                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
+                          <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
+                          {point}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </CardContent>
@@ -466,24 +459,18 @@ export default function HomePage() {
                       <BarChart3 className="h-7 w-7 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      Analytics & Insights
+                      {landing.features.analytics.title}
                     </h3>
                     <p className="text-gray-600 leading-relaxed">
-                      Make data-driven decisions with comprehensive analytics on member engagement, event attendance, and communication effectiveness.
+                      {landing.features.analytics.description}
                     </p>
                     <ul className="space-y-2 pt-2">
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
-                        Engagement metrics
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
-                        Custom reports & exports
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
-                        Trend analysis
-                      </li>
+                      {landing.features.analytics.points.map((point, index) => (
+                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
+                          <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
+                          {point}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </CardContent>
@@ -508,24 +495,18 @@ export default function HomePage() {
                       <Database className="h-7 w-7 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      Secure Document Storage
+                      {landing.features.storage.title}
                     </h3>
                     <p className="text-gray-600 leading-relaxed">
-                      Store contracts, bylaws, and important documents in a secure, organized system. Control who can access what with granular permissions.
+                      {landing.features.storage.description}
                     </p>
                     <ul className="space-y-2 pt-2">
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
-                        Encrypted cloud storage
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
-                        Version control & history
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
-                        Permission management
-                      </li>
+                      {landing.features.storage.points.map((point, index) => (
+                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
+                          <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
+                          {point}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </CardContent>
@@ -550,24 +531,18 @@ export default function HomePage() {
                       <Calendar className="h-7 w-7 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      Event Management
+                      {landing.features.events.title}
                     </h3>
                     <p className="text-gray-600 leading-relaxed">
-                      Plan meetings, rallies, and events with built-in RSVP tracking and automated reminders for all your union activities.
+                      {landing.features.events.description}
                     </p>
                     <ul className="space-y-2 pt-2">
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
-                        Event calendar & RSVP
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
-                        Automated reminders
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
-                        Attendance tracking
-                      </li>
+                      {landing.features.events.points.map((point, index) => (
+                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
+                          <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
+                          {point}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </CardContent>
@@ -583,10 +558,10 @@ export default function HomePage() {
           <AnimatedSection>
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-4xl sm:text-5xl font-bold text-gray-900">
-                Why Unions Choose UnionTab
+                {landing.whyUs.title}
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Built specifically for union leadership by people who understand your challenges
+                {landing.whyUs.subtitle}
               </p>
             </div>
           </AnimatedSection>
@@ -607,9 +582,9 @@ export default function HomePage() {
                   <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg -mt-7 relative z-10 border-4 border-white">
                     <UserCheck className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Built by Union People</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{landing.whyUs.builtByUnion.title}</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    We understand the unique challenges of union leadership because we&apos;ve lived them. Every feature is designed with your real needs in mind.
+                    {landing.whyUs.builtByUnion.description}
                   </p>
                 </CardContent>
               </Card>
@@ -630,9 +605,9 @@ export default function HomePage() {
                   <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg -mt-7 relative z-10 border-4 border-white">
                     <Zap className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Free for Small Locals</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{landing.whyUs.freeForSmall.title}</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    We believe every union deserves modern tools. Locals with under 150 members get full access to core features at no cost, forever.
+                    {landing.whyUs.freeForSmall.description}
                   </p>
                 </CardContent>
               </Card>
@@ -653,9 +628,9 @@ export default function HomePage() {
                   <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg -mt-7 relative z-10 border-4 border-white">
                     <Clock className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Save Hours Every Week</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{landing.whyUs.saveHours.title}</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Stop juggling spreadsheets, email lists, and paper ballots. Consolidate your operations into one platform and reclaim your time.
+                    {landing.whyUs.saveHours.description}
                   </p>
                 </CardContent>
               </Card>
@@ -670,10 +645,10 @@ export default function HomePage() {
           <AnimatedSection>
             <div className="text-center space-y-4 mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                Built for Security & Compliance
+                {landing.security.title}
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Your members&apos; data and election integrity are our top priorities
+                {landing.security.subtitle}
               </p>
             </div>
           </AnimatedSection>
@@ -682,32 +657,32 @@ export default function HomePage() {
             <AnimatedSection delay={0.1}>
               <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
                 <Shield className="h-10 w-10 text-blue-600 mx-auto mb-3" />
-                <h4 className="font-semibold text-gray-900 mb-2">End-to-End Encryption</h4>
-                <p className="text-sm text-gray-600">All data encrypted in transit and at rest</p>
+                <h4 className="font-semibold text-gray-900 mb-2">{landing.security.encryption.title}</h4>
+                <p className="text-sm text-gray-600">{landing.security.encryption.description}</p>
               </div>
             </AnimatedSection>
 
             <AnimatedSection delay={0.2}>
               <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
                 <FileCheck className="h-10 w-10 text-indigo-600 mx-auto mb-3" />
-                <h4 className="font-semibold text-gray-900 mb-2">Audit Trails</h4>
-                <p className="text-sm text-gray-600">Complete records for regulatory compliance</p>
+                <h4 className="font-semibold text-gray-900 mb-2">{landing.security.auditTrails.title}</h4>
+                <p className="text-sm text-gray-600">{landing.security.auditTrails.description}</p>
               </div>
             </AnimatedSection>
 
             <AnimatedSection delay={0.3}>
               <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
                 <Lock className="h-10 w-10 text-purple-600 mx-auto mb-3" />
-                <h4 className="font-semibold text-gray-900 mb-2">Anonymous Voting</h4>
-                <p className="text-sm text-gray-600">Verifiable results, protected privacy</p>
+                <h4 className="font-semibold text-gray-900 mb-2">{landing.security.anonymousVoting.title}</h4>
+                <p className="text-sm text-gray-600">{landing.security.anonymousVoting.description}</p>
               </div>
             </AnimatedSection>
 
             <AnimatedSection delay={0.4}>
               <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
                 <Globe className="h-10 w-10 text-cyan-600 mx-auto mb-3" />
-                <h4 className="font-semibold text-gray-900 mb-2">99.9% Uptime</h4>
-                <p className="text-sm text-gray-600">Reliable access when you need it most</p>
+                <h4 className="font-semibold text-gray-900 mb-2">{landing.security.uptime.title}</h4>
+                <p className="text-sm text-gray-600">{landing.security.uptime.description}</p>
               </div>
             </AnimatedSection>
           </div>
@@ -720,7 +695,7 @@ export default function HomePage() {
           <AnimatedSection>
             <div className="text-center">
               <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-8">
-                Trusted by Union Locals
+                {landing.trustedBy}
               </p>
               <div className="flex items-center justify-center gap-6 sm:gap-10 md:gap-12">
                 {/* Union logos with consistent sizing */}
@@ -782,10 +757,10 @@ export default function HomePage() {
                 <Users className="h-10 w-10 text-white" />
               </div>
               <h2 className="text-4xl sm:text-5xl font-bold text-white">
-                Ready to Modernize Your Union?
+                {landing.cta.title}
               </h2>
               <p className="text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
-                Start building a stronger, more connected membership today. Most unions are up and running in under 30 minutes.
+                {landing.cta.subtitle}
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                 <Link href="/sign-up">
@@ -793,7 +768,7 @@ export default function HomePage() {
                     size="lg"
                     className="bg-white text-blue-600 hover:bg-gray-50 h-16 px-10 text-lg font-semibold shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
                   >
-                    Start Free Today
+                    {landing.cta.startFree}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
@@ -803,23 +778,23 @@ export default function HomePage() {
                     variant="outline"
                     className="bg-transparent border-2 border-white text-white hover:bg-white/10 h-16 px-10 text-lg font-semibold"
                   >
-                    View Pricing
+                    {landing.cta.viewPricing}
                   </Button>
                 </Link>
               </div>
               <p className="text-sm text-blue-100 pt-4">
-                Free for locals under 150 members &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Setup in under 30 minutes
+                {landing.cta.bottomText}
               </p>
               <div className="pt-6 border-t border-white/20 mt-6">
                 <p className="text-sm text-blue-100 mb-3">
-                  Want to see it in action first? We encourage you to try it yourself, but we&apos;re happy to walk you through it.
+                  {landing.cta.demoText}
                 </p>
                 <Link
                   href="/contact"
                   className="inline-flex items-center gap-2 text-white hover:text-blue-200 transition-colors text-sm font-medium"
                 >
                   <Video className="h-4 w-4" />
-                  Book a Demo
+                  {landing.cta.bookDemo}
                   <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
@@ -840,62 +815,62 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="text-sm">
-                Empowering unions with modern digital tools to build stronger, more connected communities.
+                {landing.footer.description}
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-4">Product</h4>
+              <h4 className="font-semibold text-white mb-4">{landing.footer.product}</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="/features" className="hover:text-white transition-colors">
-                    Features
+                    {landing.nav.features}
                   </Link>
                 </li>
                 <li>
                   <Link href="/pricing" className="hover:text-white transition-colors">
-                    Pricing
+                    {landing.nav.pricing}
                   </Link>
                 </li>
                 <li>
                   <Link href="/blogs" className="hover:text-white transition-colors">
-                    Blog
+                    {landing.nav.blog}
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
+              <h4 className="font-semibold text-white mb-4">{landing.footer.company}</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="/about" className="hover:text-white transition-colors">
-                    About
+                    {landing.footer.about}
                   </Link>
                 </li>
                 <li>
                   <Link href="/contact" className="hover:text-white transition-colors">
-                    Contact
+                    {landing.nav.contact}
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-4">Legal</h4>
+              <h4 className="font-semibold text-white mb-4">{landing.footer.legal}</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="/privacy" className="hover:text-white transition-colors">
-                    Privacy Policy
+                    {landing.footer.privacy}
                   </Link>
                 </li>
                 <li>
                   <Link href="/terms" className="hover:text-white transition-colors">
-                    Terms of Service
+                    {landing.footer.terms}
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-            <p>&copy; 2026 UnionTab. All rights reserved.</p>
+            <p>{landing.footer.copyright}</p>
           </div>
         </div>
       </footer>

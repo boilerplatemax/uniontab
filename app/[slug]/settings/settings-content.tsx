@@ -24,6 +24,7 @@ import {
   EyeOff,
   Lock,
   Sparkles,
+  Languages,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
@@ -77,6 +78,7 @@ export function SettingsContent() {
     socialLinks: {} as Record<string, string>,
     showSocialInHero: false,
     hidePoweredBy: false,
+    defaultLanguage: 'en',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -100,6 +102,7 @@ export function SettingsContent() {
         socialLinks: (union as any).socialLinks || {},
         showSocialInHero: (union as any).showSocialInHero || false,
         hidePoweredBy: (union as any).hidePoweredBy || false,
+        defaultLanguage: (union as any).defaultLanguage || 'en',
       });
     }
   }, [union]);
@@ -304,6 +307,74 @@ export function SettingsContent() {
                 <p className="text-xs text-gray-400 mt-2">
                   Social icons always appear in the footer. This option adds them to the hero section as well.
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Language Settings */}
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Languages className="h-5 w-5" />
+                Language Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="defaultLanguage">Default Language</Label>
+                <p className="text-sm text-gray-500 mb-4">
+                  Set the default language for your union portal. This affects the tab name, navbar, and member-facing content.
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, defaultLanguage: 'en' })}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      formData.defaultLanguage === 'en'
+                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                        : 'border-gray-200 hover:border-blue-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-2xl">🇬🇧</span>
+                      <div className="text-left">
+                        <p className={`font-semibold ${formData.defaultLanguage === 'en' ? 'text-blue-900' : 'text-gray-900'}`}>
+                          English
+                        </p>
+                        <p className={`text-sm ${formData.defaultLanguage === 'en' ? 'text-blue-600' : 'text-gray-500'}`}>
+                          Default language
+                        </p>
+                      </div>
+                      {formData.defaultLanguage === 'en' && (
+                        <Check className="h-5 w-5 text-blue-600 ml-auto" />
+                      )}
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, defaultLanguage: 'fr' })}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      formData.defaultLanguage === 'fr'
+                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                        : 'border-gray-200 hover:border-blue-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-2xl">🇫🇷</span>
+                      <div className="text-left">
+                        <p className={`font-semibold ${formData.defaultLanguage === 'fr' ? 'text-blue-900' : 'text-gray-900'}`}>
+                          Français
+                        </p>
+                        <p className={`text-sm ${formData.defaultLanguage === 'fr' ? 'text-blue-600' : 'text-gray-500'}`}>
+                          Langue par défaut
+                        </p>
+                      </div>
+                      {formData.defaultLanguage === 'fr' && (
+                        <Check className="h-5 w-5 text-blue-600 ml-auto" />
+                      )}
+                    </div>
+                  </button>
+                </div>
               </div>
             </CardContent>
           </Card>
