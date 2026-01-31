@@ -139,6 +139,79 @@ export interface LandingPageTranslations {
   };
 }
 
+export interface UnionPortalTranslations {
+  nav: {
+    signIn: string;
+    joinUnion: string;
+    grievances: string;
+    meetings: string;
+    members: string;
+    emails: string;
+    sms: string;
+    settings: string;
+    analytics: string;
+    more: string;
+    strikes: string;
+    dues: string;
+    announcements: string;
+    inviteMembers: string;
+    profile: string;
+    billing: string;
+    signOut: string;
+    signedInAs: string;
+  };
+  tabs: {
+    news: string;
+    about: string;
+    files: string;
+    elections: string;
+    events: string;
+    contact: string;
+  };
+  actions: {
+    createPost: string;
+    newPost: string;
+    uploadFile: string;
+    createEvent: string;
+    newEvent: string;
+    readMore: string;
+    viewFullPost: string;
+    edit: string;
+    delete: string;
+    pin: string;
+    unpin: string;
+    pinned: string;
+    list: string;
+    calendar: string;
+    gridView: string;
+    listView: string;
+    download: string;
+  };
+  empty: {
+    noPosts: string;
+    noPostsOwner: string;
+    noPostsVisitor: string;
+    noFiles: string;
+    noFilesOwner: string;
+    noFilesVisitor: string;
+    noEvents: string;
+    noEventsOwner: string;
+    noEventsVisitor: string;
+  };
+  alerts: {
+    pendingApproval: string;
+    private: string;
+    attachments: string;
+  };
+  footer: {
+    poweredBy: string;
+  };
+  common: {
+    postedBy: string;
+  };
+}
+
 export interface Translations {
   landing: LandingPageTranslations;
+  union: UnionPortalTranslations;
 }
