@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutList, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from '@/lib/i18n';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
 import { UploadFileDialog } from '@/components/files/upload-file-dialog';
@@ -52,6 +53,7 @@ export function UnionProfileTabs({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations();
   const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') || 'posts';
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
   // Default to grid view in prestige mode for masonry-style layout
@@ -224,39 +226,39 @@ export function UnionProfileTabs({
             onClick={() => setActiveTab('posts')}
             className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'posts')}`}
           >
-            News
+            {t.union.tabs.news}
           </button>
           <button
             onClick={() => setActiveTab('about')}
             className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'about')}`}
           >
-            About
+            {t.union.tabs.about}
           </button>
           <button
             onClick={() => setActiveTab('files')}
             className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'files')}`}
           >
-            Files
+            {t.union.tabs.files}
           </button>
           {isApprovedMember && (
             <button
               onClick={() => setActiveTab('elections')}
               className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'elections')}`}
             >
-              Elections
+              {t.union.tabs.elections}
             </button>
           )}
           <button
             onClick={() => setActiveTab('events')}
             className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'events')}`}
           >
-            Events
+            {t.union.tabs.events}
           </button>
           <button
             onClick={() => setActiveTab('contact')}
             className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'contact')}`}
           >
-            Contact
+            {t.union.tabs.contact}
           </button>
         </div>
       </div>
@@ -270,7 +272,7 @@ export function UnionProfileTabs({
             onClick={() => setCreatePostOpen(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
-            New Post
+            {t.union.actions.newPost}
           </Button>
         )}
 
@@ -279,14 +281,14 @@ export function UnionProfileTabs({
             <button
               onClick={() => setPostsView('grid')}
               className={`p-2 rounded-full transition-colors cursor-pointer ${postsView === 'grid' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
-              title="Grid view"
+              title={t.union.actions.gridView}
             >
               <LayoutGrid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setPostsView('column')}
               className={`p-2 rounded-full transition-colors cursor-pointer ${postsView === 'column' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
-              title="List view"
+              title={t.union.actions.listView}
             >
               <LayoutList className="h-4 w-4" />
             </button>
@@ -300,7 +302,7 @@ export function UnionProfileTabs({
             onClick={() => setUploadFileOpen(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Upload File
+            {t.union.actions.uploadFile}
           </Button>
         )}
 
@@ -311,7 +313,7 @@ export function UnionProfileTabs({
             onClick={() => setCreateEventOpen(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
-            New Event
+            {t.union.actions.newEvent}
           </Button>
         )}
 
@@ -321,13 +323,13 @@ export function UnionProfileTabs({
               onClick={() => setEventsView('list')}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${eventsView === 'list' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              List
+              {t.union.actions.list}
             </button>
             <button
               onClick={() => setEventsView('calendar')}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${eventsView === 'calendar' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              Calendar
+              {t.union.actions.calendar}
             </button>
           </div>
         )}
@@ -347,7 +349,7 @@ export function UnionProfileTabs({
                 activeTab === 'posts' ? tabActiveClass : tabInactiveClass
               }`}
             >
-              News
+              {t.union.tabs.news}
             </button>
             <button
               onClick={() => setActiveTab('about')}
@@ -355,7 +357,7 @@ export function UnionProfileTabs({
                 activeTab === 'about' ? tabActiveClass : tabInactiveClass
               }`}
             >
-              About
+              {t.union.tabs.about}
             </button>
             <button
               onClick={() => setActiveTab('files')}
@@ -363,7 +365,7 @@ export function UnionProfileTabs({
                 activeTab === 'files' ? tabActiveClass : tabInactiveClass
               }`}
             >
-              Files
+              {t.union.tabs.files}
             </button>
             {isApprovedMember && (
               <button
@@ -372,7 +374,7 @@ export function UnionProfileTabs({
                   activeTab === 'elections' ? tabActiveClass : tabInactiveClass
                 }`}
               >
-                Elections
+                {t.union.tabs.elections}
               </button>
             )}
             <button
@@ -381,7 +383,7 @@ export function UnionProfileTabs({
                 activeTab === 'events' ? tabActiveClass : tabInactiveClass
               }`}
             >
-              Events
+              {t.union.tabs.events}
             </button>
             <button
               onClick={() => setActiveTab('contact')}
@@ -389,7 +391,7 @@ export function UnionProfileTabs({
                 activeTab === 'contact' ? tabActiveClass : tabInactiveClass
               }`}
             >
-              Contact
+              {t.union.tabs.contact}
             </button>
           </div>
         </div>
@@ -404,7 +406,7 @@ export function UnionProfileTabs({
                   onClick={() => setCreatePostOpen(true)}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Post
+                  {t.union.actions.createPost}
                 </Button>
               )}
             </>
@@ -416,7 +418,7 @@ export function UnionProfileTabs({
                 variant={postsView === 'column' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setPostsView('column')}
-                title="Column view"
+                title={t.union.actions.listView}
                 className="px-2"
               >
                 <LayoutList className="h-4 w-4" />
@@ -425,7 +427,7 @@ export function UnionProfileTabs({
                 variant={postsView === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setPostsView('grid')}
-                title="Grid view"
+                title={t.union.actions.gridView}
                 className="px-2"
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -442,7 +444,7 @@ export function UnionProfileTabs({
                   onClick={() => setUploadFileOpen(true)}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Upload File
+                  {t.union.actions.uploadFile}
                 </Button>
               )}
               {activeTab === 'events' && (
@@ -452,7 +454,7 @@ export function UnionProfileTabs({
                   onClick={() => setCreateEventOpen(true)}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Event
+                  {t.union.actions.createEvent}
                 </Button>
               )}
             </>
@@ -465,14 +467,14 @@ export function UnionProfileTabs({
                 size="sm"
                 onClick={() => setEventsView('list')}
               >
-                List
+                {t.union.actions.list}
               </Button>
               <Button
                 variant={eventsView === 'calendar' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setEventsView('calendar')}
               >
-                Calendar
+                {t.union.actions.calendar}
               </Button>
             </div>
           )}
@@ -506,7 +508,7 @@ export function UnionProfileTabs({
                     onClick={() => setCreatePostOpen(true)}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Post
+                    {t.union.actions.createPost}
                   </Button>
                 </div>
               )}
@@ -537,7 +539,7 @@ export function UnionProfileTabs({
                                 {(post as any).isPinned && (
                                   <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
                                     <Pin className="h-3 w-3 text-rose-600 fill-current" />
-                                    <span className="text-xs font-medium text-gray-800">Pinned</span>
+                                    <span className="text-xs font-medium text-gray-800">{t.union.actions.pinned}</span>
                                   </div>
                                 )}
                               </div>
@@ -766,7 +768,7 @@ export function UnionProfileTabs({
                               <div className="flex-1">
                                 <RichTextContent content={post.content} className="text-sm text-gray-600 line-clamp-3" />
                                 <Link href={`/${union.slug}/post/${post.id}`}>
-                                  <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700 text-sm">Read more →</Button>
+                                  <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700 text-sm">{t.union.actions.readMore} →</Button>
                                 </Link>
                               </div>
                             ) : (
@@ -780,7 +782,7 @@ export function UnionProfileTabs({
                                   <div className="flex-1 min-w-0">
                                     <RichTextContent content={post.content} className="text-sm sm:text-base line-clamp-6" />
                                     <Link href={`/${union.slug}/post/${post.id}`}>
-                                      <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700">View Full Post →</Button>
+                                      <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700">{t.union.actions.viewFullPost} →</Button>
                                     </Link>
                                   </div>
                                   {post.imageUrl && (
@@ -843,22 +845,22 @@ export function UnionProfileTabs({
                     <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-rose-50 flex items-center justify-center">
                       <Image className="h-10 w-10 text-rose-300" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No posts yet</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{t.union.empty.noPosts}</h3>
                     <p className="text-gray-500 max-w-sm mx-auto">
                       {isOwner
-                        ? 'Share your first update with your community.'
-                        : 'Check back soon for the latest news and updates.'}
+                        ? t.union.empty.noPostsOwner
+                        : t.union.empty.noPostsVisitor}
                     </p>
                   </div>
                 ) : (
                   <Card className="shadow-sm">
                     <CardContent className="p-12 text-center">
                       <Image className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No posts yet</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">{t.union.empty.noPosts}</h3>
                       <p className="text-gray-500">
                         {isOwner
-                          ? 'Create your first post to get started!'
-                          : 'Check back later for updates.'}
+                          ? t.union.empty.noPostsOwner
+                          : t.union.empty.noPostsVisitor}
                       </p>
                     </CardContent>
                   </Card>
@@ -878,7 +880,7 @@ export function UnionProfileTabs({
                     onClick={() => setUploadFileOpen(true)}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Upload File
+                    {t.union.actions.uploadFile}
                   </Button>
                 </div>
               )}
@@ -911,11 +913,11 @@ export function UnionProfileTabs({
                     <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-blue-50 flex items-center justify-center">
                       <FileText className="h-10 w-10 text-blue-300" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No files yet</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{t.union.empty.noFiles}</h3>
                     <p className="text-gray-500 max-w-sm mx-auto">
                       {isOwner
-                        ? 'Upload documents, contracts, and resources for your members.'
-                        : 'Documents and resources will appear here.'}
+                        ? t.union.empty.noFilesOwner
+                        : t.union.empty.noFilesVisitor}
                     </p>
                   </div>
                 ) : (
@@ -923,12 +925,12 @@ export function UnionProfileTabs({
                     <CardContent className="p-12 text-center">
                       <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                       <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        No files yet
+                        {t.union.empty.noFiles}
                       </h3>
                       <p className="text-gray-500">
                         {isOwner
-                          ? 'Upload your first file to get started!'
-                          : 'Check back later for documents.'}
+                          ? t.union.empty.noFilesOwner
+                          : t.union.empty.noFilesVisitor}
                       </p>
                     </CardContent>
                   </Card>
@@ -950,18 +952,18 @@ export function UnionProfileTabs({
                         onClick={() => setCreateEventOpen(true)}
                       >
                         <Plus className="h-4 w-4 mr-2" />
-                        Create Event
+                        {t.union.actions.createEvent}
                       </Button>
                       <div className="flex gap-2">
-                        <Button variant={eventsView === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('list')}>List</Button>
-                        <Button variant={eventsView === 'calendar' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('calendar')}>Calendar</Button>
+                        <Button variant={eventsView === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('list')}>{t.union.actions.list}</Button>
+                        <Button variant={eventsView === 'calendar' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('calendar')}>{t.union.actions.calendar}</Button>
                       </div>
                     </div>
                   )}
                   {!isOwner && (
                     <div className="flex justify-end gap-2 sm:hidden">
-                      <Button variant={eventsView === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('list')}>List</Button>
-                      <Button variant={eventsView === 'calendar' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('calendar')}>Calendar</Button>
+                      <Button variant={eventsView === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('list')}>{t.union.actions.list}</Button>
+                      <Button variant={eventsView === 'calendar' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('calendar')}>{t.union.actions.calendar}</Button>
                     </div>
                   )}
                 </>
@@ -990,16 +992,16 @@ export function UnionProfileTabs({
                       <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-amber-50 flex items-center justify-center">
                         <Calendar className="h-10 w-10 text-amber-300" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No upcoming events</h3>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{t.union.empty.noEvents}</h3>
                       <p className="text-gray-500 max-w-sm mx-auto">
                         {isOwner
-                          ? 'Create events to keep your members informed about meetings and activities.'
-                          : 'Check back for upcoming events and gatherings.'}
+                          ? t.union.empty.noEventsOwner
+                          : t.union.empty.noEventsVisitor}
                       </p>
                     </div>
                   ) : (
                     <div className="text-center py-12 text-gray-500">
-                      No upcoming events
+                      {t.union.empty.noEvents}
                     </div>
                   )
                 )}

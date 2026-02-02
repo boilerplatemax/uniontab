@@ -10,6 +10,8 @@ import { PrestigeTheme } from './themes/prestige-theme';
 import type { ThemeId } from '@/lib/themes/config';
 import { canAccessTheme } from '@/lib/themes/config';
 import { AutoVerifyEmailDomain } from '@/components/auto-verify-email-domain';
+import { UnionLanguageSync } from './union-language-sync';
+import type { Language } from '@/lib/i18n/types';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -319,6 +321,8 @@ export default async function PublicUnionPage({
 
   return (
     <>
+      {/* Sync language with union's default language setting */}
+      <UnionLanguageSync defaultLanguage={(union.defaultLanguage as Language) || 'en'} />
       {/* Automatically verify email domain if pending */}
       <AutoVerifyEmailDomain unionId={union.id} />
       {ThemeComponent}
