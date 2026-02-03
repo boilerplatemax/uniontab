@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from 'next';
 // import { Manrope } from 'next/font/google';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
-import { LanguageProvider } from '@/lib/i18n';
 
 export const metadata: Metadata = {
   title: 'UnionTab - Build Your Union Website',
@@ -27,20 +26,18 @@ export default function RootLayout({
       className="bg-white dark:bg-gray-950 text-black dark:text-white font-sans"
     >
       <body className="min-h-[100dvh] bg-gray-50">
-        <LanguageProvider>
-          <SWRConfig
-            value={{
-              fallback: {
-                // We do NOT await here
-                // Only components that read this data will suspend
-                '/api/user': getUser(),
-                '/api/team': getTeamForUser()
-              }
-            }}
-          >
-            {children}
-          </SWRConfig>
-        </LanguageProvider>
+        <SWRConfig
+          value={{
+            fallback: {
+              // We do NOT await here
+              // Only components that read this data will suspend
+              '/api/user': getUser(),
+              '/api/team': getTeamForUser()
+            }
+          }}
+        >
+          {children}
+        </SWRConfig>
       </body>
     </html>
   );

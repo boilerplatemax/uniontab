@@ -10,7 +10,6 @@ import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { AdminHelpWidget } from '@/components/admin-help-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
 import { SocialMediaIcons } from '@/components/social-media-icons';
-import { useTranslations } from '@/lib/i18n';
 import type { ThemeProps } from './types';
 
 /**
@@ -37,8 +36,6 @@ export function DefaultTheme({
   activeAnnouncements,
   accessibilityWidgetEnabled,
 }: ThemeProps) {
-  const t = useTranslations();
-
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Announcement Banner - Above navbar */}
@@ -75,7 +72,7 @@ export function DefaultTheme({
                 </svg>
               </div>
               <p className="text-sm text-yellow-800 font-medium">
-                {t.union.alerts.pendingApproval}
+                Your membership is pending approval. You'll have full access once approved by a union administrator.
               </p>
             </div>
           </div>
@@ -237,7 +234,7 @@ export function DefaultTheme({
             {/* Powered by - Only hide for paid plans with hidePoweredBy enabled */}
             {(!((union as any).hidePoweredBy && (union as any).planName && (union as any).planName !== 'Free')) && (
               <p className="text-gray-500 text-sm">
-                {t.union.footer.poweredBy}{' '}
+                Powered by{' '}
                 <a
                   href="/"
                   className="text-blue-600 hover:text-blue-700 font-medium"

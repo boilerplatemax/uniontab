@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video, Wrench, MessageSquare, BarChart3 } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
-import { useTranslations } from '@/lib/i18n';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +36,6 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
   const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
-  const t = useTranslations();
 
   // Helper to check if user has a specific permission
   const canAccess = (permission: AdminPermissionKey): boolean => {
@@ -70,12 +68,12 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
             <div className="flex items-center gap-3">
               <Link href={`/${slug}/sign-in`} prefetch={true}>
                 <Button variant="outline" size="sm" className="border-gray-300">
-                  {t.union.nav.signIn}
+                  Sign In
                 </Button>
               </Link>
               <Link href={`/${slug}/sign-up`} prefetch={true}>
                 <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                  {t.union.nav.joinUnion}
+                  Join Union
                 </Button>
               </Link>
             </div>
@@ -108,7 +106,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 <Link href={`/${slug}/grievances`} prefetch={true}>
                   <Button variant="ghost" size="sm" className="gap-2 relative">
                     <FileText className="h-4 w-4" />
-                    <span className="hidden md:inline">{t.union.nav.grievances}</span>
+                    <span className="hidden md:inline">Grievances</span>
                     {grievanceNotificationCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                         {grievanceNotificationCount}
@@ -121,7 +119,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 <Link href={`/${slug}/meetings`} prefetch={true}>
                   <Button variant="ghost" size="sm" className="gap-2">
                     <Video className="h-4 w-4" />
-                    <span className="hidden md:inline">{t.union.nav.meetings}</span>
+                    <span className="hidden md:inline">Meetings</span>
                   </Button>
                 </Link>
 
@@ -130,7 +128,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <Link href={`/${slug}/members`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2 relative">
                       <Users className="h-4 w-4" />
-                      <span className="hidden md:inline">{t.union.nav.members}</span>
+                      <span className="hidden md:inline">Members</span>
                       {pendingMembersCount > 0 && (
                         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                           {pendingMembersCount}
@@ -145,7 +143,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <Link href={`/${slug}/mass-email`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Mail className="h-4 w-4" />
-                      <span className="hidden md:inline">{t.union.nav.emails}</span>
+                      <span className="hidden md:inline">Mass Email</span>
                     </Button>
                   </Link>
                 )}
@@ -155,7 +153,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <Link href={`/${slug}/mass-sms`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <MessageSquare className="h-4 w-4" />
-                      <span className="hidden md:inline">{t.union.nav.sms}</span>
+                      <span className="hidden md:inline">SMS</span>
                     </Button>
                   </Link>
                 )}
@@ -165,7 +163,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <Link href={`/${slug}/settings`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Settings className="h-4 w-4" />
-                      <span className="hidden md:inline">{t.union.nav.settings}</span>
+                      <span className="hidden md:inline">Settings</span>
                     </Button>
                   </Link>
                 )}
@@ -175,7 +173,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <Link href={`/${slug}/analytics`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <BarChart3 className="h-4 w-4" />
-                      <span className="hidden md:inline">{t.union.nav.analytics}</span>
+                      <span className="hidden md:inline">Analytics</span>
                     </Button>
                   </Link>
                 )}
@@ -186,7 +184,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="gap-2 relative">
                         <Wrench className="h-4 w-4" />
-                        <span className="hidden md:inline">{t.union.nav.more}</span>
+                        <span className="hidden md:inline">More</span>
                         <ChevronDown className="h-3 w-3" />
                         {strikeNotificationCount > 0 && canAccess('strikes') && (
                           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
@@ -200,7 +198,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                         <Link href={`/${slug}/strikes`} prefetch={true}>
                           <DropdownMenuItem>
                             <Zap className="h-4 w-4" />
-                            {t.union.nav.strikes}
+                            Strikes
                             {strikeNotificationCount > 0 && (
                               <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                                 {strikeNotificationCount}
@@ -213,7 +211,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                         <Link href={`/${slug}/dues`} prefetch={true}>
                           <DropdownMenuItem>
                             <DollarSign className="h-4 w-4" />
-                            {t.union.nav.dues}
+                            Dues
                           </DropdownMenuItem>
                         </Link>
                       )}
@@ -224,7 +222,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                             <Link href={`/${slug}/announcements`} prefetch={true}>
                               <DropdownMenuItem>
                                 <Megaphone className="h-4 w-4" />
-                                {t.union.nav.announcements}
+                                Announcements
                               </DropdownMenuItem>
                             </Link>
                           )}
@@ -232,7 +230,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                             <Link href={`/${slug}/members/invite`} prefetch={true}>
                               <DropdownMenuItem>
                                 <UserPlus className="h-4 w-4" />
-                                {t.union.nav.inviteMembers}
+                                Invite Members
                               </DropdownMenuItem>
                             </Link>
                           )}
@@ -247,7 +245,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <Link href={`/${slug}/strikes`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2 relative">
                       <Zap className="h-4 w-4" />
-                      <span className="hidden md:inline">{t.union.nav.strikes}</span>
+                      <span className="hidden md:inline">Strikes</span>
                       {strikeNotificationCount > 0 && (
                         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                           {strikeNotificationCount}
@@ -268,7 +266,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-xs text-muted-foreground">{t.union.nav.signedInAs}</p>
+                        <p className="text-xs text-muted-foreground">Signed in as</p>
                         <p className="text-sm font-medium leading-none">{membership.user.name}</p>
                       </div>
                     </DropdownMenuLabel>
@@ -276,14 +274,14 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     <Link href={`/${slug}/profile`} prefetch={true}>
                       <DropdownMenuItem>
                         <UserCircle className="h-4 w-4" />
-                        {t.union.nav.profile}
+                        Profile
                       </DropdownMenuItem>
                     </Link>
                     {isOwner && (
                       <Link href={`/${slug}/billing`} prefetch={true}>
                         <DropdownMenuItem>
                           <CreditCard className="h-4 w-4" />
-                          {t.union.nav.billing}
+                          Billing
                         </DropdownMenuItem>
                       </Link>
                     )}
@@ -292,7 +290,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                       <button type="submit" className="w-full">
                         <DropdownMenuItem>
                           <LogOut className="h-4 w-4" />
-                          {t.union.nav.signOut}
+                          Sign Out
                         </DropdownMenuItem>
                       </button>
                     </form>
@@ -322,7 +320,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
           <div className="sm:hidden border-t bg-white">
             <div className="px-4 py-4 space-y-2">
               <div className="pb-3 mb-3 border-b">
-                <p className="text-xs text-muted-foreground">{t.union.nav.signedInAs}</p>
+                <p className="text-xs text-muted-foreground">Signed in as</p>
                 <p className="text-sm font-medium">{membership.user.name}</p>
               </div>
 
@@ -333,7 +331,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
               >
                 <Button variant="ghost" className="w-full justify-start gap-2">
                   <UserCircle className="h-4 w-4" />
-                  {t.union.nav.profile}
+                  Profile
                 </Button>
               </Link>
 
@@ -345,7 +343,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
               >
                 <Button variant="ghost" className="w-full justify-start gap-2 relative">
                   <FileText className="h-4 w-4" />
-                  {t.union.nav.grievances}
+                  Grievances
                   {grievanceNotificationCount > 0 && (
                     <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                       {grievanceNotificationCount}
@@ -362,7 +360,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
               >
                 <Button variant="ghost" className="w-full justify-start gap-2">
                   <Video className="h-4 w-4" />
-                  {t.union.nav.meetings}
+                  Meetings
                 </Button>
               </Link>
 
@@ -375,7 +373,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 >
                   <Button variant="ghost" className="w-full justify-start gap-2 relative">
                     <Users className="h-4 w-4" />
-                    {t.union.nav.members}
+                    Members
                     {pendingMembersCount > 0 && (
                       <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                         {pendingMembersCount}
@@ -394,7 +392,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 >
                   <Button variant="ghost" className="w-full justify-start gap-2">
                     <Mail className="h-4 w-4" />
-                    {t.union.nav.emails}
+                    Mass Email
                   </Button>
                 </Link>
               )}
@@ -408,7 +406,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 >
                   <Button variant="ghost" className="w-full justify-start gap-2">
                     <MessageSquare className="h-4 w-4" />
-                    {t.union.nav.sms}
+                    SMS
                   </Button>
                 </Link>
               )}
@@ -422,7 +420,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 >
                   <Button variant="ghost" className="w-full justify-start gap-2">
                     <Settings className="h-4 w-4" />
-                    {t.union.nav.settings}
+                    Settings
                   </Button>
                 </Link>
               )}
@@ -436,7 +434,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 >
                   <Button variant="ghost" className="w-full justify-start gap-2">
                     <BarChart3 className="h-4 w-4" />
-                    {t.union.nav.analytics}
+                    Analytics
                   </Button>
                 </Link>
               )}
@@ -444,7 +442,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
               {/* Less frequently used items section */}
               {(canAccess('strikes') || canAccess('dues') || canAccess('announcements') || canAccess('members') || isOwner) && (
                 <div className="pt-2 border-t">
-                  <p className="text-xs text-muted-foreground mb-2 px-2">{t.union.nav.more}</p>
+                  <p className="text-xs text-muted-foreground mb-2 px-2">More</p>
 
                   {/* Strikes */}
                   {canAccess('strikes') && (
@@ -455,7 +453,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     >
                       <Button variant="ghost" className="w-full justify-start gap-2 relative">
                         <Zap className="h-4 w-4" />
-                        {t.union.nav.strikes}
+                        Strikes
                         {strikeNotificationCount > 0 && (
                           <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                             {strikeNotificationCount}
@@ -474,7 +472,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     >
                       <Button variant="ghost" className="w-full justify-start gap-2">
                         <DollarSign className="h-4 w-4" />
-                        {t.union.nav.dues}
+                        Dues
                       </Button>
                     </Link>
                   )}
@@ -487,7 +485,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     >
                       <Button variant="ghost" className="w-full justify-start gap-2">
                         <Megaphone className="h-4 w-4" />
-                        {t.union.nav.announcements}
+                        Announcements
                       </Button>
                     </Link>
                   )}
@@ -499,7 +497,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     >
                       <Button variant="ghost" className="w-full justify-start gap-2">
                         <UserPlus className="h-4 w-4" />
-                        {t.union.nav.inviteMembers}
+                        Invite Members
                       </Button>
                     </Link>
                   )}
@@ -511,7 +509,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     >
                       <Button variant="ghost" className="w-full justify-start gap-2">
                         <CreditCard className="h-4 w-4" />
-                        {t.union.nav.billing}
+                        Billing
                       </Button>
                     </Link>
                   )}
@@ -527,7 +525,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 >
                   <Button variant="ghost" className="w-full justify-start gap-2 relative">
                     <Zap className="h-4 w-4" />
-                    {t.union.nav.strikes}
+                    Strikes
                     {strikeNotificationCount > 0 && (
                       <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                         {strikeNotificationCount}
@@ -545,7 +543,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                     className="w-full justify-start gap-2"
                   >
                     <LogOut className="h-4 w-4" />
-                    {t.union.nav.signOut}
+                    Sign Out
                   </Button>
                 </form>
               </div>

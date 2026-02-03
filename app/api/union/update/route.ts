@@ -48,7 +48,6 @@ export async function PUT(request: NextRequest) {
       showSocialInHeader,
       showSocialInHero,
       hidePoweredBy,
-      defaultLanguage,
     } = body;
 
     // Update the union
@@ -73,7 +72,6 @@ export async function PUT(request: NextRequest) {
         showSocialInHeader: showSocialInHeader ?? false,
         showSocialInHero: showSocialInHero ?? false,
         hidePoweredBy: hidePoweredBy ?? false,
-        defaultLanguage: defaultLanguage || 'en',
       })
       .where(eq(unions.id, membership.unionId))
       .returning();

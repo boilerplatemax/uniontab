@@ -8,7 +8,6 @@ import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { AdminHelpWidget } from '@/components/admin-help-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
 import { SocialMediaIcons } from '@/components/social-media-icons';
-import { useTranslations } from '@/lib/i18n';
 import type { ThemeProps } from './types';
 import { Settings } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -38,7 +37,6 @@ export function ModernTheme({
   activeAnnouncements,
   accessibilityWidgetEnabled,
 }: ThemeProps) {
-  const t = useTranslations();
   // Calculate contrast color for hero text based on theme color
   const heroTextColor = getContrastColor(union.themeColor || DEFAULT_THEME_COLOR);
   const heroTextOpacity = heroTextColor === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)';
@@ -79,7 +77,7 @@ export function ModernTheme({
                 </svg>
               </div>
               <p className="text-sm text-yellow-800 font-medium">
-                {t.union.alerts.pendingApproval}
+                Your membership is pending approval. You'll have full access once approved by a union administrator.
               </p>
             </div>
           </div>
@@ -207,7 +205,7 @@ export function ModernTheme({
             {/* Powered by - Only hide for paid plans with hidePoweredBy enabled */}
             {(!((union as any).hidePoweredBy && (union as any).planName && (union as any).planName !== 'Free')) && (
               <p className="text-gray-500 text-sm">
-                {t.union.footer.poweredBy}{' '}
+                Powered by{' '}
                 <a
                   href="/"
                   className="text-blue-600 hover:text-blue-700 font-medium transition-colors"

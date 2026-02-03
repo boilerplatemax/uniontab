@@ -8,7 +8,6 @@ import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { AdminHelpWidget } from '@/components/admin-help-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
 import { SocialMediaIcons } from '@/components/social-media-icons';
-import { useTranslations } from '@/lib/i18n';
 import type { ThemeProps } from './types';
 import { Settings, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -39,7 +38,6 @@ export function PrestigeTheme({
   activeAnnouncements,
   accessibilityWidgetEnabled,
 }: ThemeProps) {
-  const t = useTranslations();
   // Dynamic color palette based on theme color from settings
   const themeColor = union.themeColor || DEFAULT_THEME_COLOR;
   const themeColorLight = getLightTint(themeColor, 97); // Very light tint for backgrounds
@@ -90,7 +88,7 @@ export function PrestigeTheme({
                 </svg>
               </div>
               <p className="text-sm font-medium" style={{ color: textPrimary }}>
-                {t.union.alerts.pendingApproval}
+                Your membership is pending approval. You'll have full access once approved by a union administrator.
               </p>
             </div>
           </div>
@@ -268,7 +266,7 @@ export function PrestigeTheme({
             {/* Powered by - Only hide for paid plans with hidePoweredBy enabled */}
             {(!((union as any).hidePoweredBy && (union as any).planName && (union as any).planName !== 'Free')) && (
               <p className="text-sm" style={{ color: textSecondary }}>
-                {t.union.footer.poweredBy}{' '}
+                Powered by{' '}
                 <a
                   href="/"
                   className="transition-colors font-medium hover:text-gray-900"
