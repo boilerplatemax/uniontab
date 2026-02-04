@@ -66,6 +66,7 @@ export function PrestigeTheme({
         announcementId={activeAnnouncements.banner?.id}
         grievanceNotificationCount={grievanceNotificationCount}
         strikeNotificationCount={strikeNotificationCount}
+        contactEmail={union.email}
       />
 
       {/* Spacing for fixed navbar and announcement */}

@@ -15,6 +15,7 @@ import {
 import Link from 'next/link';
 import { hasPermission, type AdminPermissionKey } from '@/lib/admin-permissions';
 import type { AdminPermissions } from '@/lib/db/schema';
+import { MemberLoginDropdown } from './member-login-dropdown';
 
 interface UnionNavbarProps {
   slug: string;
@@ -29,9 +30,10 @@ interface UnionNavbarProps {
   announcementId?: number | null;
   grievanceNotificationCount?: number;
   strikeNotificationCount?: number;
+  contactEmail?: string | null;
 }
 
-export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0, announcementId, grievanceNotificationCount = 0, strikeNotificationCount = 0 }: UnionNavbarProps) {
+export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0, announcementId, grievanceNotificationCount = 0, strikeNotificationCount = 0, contactEmail }: UnionNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
@@ -65,18 +67,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </span>
               </Link>
             </div>
-            <div className="flex items-center gap-3">
-              <Link href={`/${slug}/sign-in`} prefetch={true}>
-                <Button variant="outline" size="sm" className="border-gray-300">
-                  Sign in
-                </Button>
-              </Link>
-              <Link href={`/${slug}/sign-up`} prefetch={true}>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                  Join union
-                </Button>
-              </Link>
-            </div>
+            <MemberLoginDropdown slug={slug} contactEmail={contactEmail} />
           </div>
         </div>
       </nav>
