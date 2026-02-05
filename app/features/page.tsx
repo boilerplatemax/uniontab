@@ -147,7 +147,7 @@ export default function FeaturesPage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="bg-transparent border-2 border-white text-white hover:bg-white/10 h-12 px-8 text-base font-semibold"
+                    className="bg-transparent border-2 border-white text-white hover:bg-white/10 hover:text-white hover:border-white h-12 px-8 text-base font-semibold"
                   >
                     View Pricing
                   </Button>

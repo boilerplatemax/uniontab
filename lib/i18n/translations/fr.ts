@@ -40,8 +40,8 @@ export const fr: Translations = {
           description: 'Configurez le portail de votre syndicat en quelques minutes. Ajoutez votre image de marque, vos statuts et personnalisez l\'expérience de vos membres.',
         },
         step2: {
-          title: 'Importez vos membres',
-          description: 'Téléchargez votre liste de membres via CSV ou ajoutez-les manuellement. Nous vous aiderons à migrer depuis votre système actuel.',
+          title: 'Invitez vos membres',
+          description: 'Vos membres peuvent s\'inscrire directement sur votre portail syndical, ou invitez-les par courriel.',
         },
         step3: {
           title: 'Commencez à communiquer',
