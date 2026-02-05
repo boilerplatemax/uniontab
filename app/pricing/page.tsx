@@ -351,8 +351,7 @@ export default function PricingPage() {
                 <Link href="/sign-up">
                   <Button
                     size="lg"
-                    variant="outline"
-                    className="bg-transparent border-2 border-white text-white hover:bg-white/10 h-14 px-8 text-lg font-semibold"
+                    className="bg-transparent border-2 border-white text-white hover:bg-white/10 hover:text-white hover:border-white h-14 px-8 text-lg font-semibold transition-all"
                   >
                     Get Started
                   </Button>
