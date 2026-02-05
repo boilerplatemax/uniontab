@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video, Menu, X, Play } from 'lucide-react';
+import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video, Menu, X } from 'lucide-react';
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/ui/language-toggle';
@@ -391,45 +391,6 @@ export default function HomePage() {
               </div>
             </AnimatedSection>
           </div>
-        </div>
-      </section>
-
-      {/* Video Demo Section */}
-      <section className="py-16 bg-gradient-to-br from-indigo-50 via-white to-blue-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AnimatedSection>
-            <div className="text-center space-y-4 mb-10">
-              <div className="inline-block">
-                <div className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full text-sm font-semibold inline-flex items-center gap-2">
-                  <Play className="h-4 w-4" />
-                  Quick Overview
-                </div>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                See UnionTab in Action
-              </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Watch how UnionTab helps union executives streamline operations and engage members effectively.
-              </p>
-            </div>
-          </AnimatedSection>
-
-          <AnimatedSection delay={0.2}>
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-gray-900 aspect-video">
-              {/* Video element - update src to your video file path */}
-              <video
-                className="w-full h-full object-cover"
-                controls
-                poster="/assets/landing/video-poster.jpg"
-                preload="metadata"
-              >
-                <source src="/assets/landing/demo-video.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-              {/* Decorative glow effect */}
-              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 rounded-3xl blur-2xl -z-10" />
-            </div>
-          </AnimatedSection>
         </div>
       </section>
 

@@ -40,8 +40,8 @@ export const en: Translations = {
           description: "Set up your union's portal in minutes. Add your branding, bylaws, and customize your member experience.",
         },
         step2: {
-          title: 'Import Your Members',
-          description: "Upload your member list via CSV or add them manually. We'll help you migrate from your current system.",
+          title: 'Invite Your Members',
+          description: 'Have members sign up directly on your union portal, or invite them via email.',
         },
         step3: {
           title: 'Start Engaging',

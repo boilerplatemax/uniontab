@@ -3,8 +3,14 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Eye, Edit, Trash2, Loader2, ChevronDown, ChevronRight, FolderOpen, Pencil, ArrowUp, ArrowDown } from 'lucide-react';
-import { ShareButton } from '@/components/share-button';
+import { FileText, Download, Eye, Edit, Trash2, Loader2, ChevronDown, ChevronRight, FolderOpen, Pencil, ArrowUp, ArrowDown, File, FileImage, FileSpreadsheet, FileArchive, FileVideo, FileAudio, MoreHorizontal } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { File as FileType, FileCategory } from '@/lib/db/schema';
 import { formatDate } from '@/lib/utils/date';
 import { RenameCategoryDialog } from './rename-category-dialog';
@@ -19,6 +25,34 @@ interface CategorizedFilesListProps {
   deletingFile: number | null;
   unionId: number;
   slug: string;
+}
+
+// Get appropriate icon and color based on file extension
+function getFileIcon(fileName: string) {
+  const ext = fileName.split('.').pop()?.toLowerCase() || '';
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'];
+  const spreadsheetExts = ['xls', 'xlsx', 'csv', 'numbers'];
+  const archiveExts = ['zip', 'rar', '7z', 'tar', 'gz'];
+  const videoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
+  const audioExts = ['mp3', 'wav', 'flac', 'aac', 'ogg'];
+  const docExts = ['doc', 'docx', 'txt', 'rtf', 'odt'];
+  const pdfExts = ['pdf'];
+
+  if (imageExts.includes(ext)) return { icon: FileImage, color: 'text-pink-500', bg: 'bg-pink-50' };
+  if (spreadsheetExts.includes(ext)) return { icon: FileSpreadsheet, color: 'text-green-600', bg: 'bg-green-50' };
+  if (archiveExts.includes(ext)) return { icon: FileArchive, color: 'text-amber-600', bg: 'bg-amber-50' };
+  if (videoExts.includes(ext)) return { icon: FileVideo, color: 'text-purple-600', bg: 'bg-purple-50' };
+  if (audioExts.includes(ext)) return { icon: FileAudio, color: 'text-indigo-600', bg: 'bg-indigo-50' };
+  if (pdfExts.includes(ext)) return { icon: FileText, color: 'text-red-500', bg: 'bg-red-50' };
+  if (docExts.includes(ext)) return { icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' };
+  return { icon: File, color: 'text-gray-500', bg: 'bg-gray-50' };
+}
+
+// Format file size in a human-readable way
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
 // File Item Component with Arrow Controls
@@ -47,67 +81,77 @@ function FileItem({
   isLast: boolean;
   slug: string;
 }) {
+  const { icon: FileIcon, color: iconColor, bg: iconBg } = getFileIcon(file.originalName);
+  const ext = file.originalName.split('.').pop()?.toUpperCase() || '';
+
   return (
-    <div className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+    <div className="group flex items-center gap-3 px-4 py-3 hover:bg-gray-50/80 transition-colors">
       {isOwner && (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="sm"
             onClick={onMoveUp}
             disabled={isFirst}
-            className="h-6 w-6 p-0"
+            className="h-5 w-5 p-0"
             title="Move up"
           >
-            <ArrowUp className={`h-4 w-4 ${isFirst ? 'text-gray-300' : 'text-gray-600'}`} />
+            <ArrowUp className={`h-3 w-3 ${isFirst ? 'text-gray-300' : 'text-gray-500'}`} />
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={onMoveDown}
             disabled={isLast}
-            className="h-6 w-6 p-0"
+            className="h-5 w-5 p-0"
             title="Move down"
           >
-            <ArrowDown className={`h-4 w-4 ${isLast ? 'text-gray-300' : 'text-gray-600'}`} />
+            <ArrowDown className={`h-3 w-3 ${isLast ? 'text-gray-300' : 'text-gray-500'}`} />
           </Button>
         </div>
       )}
-      <FileText className="h-8 w-8 text-blue-600 flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 truncate">
-          {file.originalName}
-        </p>
-        <p className="text-sm text-gray-500">
-          {formatDate(file.createdAt)} •{' '}
-          {(file.fileSize / 1024 / 1024).toFixed(2)} MB
-        </p>
+
+      {/* File icon */}
+      <div className={`w-9 h-9 ${iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+        <FileIcon className={`h-4.5 w-4.5 ${iconColor}`} />
       </div>
-      <div className="flex items-center gap-2">
-        {file.isPrivate && (
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-            Private
-          </span>
-        )}
-        <ShareButton
-          itemType="file"
-          itemId={file.id}
-          itemTitle={file.originalName}
-          itemUrl={file.fileUrl}
-          slug={slug}
-          isOwnerOrAdmin={isOwner}
-          size="sm"
-        />
-        <Button
-          variant="outline"
-          size="sm"
+
+      {/* File info - clickable name */}
+      <div className="flex-1 min-w-0">
+        <button
           onClick={() => window.open(file.fileUrl, '_blank')}
-          title="Preview/Open"
+          className="text-left max-w-full"
+          title={file.originalName}
         >
-          <Eye className="h-4 w-4" />
-        </Button>
+          <p className="font-medium text-gray-900 truncate max-w-[280px] sm:max-w-[360px] md:max-w-[440px] hover:text-blue-600 transition-colors text-sm">
+            {file.originalName}
+          </p>
+        </button>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-xs text-gray-400">{formatFileSize(file.fileSize)}</span>
+          <span className="text-gray-300 text-xs">·</span>
+          <span className="text-xs text-gray-400">{formatDate(file.createdAt)}</span>
+          {ext && (
+            <>
+              <span className="text-gray-300 text-xs">·</span>
+              <span className="text-xs font-medium text-gray-400 uppercase">{ext}</span>
+            </>
+          )}
+          {file.isPrivate && (
+            <>
+              <span className="text-gray-300 text-xs">·</span>
+              <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">
+                Private
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Actions - compact */}
+      <div className="flex items-center gap-1">
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => {
             const a = document.createElement('a');
@@ -118,34 +162,64 @@ function FileItem({
             document.body.removeChild(a);
           }}
           title="Download"
+          className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
         >
           <Download className="h-4 w-4" />
         </Button>
-        {isOwner && (
-          <>
+
+        {/* More actions dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => onEdit(file)}
-              title="Edit"
+              className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
             >
-              <Edit className="h-4 w-4" />
+              <MoreHorizontal className="h-4 w-4" />
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => onDelete(file.id)}
-              disabled={deletingFile === file.id}
-              title="Delete"
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem onClick={() => window.open(file.fileUrl, '_blank')}>
+              <Eye className="h-4 w-4 mr-2" />
+              Open
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                const a = document.createElement('a');
+                a.href = file.fileUrl;
+                a.download = file.originalName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              }}
             >
-              {deletingFile === file.id ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
-              )}
-            </Button>
-          </>
-        )}
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {isOwner && (
+              <>
+                <DropdownMenuItem onClick={() => onEdit(file)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => onDelete(file.id)}
+                  disabled={deletingFile === file.id}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  {deletingFile === file.id ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4 mr-2" />
+                  )}
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
@@ -190,48 +264,48 @@ function CategorySection({
   slug: string;
 }) {
   return (
-    <Card className="shadow-sm hover:shadow-md transition-all">
+    <Card className="shadow-sm border border-gray-200 overflow-hidden">
       <CardContent className="p-0">
         {/* Category Header */}
-        <div className="flex items-center gap-3 p-4 border-b">
+        <div className="flex items-center gap-2 px-4 py-3 bg-gray-50/60 border-b border-gray-100">
           {isOwner && category !== 'Uncategorized' && (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-0.5 opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onMoveCategoryUp}
                 disabled={isFirstCategory}
-                className="h-6 w-6 p-0"
+                className="h-5 w-5 p-0"
                 title="Move category up"
               >
-                <ArrowUp className={`h-4 w-4 ${isFirstCategory ? 'text-gray-300' : 'text-gray-600'}`} />
+                <ArrowUp className={`h-3 w-3 ${isFirstCategory ? 'text-gray-300' : 'text-gray-500'}`} />
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onMoveCategoryDown}
                 disabled={isLastCategory}
-                className="h-6 w-6 p-0"
+                className="h-5 w-5 p-0"
                 title="Move category down"
               >
-                <ArrowDown className={`h-4 w-4 ${isLastCategory ? 'text-gray-300' : 'text-gray-600'}`} />
+                <ArrowDown className={`h-3 w-3 ${isLastCategory ? 'text-gray-300' : 'text-gray-500'}`} />
               </Button>
             </div>
           )}
           <button
             onClick={onToggle}
-            className="flex-1 flex items-center gap-3 hover:bg-gray-50 transition-colors rounded px-2 py-1"
+            className="flex-1 flex items-center gap-2.5 hover:bg-gray-100/60 transition-colors rounded-md px-2 py-1"
           >
             {isExpanded ? (
-              <ChevronDown className="h-5 w-5 text-gray-600" />
+              <ChevronDown className="h-4 w-4 text-gray-500" />
             ) : (
-              <ChevronRight className="h-5 w-5 text-gray-600" />
+              <ChevronRight className="h-4 w-4 text-gray-500" />
             )}
-            <FolderOpen className="h-5 w-5 text-blue-600" />
-            <span className="text-lg font-semibold text-gray-900">
+            <FolderOpen className="h-4 w-4 text-blue-500" />
+            <span className="text-sm font-semibold text-gray-800">
               {category}
             </span>
-            <span className="ml-auto text-sm text-gray-500">
+            <span className="ml-auto text-xs text-gray-400 font-medium">
               {categoryFiles.length} {categoryFiles.length === 1 ? 'file' : 'files'}
             </span>
           </button>
@@ -244,9 +318,9 @@ function CategorySection({
                 onRenameCategory(category);
               }}
               title="Rename category"
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
             >
-              <Pencil className="h-4 w-4 text-gray-600" />
+              <Pencil className="h-3.5 w-3.5 text-gray-500" />
             </Button>
           )}
         </div>
