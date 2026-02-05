@@ -5,6 +5,7 @@ export const en: Translations = {
     nav: {
       features: 'Features',
       pricing: 'Pricing',
+      about: 'About',
       blog: 'Blog',
       contact: 'Contact',
       memberLogin: 'Member Login',

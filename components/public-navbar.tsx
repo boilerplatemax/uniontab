@@ -18,6 +18,7 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
   const navLinks = [
     { name: 'Features', href: '/features' },
     { name: 'Pricing', href: '/pricing' },
+    { name: 'About', href: '/about' },
     { name: 'Blog', href: '/blogs' },
     { name: 'Contact', href: '/contact' },
   ];
@@ -76,8 +77,22 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile Menu Button - Hamburger centered */}
+          <div className="flex md:hidden items-center">
+            <button
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6 text-gray-700" />
+              ) : (
+                <Menu className="h-6 w-6 text-gray-700" />
+              )}
+            </button>
+          </div>
+
+          {/* Mobile CTA Button */}
+          <div className="flex md:hidden items-center">
             {isLoggedIn && unionSlug ? (
               <Link href={`/${unionSlug}`}>
                 <Button
@@ -98,16 +113,6 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
                 </Button>
               </Link>
             )}
-            <button
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6 text-gray-700" />
-              ) : (
-                <Menu className="h-6 w-6 text-gray-700" />
-              )}
-            </button>
           </div>
         </div>
 

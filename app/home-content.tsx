@@ -69,6 +69,11 @@ export default function HomePage() {
                   {landing.nav.pricing}
                 </Button>
               </Link>
+              <Link href="/about">
+                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  {landing.nav.about}
+                </Button>
+              </Link>
               <Link href="/blogs">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
                   {landing.nav.blog}
@@ -92,13 +97,8 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Mobile Navigation Controls */}
-            <div className="flex sm:hidden items-center gap-2">
-              <Link href="/sign-up">
-                <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
-                  {landing.nav.getStarted}
-                </Button>
-              </Link>
+            {/* Mobile Hamburger - Centered */}
+            <div className="flex sm:hidden items-center">
               <Button
                 variant="ghost"
                 size="icon"
@@ -107,6 +107,15 @@ export default function HomePage() {
               >
                 {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
+            </div>
+
+            {/* Mobile CTA Button */}
+            <div className="flex sm:hidden items-center">
+              <Link href="/sign-up">
+                <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
+                  {landing.nav.getStarted}
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -130,6 +139,11 @@ export default function HomePage() {
                 <Link href="/pricing" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
                     {landing.nav.pricing}
+                  </Button>
+                </Link>
+                <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
+                    {landing.nav.about}
                   </Button>
                 </Link>
                 <Link href="/blogs" onClick={() => setMobileMenuOpen(false)}>
