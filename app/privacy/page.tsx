@@ -95,7 +95,7 @@ export default function PrivacyPolicyPage() {
                 <li><strong>Withdrawal:</strong> Withdraw consent at any time where we rely on consent</li>
               </ul>
               <p className="text-gray-700 mt-3">
-                To exercise these rights, please contact your union administrator or email us at support@uniontab.com.
+                To exercise these rights, please contact your union administrator or email us at info@uniontab.com.
               </p>
             </section>
 
@@ -133,7 +133,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg mt-3">
                 <p className="text-gray-700">
-                  Email: <a href="mailto:support@uniontab.com" className="text-blue-600 hover:underline">support@uniontab.com</a>
+                  Email: <a href="mailto:info@uniontab.com" className="text-blue-600 hover:underline">info@uniontab.com</a>
                 </p>
               </div>
             </section>

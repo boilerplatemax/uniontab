@@ -208,7 +208,7 @@ export default function TermsOfServicePage() {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg mt-3">
                 <p className="text-gray-700">
-                  Email: <a href="mailto:support@uniontab.com" className="text-blue-600 hover:underline">support@uniontab.com</a>
+                  Email: <a href="mailto:info@uniontab.com" className="text-blue-600 hover:underline">info@uniontab.com</a>
                 </p>
               </div>
             </section>

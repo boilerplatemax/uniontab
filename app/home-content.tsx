@@ -1,12 +1,12 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video } from 'lucide-react';
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video, Menu, X, Play } from 'lucide-react';
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 
@@ -29,6 +29,7 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
 
 export default function HomePage() {
   const heroRef = useRef(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"]
@@ -55,28 +56,30 @@ export default function HomePage() {
                 UnionTab
               </span>
             </Link>
-            <div className="flex items-center gap-2 sm:gap-4">
-              <Link href="/features" className="hidden sm:block">
+
+            {/* Desktop Navigation */}
+            <div className="hidden sm:flex items-center gap-2 sm:gap-4">
+              <Link href="/features">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
                   {landing.nav.features}
                 </Button>
               </Link>
-              <Link href="/pricing" className="hidden sm:block">
+              <Link href="/pricing">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
                   {landing.nav.pricing}
                 </Button>
               </Link>
-              <Link href="/blogs" className="hidden sm:block">
+              <Link href="/blogs">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
                   {landing.nav.blog}
                 </Button>
               </Link>
-              <Link href="/contact" className="hidden sm:block">
+              <Link href="/contact">
                 <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
                   {landing.nav.contact}
                 </Button>
               </Link>
-              <LanguageToggle variant="pill" className="hidden sm:flex" />
+              <LanguageToggle variant="pill" />
               <Link href="/member-login">
                 <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
                   {landing.nav.memberLogin}
@@ -88,14 +91,73 @@ export default function HomePage() {
                 </Button>
               </Link>
             </div>
+
+            {/* Mobile Navigation Controls */}
+            <div className="flex sm:hidden items-center gap-2">
+              <Link href="/sign-up">
+                <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
+                  {landing.nav.getStarted}
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-gray-700"
+              >
+                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
           </div>
         </div>
-      </nav>
 
-      {/* Mobile language toggle */}
-      <div className="sm:hidden flex justify-center py-2 bg-white border-b">
-        <LanguageToggle variant="pill" />
-      </div>
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="sm:hidden bg-white border-t"
+            >
+              <div className="px-4 py-4 space-y-3">
+                <Link href="/features" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
+                    {landing.nav.features}
+                  </Button>
+                </Link>
+                <Link href="/pricing" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
+                    {landing.nav.pricing}
+                  </Button>
+                </Link>
+                <Link href="/blogs" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
+                    {landing.nav.blog}
+                  </Button>
+                </Link>
+                <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
+                    {landing.nav.contact}
+                  </Button>
+                </Link>
+                <div className="pt-3 border-t">
+                  <Link href="/member-login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
+                      {landing.nav.memberLogin}
+                    </Button>
+                  </Link>
+                </div>
+                <div className="pt-3 border-t flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Language</span>
+                  <LanguageToggle variant="pill" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
 
       {/* Hero Section with Parallax */}
       <section ref={heroRef} className="relative overflow-hidden">
@@ -315,6 +377,45 @@ export default function HomePage() {
               </div>
             </AnimatedSection>
           </div>
+        </div>
+      </section>
+
+      {/* Video Demo Section */}
+      <section className="py-16 bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimatedSection>
+            <div className="text-center space-y-4 mb-10">
+              <div className="inline-block">
+                <div className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full text-sm font-semibold inline-flex items-center gap-2">
+                  <Play className="h-4 w-4" />
+                  Quick Overview
+                </div>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+                See UnionTab in Action
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Watch how UnionTab helps union executives streamline operations and engage members effectively.
+              </p>
+            </div>
+          </AnimatedSection>
+
+          <AnimatedSection delay={0.2}>
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-gray-900 aspect-video">
+              {/* Video element - update src to your video file path */}
+              <video
+                className="w-full h-full object-cover"
+                controls
+                poster="/assets/landing/video-poster.jpg"
+                preload="metadata"
+              >
+                <source src="/assets/landing/demo-video.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              {/* Decorative glow effect */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 rounded-3xl blur-2xl -z-10" />
+            </div>
+          </AnimatedSection>
         </div>
       </section>
 
@@ -775,8 +876,7 @@ export default function HomePage() {
                 <Link href="/pricing">
                   <Button
                     size="lg"
-                    variant="outline"
-                    className="bg-transparent border-2 border-white text-white hover:bg-white/10 h-16 px-10 text-lg font-semibold"
+                    className="bg-transparent border-2 border-white text-white hover:bg-white/10 hover:text-white hover:border-white h-16 px-10 text-lg font-semibold transition-all"
                   >
                     {landing.cta.viewPricing}
                   </Button>
