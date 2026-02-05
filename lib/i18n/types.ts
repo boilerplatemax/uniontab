@@ -4,6 +4,7 @@ export interface LandingPageTranslations {
   nav: {
     features: string;
     pricing: string;
+    about: string;
     blog: string;
     contact: string;
     memberLogin: string;
