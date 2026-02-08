@@ -55,6 +55,9 @@ export function ModernTheme({
         slug={slug}
         unionName={union.publicName || union.name}
         localNumber={union.publicName ? null : union.localNumber}
+        logoUrl={union.logoUrl}
+        themeColor={union.themeColor}
+        navConfig={union.navConfig}
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
@@ -62,6 +65,7 @@ export function ModernTheme({
         grievanceNotificationCount={grievanceNotificationCount}
         strikeNotificationCount={strikeNotificationCount}
         contactEmail={union.email}
+        isApprovedMember={isApprovedMember}
       />
 
       {/* Spacing for fixed navbar and announcement */}

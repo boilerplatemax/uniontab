@@ -150,6 +150,9 @@ export default async function StrikeDetailPage({
         slug={union.slug}
         unionName={union.name}
         localNumber={union.localNumber}
+        logoUrl={union.logoUrl}
+        themeColor={union.themeColor}
+        navConfig={union.navConfig}
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingCount}

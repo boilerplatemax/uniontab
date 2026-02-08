@@ -11,6 +11,22 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
+/**
+ * Nav config item type for configurable navbar
+ */
+export interface NavConfigItem {
+  id: string;
+  label: string;
+  type: 'built-in' | 'page' | 'collection' | 'link';
+  href?: string;
+  pageId?: number;
+  collectionId?: number;
+  visible: boolean;
+  requiresAuth?: boolean;
+  requiredPermission?: string;
+  order: number;
+}
+
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
@@ -78,6 +94,8 @@ export const unions = pgTable('unions', {
   emailInviteUsageResetDate: timestamp('email_invite_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
   // Estimated member count collected at signup (for internal tracking only)
   estimatedMemberCount: varchar('estimated_member_count', { length: 50 }),
+  // Configurable navbar items
+  navConfig: json('nav_config').$type<NavConfigItem[]>(),
 });
 
 export const members = pgTable('members', {
@@ -354,6 +372,38 @@ export const fileCategories = pgTable('file_categories', {
 }, (table) => ({
   uniqueUnionCategory: unique().on(table.unionId, table.name),
 }));
+
+export const documentCollections = pgTable('document_collections', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  isPrivate: boolean('is_private').notNull().default(false),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id),
+});
+
+export const documentCollectionFiles = pgTable('document_collection_files', {
+  id: serial('id').primaryKey(),
+  collectionId: integer('collection_id')
+    .notNull()
+    .references(() => documentCollections.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  fileUrl: text('file_url').notNull(),
+  fileType: varchar('file_type', { length: 100 }),
+  fileSize: integer('file_size'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  uploadedBy: integer('uploaded_by')
+    .notNull()
+    .references(() => users.id),
+});
 
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
@@ -917,6 +967,29 @@ export const fileCategoriesRelations = relations(fileCategories, ({ one }) => ({
   union: one(unions, {
     fields: [fileCategories.unionId],
     references: [unions.id],
+  }),
+}));
+
+export const documentCollectionsRelations = relations(documentCollections, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [documentCollections.unionId],
+    references: [unions.id],
+  }),
+  createdBy: one(users, {
+    fields: [documentCollections.createdBy],
+    references: [users.id],
+  }),
+  files: many(documentCollectionFiles),
+}));
+
+export const documentCollectionFilesRelations = relations(documentCollectionFiles, ({ one }) => ({
+  collection: one(documentCollections, {
+    fields: [documentCollectionFiles.collectionId],
+    references: [documentCollections.id],
+  }),
+  uploadedBy: one(users, {
+    fields: [documentCollectionFiles.uploadedBy],
+    references: [users.id],
   }),
 }));
 
@@ -1728,6 +1801,10 @@ export type StrikeIncident = typeof strikeIncidents.$inferSelect;
 export type NewStrikeIncident = typeof strikeIncidents.$inferInsert;
 export type StrikeResource = typeof strikeResources.$inferSelect;
 export type NewStrikeResource = typeof strikeResources.$inferInsert;
+export type DocumentCollection = typeof documentCollections.$inferSelect;
+export type NewDocumentCollection = typeof documentCollections.$inferInsert;
+export type DocumentCollectionFile = typeof documentCollectionFiles.$inferSelect;
+export type NewDocumentCollectionFile = typeof documentCollectionFiles.$inferInsert;
 export type UnionDataWithMembers = Union & {
   members: (Member & {
     user: Pick<User, 'id' | 'name' | 'email'>;

@@ -21,6 +21,7 @@ interface InvitePageContentProps {
   handleSignOut: () => Promise<void>;
   logoUrl?: string | null;
   themeColor?: string | null;
+  navConfig?: any;
   unionId: number;
   canBulkInvite: boolean;
 }
@@ -34,6 +35,7 @@ export default function InvitePageContent({
   handleSignOut,
   logoUrl,
   themeColor,
+  navConfig,
   unionId,
   canBulkInvite,
 }: InvitePageContentProps) {
@@ -124,6 +126,9 @@ export default function InvitePageContent({
         slug={slug}
         unionName={unionName}
         localNumber={localNumber ?? null}
+        logoUrl={logoUrl}
+        themeColor={themeColor}
+        navConfig={navConfig}
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={0}

@@ -1,4 +1,4 @@
-import type { Union, Post, File as FileType, Event, Member, PostAttachment } from '@/lib/db/schema';
+import type { Union, Post, File as FileType, Event, Member, PostAttachment, NavConfigItem } from '@/lib/db/schema';
 
 export interface ThemeProps {
   union: Union;

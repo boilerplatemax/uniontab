@@ -181,6 +181,9 @@ export default async function MemberProfilePage({
         slug={slug}
         unionName={union.publicName || union.name}
         localNumber={union.publicName ? null : union.localNumber}
+        logoUrl={union.logoUrl}
+        themeColor={union.themeColor}
+        navConfig={union.navConfig}
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}

@@ -81,6 +81,7 @@ export default async function InvitePage({ params }: PageProps) {
       handleSignOut={handleSignOut}
       logoUrl={union.logoUrl}
       themeColor={union.themeColor}
+      navConfig={union.navConfig}
       unionId={union.id}
       canBulkInvite={canBulkInvite}
     />

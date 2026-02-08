@@ -81,6 +81,9 @@ export default async function BillingPage({
         slug={slug}
         unionName={union.name}
         localNumber={union.localNumber ?? null}
+        logoUrl={union.logoUrl}
+        themeColor={union.themeColor}
+        navConfig={union.navConfig}
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
