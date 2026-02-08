@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, UserPlus, DollarSign, FileText, Zap, Video, Wrench, MessageSquare, BarChart3 } from 'lucide-react';
+import { Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone, Mail, ChevronDown, ChevronRight, UserPlus, DollarSign, FileText, Zap, Video, MessageSquare, BarChart3 } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,22 +33,69 @@ interface UnionNavbarProps {
   contactEmail?: string | null;
 }
 
+interface MegaMenuItemProps {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  badge?: number;
+  onClick?: () => void;
+}
+
+function MegaMenuItem({ href, icon, title, description, badge, onClick }: MegaMenuItemProps) {
+  return (
+    <Link href={href} prefetch={true} onClick={onClick}>
+      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group cursor-pointer">
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-white flex items-center justify-center text-gray-600 group-hover:text-gray-900 transition-colors">
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-gray-900">{title}</p>
+            {badge !== undefined && badge > 0 && (
+              <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center">
+                {badge}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{description}</p>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export function UnionNavbar({ slug, unionName, localNumber, membership, handleSignOut, pendingMembersCount = 0, announcementId, grievanceNotificationCount = 0, strikeNotificationCount = 0, contactEmail }: UnionNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileExpandedSection, setMobileExpandedSection] = useState<string | null>(null);
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
   const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
 
-  // Helper to check if user has a specific permission
   const canAccess = (permission: AdminPermissionKey): boolean => {
     return hasPermission(membership?.member.role, membership?.member.adminPermissions, permission);
   };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+    if (isMobileMenuOpen) setMobileExpandedSection(null);
+  };
+
+  const toggleMobileSection = (section: string) => {
+    setMobileExpandedSection(mobileExpandedSection === section ? null : section);
+  };
+
+  const closeMobile = () => {
+    setIsMobileMenuOpen(false);
+    setMobileExpandedSection(null);
   };
 
   const displayName = `${unionName.toUpperCase()}${localNumber ? ` ${localNumber}` : ''}`;
+
+  // Check what grouped sections are available
+  const hasManagement = canAccess('members') || canAccess('strikes') || canAccess('dues');
+  const hasCommunications = canAccess('communications') || canAccess('announcements');
+  const managementNotificationCount = (canAccess('members') ? pendingMembersCount : 0) + (canAccess('strikes') ? strikeNotificationCount : 0);
 
   // Simplified navbar for non-signed-in users
   if (!membership) {
@@ -91,13 +138,13 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </span>
               </Link>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-2">
-                {/* Grievances - visible to all members */}
+            <div className="flex items-center gap-1">
+              <div className="hidden sm:flex items-center gap-1">
+                {/* Grievances - visible to all members, standalone */}
                 <Link href={`/${slug}/grievances`} prefetch={true}>
                   <Button variant="ghost" size="sm" className="gap-2 relative">
                     <FileText className="h-4 w-4" />
-                    <span className="hidden md:inline">Grievances</span>
+                    <span className="hidden lg:inline">Grievances</span>
                     {grievanceNotificationCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                         {grievanceNotificationCount}
@@ -106,129 +153,131 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   </Button>
                 </Link>
 
-                {/* Meetings - visible to all members */}
+                {/* Meetings - visible to all members, standalone */}
                 <Link href={`/${slug}/meetings`} prefetch={true}>
                   <Button variant="ghost" size="sm" className="gap-2">
                     <Video className="h-4 w-4" />
-                    <span className="hidden md:inline">Meetings</span>
+                    <span className="hidden lg:inline">Meetings</span>
                   </Button>
                 </Link>
 
-                {/* Members - for users with members permission */}
-                {canAccess('members') && (
-                  <Link href={`/${slug}/members`} prefetch={true}>
-                    <Button variant="ghost" size="sm" className="gap-2 relative">
-                      <Users className="h-4 w-4" />
-                      <span className="hidden md:inline">Members</span>
-                      {pendingMembersCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                          {pendingMembersCount}
-                        </span>
-                      )}
-                    </Button>
-                  </Link>
-                )}
-
-                {/* Mass Emails - for users with communications permission */}
-                {canAccess('communications') && (
-                  <Link href={`/${slug}/mass-email`} prefetch={true}>
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <Mail className="h-4 w-4" />
-                      <span className="hidden md:inline">Emails</span>
-                    </Button>
-                  </Link>
-                )}
-
-                {/* SMS - for users with communications permission */}
-                {canAccess('communications') && (
-                  <Link href={`/${slug}/mass-sms`} prefetch={true}>
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      <span className="hidden md:inline">SMS</span>
-                    </Button>
-                  </Link>
-                )}
-
-                {/* Settings - for users with settings permission */}
-                {canAccess('settings') && (
-                  <Link href={`/${slug}/settings`} prefetch={true}>
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <Settings className="h-4 w-4" />
-                      <span className="hidden md:inline">Settings</span>
-                    </Button>
-                  </Link>
-                )}
-
-                {/* Analytics - for users with analytics permission */}
-                {canAccess('analytics') && (
-                  <Link href={`/${slug}/analytics`} prefetch={true}>
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <BarChart3 className="h-4 w-4" />
-                      <span className="hidden md:inline">Analytics</span>
-                    </Button>
-                  </Link>
-                )}
-
-                {/* More Dropdown - for less frequently used items */}
-                {(canAccess('strikes') || canAccess('dues') || canAccess('announcements') || canAccess('members')) && (
+                {/* Management dropdown - Members, Strikes, Dues, Invite */}
+                {hasManagement && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="gap-2 relative">
-                        <Wrench className="h-4 w-4" />
-                        <span className="hidden md:inline">More</span>
+                      <Button variant="ghost" size="sm" className="gap-1.5 relative">
+                        <Users className="h-4 w-4" />
+                        <span className="hidden lg:inline">Management</span>
                         <ChevronDown className="h-3 w-3" />
-                        {strikeNotificationCount > 0 && canAccess('strikes') && (
+                        {managementNotificationCount > 0 && (
                           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                            {strikeNotificationCount}
+                            {managementNotificationCount}
                           </span>
                         )}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56">
+                    <DropdownMenuContent align="end" className="w-80 p-2">
+                      <div className="px-3 py-2 mb-1">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Management</p>
+                      </div>
+                      {canAccess('members') && (
+                        <MegaMenuItem
+                          href={`/${slug}/members`}
+                          icon={<Users className="h-4 w-4" />}
+                          title="Members"
+                          description="View and manage union membership roster."
+                          badge={pendingMembersCount}
+                        />
+                      )}
+                      {canAccess('members') && (
+                        <MegaMenuItem
+                          href={`/${slug}/members/invite`}
+                          icon={<UserPlus className="h-4 w-4" />}
+                          title="Invite Members"
+                          description="Send invitations to new members."
+                        />
+                      )}
                       {canAccess('strikes') && (
-                        <Link href={`/${slug}/strikes`} prefetch={true}>
-                          <DropdownMenuItem>
-                            <Zap className="h-4 w-4" />
-                            Strikes
-                            {strikeNotificationCount > 0 && (
-                              <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                                {strikeNotificationCount}
-                              </span>
-                            )}
-                          </DropdownMenuItem>
-                        </Link>
+                        <MegaMenuItem
+                          href={`/${slug}/strikes`}
+                          icon={<Zap className="h-4 w-4" />}
+                          title="Strikes"
+                          description="Manage strike actions and tracking."
+                          badge={strikeNotificationCount}
+                        />
                       )}
                       {canAccess('dues') && (
-                        <Link href={`/${slug}/dues`} prefetch={true}>
-                          <DropdownMenuItem>
-                            <DollarSign className="h-4 w-4" />
-                            Dues
-                          </DropdownMenuItem>
-                        </Link>
-                      )}
-                      {(canAccess('announcements') || canAccess('members')) && (
-                        <>
-                          <DropdownMenuSeparator />
-                          {canAccess('announcements') && (
-                            <Link href={`/${slug}/announcements`} prefetch={true}>
-                              <DropdownMenuItem>
-                                <Megaphone className="h-4 w-4" />
-                                Announcements
-                              </DropdownMenuItem>
-                            </Link>
-                          )}
-                          {canAccess('members') && (
-                            <Link href={`/${slug}/members/invite`} prefetch={true}>
-                              <DropdownMenuItem>
-                                <UserPlus className="h-4 w-4" />
-                                Invite Members
-                              </DropdownMenuItem>
-                            </Link>
-                          )}
-                        </>
+                        <MegaMenuItem
+                          href={`/${slug}/dues`}
+                          icon={<DollarSign className="h-4 w-4" />}
+                          title="Dues"
+                          description="Track and manage member dues."
+                        />
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
+                )}
+
+                {/* Communications dropdown - Emails, SMS, Announcements */}
+                {hasCommunications && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="gap-1.5">
+                        <Mail className="h-4 w-4" />
+                        <span className="hidden lg:inline">Communications</span>
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80 p-2">
+                      <div className="px-3 py-2 mb-1">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Communications</p>
+                      </div>
+                      {canAccess('communications') && (
+                        <MegaMenuItem
+                          href={`/${slug}/mass-email`}
+                          icon={<Mail className="h-4 w-4" />}
+                          title="Mass Emails"
+                          description="Send email updates to members."
+                        />
+                      )}
+                      {canAccess('communications') && (
+                        <MegaMenuItem
+                          href={`/${slug}/mass-sms`}
+                          icon={<MessageSquare className="h-4 w-4" />}
+                          title="SMS Messages"
+                          description="Send text message blasts to members."
+                        />
+                      )}
+                      {canAccess('announcements') && (
+                        <MegaMenuItem
+                          href={`/${slug}/announcements`}
+                          icon={<Megaphone className="h-4 w-4" />}
+                          title="Announcements"
+                          description="Create and manage site-wide announcements."
+                        />
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+
+                {/* Settings - standalone */}
+                {canAccess('settings') && (
+                  <Link href={`/${slug}/settings`} prefetch={true}>
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <Settings className="h-4 w-4" />
+                      <span className="hidden lg:inline">Settings</span>
+                    </Button>
+                  </Link>
+                )}
+
+                {/* Analytics - standalone */}
+                {canAccess('analytics') && (
+                  <Link href={`/${slug}/analytics`} prefetch={true}>
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      <span className="hidden lg:inline">Analytics</span>
+                    </Button>
+                  </Link>
                 )}
 
                 {/* Strikes - visible to regular members (non-admin) */}
@@ -236,7 +285,7 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                   <Link href={`/${slug}/strikes`} prefetch={true}>
                     <Button variant="ghost" size="sm" className="gap-2 relative">
                       <Zap className="h-4 w-4" />
-                      <span className="hidden md:inline">Strikes</span>
+                      <span className="hidden lg:inline">Strikes</span>
                       {strikeNotificationCount > 0 && (
                         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                           {strikeNotificationCount}
@@ -306,32 +355,24 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - collapsible sections */}
         {isMobileMenuOpen && (
-          <div className="sm:hidden border-t bg-white">
-            <div className="px-4 py-4 space-y-2">
+          <div className="sm:hidden border-t bg-white max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+            <div className="px-4 py-4 space-y-1">
               <div className="pb-3 mb-3 border-b">
                 <p className="text-xs text-muted-foreground">Signed in as</p>
                 <p className="text-sm font-medium">{membership.user.name}</p>
               </div>
 
-              <Link
-                href={`/${slug}/profile`}
-                prefetch={true}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
+              {/* Direct links - always visible */}
+              <Link href={`/${slug}/profile`} prefetch={true} onClick={closeMobile}>
                 <Button variant="ghost" className="w-full justify-start gap-2">
                   <UserCircle className="h-4 w-4" />
                   Profile
                 </Button>
               </Link>
 
-              {/* Grievances - visible to all members */}
-              <Link
-                href={`/${slug}/grievances`}
-                prefetch={true}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
+              <Link href={`/${slug}/grievances`} prefetch={true} onClick={closeMobile}>
                 <Button variant="ghost" className="w-full justify-start gap-2 relative">
                   <FileText className="h-4 w-4" />
                   Grievances
@@ -343,72 +384,16 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </Button>
               </Link>
 
-              {/* Meetings - visible to all members */}
-              <Link
-                href={`/${slug}/meetings`}
-                prefetch={true}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
+              <Link href={`/${slug}/meetings`} prefetch={true} onClick={closeMobile}>
                 <Button variant="ghost" className="w-full justify-start gap-2">
                   <Video className="h-4 w-4" />
                   Meetings
                 </Button>
               </Link>
 
-              {/* Members - for users with members permission */}
-              {canAccess('members') && (
-                <Link
-                  href={`/${slug}/members`}
-                  prefetch={true}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <Button variant="ghost" className="w-full justify-start gap-2 relative">
-                    <Users className="h-4 w-4" />
-                    Members
-                    {pendingMembersCount > 0 && (
-                      <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {pendingMembersCount}
-                      </span>
-                    )}
-                  </Button>
-                </Link>
-              )}
-
-              {/* Mass Emails - for users with communications permission */}
-              {canAccess('communications') && (
-                <Link
-                  href={`/${slug}/mass-email`}
-                  prefetch={true}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <Button variant="ghost" className="w-full justify-start gap-2">
-                    <Mail className="h-4 w-4" />
-                    Emails
-                  </Button>
-                </Link>
-              )}
-
-              {/* SMS - for users with communications permission */}
-              {canAccess('communications') && (
-                <Link
-                  href={`/${slug}/mass-sms`}
-                  prefetch={true}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <Button variant="ghost" className="w-full justify-start gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    SMS
-                  </Button>
-                </Link>
-              )}
-
-              {/* Settings - for users with settings permission */}
+              {/* Settings - standalone */}
               {canAccess('settings') && (
-                <Link
-                  href={`/${slug}/settings`}
-                  prefetch={true}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
+                <Link href={`/${slug}/settings`} prefetch={true} onClick={closeMobile}>
                   <Button variant="ghost" className="w-full justify-start gap-2">
                     <Settings className="h-4 w-4" />
                     Settings
@@ -416,13 +401,9 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </Link>
               )}
 
-              {/* Analytics - for users with analytics permission */}
+              {/* Analytics - standalone */}
               {canAccess('analytics') && (
-                <Link
-                  href={`/${slug}/analytics`}
-                  prefetch={true}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
+                <Link href={`/${slug}/analytics`} prefetch={true} onClick={closeMobile}>
                   <Button variant="ghost" className="w-full justify-start gap-2">
                     <BarChart3 className="h-4 w-4" />
                     Analytics
@@ -430,90 +411,9 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </Link>
               )}
 
-              {/* Less frequently used items section */}
-              {(canAccess('strikes') || canAccess('dues') || canAccess('announcements') || canAccess('members') || isOwner) && (
-                <div className="pt-2 border-t">
-                  <p className="text-xs text-muted-foreground mb-2 px-2">More</p>
-
-                  {/* Strikes */}
-                  {canAccess('strikes') && (
-                    <Link
-                      href={`/${slug}/strikes`}
-                      prefetch={true}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Button variant="ghost" className="w-full justify-start gap-2 relative">
-                        <Zap className="h-4 w-4" />
-                        Strikes
-                        {strikeNotificationCount > 0 && (
-                          <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                            {strikeNotificationCount}
-                          </span>
-                        )}
-                      </Button>
-                    </Link>
-                  )}
-
-                  {/* Dues */}
-                  {canAccess('dues') && (
-                    <Link
-                      href={`/${slug}/dues`}
-                      prefetch={true}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Button variant="ghost" className="w-full justify-start gap-2">
-                        <DollarSign className="h-4 w-4" />
-                        Dues
-                      </Button>
-                    </Link>
-                  )}
-
-                  {canAccess('announcements') && (
-                    <Link
-                      href={`/${slug}/announcements`}
-                      prefetch={true}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Button variant="ghost" className="w-full justify-start gap-2">
-                        <Megaphone className="h-4 w-4" />
-                        Announcements
-                      </Button>
-                    </Link>
-                  )}
-                  {canAccess('members') && (
-                    <Link
-                      href={`/${slug}/members/invite`}
-                      prefetch={true}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Button variant="ghost" className="w-full justify-start gap-2">
-                        <UserPlus className="h-4 w-4" />
-                        Invite Members
-                      </Button>
-                    </Link>
-                  )}
-                  {isOwner && (
-                    <Link
-                      href={`/${slug}/billing`}
-                      prefetch={true}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Button variant="ghost" className="w-full justify-start gap-2">
-                        <CreditCard className="h-4 w-4" />
-                        Billing
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              )}
-
-              {/* Strikes - visible to regular members (non-admin) at top level */}
+              {/* Strikes - visible to regular members (non-admin) */}
               {!isOwnerOrAdmin && (
-                <Link
-                  href={`/${slug}/strikes`}
-                  prefetch={true}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
+                <Link href={`/${slug}/strikes`} prefetch={true} onClick={closeMobile}>
                   <Button variant="ghost" className="w-full justify-start gap-2 relative">
                     <Zap className="h-4 w-4" />
                     Strikes
@@ -526,7 +426,148 @@ export function UnionNavbar({ slug, unionName, localNumber, membership, handleSi
                 </Link>
               )}
 
-              <div className="pt-2 border-t">
+              {/* Management section - collapsible */}
+              {hasManagement && (
+                <div className="pt-2 border-t">
+                  <button
+                    onClick={() => toggleMobileSection('management')}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Users className="h-3.5 w-3.5" />
+                      Management
+                      {managementNotificationCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center normal-case">
+                          {managementNotificationCount}
+                        </span>
+                      )}
+                    </span>
+                    <ChevronRight className={`h-4 w-4 transition-transform ${mobileExpandedSection === 'management' ? 'rotate-90' : ''}`} />
+                  </button>
+                  {mobileExpandedSection === 'management' && (
+                    <div className="ml-2 space-y-0.5 pb-1">
+                      {canAccess('members') && (
+                        <Link href={`/${slug}/members`} prefetch={true} onClick={closeMobile}>
+                          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <Users className="h-4 w-4 text-gray-500" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Members</p>
+                              <p className="text-xs text-gray-500">View and manage membership roster</p>
+                            </div>
+                            {pendingMembersCount > 0 && (
+                              <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                {pendingMembersCount}
+                              </span>
+                            )}
+                          </div>
+                        </Link>
+                      )}
+                      {canAccess('members') && (
+                        <Link href={`/${slug}/members/invite`} prefetch={true} onClick={closeMobile}>
+                          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <UserPlus className="h-4 w-4 text-gray-500" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Invite Members</p>
+                              <p className="text-xs text-gray-500">Send invitations to new members</p>
+                            </div>
+                          </div>
+                        </Link>
+                      )}
+                      {canAccess('strikes') && (
+                        <Link href={`/${slug}/strikes`} prefetch={true} onClick={closeMobile}>
+                          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <Zap className="h-4 w-4 text-gray-500" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Strikes</p>
+                              <p className="text-xs text-gray-500">Manage strike actions and tracking</p>
+                            </div>
+                            {strikeNotificationCount > 0 && (
+                              <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                {strikeNotificationCount}
+                              </span>
+                            )}
+                          </div>
+                        </Link>
+                      )}
+                      {canAccess('dues') && (
+                        <Link href={`/${slug}/dues`} prefetch={true} onClick={closeMobile}>
+                          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <DollarSign className="h-4 w-4 text-gray-500" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Dues</p>
+                              <p className="text-xs text-gray-500">Track and manage member dues</p>
+                            </div>
+                          </div>
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Communications section - collapsible */}
+              {hasCommunications && (
+                <div className={`${!hasManagement ? 'pt-2 border-t' : ''}`}>
+                  <button
+                    onClick={() => toggleMobileSection('communications')}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Mail className="h-3.5 w-3.5" />
+                      Communications
+                    </span>
+                    <ChevronRight className={`h-4 w-4 transition-transform ${mobileExpandedSection === 'communications' ? 'rotate-90' : ''}`} />
+                  </button>
+                  {mobileExpandedSection === 'communications' && (
+                    <div className="ml-2 space-y-0.5 pb-1">
+                      {canAccess('communications') && (
+                        <Link href={`/${slug}/mass-email`} prefetch={true} onClick={closeMobile}>
+                          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <Mail className="h-4 w-4 text-gray-500" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Mass Emails</p>
+                              <p className="text-xs text-gray-500">Send email updates to members</p>
+                            </div>
+                          </div>
+                        </Link>
+                      )}
+                      {canAccess('communications') && (
+                        <Link href={`/${slug}/mass-sms`} prefetch={true} onClick={closeMobile}>
+                          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <MessageSquare className="h-4 w-4 text-gray-500" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">SMS Messages</p>
+                              <p className="text-xs text-gray-500">Send text message blasts to members</p>
+                            </div>
+                          </div>
+                        </Link>
+                      )}
+                      {canAccess('announcements') && (
+                        <Link href={`/${slug}/announcements`} prefetch={true} onClick={closeMobile}>
+                          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <Megaphone className="h-4 w-4 text-gray-500" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Announcements</p>
+                              <p className="text-xs text-gray-500">Create site-wide announcements</p>
+                            </div>
+                          </div>
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Sign out & Billing */}
+              <div className="pt-2 border-t space-y-1">
+                {isOwner && (
+                  <Link href={`/${slug}/billing`} prefetch={true} onClick={closeMobile}>
+                    <Button variant="ghost" className="w-full justify-start gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Billing
+                    </Button>
+                  </Link>
+                )}
                 <form action={handleSignOut}>
                   <Button
                     type="submit"

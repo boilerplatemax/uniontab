@@ -338,80 +338,76 @@ export function UnionProfileTabs({
   // Standard tab navigation (non-prestige)
   const StandardTabNav = () => (
     <div className="border-b bg-white">
-      <div className="flex items-center justify-between">
-        <div className="flex-1 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-1 sm:gap-2 px-4 sm:px-6 pt-2 min-w-max">
-            <button
-              onClick={() => setActiveTab('posts')}
-              className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                activeTab === 'posts' ? tabActiveClass : tabInactiveClass
-              }`}
-            >
-              News
-            </button>
-            <button
-              onClick={() => setActiveTab('about')}
-              className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                activeTab === 'about' ? tabActiveClass : tabInactiveClass
-              }`}
-            >
-              About
-            </button>
-            <button
-              onClick={() => setActiveTab('files')}
-              className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                activeTab === 'files' ? tabActiveClass : tabInactiveClass
-              }`}
-            >
-              Files
-            </button>
-            {isApprovedMember && (
-              <button
-                onClick={() => setActiveTab('elections')}
-                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'elections' ? tabActiveClass : tabInactiveClass
-                }`}
-              >
-                Elections
-              </button>
-            )}
-            <button
-              onClick={() => setActiveTab('events')}
-              className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                activeTab === 'events' ? tabActiveClass : tabInactiveClass
-              }`}
-            >
-              Events
-            </button>
-            <button
-              onClick={() => setActiveTab('contact')}
-              className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                activeTab === 'contact' ? tabActiveClass : tabInactiveClass
-              }`}
-            >
-              Contact
-            </button>
-          </div>
-        </div>
+      {/* Tabs row - grid on mobile, flex on desktop */}
+      <div className="grid grid-cols-3 sm:flex gap-1 sm:gap-2 px-4 sm:px-6 pt-2">
+        <button
+          onClick={() => setActiveTab('posts')}
+          className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer text-sm sm:text-base text-center sm:text-left ${
+            activeTab === 'posts' ? tabActiveClass : tabInactiveClass
+          }`}
+        >
+          News
+        </button>
+        <button
+          onClick={() => setActiveTab('about')}
+          className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer text-sm sm:text-base text-center sm:text-left ${
+            activeTab === 'about' ? tabActiveClass : tabInactiveClass
+          }`}
+        >
+          About
+        </button>
+        <button
+          onClick={() => setActiveTab('files')}
+          className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer text-sm sm:text-base text-center sm:text-left ${
+            activeTab === 'files' ? tabActiveClass : tabInactiveClass
+          }`}
+        >
+          Files
+        </button>
+        {isApprovedMember && (
+          <button
+            onClick={() => setActiveTab('elections')}
+            className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer text-sm sm:text-base text-center sm:text-left ${
+              activeTab === 'elections' ? tabActiveClass : tabInactiveClass
+            }`}
+          >
+            Elections
+          </button>
+        )}
+        <button
+          onClick={() => setActiveTab('events')}
+          className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer text-sm sm:text-base text-center sm:text-left ${
+            activeTab === 'events' ? tabActiveClass : tabInactiveClass
+          }`}
+        >
+          Events
+        </button>
+        <button
+          onClick={() => setActiveTab('contact')}
+          className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer text-sm sm:text-base text-center sm:text-left ${
+            activeTab === 'contact' ? tabActiveClass : tabInactiveClass
+          }`}
+        >
+          Contact
+        </button>
+      </div>
 
-        <div className="hidden sm:flex gap-2 items-center pb-2 pr-6 flex-shrink-0">
-          {isOwner && (
-            <>
-              {activeTab === 'posts' && (
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => setCreatePostOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Post
-                </Button>
-              )}
-            </>
+      {/* Action buttons row - always on separate line */}
+      {(isOwner || activeTab === 'posts' || activeTab === 'events') && (
+        <div className="flex flex-wrap gap-2 items-center px-4 sm:px-6 py-2">
+          {isOwner && activeTab === 'posts' && (
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => setCreatePostOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Post
+            </Button>
           )}
 
           {activeTab === 'posts' && (
-            <div className={`hidden lg:flex gap-1 ${isOwner ? 'ml-2 border-l pl-2' : ''}`}>
+            <div className={`flex gap-1 ${isOwner ? 'ml-1 border-l pl-2' : ''}`}>
               <Button
                 variant={postsView === 'column' ? 'default' : 'ghost'}
                 size="sm"
@@ -433,33 +429,30 @@ export function UnionProfileTabs({
             </div>
           )}
 
-          {isOwner && (
-            <>
-              {activeTab === 'files' && (
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => setUploadFileOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Upload File
-                </Button>
-              )}
-              {activeTab === 'events' && (
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => setCreateEventOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Event
-                </Button>
-              )}
-            </>
+          {isOwner && activeTab === 'files' && (
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => setUploadFileOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Upload File
+            </Button>
+          )}
+
+          {isOwner && activeTab === 'events' && (
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => setCreateEventOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Event
+            </Button>
           )}
 
           {activeTab === 'events' && (
-            <div className={`flex gap-2 ${isOwner ? 'ml-2 border-l pl-2' : ''}`}>
+            <div className={`flex gap-2 ${isOwner ? 'ml-1 border-l pl-2' : ''}`}>
               <Button
                 variant={eventsView === 'list' ? 'default' : 'outline'}
                 size="sm"
@@ -477,7 +470,7 @@ export function UnionProfileTabs({
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 
@@ -498,19 +491,6 @@ export function UnionProfileTabs({
           {/* Posts Tab */}
           {activeTab === 'posts' && (
             <>
-              {/* Create Post Button (Mobile only - non-prestige) */}
-              {!prestigeMode && isOwner && (
-                <div className="flex justify-start sm:hidden">
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => setCreatePostOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Post
-                  </Button>
-                </div>
-              )}
-
               {/* Posts List */}
               {posts.length > 0 ? (
                 prestigeMode ? (
@@ -732,7 +712,7 @@ export function UnionProfileTabs({
                             <div className={`flex items-start justify-between ${postsView === 'grid' ? 'mb-2' : 'mb-4'}`}>
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <Link href={`/${union.slug}/post/${post.id}`} className="flex-1 min-w-0">
-                                  <h3 className={`font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors ${postsView === 'grid' ? 'text-base line-clamp-2' : 'text-lg sm:text-xl truncate'}`}>
+                                  <h3 className={`font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors ${postsView === 'grid' ? 'text-base line-clamp-2' : 'text-lg sm:text-xl'}`}>
                                     {post.title}
                                   </h3>
                                 </Link>
@@ -743,7 +723,7 @@ export function UnionProfileTabs({
                                   </span>
                                 )}
                               </div>
-                              <div className={`flex items-center gap-2 flex-shrink-0 ml-2 ${postsView === 'grid' ? 'gap-1' : ''}`}>
+                              <div className={`hidden sm:flex items-center gap-2 flex-shrink-0 ml-2 ${postsView === 'grid' ? 'gap-1' : ''}`}>
                                 {post.isPrivate && postsView !== 'grid' && (
                                   <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Private</span>
                                 )}
@@ -830,6 +810,23 @@ export function UnionProfileTabs({
                                 {postsView === 'grid' ? formatDate(post.createdAt) : `Posted by ${(post as any).authorType === 'user' ? post.createdBy.name : `${(union.publicName || union.name).toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`} • ${formatDate(post.createdAt)}`}
                               </div>
                             </div>
+                            {/* Mobile-only action buttons at bottom */}
+                            {isOwner && postsView !== 'grid' && (
+                              <div className="flex items-center gap-2 sm:hidden pt-3 border-t mt-3">
+                                <Button variant="outline" size="sm" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}>
+                                  <Pin className={`h-4 w-4 ${(post as any).isPinned ? 'fill-current' : ''}`} />
+                                  <span className="ml-1 text-xs">{(post as any).isPinned ? 'Unpin' : 'Pin'}</span>
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => { setSelectedPost(post); setEditPostOpen(true); }}>
+                                  <Edit className="h-4 w-4" />
+                                  <span className="ml-1 text-xs">Edit</span>
+                                </Button>
+                                <Button variant="destructive" size="sm" onClick={() => handleDeletePost(post.id)} disabled={deletingPost === post.id}>
+                                  {deletingPost === post.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                  <span className="ml-1 text-xs">Delete</span>
+                                </Button>
+                              </div>
+                            )}
                           </CardContent>
                         </Card>
                       );
@@ -870,19 +867,6 @@ export function UnionProfileTabs({
           {/* Files Tab */}
           {activeTab === 'files' && (
             <>
-              {/* Upload File Button (Mobile only - non-prestige) */}
-              {!prestigeMode && isOwner && (
-                <div className="flex justify-start sm:hidden">
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => setUploadFileOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Upload File
-                  </Button>
-                </div>
-              )}
-
               {/* Storage Usage Widget (Owner only) */}
               {isOwner && (
                 <CompactStorageWidget unionSlug={union.slug} />
@@ -940,33 +924,6 @@ export function UnionProfileTabs({
           {/* Events Tab */}
           {activeTab === 'events' && (
             <>
-              {/* Non-prestige mobile controls */}
-              {!prestigeMode && (
-                <>
-                  {isOwner && (
-                    <div className="flex items-center justify-between sm:hidden">
-                      <Button
-                        className="bg-blue-600 hover:bg-blue-700"
-                        onClick={() => setCreateEventOpen(true)}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Event
-                      </Button>
-                      <div className="flex gap-2">
-                        <Button variant={eventsView === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('list')}>List</Button>
-                        <Button variant={eventsView === 'calendar' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('calendar')}>Calendar</Button>
-                      </div>
-                    </div>
-                  )}
-                  {!isOwner && (
-                    <div className="flex justify-end gap-2 sm:hidden">
-                      <Button variant={eventsView === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('list')}>List</Button>
-                      <Button variant={eventsView === 'calendar' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('calendar')}>Calendar</Button>
-                    </div>
-                  )}
-                </>
-              )}
-
               {/* Events View */}
               <div className={prestigeMode ? 'bg-gradient-to-b from-amber-50/30 to-white rounded-2xl p-6' : ''}>
                 {eventsView === 'calendar' ? (

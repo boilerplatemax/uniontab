@@ -134,7 +134,7 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, sl
                       {/* Event Details */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <h4 className="text-lg font-semibold text-gray-900 mb-1">
                               {event.title}
                               {event.isPrivate && (
@@ -150,8 +150,8 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, sl
                             </h4>
 
                             <div className="space-y-1 text-sm text-gray-600">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4" />
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Clock className="h-4 w-4 flex-shrink-0" />
                                 {event.isAllDay ? (
                                   <span>All day</span>
                                 ) : (
@@ -169,8 +169,8 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, sl
 
                               {event.location && (
                                 <div className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4" />
-                                  <span>{event.location}</span>
+                                  <MapPin className="h-4 w-4 flex-shrink-0" />
+                                  <span className="truncate">{event.location}</span>
                                 </div>
                               )}
                             </div>
@@ -182,8 +182,8 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, sl
                             )}
                           </div>
 
-                          {/* Action Buttons */}
-                          <div className="flex items-center gap-2">
+                          {/* Action Buttons - desktop only */}
+                          <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
                             <div onClick={(e) => e.stopPropagation()}>
                               <ShareButton
                                 itemType="event"
@@ -237,6 +237,52 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, sl
                             />
                           </div>
                         )}
+
+                        {/* Action Buttons - mobile only, at bottom */}
+                        <div className="flex sm:hidden items-center gap-2 mt-3 pt-3 border-t border-gray-100 flex-wrap">
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <ShareButton
+                              itemType="event"
+                              itemId={event.id}
+                              itemTitle={event.title}
+                              itemUrl={`/${slug}/event/${event.id}`}
+                              slug={slug}
+                              isOwnerOrAdmin={isOwner}
+                              size="sm"
+                            />
+                          </div>
+                          {isOwner && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEdit?.(event);
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                                <span className="ml-1 text-xs">Edit</span>
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(event.id);
+                                }}
+                                disabled={deletingId === event.id}
+                              >
+                                {deletingId === event.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                                <span className="ml-1 text-xs">Delete</span>
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
