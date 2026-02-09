@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { UnionPageContent } from '../union-page-content';
 
 export default async function ContactPage({
   params
@@ -6,5 +6,5 @@ export default async function ContactPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  redirect(`/${slug}?tab=contact`);
+  return <UnionPageContent slug={slug} />;
 }

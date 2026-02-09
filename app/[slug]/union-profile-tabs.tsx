@@ -22,9 +22,10 @@ import { InlineAboutEditor } from '@/components/about/inline-about-editor';
 import { LikeButton } from '@/components/posts/like-button';
 import { ShareButton } from '@/components/share-button';
 import type { Union, Post, File as FileType, Event, Member, PostAttachment } from '@/lib/db/schema';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils/date';
+import { useUnionTab } from './union-tab-context';
 
 interface UnionProfileTabsProps {
   union: Union;
@@ -52,23 +53,10 @@ export function UnionProfileTabs({
   hideTabNav = false,
 }: UnionProfileTabsProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') || 'posts';
+  const { activeTab, setActiveTab } = useUnionTab();
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
   // Default to grid view in prestige mode for masonry-style layout
   const [postsView, setPostsView] = useState<'column' | 'grid'>(prestigeMode ? 'grid' : 'column');
-
-  const setActiveTab = (tab: 'about' | 'posts' | 'files' | 'events' | 'elections' | 'contact') => {
-    const params = new URLSearchParams(searchParams);
-    if (tab === 'posts') {
-      params.delete('tab');
-    } else {
-      params.set('tab', tab);
-    }
-    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-    router.push(newUrl);
-  };
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [uploadFileOpen, setUploadFileOpen] = useState(false);
   const [createEventOpen, setCreateEventOpen] = useState(false);
