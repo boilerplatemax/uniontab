@@ -67,6 +67,7 @@ export function PrestigeTheme({
         grievanceNotificationCount={grievanceNotificationCount}
         strikeNotificationCount={strikeNotificationCount}
         contactEmail={union.email}
+        isApprovedMember={isApprovedMember}
       />
 
       {/* Spacing for fixed navbar and announcement */}
@@ -246,6 +247,7 @@ export function PrestigeTheme({
           isApprovedMember={isApprovedMember}
           userId={userId}
           prestigeMode={true}
+          hideTabNav={true}
         />
       </div>
 

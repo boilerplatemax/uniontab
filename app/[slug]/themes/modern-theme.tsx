@@ -62,6 +62,7 @@ export function ModernTheme({
         grievanceNotificationCount={grievanceNotificationCount}
         strikeNotificationCount={strikeNotificationCount}
         contactEmail={union.email}
+        isApprovedMember={isApprovedMember}
       />
 
       {/* Spacing for fixed navbar and announcement */}
@@ -190,6 +191,7 @@ export function ModernTheme({
           isOwner={isOwner}
           isApprovedMember={isApprovedMember}
           userId={userId}
+          hideTabNav={true}
         />
       </div>
 

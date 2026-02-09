@@ -36,6 +36,7 @@ interface UnionProfileTabsProps {
   isApprovedMember: boolean;
   userId?: number | null;
   prestigeMode?: boolean;
+  hideTabNav?: boolean;
 }
 
 export function UnionProfileTabs({
@@ -48,6 +49,7 @@ export function UnionProfileTabs({
   isApprovedMember,
   userId,
   prestigeMode = false,
+  hideTabNav = false,
 }: UnionProfileTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -483,8 +485,8 @@ export function UnionProfileTabs({
 
   return (
     <div className="space-y-4">
-      {/* Tabs Navigation */}
-      {prestigeMode ? <PrestigeTabNav /> : <StandardTabNav />}
+      {/* Tabs Navigation (hidden when nav is merged into top bar) */}
+      {!hideTabNav && (prestigeMode ? <PrestigeTabNav /> : <StandardTabNav />)}
 
       {/* Tab Content */}
       <div className="space-y-4">
