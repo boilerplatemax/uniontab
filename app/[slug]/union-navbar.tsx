@@ -350,12 +350,15 @@ export function UnionNavbar({
               {displayName}
             </Link>
 
-            {/* ─ Center: Primary Nav (desktop) ─ */}
-            <div className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto scrollbar-hide">
+            {/* ─ Spacer to push nav right ─ */}
+            <div className="hidden lg:block flex-1" />
+
+            {/* ─ Right: Pages + Controls (desktop) ─ */}
+            <div className="hidden lg:flex items-center gap-1">
               {/* Tab pages */}
               {tabItems.map((item) => {
                 if (item.membersOnly && !isApprovedMember) return null;
-                const isActive = activeTab === item.key && pathname === `/${slug}`;
+                const isActive = activeTab === item.key;
                 return (
                   <button
                     key={item.key}
@@ -373,10 +376,9 @@ export function UnionNavbar({
                   </button>
                 );
               })}
-            </div>
 
-            {/* ─ Right side (desktop) ─ */}
-            <div className="hidden lg:flex items-center gap-1 flex-shrink-0">
+              {/* Separator between pages and controls */}
+              <div className="h-5 w-px bg-gray-200 mx-1" />
               {/* Manage button + mega menu */}
               {hasManageAccess && (
                 <div
@@ -566,7 +568,7 @@ export function UnionNavbar({
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Pages</p>
                 {tabItems.map((item) => {
                   if (item.membersOnly && !isApprovedMember) return null;
-                  const isActive = activeTab === item.key && pathname === `/${slug}`;
+                  const isActive = activeTab === item.key;
                   return (
                     <button
                       key={item.key}

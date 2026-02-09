@@ -860,22 +860,21 @@ export function UnionProfileTabs({
           {/* Files Tab */}
           {activeTab === 'files' && (
             <>
-              {/* Upload File Button (Mobile only - non-prestige) */}
-              {!prestigeMode && isOwner && (
-                <div className="flex justify-start sm:hidden">
+              {/* Upload button + Storage widget toolbar */}
+              {isOwner && (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-1">
                   <Button
                     className="bg-blue-600 hover:bg-blue-700"
+                    size="sm"
                     onClick={() => setUploadFileOpen(true)}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Upload File
                   </Button>
+                  <div className="flex-1 max-w-xs">
+                    <CompactStorageWidget unionSlug={union.slug} />
+                  </div>
                 </div>
-              )}
-
-              {/* Storage Usage Widget (Owner only) */}
-              {isOwner && (
-                <CompactStorageWidget unionSlug={union.slug} />
               )}
 
               {/* Files List */}
@@ -887,7 +886,8 @@ export function UnionProfileTabs({
                     isApprovedMember={isApprovedMember}
                     onEdit={(file) => {
                       setSelectedFile(file);
-                      setEditFileOpen(true);
+                      // Delay opening dialog to let DropdownMenu fully close and clean up
+                      setTimeout(() => setEditFileOpen(true), 100);
                     }}
                     onDelete={handleDeleteFile}
                     deletingFile={deletingFile}
@@ -1025,14 +1025,14 @@ export function UnionProfileTabs({
         onOpenChange={setCreatePostOpen}
         unionId={union.id}
         slug={union.slug}
-        unionName={union.publicName || union.name}
+        unionName={union.publicName || `${union.name}${union.localNumber ? ` ${union.localNumber}` : ''}`}
         onSuccess={() => router.refresh()}
       />
       <EditPostDialog
         open={editPostOpen}
         onOpenChange={setEditPostOpen}
         post={selectedPost}
-        unionName={union.publicName || union.name}
+        unionName={union.publicName || `${union.name}${union.localNumber ? ` ${union.localNumber}` : ''}`}
         onSuccess={() => router.refresh()}
       />
       <UploadFileDialog
@@ -1044,9 +1044,15 @@ export function UnionProfileTabs({
       />
       <EditFileDialog
         open={editFileOpen}
-        onOpenChange={setEditFileOpen}
+        onOpenChange={(open) => {
+          setEditFileOpen(open);
+          if (!open) {
+            // Delay refresh to let dialog fully unmount and clean up pointer-events
+            setTimeout(() => router.refresh(), 200);
+          }
+        }}
         file={selectedFile}
-        onSuccess={() => router.refresh()}
+        onSuccess={() => {}}
       />
       <CreateEventDialog
         open={createEventOpen}

@@ -41,9 +41,9 @@ export function CompactStorageWidget({ unionSlug }: CompactStorageWidgetProps) {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
         <div className="animate-pulse">
-          <div className="h-2 bg-gray-200 rounded-full w-full"></div>
+          <div className="h-1.5 bg-gray-200 rounded-full w-full"></div>
         </div>
       </div>
     );
@@ -57,71 +57,44 @@ export function CompactStorageWidget({ unionSlug }: CompactStorageWidgetProps) {
   const isAtLimit = storageData.percentUsed >= 100;
 
   return (
-    <div className={`border rounded-lg p-3 mb-4 ${
+    <div className={`border rounded-lg px-3 py-2 ${
       isAtLimit
         ? 'bg-red-50 border-red-200'
         : isNearLimit
           ? 'bg-yellow-50 border-yellow-200'
-          : 'bg-blue-50 border-blue-200'
+          : 'bg-gray-50 border-gray-200'
     }`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Database className={`h-4 w-4 flex-shrink-0 ${
-            isAtLimit
-              ? 'text-red-600'
-              : isNearLimit
-                ? 'text-yellow-600'
-                : 'text-blue-600'
-          }`} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-sm font-medium text-gray-900">
-                Storage Usage
-              </span>
-              {isNearLimit && (
-                <AlertTriangle className={`h-3.5 w-3.5 flex-shrink-0 ${
-                  isAtLimit ? 'text-red-600' : 'text-yellow-600'
-                }`} />
-              )}
-            </div>
-            <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
-              <div
-                className={`h-full transition-all duration-300 ease-in-out ${
-                  isAtLimit
-                    ? "bg-red-600"
-                    : isNearLimit
-                      ? "bg-yellow-600"
-                      : "bg-blue-600"
-                }`}
-                style={{ width: `${Math.min(storageData.percentUsed, 100)}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between mt-1">
-              <span className="text-xs text-gray-600">
-                {storageData.usedFormatted} of {storageData.limitFormatted}
-              </span>
-              <span className={`text-xs font-medium ${
+      <div className="flex items-center gap-2">
+        <Database className={`h-3.5 w-3.5 flex-shrink-0 ${
+          isAtLimit
+            ? 'text-red-600'
+            : isNearLimit
+              ? 'text-yellow-600'
+              : 'text-gray-500'
+        }`} />
+        <div className="min-w-0 flex-1">
+          <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+            <div
+              className={`h-full transition-all duration-300 ease-in-out ${
                 isAtLimit
-                  ? "text-red-600"
+                  ? "bg-red-600"
                   : isNearLimit
-                    ? "text-yellow-600"
-                    : "text-gray-700"
-              }`}>
-                {storageData.percentUsed}%
-              </span>
-            </div>
+                    ? "bg-yellow-600"
+                    : "bg-blue-600"
+              }`}
+              style={{ width: `${Math.min(storageData.percentUsed, 100)}%` }}
+            />
           </div>
         </div>
+        <span className="text-xs text-gray-500 whitespace-nowrap">
+          {storageData.usedFormatted} / {storageData.limitFormatted}
+        </span>
+        {isNearLimit && (
+          <AlertTriangle className={`h-3.5 w-3.5 flex-shrink-0 ${
+            isAtLimit ? 'text-red-600' : 'text-yellow-600'
+          }`} />
+        )}
       </div>
-      {isNearLimit && (
-        <p className={`text-xs mt-2 ${
-          isAtLimit ? 'text-red-700' : 'text-yellow-700'
-        }`}>
-          {isAtLimit
-            ? "Storage limit reached. Delete files or upgrade your plan to upload more."
-            : "Running low on storage. Consider upgrading or removing unused files."}
-        </p>
-      )}
     </div>
   );
 }
