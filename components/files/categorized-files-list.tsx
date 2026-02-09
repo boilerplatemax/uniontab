@@ -113,7 +113,7 @@ function FileItem({
 
       {/* File icon */}
       <div className={`w-9 h-9 ${iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
-        <FileIcon className={`h-4.5 w-4.5 ${iconColor}`} />
+        <FileIcon className={`h-5 w-5 ${iconColor}`} />
       </div>
 
       {/* File info - clickable name */}
