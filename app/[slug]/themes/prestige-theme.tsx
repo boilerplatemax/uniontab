@@ -8,6 +8,7 @@ import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { AdminHelpWidget } from '@/components/admin-help-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
 import { SocialMediaIcons } from '@/components/social-media-icons';
+import { UnionTabProvider } from '../union-tab-context';
 import type { ThemeProps } from './types';
 import { Settings, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { UnionProfileTabs } from '../union-profile-tabs';
@@ -47,6 +48,7 @@ export function PrestigeTheme({
   const borderLight = '#EBEBEB'; // Light border
 
   return (
+    <UnionTabProvider slug={slug}>
     <div className="min-h-screen bg-white">
       {/* Announcement Banner - Above navbar */}
       <AnnouncementClient
@@ -295,5 +297,6 @@ export function PrestigeTheme({
       {/* Admin Help Widget */}
       <AdminHelpWidget slug={slug} isAdmin={isOwner} />
     </div>
+    </UnionTabProvider>
   );
 }

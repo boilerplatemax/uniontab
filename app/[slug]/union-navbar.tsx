@@ -10,10 +10,11 @@ import {
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { hasPermission, type AdminPermissionKey } from '@/lib/admin-permissions';
 import type { AdminPermissions } from '@/lib/db/schema';
 import { MemberLoginDropdown } from './member-login-dropdown';
+import { useUnionTab, type TabKey } from './union-tab-context';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -33,8 +34,6 @@ interface UnionNavbarProps {
   contactEmail?: string | null;
   isApprovedMember?: boolean;
 }
-
-type TabKey = 'posts' | 'about' | 'files' | 'events' | 'elections' | 'contact';
 
 interface MegaMenuItem {
   href: string;
@@ -64,28 +63,12 @@ export function UnionNavbar({
   contactEmail,
   isApprovedMember = false,
 }: UnionNavbarProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
+  const { activeTab, setActiveTab } = useUnionTab();
 
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
-
-  // Active tab from URL
-  const activeTab: TabKey = (searchParams.get('tab') as TabKey) || 'posts';
-
-  const setActiveTab = useCallback((tab: TabKey) => {
-    const params = new URLSearchParams(searchParams);
-    if (tab === 'posts') {
-      params.delete('tab');
-    } else {
-      params.set('tab', tab);
-    }
-    const base = `/${slug}`;
-    const newUrl = params.toString() ? `${base}?${params.toString()}` : base;
-    router.push(newUrl);
-  }, [searchParams, slug, router]);
 
   // Permission helper
   const canAccess = (permission: AdminPermissionKey): boolean => {
@@ -153,16 +136,21 @@ export function UnionNavbar({
 
   const displayName = `${unionName.toUpperCase()}${localNumber ? ` ${localNumber}` : ''}`;
 
-  const hasManageAccess = isOwnerOrAdmin && (
+  const hasAdminAccess = isOwnerOrAdmin && (
     canAccess('members') || canAccess('communications') || canAccess('dues') ||
     canAccess('strikes') || canAccess('grievances') || canAccess('meetings') ||
     canAccess('announcements') || canAccess('elections') || canAccess('settings') ||
     canAccess('analytics')
   );
 
+  // Show manage menu for all members (member tools) or admins
+  const hasManageAccess = !!membership && (hasAdminAccess || isApprovedMember);
+
   const totalAdminBadge = (canAccess('members') ? pendingMembersCount : 0) +
     (canAccess('strikes') ? strikeNotificationCount : 0) +
     (canAccess('grievances') ? grievanceNotificationCount : 0);
+
+  const memberToolsBadge = grievanceNotificationCount + strikeNotificationCount;
 
   // ── Tab items ──────────────────────────────────────────────────────────
 
@@ -175,20 +163,39 @@ export function UnionNavbar({
     { key: 'contact', label: 'Contact', icon: <Phone className="h-4 w-4" /> },
   ];
 
-  // ── Member pages (visible to all members) ────────────────────────────
-
-  const memberPages: { href: string; icon: React.ReactNode; label: string; badge?: number }[] = membership ? [
-    { href: `/${slug}/grievances`, icon: <FileText className="h-4 w-4" />, label: 'Grievances', badge: grievanceNotificationCount },
-    { href: `/${slug}/meetings`, icon: <Video className="h-4 w-4" />, label: 'Meetings' },
-    { href: `/${slug}/strikes`, icon: <Zap className="h-4 w-4" />, label: 'Strikes', badge: strikeNotificationCount },
-  ] : [];
-
   // ── Manage mega-menu groups ────────────────────────────────────────────
 
   const buildManageGroups = (): MegaMenuGroup[] => {
     const groups: MegaMenuGroup[] = [];
 
-    // Members & Outreach
+    // Member Tools (visible to ALL approved members)
+    if (isApprovedMember) {
+      const memberToolsGroup: MegaMenuItem[] = [
+        {
+          href: `/${slug}/grievances`,
+          icon: <FileText className="h-5 w-5" />,
+          label: 'Grievances',
+          description: 'View and submit member grievances',
+          badge: grievanceNotificationCount,
+        },
+        {
+          href: `/${slug}/meetings`,
+          icon: <Video className="h-5 w-5" />,
+          label: 'Meetings',
+          description: 'View upcoming union meetings',
+        },
+        {
+          href: `/${slug}/strikes`,
+          icon: <Zap className="h-5 w-5" />,
+          label: 'Strikes',
+          description: 'View strike activities and schedules',
+          badge: strikeNotificationCount,
+        },
+      ];
+      groups.push({ title: 'Member Tools', items: memberToolsGroup });
+    }
+
+    // Members & Outreach (admin only)
     const membersGroup: MegaMenuItem[] = [];
     if (canAccess('members')) {
       membersGroup.push({
@@ -207,7 +214,7 @@ export function UnionNavbar({
     }
     if (membersGroup.length) groups.push({ title: 'Members & Outreach', items: membersGroup });
 
-    // Communications
+    // Communications (admin only)
     const commsGroup: MegaMenuItem[] = [];
     if (canAccess('communications')) {
       commsGroup.push({
@@ -225,34 +232,8 @@ export function UnionNavbar({
     }
     if (commsGroup.length) groups.push({ title: 'Communications', items: commsGroup });
 
-    // Union Activities
+    // Union Activities (admin only - elections)
     const activitiesGroup: MegaMenuItem[] = [];
-    if (canAccess('grievances')) {
-      activitiesGroup.push({
-        href: `/${slug}/grievances`,
-        icon: <FileText className="h-5 w-5" />,
-        label: 'Grievances',
-        description: 'Review and manage member grievances',
-        badge: grievanceNotificationCount,
-      });
-    }
-    if (canAccess('strikes')) {
-      activitiesGroup.push({
-        href: `/${slug}/strikes`,
-        icon: <Zap className="h-5 w-5" />,
-        label: 'Strikes',
-        description: 'Manage strike activities and schedules',
-        badge: strikeNotificationCount,
-      });
-    }
-    if (canAccess('meetings')) {
-      activitiesGroup.push({
-        href: `/${slug}/meetings`,
-        icon: <Video className="h-5 w-5" />,
-        label: 'Meetings',
-        description: 'Create and manage union meetings',
-      });
-    }
     if (canAccess('elections')) {
       activitiesGroup.push({
         href: `/${slug}/elections`,
@@ -263,7 +244,7 @@ export function UnionNavbar({
     }
     if (activitiesGroup.length) groups.push({ title: 'Union Activities', items: activitiesGroup });
 
-    // Finance & Announcements
+    // Finance & Announcements (admin only)
     const financeGroup: MegaMenuItem[] = [];
     if (canAccess('dues')) {
       financeGroup.push({
@@ -283,7 +264,7 @@ export function UnionNavbar({
     }
     if (financeGroup.length) groups.push({ title: 'Finance & Announcements', items: financeGroup });
 
-    // Settings & Insights
+    // Settings & Insights (admin only)
     const settingsGroup: MegaMenuItem[] = [];
     if (canAccess('settings')) {
       settingsGroup.push({
@@ -315,6 +296,18 @@ export function UnionNavbar({
   };
 
   const manageGroups = hasManageAccess ? buildManageGroups() : [];
+
+  // Color palette for mega-menu icon backgrounds
+  const groupColors: Record<string, { bg: string; hoverBg: string; text: string }> = {
+    'Member Tools': { bg: 'bg-blue-50', hoverBg: 'group-hover/item:bg-blue-100', text: 'text-blue-600' },
+    'Members & Outreach': { bg: 'bg-violet-50', hoverBg: 'group-hover/item:bg-violet-100', text: 'text-violet-600' },
+    'Communications': { bg: 'bg-emerald-50', hoverBg: 'group-hover/item:bg-emerald-100', text: 'text-emerald-600' },
+    'Union Activities': { bg: 'bg-amber-50', hoverBg: 'group-hover/item:bg-amber-100', text: 'text-amber-600' },
+    'Finance & Announcements': { bg: 'bg-rose-50', hoverBg: 'group-hover/item:bg-rose-100', text: 'text-rose-600' },
+    'Settings & Insights': { bg: 'bg-slate-50', hoverBg: 'group-hover/item:bg-slate-100', text: 'text-slate-600' },
+  };
+
+  const getGroupColor = (title: string) => groupColors[title] || { bg: 'bg-gray-100', hoverBg: 'group-hover/item:bg-gray-200', text: 'text-gray-600' };
 
   // ── Non-member navbar ──────────────────────────────────────────────────
 
@@ -380,35 +373,6 @@ export function UnionNavbar({
                   </button>
                 );
               })}
-
-              {/* Divider */}
-              {memberPages.length > 0 && (
-                <div className="h-5 w-px bg-gray-200 mx-1 flex-shrink-0" />
-              )}
-
-              {/* Member pages */}
-              {memberPages.map((page) => {
-                const isActive = pathname === page.href;
-                return (
-                  <Link
-                    key={page.href}
-                    href={page.href}
-                    prefetch={true}
-                    className={`relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap
-                      ${isActive
-                        ? 'text-gray-900 bg-gray-100'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                      }`}
-                  >
-                    {page.label}
-                    {page.badge ? (
-                      <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
-                        {page.badge}
-                      </span>
-                    ) : null}
-                  </Link>
-                );
-              })}
             </div>
 
             {/* ─ Right side (desktop) ─ */}
@@ -426,11 +390,11 @@ export function UnionNavbar({
                       ${openPanel === 'manage' ? 'text-gray-900 bg-gray-100' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}
                   >
                     <Shield className="h-4 w-4" />
-                    Manage
+                    {hasAdminAccess ? 'Manage' : 'Tools'}
                     <ChevronDown className={`h-3 w-3 transition-transform ${openPanel === 'manage' ? 'rotate-180' : ''}`} />
-                    {totalAdminBadge > 0 && (
+                    {(totalAdminBadge + (hasAdminAccess ? 0 : memberToolsBadge)) > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
-                        {totalAdminBadge}
+                        {hasAdminAccess ? totalAdminBadge : memberToolsBadge}
                       </span>
                     )}
                   </button>
@@ -438,44 +402,51 @@ export function UnionNavbar({
                   {/* Mega Menu Panel */}
                   {openPanel === 'manage' && (
                     <div
-                      className="absolute right-0 top-full mt-2 w-[640px] bg-white rounded-xl shadow-2xl border border-gray-200 p-6 z-50"
+                      className="absolute right-0 top-full mt-2 w-[640px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50"
                       onMouseEnter={cancelClose}
                       onMouseLeave={closeMegaMenu}
                     >
-                      <div className="grid grid-cols-2 gap-6">
-                        {manageGroups.map((group) => (
-                          <div key={group.title}>
-                            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
-                              {group.title}
-                            </h3>
-                            <div className="space-y-1">
-                              {group.items.map((item) => (
-                                <Link
-                                  key={item.href}
-                                  href={item.href}
-                                  prefetch={true}
-                                  onClick={() => setOpenPanel(null)}
-                                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group/item"
-                                >
-                                  <div className="flex-shrink-0 p-2 rounded-lg bg-gray-100 text-gray-600 group-hover/item:bg-gray-200 transition-colors">
-                                    {item.icon}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm font-medium text-gray-900">{item.label}</span>
-                                      {item.badge ? (
-                                        <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
-                                          {item.badge}
-                                        </span>
-                                      ) : null}
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.description}</p>
-                                  </div>
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
+                      {/* Subtle top accent bar */}
+                      <div className="h-1 bg-gradient-to-r from-blue-500 via-violet-500 to-rose-500" />
+                      <div className="p-6">
+                        <div className="grid grid-cols-2 gap-6">
+                          {manageGroups.map((group) => {
+                            const color = getGroupColor(group.title);
+                            return (
+                              <div key={group.title}>
+                                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+                                  {group.title}
+                                </h3>
+                                <div className="space-y-1">
+                                  {group.items.map((item) => (
+                                    <Link
+                                      key={item.href}
+                                      href={item.href}
+                                      prefetch={true}
+                                      onClick={() => setOpenPanel(null)}
+                                      className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group/item"
+                                    >
+                                      <div className={`flex-shrink-0 p-2 rounded-lg ${color.bg} ${color.text} ${color.hoverBg} transition-colors`}>
+                                        {item.icon}
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-sm font-medium text-gray-900">{item.label}</span>
+                                          {item.badge ? (
+                                            <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
+                                              {item.badge}
+                                            </span>
+                                          ) : null}
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.description}</p>
+                                      </div>
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -610,35 +581,6 @@ export function UnionNavbar({
                 })}
               </div>
 
-              {/* Member Pages */}
-              {memberPages.length > 0 && (
-                <div className="px-3 pb-3">
-                  <div className="h-px bg-gray-100 mx-3 mb-3" />
-                  <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Activity</p>
-                  {memberPages.map((page) => {
-                    const isActive = pathname === page.href;
-                    return (
-                      <Link
-                        key={page.href}
-                        href={page.href}
-                        prefetch={true}
-                        onClick={closeMobile}
-                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors
-                          ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
-                      >
-                        <span className="text-gray-500">{page.icon}</span>
-                        <span className="text-[15px] font-medium flex-1">{page.label}</span>
-                        {page.badge ? (
-                          <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
-                            {page.badge}
-                          </span>
-                        ) : null}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-
               {/* Manage & Profile */}
               <div className="px-3 pb-3">
                 <div className="h-px bg-gray-100 mx-3 mb-3" />
@@ -649,10 +591,10 @@ export function UnionNavbar({
                     className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     <Shield className="h-4 w-4 text-gray-500" />
-                    <span className="text-[15px] font-medium flex-1 text-left">Manage</span>
-                    {totalAdminBadge > 0 && (
+                    <span className="text-[15px] font-medium flex-1 text-left">{hasAdminAccess ? 'Manage' : 'Tools'}</span>
+                    {(hasAdminAccess ? totalAdminBadge : memberToolsBadge) > 0 && (
                       <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
-                        {totalAdminBadge}
+                        {hasAdminAccess ? totalAdminBadge : memberToolsBadge}
                       </span>
                     )}
                     <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -697,7 +639,7 @@ export function UnionNavbar({
                 >
                   <ArrowLeft className="h-5 w-5 text-gray-600" />
                 </button>
-                <span className="font-semibold text-gray-900 text-lg">Manage</span>
+                <span className="font-semibold text-gray-900 text-lg">{hasAdminAccess ? 'Manage' : 'Tools'}</span>
                 <div className="flex-1" />
                 <button onClick={closeMobile} className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
                   <X className="h-5 w-5 text-gray-600" />
@@ -706,39 +648,42 @@ export function UnionNavbar({
 
               {/* Grouped items */}
               <div className="px-4 py-4 space-y-6">
-                {manageGroups.map((group) => (
-                  <div key={group.title}>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 px-1">
-                      {group.title}
-                    </p>
-                    <div className="space-y-1">
-                      {group.items.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          prefetch={true}
-                          onClick={closeMobile}
-                          className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors"
-                        >
-                          <div className="flex-shrink-0 p-2.5 rounded-xl bg-gray-100 text-gray-600">
-                            {item.icon}
-                          </div>
-                          <div className="flex-1 min-w-0 pt-0.5">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[15px] font-medium text-gray-900">{item.label}</span>
-                              {item.badge ? (
-                                <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
-                                  {item.badge}
-                                </span>
-                              ) : null}
+                {manageGroups.map((group) => {
+                  const color = getGroupColor(group.title);
+                  return (
+                    <div key={group.title}>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 px-1">
+                        {group.title}
+                      </p>
+                      <div className="space-y-1">
+                        {group.items.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            prefetch={true}
+                            onClick={closeMobile}
+                            className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group/item"
+                          >
+                            <div className={`flex-shrink-0 p-2.5 rounded-xl ${color.bg} ${color.text}`}>
+                              {item.icon}
                             </div>
-                            <p className="text-[13px] text-gray-500 mt-0.5 leading-relaxed">{item.description}</p>
-                          </div>
-                        </Link>
-                      ))}
+                            <div className="flex-1 min-w-0 pt-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[15px] font-medium text-gray-900">{item.label}</span>
+                                {item.badge ? (
+                                  <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
+                                    {item.badge}
+                                  </span>
+                                ) : null}
+                              </div>
+                              <p className="text-[13px] text-gray-500 mt-0.5 leading-relaxed">{item.description}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
