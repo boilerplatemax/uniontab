@@ -55,6 +55,7 @@ export function DefaultTheme({
         grievanceNotificationCount={grievanceNotificationCount}
         strikeNotificationCount={strikeNotificationCount}
         contactEmail={union.email}
+        isApprovedMember={isApprovedMember}
       />
 
       {/* Spacing for fixed navbar and announcement */}
@@ -217,6 +218,7 @@ export function DefaultTheme({
           isOwner={isOwner}
           isApprovedMember={isApprovedMember}
           userId={userId}
+          hideTabNav={true}
         />
       </div>
 
