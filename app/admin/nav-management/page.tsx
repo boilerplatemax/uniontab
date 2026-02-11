@@ -679,7 +679,7 @@ function NavItemRow({
 
       {/* Mandatory lock */}
       {item.isMandatory && (
-        <Lock className="h-4 w-4 text-gray-400" title="Mandatory item" />
+        <span title="Mandatory item"><Lock className="h-4 w-4 text-gray-400" /></span>
       )}
 
       {/* Edit button */}
