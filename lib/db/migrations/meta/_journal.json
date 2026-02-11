@@ -43,6 +43,13 @@
       "when": 1770831764218,
       "tag": "0005_legal_mysterio",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770833630352,
+      "tag": "0006_grey_gunslinger",
+      "breakpoints": true
     }
   ]
 }

@@ -298,6 +298,8 @@ export const unionPages = pgTable('union_pages', {
   sortOrder: integer('sort_order').default(0),
   metaTitle: varchar('meta_title', { length: 255 }),
   metaDescription: text('meta_description'),
+  showTitle: boolean('show_title').notNull().default(true),
+  showReturnButton: boolean('show_return_button').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   publishedAt: timestamp('published_at'),
