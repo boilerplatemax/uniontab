@@ -23,6 +23,7 @@ export async function UnionPageContent({ slug }: { slug: string }) {
     handleSignOut: data.handleSignOut,
     activeAnnouncements: data.activeAnnouncements,
     accessibilityWidgetEnabled: data.union.accessibilityWidgetEnabled ?? true,
+    navigationItems: data.navigationItems,
   };
 
   const ThemeComponent = (() => {

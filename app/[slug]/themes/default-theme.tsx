@@ -34,6 +34,7 @@ export function DefaultTheme({
   handleSignOut,
   activeAnnouncements,
   accessibilityWidgetEnabled,
+  navigationItems: navItems,
 }: ThemeProps) {
   return (
     <UnionTabProvider slug={slug}>
@@ -58,6 +59,7 @@ export function DefaultTheme({
         strikeNotificationCount={strikeNotificationCount}
         contactEmail={union.email}
         isApprovedMember={isApprovedMember}
+        navigationItems={navItems}
       />
 
       {/* Spacing for fixed navbar and announcement */}

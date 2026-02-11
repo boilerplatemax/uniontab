@@ -5,14 +5,14 @@ import {
   Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone,
   Mail, ChevronDown, ChevronRight, UserPlus, DollarSign, FileText, Zap,
   Video, MessageSquare, BarChart3, Newspaper, Info, FolderOpen, CalendarDays,
-  Vote, Phone, ArrowLeft, Shield, Download, ExternalLink,
+  Vote, Phone, ArrowLeft, Shield,
 } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { hasPermission, type AdminPermissionKey } from '@/lib/admin-permissions';
-import type { AdminPermissions, NavigationItem } from '@/lib/db/schema';
+import type { AdminPermissions } from '@/lib/db/schema';
 import { MemberLoginDropdown } from './member-login-dropdown';
 import { useUnionTab, type TabKey } from './union-tab-context';
 
@@ -33,7 +33,6 @@ interface UnionNavbarProps {
   strikeNotificationCount?: number;
   contactEmail?: string | null;
   isApprovedMember?: boolean;
-  navigationItems?: NavigationItem[];
 }
 
 interface MegaMenuItem {
@@ -63,7 +62,6 @@ export function UnionNavbar({
   strikeNotificationCount = 0,
   contactEmail,
   isApprovedMember = false,
-  navigationItems = [],
 }: UnionNavbarProps) {
   const pathname = usePathname();
   const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
@@ -154,37 +152,9 @@ export function UnionNavbar({
 
   const memberToolsBadge = grievanceNotificationCount + strikeNotificationCount;
 
-  // ── Tab items (dynamic from navigationItems, with hardcoded fallback) ──
+  // ── Tab items ──────────────────────────────────────────────────────────
 
-  // Icon map for built-in routes
-  const builtInRouteIcons: Record<string, React.ReactNode> = {
-    news: <Newspaper className="h-4 w-4" />,
-    about: <Info className="h-4 w-4" />,
-    events: <CalendarDays className="h-4 w-4" />,
-    files: <FolderOpen className="h-4 w-4" />,
-    elections: <Vote className="h-4 w-4" />,
-    contact: <Phone className="h-4 w-4" />,
-    members: <Users className="h-4 w-4" />,
-    dues: <DollarSign className="h-4 w-4" />,
-    grievances: <FileText className="h-4 w-4" />,
-    meetings: <Video className="h-4 w-4" />,
-    announcements: <Megaphone className="h-4 w-4" />,
-    analytics: <BarChart3 className="h-4 w-4" />,
-    settings: <Settings className="h-4 w-4" />,
-  };
-
-  // Map built-in route names to TabKey values
-  const routeToTabKey: Record<string, TabKey> = {
-    news: 'posts',
-    about: 'about',
-    events: 'events',
-    files: 'files',
-    elections: 'elections',
-    contact: 'contact',
-  };
-
-  // Hardcoded fallback tabs (used when no navigation items exist)
-  const hardcodedTabItems: { key: TabKey; label: string; icon: React.ReactNode; membersOnly?: boolean }[] = [
+  const tabItems: { key: TabKey; label: string; icon: React.ReactNode; membersOnly?: boolean }[] = [
     { key: 'posts', label: 'News', icon: <Newspaper className="h-4 w-4" /> },
     { key: 'about', label: 'About', icon: <Info className="h-4 w-4" /> },
     { key: 'events', label: 'Events', icon: <CalendarDays className="h-4 w-4" /> },
@@ -192,79 +162,6 @@ export function UnionNavbar({
     { key: 'elections', label: 'Elections', icon: <Vote className="h-4 w-4" />, membersOnly: true },
     { key: 'contact', label: 'Contact', icon: <Phone className="h-4 w-4" /> },
   ];
-
-  // Determine if we should use dynamic navigation
-  const enabledNavItems = navigationItems.filter((item) => item.isEnabled);
-  const useDynamicNav = enabledNavItems.length > 0;
-
-  // Visibility filter for navigation items
-  const isNavItemVisible = (item: NavigationItem): boolean => {
-    if (!item.isEnabled) return false;
-    if (item.visibility === 'public') return true;
-    if (item.visibility === 'members_only') return !!membership && isApprovedMember;
-    if (item.visibility === 'admins_only') return isOwnerOrAdmin;
-    return true;
-  };
-
-  // Top-level dynamic nav items (parentId is null)
-  const topLevelNavItems = enabledNavItems.filter((item) => !item.parentId);
-  // Children grouped by parentId
-  const getNavChildren = (parentId: number) =>
-    enabledNavItems.filter((item) => item.parentId === parentId && isNavItemVisible(item));
-
-  // Resolve icon for a nav item
-  const getNavIcon = (item: NavigationItem): React.ReactNode => {
-    if (item.linkType === 'built_in_route' && item.builtInRoute) {
-      return builtInRouteIcons[item.builtInRoute] || <FileText className="h-4 w-4" />;
-    }
-    if (item.linkType === 'page') return <FileText className="h-4 w-4" />;
-    if (item.linkType === 'file') return <Download className="h-4 w-4" />;
-    if (item.linkType === 'external_url') return <ExternalLink className="h-4 w-4" />;
-    return <FileText className="h-4 w-4" />;
-  };
-
-  // Resolve href for non-built-in nav items
-  const getNavHref = (item: NavigationItem): string | null => {
-    if (item.linkType === 'page' && item.pageId) return `/${slug}/p/${item.pageId}`;
-    if (item.linkType === 'file' && item.fileId) return `/${slug}/files/${item.fileId}`;
-    if (item.linkType === 'external_url' && item.externalUrl) return item.externalUrl;
-    return null;
-  };
-
-  // Is a nav item a built-in tab (renders via setActiveTab)?
-  const isBuiltInTab = (item: NavigationItem): boolean =>
-    item.linkType === 'built_in_route' && !!item.builtInRoute && !!routeToTabKey[item.builtInRoute];
-
-  // Build the final tab items for fallback mode
-  const tabItems = hardcodedTabItems;
-
-  // ── Dropdown state for nav items with children ─────────────────────────
-  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
-  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const openDropdown = (id: number) => {
-    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
-    setOpenDropdownId(id);
-  };
-
-  const closeDropdown = () => {
-    dropdownTimeoutRef.current = setTimeout(() => setOpenDropdownId(null), 150);
-  };
-
-  const cancelDropdownClose = () => {
-    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
-  };
-
-  // ── Mobile expanded sections for nested items ──────────────────────────
-  const [mobileExpandedIds, setMobileExpandedIds] = useState<Set<number>>(new Set());
-  const toggleMobileExpanded = (id: number) => {
-    setMobileExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   // ── Manage mega-menu groups ────────────────────────────────────────────
 
@@ -458,143 +355,27 @@ export function UnionNavbar({
 
             {/* ─ Right: Pages + Controls (desktop) ─ */}
             <div className="hidden lg:flex items-center gap-1">
-              {/* Tab pages — dynamic or fallback */}
-              {!useDynamicNav ? (
-                /* Hardcoded fallback */
-                tabItems.map((item) => {
-                  if (item.membersOnly && !isApprovedMember) return null;
-                  const isActive = activeTab === item.key;
-                  return (
-                    <button
-                      key={item.key}
-                      onClick={() => setActiveTab(item.key)}
-                      className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
-                        ${isActive
-                          ? 'text-gray-900 bg-gray-100'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                        }`}
-                    >
-                      {item.label}
-                      {isActive && (
-                        <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
-                      )}
-                    </button>
-                  );
-                })
-              ) : (
-                /* Dynamic navigation items */
-                topLevelNavItems.filter(isNavItemVisible).sort((a, b) => a.sortOrder - b.sortOrder).map((navItem) => {
-                  const children = navItem.id ? getNavChildren(navItem.id) : [];
-                  const hasChildren = children.length > 0;
-
-                  if (isBuiltInTab(navItem)) {
-                    const tabKey = routeToTabKey[navItem.builtInRoute!];
-                    const isActive = activeTab === tabKey;
-
-                    if (hasChildren) {
-                      return (
-                        <div
-                          key={navItem.id}
-                          className="relative"
-                          onMouseEnter={() => openDropdown(navItem.id)}
-                          onMouseLeave={closeDropdown}
-                        >
-                          <button
-                            onClick={() => setActiveTab(tabKey)}
-                            className={`relative flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
-                              ${isActive
-                                ? 'text-gray-900 bg-gray-100'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                              }`}
-                          >
-                            {navItem.label}
-                            <ChevronDown className="h-3 w-3" />
-                            {isActive && (
-                              <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
-                            )}
-                          </button>
-                          {openDropdownId === navItem.id && (
-                            <div
-                              className="absolute left-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
-                              onMouseEnter={cancelDropdownClose}
-                              onMouseLeave={closeDropdown}
-                            >
-                              {children.sort((a, b) => a.sortOrder - b.sortOrder).map((child) => (
-                                <NavDropdownItem key={child.id} item={child} slug={slug} getNavIcon={getNavIcon} getNavHref={getNavHref} isBuiltInTab={isBuiltInTab} routeToTabKey={routeToTabKey} setActiveTab={setActiveTab} onClose={() => setOpenDropdownId(null)} />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <button
-                        key={navItem.id}
-                        onClick={() => setActiveTab(tabKey)}
-                        className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
-                          ${isActive
-                            ? 'text-gray-900 bg-gray-100'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                          }`}
-                      >
-                        {navItem.label}
-                        {isActive && (
-                          <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
-                        )}
-                      </button>
-                    );
-                  }
-
-                  // Non-built-in: page, file, or external URL
-                  const href = getNavHref(navItem);
-                  if (!href) return null;
-
-                  if (hasChildren) {
-                    return (
-                      <div
-                        key={navItem.id}
-                        className="relative"
-                        onMouseEnter={() => openDropdown(navItem.id)}
-                        onMouseLeave={closeDropdown}
-                      >
-                        <Link
-                          href={href}
-                          target={navItem.openInNewTab ? '_blank' : undefined}
-                          rel={navItem.openInNewTab ? 'noopener noreferrer' : undefined}
-                          className="relative flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                        >
-                          {navItem.label}
-                          <ChevronDown className="h-3 w-3" />
-                        </Link>
-                        {openDropdownId === navItem.id && (
-                          <div
-                            className="absolute left-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
-                            onMouseEnter={cancelDropdownClose}
-                            onMouseLeave={closeDropdown}
-                          >
-                            {children.sort((a, b) => a.sortOrder - b.sortOrder).map((child) => (
-                              <NavDropdownItem key={child.id} item={child} slug={slug} getNavIcon={getNavIcon} getNavHref={getNavHref} isBuiltInTab={isBuiltInTab} routeToTabKey={routeToTabKey} setActiveTab={setActiveTab} onClose={() => setOpenDropdownId(null)} />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <Link
-                      key={navItem.id}
-                      href={href}
-                      target={navItem.openInNewTab ? '_blank' : undefined}
-                      rel={navItem.openInNewTab ? 'noopener noreferrer' : undefined}
-                      className="relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                    >
-                      {navItem.label}
-                    </Link>
-                  );
-                })
-              )}
+              {/* Tab pages */}
+              {tabItems.map((item) => {
+                if (item.membersOnly && !isApprovedMember) return null;
+                const isActive = activeTab === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => setActiveTab(item.key)}
+                    className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
+                      ${isActive
+                        ? 'text-gray-900 bg-gray-100'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                  >
+                    {item.label}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                    )}
+                  </button>
+                );
+              })}
 
               {/* Separator between pages and controls */}
               <div className="h-5 w-px bg-gray-200 mx-1" />
@@ -782,106 +563,24 @@ export function UnionNavbar({
                 <p className="text-sm font-medium text-gray-900">{membership.user.name}</p>
               </div>
 
-              {/* Tab Pages — dynamic or fallback */}
+              {/* Tab Pages */}
               <div className="px-3 py-3">
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Pages</p>
-                {!useDynamicNav ? (
-                  /* Hardcoded fallback */
-                  tabItems.map((item) => {
-                    if (item.membersOnly && !isApprovedMember) return null;
-                    const isActive = activeTab === item.key;
-                    return (
-                      <button
-                        key={item.key}
-                        onClick={() => { setActiveTab(item.key); closeMobile(); }}
-                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
-                          ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
-                      >
-                        <span className="text-gray-500">{item.icon}</span>
-                        <span className="text-[15px] font-medium">{item.label}</span>
-                      </button>
-                    );
-                  })
-                ) : (
-                  /* Dynamic navigation items */
-                  topLevelNavItems.filter(isNavItemVisible).sort((a, b) => a.sortOrder - b.sortOrder).map((navItem) => {
-                    const children = navItem.id ? getNavChildren(navItem.id) : [];
-                    const hasChildren = children.length > 0;
-                    const isExpanded = mobileExpandedIds.has(navItem.id);
-                    const icon = getNavIcon(navItem);
-
-                    if (isBuiltInTab(navItem)) {
-                      const tabKey = routeToTabKey[navItem.builtInRoute!];
-                      const isActive = activeTab === tabKey;
-
-                      return (
-                        <div key={navItem.id}>
-                          <div className="flex items-center">
-                            <button
-                              onClick={() => { setActiveTab(tabKey); closeMobile(); }}
-                              className={`flex-1 flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
-                                ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
-                            >
-                              <span className="text-gray-500">{icon}</span>
-                              <span className="text-[15px] font-medium">{navItem.label}</span>
-                            </button>
-                            {hasChildren && (
-                              <button
-                                onClick={() => toggleMobileExpanded(navItem.id)}
-                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                              >
-                                <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                              </button>
-                            )}
-                          </div>
-                          {hasChildren && isExpanded && (
-                            <div className="ml-8 space-y-0.5">
-                              {children.sort((a, b) => a.sortOrder - b.sortOrder).map((child) => (
-                                <MobileNavChildItem key={child.id} item={child} slug={slug} getNavIcon={getNavIcon} getNavHref={getNavHref} isBuiltInTab={isBuiltInTab} routeToTabKey={routeToTabKey} setActiveTab={setActiveTab} closeMobile={closeMobile} />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-
-                    // Non-built-in nav item
-                    const href = getNavHref(navItem);
-                    if (!href) return null;
-
-                    return (
-                      <div key={navItem.id}>
-                        <div className="flex items-center">
-                          <Link
-                            href={href}
-                            target={navItem.openInNewTab ? '_blank' : undefined}
-                            rel={navItem.openInNewTab ? 'noopener noreferrer' : undefined}
-                            onClick={closeMobile}
-                            className="flex-1 flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
-                          >
-                            <span className="text-gray-500">{icon}</span>
-                            <span className="text-[15px] font-medium">{navItem.label}</span>
-                          </Link>
-                          {hasChildren && (
-                            <button
-                              onClick={() => toggleMobileExpanded(navItem.id)}
-                              className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                            >
-                              <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                            </button>
-                          )}
-                        </div>
-                        {hasChildren && isExpanded && (
-                          <div className="ml-8 space-y-0.5">
-                            {children.sort((a, b) => a.sortOrder - b.sortOrder).map((child) => (
-                              <MobileNavChildItem key={child.id} item={child} slug={slug} getNavIcon={getNavIcon} getNavHref={getNavHref} isBuiltInTab={isBuiltInTab} routeToTabKey={routeToTabKey} setActiveTab={setActiveTab} closeMobile={closeMobile} />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
+                {tabItems.map((item) => {
+                  if (item.membersOnly && !isApprovedMember) return null;
+                  const isActive = activeTab === item.key;
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => { setActiveTab(item.key); closeMobile(); }}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
+                        ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                    >
+                      <span className="text-gray-500">{item.icon}</span>
+                      <span className="text-[15px] font-medium">{item.label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Manage & Profile */}
@@ -1078,109 +777,5 @@ export function UnionNavbar({
         </div>
       )}
     </>
-  );
-}
-
-// ── Helper components for dynamic navigation ────────────────────────────
-
-function NavDropdownItem({
-  item,
-  slug,
-  getNavIcon,
-  getNavHref,
-  isBuiltInTab,
-  routeToTabKey,
-  setActiveTab,
-  onClose,
-}: {
-  item: NavigationItem;
-  slug: string;
-  getNavIcon: (item: NavigationItem) => React.ReactNode;
-  getNavHref: (item: NavigationItem) => string | null;
-  isBuiltInTab: (item: NavigationItem) => boolean;
-  routeToTabKey: Record<string, TabKey>;
-  setActiveTab: (tab: TabKey) => void;
-  onClose: () => void;
-}) {
-  const icon = getNavIcon(item);
-
-  if (isBuiltInTab(item)) {
-    const tabKey = routeToTabKey[item.builtInRoute!];
-    return (
-      <button
-        onClick={() => { setActiveTab(tabKey); onClose(); }}
-        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left cursor-pointer"
-      >
-        <span className="text-gray-400">{icon}</span>
-        {item.label}
-      </button>
-    );
-  }
-
-  const href = getNavHref(item);
-  if (!href) return null;
-
-  return (
-    <Link
-      href={href}
-      target={item.openInNewTab ? '_blank' : undefined}
-      rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
-      onClick={onClose}
-      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-    >
-      <span className="text-gray-400">{icon}</span>
-      {item.label}
-    </Link>
-  );
-}
-
-function MobileNavChildItem({
-  item,
-  slug,
-  getNavIcon,
-  getNavHref,
-  isBuiltInTab,
-  routeToTabKey,
-  setActiveTab,
-  closeMobile,
-}: {
-  item: NavigationItem;
-  slug: string;
-  getNavIcon: (item: NavigationItem) => React.ReactNode;
-  getNavHref: (item: NavigationItem) => string | null;
-  isBuiltInTab: (item: NavigationItem) => boolean;
-  routeToTabKey: Record<string, TabKey>;
-  setActiveTab: (tab: TabKey) => void;
-  closeMobile: () => void;
-}) {
-  const icon = getNavIcon(item);
-
-  if (isBuiltInTab(item)) {
-    const tabKey = routeToTabKey[item.builtInRoute!];
-    return (
-      <button
-        onClick={() => { setActiveTab(tabKey); closeMobile(); }}
-        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors text-gray-600 hover:bg-gray-50 cursor-pointer"
-      >
-        <span className="text-gray-400">{icon}</span>
-        <span className="text-sm font-medium">{item.label}</span>
-      </button>
-    );
-  }
-
-  const href = getNavHref(item);
-  if (!href) return null;
-
-  return (
-    <Link
-      href={href}
-      target={item.openInNewTab ? '_blank' : undefined}
-      rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
-      onClick={closeMobile}
-      className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-gray-600 hover:bg-gray-50"
-    >
-      <span className="text-gray-400">{icon}</span>
-      <span className="text-sm font-medium">{item.label}</span>
-    </Link>
   );
 }

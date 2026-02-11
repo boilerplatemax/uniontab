@@ -17,7 +17,7 @@ import {
   LifeBuoy,
   ClipboardList,
   LogOut,
-  Menu,
+  Menu as MenuIcon,
   X,
   Shield,
   ChevronDown,
@@ -43,6 +43,11 @@ export function AdminNavbar({ userName }: AdminNavbarProps) {
       name: 'Page Management',
       href: '/admin/page-management',
       icon: FileText,
+    },
+    {
+      name: 'Navigation',
+      href: '/admin/nav-management',
+      icon: MenuIcon,
     },
     {
       name: 'Support Tickets',
@@ -127,7 +132,7 @@ export function AdminNavbar({ userName }: AdminNavbarProps) {
             {mobileMenuOpen ? (
               <X className="h-6 w-6" />
             ) : (
-              <Menu className="h-6 w-6" />
+              <MenuIcon className="h-6 w-6" />
             )}
           </button>
         </div>
