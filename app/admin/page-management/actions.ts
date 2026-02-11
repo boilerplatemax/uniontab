@@ -31,6 +31,8 @@ export async function createPage(
     content?: string;
     isPublished?: boolean;
     isMembersOnly?: boolean;
+    showTitle?: boolean;
+    showReturnButton?: boolean;
   }
 ) {
   const user = await requireWebmaster();
@@ -44,6 +46,8 @@ export async function createPage(
       content: data.content || '',
       isPublished: data.isPublished ?? false,
       isMembersOnly: data.isMembersOnly ?? false,
+      showTitle: data.showTitle ?? true,
+      showReturnButton: data.showReturnButton ?? false,
       createdBy: user.id,
       updatedBy: user.id,
     })
@@ -60,6 +64,8 @@ export async function updatePage(
     content?: string;
     isPublished?: boolean;
     isMembersOnly?: boolean;
+    showTitle?: boolean;
+    showReturnButton?: boolean;
   }
 ) {
   const user = await requireWebmaster();
@@ -79,6 +85,8 @@ export async function updatePage(
     }
   }
   if (data.isMembersOnly !== undefined) updateData.isMembersOnly = data.isMembersOnly;
+  if (data.showTitle !== undefined) updateData.showTitle = data.showTitle;
+  if (data.showReturnButton !== undefined) updateData.showReturnButton = data.showReturnButton;
 
   const [page] = await db
     .update(unionPages)
@@ -127,6 +135,8 @@ export async function copyPage(pageId: number) {
       excerpt: source.excerpt,
       isPublished: false,
       isMembersOnly: source.isMembersOnly,
+      showTitle: source.showTitle,
+      showReturnButton: source.showReturnButton,
       sortOrder: source.sortOrder,
       metaTitle: source.metaTitle,
       metaDescription: source.metaDescription,

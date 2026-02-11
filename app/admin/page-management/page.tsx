@@ -82,6 +82,8 @@ interface PageData {
   content: string | null;
   isPublished: boolean;
   isMembersOnly: boolean;
+  showTitle: boolean;
+  showReturnButton: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -108,6 +110,8 @@ export default function PageManagementPage() {
   const [editorContent, setEditorContent] = useState('');
   const [editorPublished, setEditorPublished] = useState(false);
   const [editorMembersOnly, setEditorMembersOnly] = useState(false);
+  const [editorShowTitle, setEditorShowTitle] = useState(true);
+  const [editorShowReturnButton, setEditorShowReturnButton] = useState(false);
   const [editorMode, setEditorMode] = useState<'code' | 'preview'>('code');
   const [saving, setSaving] = useState(false);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -159,6 +163,8 @@ export default function PageManagementPage() {
     setEditorContent('');
     setEditorPublished(false);
     setEditorMembersOnly(false);
+    setEditorShowTitle(true);
+    setEditorShowReturnButton(false);
     setEditorMode('code');
     setSlugManuallyEdited(false);
     setEditorOpen(true);
@@ -171,6 +177,8 @@ export default function PageManagementPage() {
     setEditorContent(page.content || '');
     setEditorPublished(page.isPublished);
     setEditorMembersOnly(page.isMembersOnly);
+    setEditorShowTitle(page.showTitle);
+    setEditorShowReturnButton(page.showReturnButton);
     setEditorMode('code');
     setSlugManuallyEdited(true);
     setEditorOpen(true);
@@ -203,6 +211,8 @@ export default function PageManagementPage() {
           content: editorContent,
           isPublished: editorPublished,
           isMembersOnly: editorMembersOnly,
+          showTitle: editorShowTitle,
+          showReturnButton: editorShowReturnButton,
         });
       } else {
         await createPage(parseInt(selectedUnionId), {
@@ -211,6 +221,8 @@ export default function PageManagementPage() {
           content: editorContent,
           isPublished: editorPublished,
           isMembersOnly: editorMembersOnly,
+          showTitle: editorShowTitle,
+          showReturnButton: editorShowReturnButton,
         });
       }
       setEditorOpen(false);
@@ -474,6 +486,20 @@ export default function PageManagementPage() {
                 <Label>
                   {editorMembersOnly ? 'Members Only' : 'Public'}
                 </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={editorShowTitle}
+                  onCheckedChange={setEditorShowTitle}
+                />
+                <Label>Show Title</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={editorShowReturnButton}
+                  onCheckedChange={setEditorShowReturnButton}
+                />
+                <Label>Return Button</Label>
               </div>
             </div>
 
