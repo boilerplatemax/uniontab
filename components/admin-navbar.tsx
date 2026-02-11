@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Building2,
+  FileText,
   LifeBuoy,
   ClipboardList,
   LogOut,
@@ -37,6 +38,11 @@ export function AdminNavbar({ userName }: AdminNavbarProps) {
       name: 'Union Management',
       href: '/admin/union-management',
       icon: Building2,
+    },
+    {
+      name: 'Page Management',
+      href: '/admin/page-management',
+      icon: FileText,
     },
     {
       name: 'Support Tickets',

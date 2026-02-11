@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -83,6 +84,7 @@ const categoryOptions = [
   { value: 'general_inquiry', label: 'General Inquiry' },
   { value: 'billing', label: 'Billing Question' },
   { value: 'technical_issue', label: 'Technical Issue' },
+  { value: 'site_customization', label: 'Site Customization Request' },
 ];
 
 const statusColors: Record<string, string> = {
@@ -112,6 +114,7 @@ export function SupportContent({
   handleSignOut,
   slug,
 }: SupportContentProps) {
+  const searchParams = useSearchParams();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewTicket, setShowNewTicket] = useState(false);
@@ -135,6 +138,17 @@ export function SupportContent({
   useEffect(() => {
     fetchTickets();
   }, []);
+
+  // Pre-fill form from URL params
+  useEffect(() => {
+    const paramCategory = searchParams.get('category');
+    const paramSubject = searchParams.get('subject');
+    if (paramCategory || paramSubject) {
+      if (paramCategory) setCategory(paramCategory);
+      if (paramSubject) setSubject(paramSubject);
+      setShowNewTicket(true);
+    }
+  }, [searchParams]);
 
   const fetchTickets = async () => {
     try {
