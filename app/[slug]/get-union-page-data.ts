@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, members, posts, files, events, postLikes, postAttachments, announcements, announcementAttachments, dismissedAnnouncements } from '@/lib/db/schema';
-import { eq, and, desc, count, sql } from 'drizzle-orm';
+import { unions, users, members, posts, files, events, postLikes, postAttachments, announcements, announcementAttachments, dismissedAnnouncements, navigationItems } from '@/lib/db/schema';
+import { eq, and, desc, asc, count, sql } from 'drizzle-orm';
 import { getUser, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
 import type { ThemeId } from '@/lib/themes/config';
@@ -222,6 +222,14 @@ async function getActiveAnnouncements(unionId: number, userId?: number) {
   return { popup, banner };
 }
 
+async function getUnionNavigationItems(unionId: number) {
+  return await db
+    .select()
+    .from(navigationItems)
+    .where(eq(navigationItems.unionId, unionId))
+    .orderBy(asc(navigationItems.sortOrder));
+}
+
 async function handleSignOut() {
   'use server';
   (await cookies()).delete('session');
@@ -258,6 +266,7 @@ export async function getUnionPageData(slug: string) {
   const unionEvents = await getUnionEvents(union.id);
 
   const activeAnnouncements = await getActiveAnnouncements(union.id, currentUser?.id);
+  const unionNavigationItems = await getUnionNavigationItems(union.id);
 
   const requestedTheme = (union.theme || 'default') as ThemeId;
   const hasAccess = canAccessTheme(requestedTheme, (union as any).planName);
@@ -276,6 +285,7 @@ export async function getUnionPageData(slug: string) {
     unionFiles,
     unionEvents,
     activeAnnouncements,
+    navigationItems: unionNavigationItems,
     theme,
     handleSignOut,
     slug,

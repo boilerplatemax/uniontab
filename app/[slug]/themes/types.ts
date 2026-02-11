@@ -1,4 +1,4 @@
-import type { Union, Post, File as FileType, Event, Member, PostAttachment } from '@/lib/db/schema';
+import type { Union, Post, File as FileType, Event, Member, PostAttachment, NavigationItem } from '@/lib/db/schema';
 
 export interface ThemeProps {
   union: Union;
@@ -24,4 +24,5 @@ export interface ThemeProps {
     banner: any;
   };
   accessibilityWidgetEnabled: boolean;
+  navigationItems?: NavigationItem[];
 }

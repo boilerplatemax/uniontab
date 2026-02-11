@@ -38,6 +38,7 @@ export function PrestigeTheme({
   handleSignOut,
   activeAnnouncements,
   accessibilityWidgetEnabled,
+  navigationItems: navItems,
 }: ThemeProps) {
   // Dynamic color palette based on theme color from settings
   const themeColor = union.themeColor || DEFAULT_THEME_COLOR;
@@ -70,6 +71,7 @@ export function PrestigeTheme({
         strikeNotificationCount={strikeNotificationCount}
         contactEmail={union.email}
         isApprovedMember={isApprovedMember}
+        navigationItems={navItems}
       />
 
       {/* Spacing for fixed navbar and announcement */}

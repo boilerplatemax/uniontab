@@ -27,6 +27,7 @@ import {
 } from '@/lib/auth/middleware';
 import { sendEmailVerification } from '@/lib/email/sendgrid';
 import { setupDnsForNewUnion } from '@/lib/email/setup-union-dns';
+import { seedDefaultNavigation } from '@/lib/db/seed-navigation';
 import crypto from 'crypto';
 
 async function logActivity(
@@ -324,6 +325,15 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
       })
       .catch((error) => {
         console.error(`❌ DNS setup error for union ${unionId}:`, error);
+      });
+
+    // Seed default navigation items for the new union
+    seedDefaultNavigation(unionId)
+      .then(() => {
+        console.log(`✅ Navigation seeded for union ${unionId}`);
+      })
+      .catch((error) => {
+        console.error(`❌ Navigation seed failed for union ${unionId}:`, error);
       });
   }
 
