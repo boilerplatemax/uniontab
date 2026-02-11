@@ -12,9 +12,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { hasPermission, type AdminPermissionKey } from '@/lib/admin-permissions';
-import type { AdminPermissions, NavigationItem } from '@/lib/db/schema';
+import type { AdminPermissions, NavigationItem as BaseNavigationItem } from '@/lib/db/schema';
 import { MemberLoginDropdown } from './member-login-dropdown';
 import { useUnionTab, type TabKey } from './union-tab-context';
+
+type NavigationItem = BaseNavigationItem & { pageSlug?: string | null; fileUrl?: string | null };
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -33,7 +35,7 @@ interface UnionNavbarProps {
   strikeNotificationCount?: number;
   contactEmail?: string | null;
   isApprovedMember?: boolean;
-  navigationItems?: NavigationItem[];
+  navigationItems?: (NavigationItem & { pageSlug?: string | null; fileUrl?: string | null })[];
 }
 
 interface MegaMenuItem {
@@ -225,8 +227,8 @@ export function UnionNavbar({
 
   // Resolve href for non-built-in nav items
   const getNavHref = (item: NavigationItem): string | null => {
-    if (item.linkType === 'page' && item.pageId) return `/${slug}/p/${item.pageId}`;
-    if (item.linkType === 'file' && item.fileId) return `/${slug}/files/${item.fileId}`;
+    if (item.linkType === 'page' && item.pageId && item.pageSlug) return `/${slug}/p/${item.pageSlug}`;
+    if (item.linkType === 'file' && item.fileId && item.fileUrl) return item.fileUrl;
     if (item.linkType === 'external_url' && item.externalUrl) return item.externalUrl;
     return null;
   };
@@ -560,8 +562,8 @@ export function UnionNavbar({
                       >
                         <Link
                           href={href}
-                          target={navItem.openInNewTab ? '_blank' : undefined}
-                          rel={navItem.openInNewTab ? 'noopener noreferrer' : undefined}
+                          target={navItem.openInNewTab || navItem.linkType === 'file' ? '_blank' : undefined}
+                          rel={navItem.openInNewTab || navItem.linkType === 'file' ? 'noopener noreferrer' : undefined}
                           className="relative flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         >
                           {navItem.label}
@@ -586,8 +588,8 @@ export function UnionNavbar({
                     <Link
                       key={navItem.id}
                       href={href}
-                      target={navItem.openInNewTab ? '_blank' : undefined}
-                      rel={navItem.openInNewTab ? 'noopener noreferrer' : undefined}
+                      target={navItem.openInNewTab || navItem.linkType === 'file' ? '_blank' : undefined}
+                      rel={navItem.openInNewTab || navItem.linkType === 'file' ? 'noopener noreferrer' : undefined}
                       className="relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     >
                       {navItem.label}
@@ -854,8 +856,8 @@ export function UnionNavbar({
                         <div className="flex items-center">
                           <Link
                             href={href}
-                            target={navItem.openInNewTab ? '_blank' : undefined}
-                            rel={navItem.openInNewTab ? 'noopener noreferrer' : undefined}
+                            target={navItem.openInNewTab || navItem.linkType === 'file' ? '_blank' : undefined}
+                            rel={navItem.openInNewTab || navItem.linkType === 'file' ? 'noopener noreferrer' : undefined}
                             onClick={closeMobile}
                             className="flex-1 flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
                           >
@@ -1123,8 +1125,8 @@ function NavDropdownItem({
   return (
     <Link
       href={href}
-      target={item.openInNewTab ? '_blank' : undefined}
-      rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
+      target={item.openInNewTab || item.linkType === 'file' ? '_blank' : undefined}
+      rel={item.openInNewTab || item.linkType === 'file' ? 'noopener noreferrer' : undefined}
       onClick={onClose}
       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
     >
@@ -1174,8 +1176,8 @@ function MobileNavChildItem({
   return (
     <Link
       href={href}
-      target={item.openInNewTab ? '_blank' : undefined}
-      rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
+      target={item.openInNewTab || item.linkType === 'file' ? '_blank' : undefined}
+      rel={item.openInNewTab || item.linkType === 'file' ? 'noopener noreferrer' : undefined}
       onClick={closeMobile}
       className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-gray-600 hover:bg-gray-50"
     >

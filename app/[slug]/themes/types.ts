@@ -24,5 +24,5 @@ export interface ThemeProps {
     banner: any;
   };
   accessibilityWidgetEnabled: boolean;
-  navigationItems?: NavigationItem[];
+  navigationItems?: (NavigationItem & { pageSlug?: string | null; fileUrl?: string | null })[];
 }

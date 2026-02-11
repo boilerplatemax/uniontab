@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, members, posts, files, events, postLikes, postAttachments, announcements, announcementAttachments, dismissedAnnouncements, navigationItems } from '@/lib/db/schema';
+import { unions, users, members, posts, files, events, postLikes, postAttachments, announcements, announcementAttachments, dismissedAnnouncements, navigationItems, unionPages } from '@/lib/db/schema';
 import { eq, and, desc, asc, count, sql } from 'drizzle-orm';
 import { getUser, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
@@ -223,11 +223,34 @@ async function getActiveAnnouncements(unionId: number, userId?: number) {
 }
 
 async function getUnionNavigationItems(unionId: number) {
-  return await db
-    .select()
+  const items = await db
+    .select({
+      id: navigationItems.id,
+      unionId: navigationItems.unionId,
+      parentId: navigationItems.parentId,
+      label: navigationItems.label,
+      sortOrder: navigationItems.sortOrder,
+      visibility: navigationItems.visibility,
+      linkType: navigationItems.linkType,
+      pageId: navigationItems.pageId,
+      fileId: navigationItems.fileId,
+      externalUrl: navigationItems.externalUrl,
+      builtInRoute: navigationItems.builtInRoute,
+      isEnabled: navigationItems.isEnabled,
+      openInNewTab: navigationItems.openInNewTab,
+      isMandatory: navigationItems.isMandatory,
+      createdAt: navigationItems.createdAt,
+      updatedAt: navigationItems.updatedAt,
+      pageSlug: unionPages.slug,
+      fileUrl: files.fileUrl,
+    })
     .from(navigationItems)
+    .leftJoin(unionPages, eq(navigationItems.pageId, unionPages.id))
+    .leftJoin(files, eq(navigationItems.fileId, files.id))
     .where(eq(navigationItems.unionId, unionId))
     .orderBy(asc(navigationItems.sortOrder));
+
+  return items;
 }
 
 async function handleSignOut() {
