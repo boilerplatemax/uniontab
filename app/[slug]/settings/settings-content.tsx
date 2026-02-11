@@ -758,6 +758,29 @@ export function SettingsContent() {
             </CardContent>
           </Card>
 
+          {/* Custom Pages & Navigation */}
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle>Custom Pages & Navigation</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-gray-600">
+                Want to add new pages, rearrange your navigation, or customize your site structure? Our team will set it up for you.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  router.push(
+                    `/${union.slug}/support?category=site_customization&subject=${encodeURIComponent('Navigation & Page Customization Request')}`
+                  )
+                }
+              >
+                Request Customization
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Actions */}
           <div className="flex justify-between items-center">
             <button

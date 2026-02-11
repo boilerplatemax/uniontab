@@ -36,6 +36,13 @@
       "when": 1768489224979,
       "tag": "0004_legal_mac_gargan",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770831764218,
+      "tag": "0005_legal_mysterio",
+      "breakpoints": true
     }
   ]
 }

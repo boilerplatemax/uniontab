@@ -305,6 +305,27 @@ export const unionPages = pgTable('union_pages', {
   updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
 });
 
+export const navigationItems = pgTable('navigation_items', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  parentId: integer('parent_id'),
+  label: varchar('label', { length: 100 }).notNull(),
+  sortOrder: integer('sort_order').notNull().default(0),
+  visibility: varchar('visibility', { length: 20 }).notNull().default('public'), // 'public', 'members_only', 'admins_only'
+  linkType: varchar('link_type', { length: 20 }).notNull(), // 'page', 'file', 'external_url', 'built_in_route'
+  pageId: integer('page_id').references(() => unionPages.id, { onDelete: 'set null' }),
+  fileId: integer('file_id').references(() => files.id, { onDelete: 'set null' }),
+  externalUrl: text('external_url'),
+  builtInRoute: varchar('built_in_route', { length: 100 }), // 'news', 'about', 'events', 'files', 'elections', 'contact'
+  isEnabled: boolean('is_enabled').notNull().default(true),
+  openInNewTab: boolean('open_in_new_tab').notNull().default(false),
+  isMandatory: boolean('is_mandatory').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 export const posts = pgTable('posts', {
   id: serial('id').primaryKey(),
   unionId: integer('union_id')
@@ -741,6 +762,7 @@ export const unionsRelations = relations(unions, ({ one, many }) => ({
   activityLogs: many(activityLogs),
   invitations: many(invitations),
   pages: many(unionPages),
+  navigationItems: many(navigationItems),
   posts: many(posts),
   files: many(files),
   events: many(events),
@@ -882,6 +904,29 @@ export const unionPagesRelations = relations(unionPages, ({ one }) => ({
   updatedBy: one(users, {
     fields: [unionPages.updatedBy],
     references: [users.id],
+  }),
+}));
+
+export const navigationItemsRelations = relations(navigationItems, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [navigationItems.unionId],
+    references: [unions.id],
+  }),
+  parent: one(navigationItems, {
+    fields: [navigationItems.parentId],
+    references: [navigationItems.id],
+    relationName: 'parentChild',
+  }),
+  children: many(navigationItems, {
+    relationName: 'parentChild',
+  }),
+  page: one(unionPages, {
+    fields: [navigationItems.pageId],
+    references: [unionPages.id],
+  }),
+  file: one(files, {
+    fields: [navigationItems.fileId],
+    references: [files.id],
   }),
 }));
 
@@ -1660,6 +1705,8 @@ export type Invitation = typeof invitations.$inferSelect;
 export type NewInvitation = typeof invitations.$inferInsert;
 export type UnionPage = typeof unionPages.$inferSelect;
 export type NewUnionPage = typeof unionPages.$inferInsert;
+export type NavigationItem = typeof navigationItems.$inferSelect;
+export type NewNavigationItem = typeof navigationItems.$inferInsert;
 export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 export type File = typeof files.$inferSelect;
@@ -2232,6 +2279,7 @@ export enum SupportTicketCategory {
   GENERAL_INQUIRY = 'general_inquiry',
   BILLING = 'billing',
   TECHNICAL_ISSUE = 'technical_issue',
+  SITE_CUSTOMIZATION = 'site_customization',
 }
 
 export enum SupportTicketStatus {

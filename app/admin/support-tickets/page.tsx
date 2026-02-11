@@ -91,6 +91,7 @@ const categoryOptions = [
   { value: 'general_inquiry', label: 'General Inquiry' },
   { value: 'billing', label: 'Billing' },
   { value: 'technical_issue', label: 'Technical Issue' },
+  { value: 'site_customization', label: 'Site Customization' },
 ];
 
 const statusOptions = [
