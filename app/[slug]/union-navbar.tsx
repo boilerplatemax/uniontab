@@ -416,22 +416,300 @@ export function UnionNavbar({
 
   // ── Non-member navbar ──────────────────────────────────────────────────
 
+  // Public nav items (visible to non-members)
+  const publicNavItems = enabledNavItems.filter(
+    (item) => item.isEnabled && item.visibility === 'public'
+  );
+  const publicTopLevelNavItems = publicNavItems.filter((item) => !item.parentId);
+  const getPublicNavChildren = (parentId: number) =>
+    publicNavItems.filter((item) => item.parentId === parentId);
+
+  // Mobile state for non-member menu
+  const [nonMemberMobileOpen, setNonMemberMobileOpen] = useState(false);
+
   if (!membership) {
+    const hasPublicNav = useDynamicNav && publicTopLevelNavItems.length > 0;
+    const publicFallbackTabs = hardcodedTabItems.filter((item) => !item.membersOnly);
+
     return (
-      <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14">
-            <Link
-              href={`/${slug}`}
-              prefetch={true}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <span className="font-semibold text-gray-900 text-lg">{displayName}</span>
-            </Link>
-            <MemberLoginDropdown slug={slug} contactEmail={contactEmail} />
+      <>
+        <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
+          <div className="w-full px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center h-14 gap-4">
+              <Link
+                href={`/${slug}`}
+                prefetch={true}
+                className="flex-shrink-0 font-semibold text-gray-900 text-lg hover:opacity-80 transition-opacity cursor-pointer"
+                onClick={() => setActiveTab('posts')}
+              >
+                {displayName}
+              </Link>
+
+              <div className="hidden lg:block flex-1" />
+
+              {/* Desktop nav items */}
+              <div className="hidden lg:flex items-center gap-1">
+                {!hasPublicNav ? (
+                  publicFallbackTabs.map((item) => {
+                    const isActive = activeTab === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => setActiveTab(item.key)}
+                        className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
+                          ${isActive
+                            ? 'text-gray-900 bg-gray-100'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`}
+                      >
+                        {item.label}
+                        {isActive && (
+                          <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                        )}
+                      </button>
+                    );
+                  })
+                ) : (
+                  publicTopLevelNavItems.sort((a, b) => a.sortOrder - b.sortOrder).map((navItem) => {
+                    const children = navItem.id ? getPublicNavChildren(navItem.id) : [];
+                    const hasChildren = children.length > 0;
+
+                    if (isBuiltInTab(navItem)) {
+                      const tabKey = routeToTabKey[navItem.builtInRoute!];
+                      const isActive = activeTab === tabKey;
+
+                      if (hasChildren) {
+                        return (
+                          <div
+                            key={navItem.id}
+                            className="relative"
+                            onMouseEnter={() => openDropdown(navItem.id)}
+                            onMouseLeave={closeDropdown}
+                          >
+                            <button
+                              onClick={() => setActiveTab(tabKey)}
+                              className={`relative flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
+                                ${isActive
+                                  ? 'text-gray-900 bg-gray-100'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                }`}
+                            >
+                              {navItem.label}
+                              <ChevronDown className="h-3 w-3" />
+                              {isActive && (
+                                <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                              )}
+                            </button>
+                            {openDropdownId === navItem.id && (
+                              <div
+                                className="absolute left-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+                                onMouseEnter={cancelDropdownClose}
+                                onMouseLeave={closeDropdown}
+                              >
+                                {children.sort((a, b) => a.sortOrder - b.sortOrder).map((child) => (
+                                  <NavDropdownItem key={child.id} item={child} slug={slug} getNavIcon={getNavIcon} getNavHref={getNavHref} isBuiltInTab={isBuiltInTab} routeToTabKey={routeToTabKey} setActiveTab={setActiveTab} onClose={() => setOpenDropdownId(null)} />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <button
+                          key={navItem.id}
+                          onClick={() => setActiveTab(tabKey)}
+                          className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
+                            ${isActive
+                              ? 'text-gray-900 bg-gray-100'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            }`}
+                        >
+                          {navItem.label}
+                          {isActive && (
+                            <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                          )}
+                        </button>
+                      );
+                    }
+
+                    const href = getNavHref(navItem);
+                    if (!href) return null;
+
+                    if (hasChildren) {
+                      return (
+                        <div
+                          key={navItem.id}
+                          className="relative"
+                          onMouseEnter={() => openDropdown(navItem.id)}
+                          onMouseLeave={closeDropdown}
+                        >
+                          <Link
+                            href={href}
+                            target={navItem.openInNewTab || navItem.linkType === 'file' ? '_blank' : undefined}
+                            rel={navItem.openInNewTab || navItem.linkType === 'file' ? 'noopener noreferrer' : undefined}
+                            className="relative flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                          >
+                            {navItem.label}
+                            <ChevronDown className="h-3 w-3" />
+                          </Link>
+                          {openDropdownId === navItem.id && (
+                            <div
+                              className="absolute left-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+                              onMouseEnter={cancelDropdownClose}
+                              onMouseLeave={closeDropdown}
+                            >
+                              {children.sort((a, b) => a.sortOrder - b.sortOrder).map((child) => (
+                                <NavDropdownItem key={child.id} item={child} slug={slug} getNavIcon={getNavIcon} getNavHref={getNavHref} isBuiltInTab={isBuiltInTab} routeToTabKey={routeToTabKey} setActiveTab={setActiveTab} onClose={() => setOpenDropdownId(null)} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={navItem.id}
+                        href={href}
+                        target={navItem.openInNewTab || navItem.linkType === 'file' ? '_blank' : undefined}
+                        rel={navItem.openInNewTab || navItem.linkType === 'file' ? 'noopener noreferrer' : undefined}
+                        className="relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      >
+                        {navItem.label}
+                      </Link>
+                    );
+                  })
+                )}
+
+                <div className="h-5 w-px bg-gray-200 mx-1" />
+                <MemberLoginDropdown slug={slug} contactEmail={contactEmail} />
+              </div>
+
+              {/* Hamburger (mobile) */}
+              <div className="lg:hidden ml-auto flex items-center gap-2">
+                <MemberLoginDropdown slug={slug} contactEmail={contactEmail} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setNonMemberMobileOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+
+        {/* Mobile Full-Screen Overlay for non-members */}
+        {nonMemberMobileOpen && (
+          <div className="fixed inset-0 z-[100] lg:hidden">
+            <div className="absolute inset-0 bg-black/20" onClick={() => setNonMemberMobileOpen(false)} />
+            <div className="absolute inset-0 bg-white overflow-y-auto">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <span className="font-semibold text-gray-900 text-lg">{displayName}</span>
+                <button onClick={() => setNonMemberMobileOpen(false)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                  <X className="h-5 w-5 text-gray-600" />
+                </button>
+              </div>
+              <div className="px-3 py-3">
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Pages</p>
+                {!hasPublicNav ? (
+                  publicFallbackTabs.map((item) => {
+                    const isActive = activeTab === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => { setActiveTab(item.key); setNonMemberMobileOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
+                          ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                      >
+                        <span className="text-gray-500">{item.icon}</span>
+                        <span className="text-[15px] font-medium">{item.label}</span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  publicTopLevelNavItems.sort((a, b) => a.sortOrder - b.sortOrder).map((navItem) => {
+                    const children = navItem.id ? getPublicNavChildren(navItem.id) : [];
+                    const hasChildren = children.length > 0;
+                    const isExpanded = mobileExpandedIds.has(navItem.id);
+                    const icon = getNavIcon(navItem);
+
+                    if (isBuiltInTab(navItem)) {
+                      const tabKey = routeToTabKey[navItem.builtInRoute!];
+                      const isActive = activeTab === tabKey;
+                      return (
+                        <div key={navItem.id}>
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => { setActiveTab(tabKey); setNonMemberMobileOpen(false); }}
+                              className={`flex-1 flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
+                                ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                            >
+                              <span className="text-gray-500">{icon}</span>
+                              <span className="text-[15px] font-medium">{navItem.label}</span>
+                            </button>
+                            {hasChildren && (
+                              <button
+                                onClick={() => toggleMobileExpanded(navItem.id)}
+                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                              >
+                                <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                              </button>
+                            )}
+                          </div>
+                          {hasChildren && isExpanded && (
+                            <div className="ml-8 space-y-0.5">
+                              {children.sort((a, b) => a.sortOrder - b.sortOrder).map((child) => (
+                                <MobileNavChildItem key={child.id} item={child} slug={slug} getNavIcon={getNavIcon} getNavHref={getNavHref} isBuiltInTab={isBuiltInTab} routeToTabKey={routeToTabKey} setActiveTab={setActiveTab} closeMobile={() => setNonMemberMobileOpen(false)} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    const href = getNavHref(navItem);
+                    if (!href) return null;
+                    return (
+                      <div key={navItem.id}>
+                        <div className="flex items-center">
+                          <Link
+                            href={href}
+                            target={navItem.openInNewTab || navItem.linkType === 'file' ? '_blank' : undefined}
+                            rel={navItem.openInNewTab || navItem.linkType === 'file' ? 'noopener noreferrer' : undefined}
+                            onClick={() => setNonMemberMobileOpen(false)}
+                            className="flex-1 flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
+                          >
+                            <span className="text-gray-500">{icon}</span>
+                            <span className="text-[15px] font-medium">{navItem.label}</span>
+                          </Link>
+                          {hasChildren && (
+                            <button
+                              onClick={() => toggleMobileExpanded(navItem.id)}
+                              className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                            >
+                              <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            </button>
+                          )}
+                        </div>
+                        {hasChildren && isExpanded && (
+                          <div className="ml-8 space-y-0.5">
+                            {children.sort((a, b) => a.sortOrder - b.sortOrder).map((child) => (
+                              <MobileNavChildItem key={child.id} item={child} slug={slug} getNavIcon={getNavIcon} getNavHref={getNavHref} isBuiltInTab={isBuiltInTab} routeToTabKey={routeToTabKey} setActiveTab={setActiveTab} closeMobile={() => setNonMemberMobileOpen(false)} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 

@@ -35,9 +35,9 @@ export async function POST(request: Request) {
       .where(and(eq(members.unionId, unionId), eq(members.userId, user.id)))
       .limit(1);
 
-    if (!membership || membership.role !== 'owner') {
+    if (!membership || (membership.role !== 'owner' && membership.role !== 'admin')) {
       return NextResponse.json(
-        { error: 'Only union owners can create posts' },
+        { error: 'Only union owners and admins can create posts' },
         { status: 403 }
       );
     }

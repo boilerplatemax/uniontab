@@ -38,6 +38,7 @@ interface UnionProfileTabsProps {
   userId?: number | null;
   prestigeMode?: boolean;
   hideTabNav?: boolean;
+  isOwnerOrAdmin?: boolean;
 }
 
 export function UnionProfileTabs({
@@ -51,7 +52,10 @@ export function UnionProfileTabs({
   userId,
   prestigeMode = false,
   hideTabNav = false,
+  isOwnerOrAdmin: isOwnerOrAdminProp,
 }: UnionProfileTabsProps) {
+  const isOwnerOrAdmin = isOwnerOrAdminProp ?? isOwner;
+  const canManageContent = isOwnerOrAdmin;
   const router = useRouter();
   const { activeTab, setActiveTab } = useUnionTab();
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
@@ -253,7 +257,7 @@ export function UnionProfileTabs({
 
       {/* Action bar below tabs */}
       <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-        {isOwner && activeTab === 'posts' && (
+        {canManageContent && activeTab === 'posts' && (
           <Button
             size="sm"
             className="bg-rose-600 hover:bg-rose-700 rounded-full px-5"
@@ -283,7 +287,7 @@ export function UnionProfileTabs({
           </div>
         )}
 
-        {isOwner && activeTab === 'files' && (
+        {canManageContent && activeTab === 'files' && (
           <Button
             size="sm"
             className="bg-rose-600 hover:bg-rose-700 rounded-full px-5"
@@ -294,7 +298,7 @@ export function UnionProfileTabs({
           </Button>
         )}
 
-        {isOwner && activeTab === 'events' && (
+        {canManageContent && activeTab === 'events' && (
           <Button
             size="sm"
             className="bg-rose-600 hover:bg-rose-700 rounded-full px-5"
@@ -385,7 +389,7 @@ export function UnionProfileTabs({
         </div>
 
         <div className="hidden sm:flex gap-2 items-center pb-2 pr-6 flex-shrink-0">
-          {isOwner && (
+          {canManageContent && (
             <>
               {activeTab === 'posts' && (
                 <Button
@@ -401,7 +405,7 @@ export function UnionProfileTabs({
           )}
 
           {activeTab === 'posts' && (
-            <div className={`hidden lg:flex gap-1 ${isOwner ? 'ml-2 border-l pl-2' : ''}`}>
+            <div className={`hidden lg:flex gap-1 ${canManageContent ? 'ml-2 border-l pl-2' : ''}`}>
               <Button
                 variant={postsView === 'column' ? 'default' : 'ghost'}
                 size="sm"
@@ -423,7 +427,7 @@ export function UnionProfileTabs({
             </div>
           )}
 
-          {isOwner && (
+          {canManageContent && (
             <>
               {activeTab === 'files' && (
                 <Button
@@ -449,7 +453,7 @@ export function UnionProfileTabs({
           )}
 
           {activeTab === 'events' && (
-            <div className={`flex gap-2 ${isOwner ? 'ml-2 border-l pl-2' : ''}`}>
+            <div className={`flex gap-2 ${canManageContent ? 'ml-2 border-l pl-2' : ''}`}>
               <Button
                 variant={eventsView === 'list' ? 'default' : 'outline'}
                 size="sm"
@@ -476,6 +480,84 @@ export function UnionProfileTabs({
       {/* Tabs Navigation (hidden when nav is merged into top bar) */}
       {!hideTabNav && (prestigeMode ? <PrestigeTabNav /> : <StandardTabNav />)}
 
+      {/* Standalone action bar when tab nav is hidden (buttons + view toggles) */}
+      {hideTabNav && (activeTab === 'posts' || activeTab === 'events' || activeTab === 'files') && (
+        <div className="flex flex-wrap items-center gap-3">
+          {canManageContent && activeTab === 'posts' && (
+            <Button
+              size="sm"
+              className={prestigeMode ? 'bg-rose-600 hover:bg-rose-700 rounded-full px-5' : 'bg-blue-600 hover:bg-blue-700'}
+              onClick={() => setCreatePostOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Post
+            </Button>
+          )}
+          {activeTab === 'posts' && (
+            <div className={`flex gap-1 ${prestigeMode ? 'bg-white border border-gray-200 rounded-full p-1' : ''}`}>
+              <Button
+                variant={postsView === 'column' ? 'default' : prestigeMode ? 'ghost' : 'ghost'}
+                size="sm"
+                onClick={() => setPostsView('column')}
+                title="Column view"
+                className={prestigeMode ? `p-2 rounded-full transition-colors cursor-pointer ${postsView === 'column' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}` : 'px-2'}
+              >
+                <LayoutList className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={postsView === 'grid' ? 'default' : prestigeMode ? 'ghost' : 'ghost'}
+                size="sm"
+                onClick={() => setPostsView('grid')}
+                title="Grid view"
+                className={prestigeMode ? `p-2 rounded-full transition-colors cursor-pointer ${postsView === 'grid' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}` : 'px-2'}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          {canManageContent && activeTab === 'events' && (
+            <Button
+              size="sm"
+              className={prestigeMode ? 'bg-rose-600 hover:bg-rose-700 rounded-full px-5' : 'bg-blue-600 hover:bg-blue-700'}
+              onClick={() => setCreateEventOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Event
+            </Button>
+          )}
+          {activeTab === 'events' && (
+            <div className={`flex gap-1 ${prestigeMode ? 'bg-white border border-gray-200 rounded-full p-1' : ''}`}>
+              <Button
+                variant={eventsView === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setEventsView('list')}
+                className={prestigeMode ? `px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${eventsView === 'list' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}` : ''}
+              >
+                List
+              </Button>
+              <Button
+                variant={eventsView === 'calendar' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setEventsView('calendar')}
+                className={prestigeMode ? `px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${eventsView === 'calendar' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}` : ''}
+              >
+                Calendar
+              </Button>
+            </div>
+          )}
+          {canManageContent && activeTab === 'files' && (
+            <Button
+              size="sm"
+              className={prestigeMode ? 'bg-rose-600 hover:bg-rose-700 rounded-full px-5' : 'bg-blue-600 hover:bg-blue-700'}
+              onClick={() => setUploadFileOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Upload File
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Tab Content */}
       <div className="space-y-4">
           {/* About Tab */}
@@ -489,7 +571,7 @@ export function UnionProfileTabs({
           {activeTab === 'posts' && (
             <>
               {/* Create Post Button (Mobile only - non-prestige) */}
-              {!prestigeMode && isOwner && (
+              {!prestigeMode && canManageContent && (
                 <div className="flex justify-start sm:hidden">
                   <Button
                     className="bg-blue-600 hover:bg-blue-700"
@@ -861,7 +943,7 @@ export function UnionProfileTabs({
           {activeTab === 'files' && (
             <>
               {/* Upload button + Storage widget toolbar */}
-              {isOwner && (
+              {canManageContent && (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-1">
                   <Button
                     className="bg-blue-600 hover:bg-blue-700"
@@ -933,7 +1015,7 @@ export function UnionProfileTabs({
               {/* Non-prestige mobile controls */}
               {!prestigeMode && (
                 <>
-                  {isOwner && (
+                  {canManageContent && (
                     <div className="flex items-center justify-between sm:hidden">
                       <Button
                         className="bg-blue-600 hover:bg-blue-700"
@@ -948,7 +1030,7 @@ export function UnionProfileTabs({
                       </div>
                     </div>
                   )}
-                  {!isOwner && (
+                  {!canManageContent && (
                     <div className="flex justify-end gap-2 sm:hidden">
                       <Button variant={eventsView === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('list')}>List</Button>
                       <Button variant={eventsView === 'calendar' ? 'default' : 'outline'} size="sm" onClick={() => setEventsView('calendar')}>Calendar</Button>

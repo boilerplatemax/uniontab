@@ -271,11 +271,12 @@ export async function getUnionPageData(slug: string) {
 
   const membership = await checkMembership(union.id);
   const isOwner = membership?.member.role === 'owner';
+  const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
   const isApprovedMember = membership?.member.status === 'approved' || isOwner;
 
   const currentUser = await getUser();
 
-  const pendingMembersCount = isOwner ? await getPendingMembersCount(union.id) : 0;
+  const pendingMembersCount = isOwnerOrAdmin ? await getPendingMembersCount(union.id) : 0;
 
   const grievanceNotificationCount = currentUser && isApprovedMember
     ? await getGrievanceNotificationCount(union.id, currentUser.id, isOwner)
@@ -299,6 +300,7 @@ export async function getUnionPageData(slug: string) {
     union,
     membership,
     isOwner,
+    isOwnerOrAdmin,
     isApprovedMember,
     currentUser,
     pendingMembersCount,

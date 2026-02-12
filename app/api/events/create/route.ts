@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user is owner of the union
+    // Check if user is owner or admin of the union
     const [membership] = await db
       .select()
       .from(members)
@@ -42,14 +42,13 @@ export async function POST(request: NextRequest) {
         and(
           eq(members.userId, user.id),
           eq(members.unionId, unionId),
-          eq(members.role, 'owner')
         )
       )
       .limit(1);
 
-    if (!membership) {
+    if (!membership || (membership.role !== 'owner' && membership.role !== 'admin')) {
       return NextResponse.json(
-        { error: 'Only union owners can create events' },
+        { error: 'Only union owners and admins can create events' },
         { status: 403 }
       );
     }

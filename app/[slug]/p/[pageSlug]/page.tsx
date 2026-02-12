@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, unionPages, members, users } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { unions, unionPages, members, users, navigationItems, files } from '@/lib/db/schema';
+import { eq, and, asc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
 import { CustomPageContent } from './custom-page-content';
@@ -72,6 +72,37 @@ async function checkMembership(unionId: number) {
   return membership;
 }
 
+async function getNavigationItems(unionId: number) {
+  const items = await db
+    .select({
+      id: navigationItems.id,
+      unionId: navigationItems.unionId,
+      parentId: navigationItems.parentId,
+      label: navigationItems.label,
+      sortOrder: navigationItems.sortOrder,
+      visibility: navigationItems.visibility,
+      linkType: navigationItems.linkType,
+      pageId: navigationItems.pageId,
+      fileId: navigationItems.fileId,
+      externalUrl: navigationItems.externalUrl,
+      builtInRoute: navigationItems.builtInRoute,
+      isEnabled: navigationItems.isEnabled,
+      openInNewTab: navigationItems.openInNewTab,
+      isMandatory: navigationItems.isMandatory,
+      createdAt: navigationItems.createdAt,
+      updatedAt: navigationItems.updatedAt,
+      pageSlug: unionPages.slug,
+      fileUrl: files.fileUrl,
+    })
+    .from(navigationItems)
+    .leftJoin(unionPages, eq(navigationItems.pageId, unionPages.id))
+    .leftJoin(files, eq(navigationItems.fileId, files.id))
+    .where(eq(navigationItems.unionId, unionId))
+    .orderBy(asc(navigationItems.sortOrder));
+
+  return items;
+}
+
 async function handleSignOut() {
   'use server';
   (await cookies()).delete('session');
@@ -107,6 +138,8 @@ export default async function CustomPage({
     }
   }
 
+  const navItems = await getNavigationItems(union.id);
+
   return (
     <CustomPageContent
       union={union}
@@ -114,6 +147,7 @@ export default async function CustomPage({
       membership={membership}
       handleSignOut={handleSignOut}
       slug={slug}
+      navigationItems={navItems}
     />
   );
 }
