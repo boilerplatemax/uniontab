@@ -29,6 +29,7 @@ export function PrestigeTheme({
   events,
   membership,
   isOwner,
+  isOwnerOrAdmin,
   isApprovedMember,
   userId,
   slug,
@@ -248,6 +249,7 @@ export function PrestigeTheme({
           events={events}
           membership={membership}
           isOwner={isOwner}
+          isOwnerOrAdmin={isOwnerOrAdmin}
           isApprovedMember={isApprovedMember}
           userId={userId}
           prestigeMode={true}

@@ -14,6 +14,7 @@ export async function UnionPageContent({ slug }: { slug: string }) {
     events: data.unionEvents,
     membership: data.membership,
     isOwner: data.isOwner,
+    isOwnerOrAdmin: data.isOwnerOrAdmin,
     isApprovedMember: data.isApprovedMember,
     userId: data.currentUser?.id || null,
     slug: data.slug,

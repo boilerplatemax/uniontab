@@ -28,6 +28,7 @@ export function ModernTheme({
   events,
   membership,
   isOwner,
+  isOwnerOrAdmin,
   isApprovedMember,
   userId,
   slug,
@@ -193,6 +194,7 @@ export function ModernTheme({
           events={events}
           membership={membership}
           isOwner={isOwner}
+          isOwnerOrAdmin={isOwnerOrAdmin}
           isApprovedMember={isApprovedMember}
           userId={userId}
           hideTabNav={true}

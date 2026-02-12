@@ -25,6 +25,7 @@ export function DefaultTheme({
   events,
   membership,
   isOwner,
+  isOwnerOrAdmin,
   isApprovedMember,
   userId,
   slug,
@@ -220,6 +221,7 @@ export function DefaultTheme({
           events={events}
           membership={membership}
           isOwner={isOwner}
+          isOwnerOrAdmin={isOwnerOrAdmin}
           isApprovedMember={isApprovedMember}
           userId={userId}
           hideTabNav={true}

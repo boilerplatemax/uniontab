@@ -12,6 +12,7 @@ export interface ThemeProps {
   events: (Omit<Event, 'createdBy'> & { createdBy: { name: string } })[];
   membership: any;
   isOwner: boolean;
+  isOwnerOrAdmin: boolean;
   isApprovedMember: boolean;
   userId: number | null;
   slug: string;

@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { UnionNavbar } from '../../union-navbar';
 import { NavbarSpacer } from '../../navbar-spacer';
-import type { Union, UnionPage, Member, User } from '@/lib/db/schema';
+import { UnionTabProvider } from '../../union-tab-context';
+import type { Union, UnionPage, Member, User, NavigationItem } from '@/lib/db/schema';
 
 interface CustomPageContentProps {
   union: Union;
@@ -12,6 +13,7 @@ interface CustomPageContentProps {
   membership: { user: User; member: Member } | null;
   handleSignOut: () => Promise<void>;
   slug: string;
+  navigationItems?: (NavigationItem & { pageSlug?: string | null; fileUrl?: string | null })[];
 }
 
 function getUnionDisplayName(union: Union): string {
@@ -28,8 +30,10 @@ export function CustomPageContent({
   membership,
   handleSignOut,
   slug,
+  navigationItems,
 }: CustomPageContentProps) {
   return (
+    <UnionTabProvider slug={slug}>
     <div className="min-h-screen bg-white">
       <UnionNavbar
         slug={slug}
@@ -37,6 +41,9 @@ export function CustomPageContent({
         localNumber={union.publicName ? null : union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}
+        navigationItems={navigationItems}
+        contactEmail={union.email}
+        isApprovedMember={membership?.member.status === 'approved' || membership?.member.role === 'owner'}
       />
       <NavbarSpacer />
 
@@ -59,5 +66,6 @@ export function CustomPageContent({
         />
       </div>
     </div>
+    </UnionTabProvider>
   );
 }
