@@ -1,12 +1,13 @@
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, members, users, memberDocuments, memberCertifications, memberPositions, memberNotes } from '@/lib/db/schema';
-import { eq, and, count } from 'drizzle-orm';
+import { unions, members, users, memberDocuments, memberCertifications, memberPositions, memberNotes, navigationItems, files } from '@/lib/db/schema';
+import { eq, and, count, asc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { MemberProfileContent } from './member-profile-content';
 import { UnionNavbar } from '../../union-navbar';
 import { NavbarSpacer } from '../../navbar-spacer';
 import { cookies } from 'next/headers';
+import { getUnionNavigationItems } from '../../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -160,6 +161,7 @@ export default async function MemberProfilePage({
     redirect(`/${slug}`);
   }
 
+  const navItems = await getUnionNavigationItems(union.id);
   const memberData = await getMemberById(memberId, union.id);
 
   if (!memberData) {
@@ -184,6 +186,7 @@ export default async function MemberProfilePage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
       <MemberProfileContent

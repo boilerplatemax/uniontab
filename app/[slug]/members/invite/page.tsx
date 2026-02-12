@@ -7,6 +7,7 @@ import { eq, and } from "drizzle-orm";
 import InvitePageContent from "./invite-page-content";
 import { cookies } from "next/headers";
 import { isPaidSubscription } from "@/lib/membership/limits";
+import { getUnionNavigationItems } from '../../get-union-page-data';
 
 export const metadata: Metadata = {
   title: "Invite Members",
@@ -68,6 +69,8 @@ export default async function InvitePage({ params }: PageProps) {
   // Check if union has paid subscription for bulk invite capability
   const canBulkInvite = isPaidSubscription(union);
 
+  const navItems = await getUnionNavigationItems(union.id);
+
   return (
     <InvitePageContent
       unionName={union.name}
@@ -83,6 +86,7 @@ export default async function InvitePage({ params }: PageProps) {
       themeColor={union.themeColor}
       unionId={union.id}
       canBulkInvite={canBulkInvite}
+      navigationItems={navItems}
     />
   );
 }

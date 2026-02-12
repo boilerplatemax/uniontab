@@ -12,6 +12,7 @@ import { ArrowLeft, Calendar, Clock, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { formatDate as formatSimpleDate } from '@/lib/utils/date';
+import { getUnionNavigationItems } from '../../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -108,6 +109,7 @@ export default async function EventPage({
 
   const membership = await checkMembership(union.id);
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
+  const navItems = await getUnionNavigationItems(union.id);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -134,6 +136,7 @@ export default async function EventPage({
         localNumber={union.publicName ? null : union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
 

@@ -48,6 +48,7 @@ interface SupportContentProps {
   membership: { user: User; member: Member } | null;
   handleSignOut: () => Promise<void>;
   slug: string;
+  navigationItems?: any[];
 }
 
 interface Ticket {
@@ -113,6 +114,7 @@ export function SupportContent({
   membership,
   handleSignOut,
   slug,
+  navigationItems,
 }: SupportContentProps) {
   const searchParams = useSearchParams();
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -327,6 +329,7 @@ export function SupportContent({
         localNumber={union.publicName ? null : union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}
+        navigationItems={navigationItems}
       />
       <NavbarSpacer />
 

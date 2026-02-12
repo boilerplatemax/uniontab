@@ -5,6 +5,7 @@ import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
 import { HelpContent } from './help-content';
+import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -59,12 +60,15 @@ export default async function HelpPage({
     redirect(`/${slug}`);
   }
 
+  const navItems = await getUnionNavigationItems(union.id);
+
   return (
     <HelpContent
       union={union}
       membership={membership}
       handleSignOut={handleSignOut}
       slug={slug}
+      navigationItems={navItems}
     />
   );
 }

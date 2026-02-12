@@ -4,6 +4,7 @@ import { unions, members, users } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { UnionNavbar } from '../union-navbar';
+import { getUnionNavigationItems } from '../get-union-page-data';
 import { NavbarSpacer } from '../navbar-spacer';
 import { MeetingsContent } from './meetings-content';
 import { cookies } from 'next/headers';
@@ -69,6 +70,7 @@ export default async function MeetingsPage({
     notFound();
   }
 
+  const navItems = await getUnionNavigationItems(union.id);
   const membership = await checkMembership(union.id);
 
   // Meetings require authentication
@@ -99,6 +101,7 @@ export default async function MeetingsPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
 

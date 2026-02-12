@@ -65,7 +65,15 @@ export function UnionTabProvider({ slug, children }: { slug: string; children: R
   const setActiveTab = useCallback((tab: TabKey) => {
     setActiveTabState(tab);
     const url = tab === 'posts' ? `/${slug}` : `/${slug}/${tab}`;
-    window.history.pushState({}, '', url);
+    // If we're on the main union page (or a tab sub-page), use pushState for fast tab switching.
+    // If we're on a different page (custom page, tool page, etc.), do a full navigation.
+    const currentPath = window.location.pathname;
+    const isMainPage = currentPath === `/${slug}` || TAB_KEYS.some(k => currentPath === `/${slug}/${k}`);
+    if (isMainPage) {
+      window.history.pushState({}, '', url);
+    } else {
+      window.location.href = url;
+    }
   }, [slug]);
 
   return (
