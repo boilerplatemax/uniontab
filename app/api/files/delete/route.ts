@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { files, members } from '@/lib/db/schema';
+import { files, members, navigationItems } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { decrementStorageUsage } from '@/lib/storage/limits';
@@ -50,6 +50,12 @@ export async function POST(request: Request) {
     // Store file size before deletion for storage tracking
     const fileSize = file.fileSize;
     const unionId = file.unionId;
+
+    // Clean up any navigation items linking to this file
+    await db
+      .update(navigationItems)
+      .set({ fileId: null, isEnabled: false, updatedAt: new Date() })
+      .where(eq(navigationItems.fileId, fileId));
 
     // Delete the file
     await db.delete(files).where(eq(files.id, fileId));
