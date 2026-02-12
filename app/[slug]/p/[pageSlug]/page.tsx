@@ -5,6 +5,7 @@ import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
 import { CustomPageContent } from './custom-page-content';
+import type { Metadata } from 'next';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -26,6 +27,32 @@ async function getPageBySlug(unionId: number, pageSlug: string) {
     .limit(1);
 
   return page;
+}
+
+interface PageProps {
+  params: Promise<{ slug: string; pageSlug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug, pageSlug } = await params;
+
+  const union = await getUnionBySlug(slug);
+  if (!union) {
+    return { title: 'Page Not Found' };
+  }
+
+  const page = await getPageBySlug(union.id, pageSlug);
+  if (!page) {
+    return { title: 'Page Not Found' };
+  }
+
+  const unionName = union.publicName || union.name;
+  const title = page.metaTitle || page.title;
+
+  return {
+    title: `${title} | ${unionName}`,
+    description: page.metaDescription || page.excerpt || undefined,
+  };
 }
 
 async function checkMembership(unionId: number) {
