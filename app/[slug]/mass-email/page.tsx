@@ -1,12 +1,13 @@
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, members, users } from '@/lib/db/schema';
-import { eq, and, count, isNull } from 'drizzle-orm';
+import { unions, members, users, navigationItems, files } from '@/lib/db/schema';
+import { eq, and, count, isNull, asc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { MassEmailContent } from './mass-email-content';
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { cookies } from 'next/headers';
+import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -97,6 +98,7 @@ export default async function MassEmailPage({
     redirect(`/${slug}`);
   }
 
+  const navItems = await getUnionNavigationItems(union.id);
   const unionMembers = await getUnionMembers(union.id);
   const membership = await getMembership(union.id, user.id);
   const pendingMembersCount = await getPendingMembersCount(union.id);
@@ -110,6 +112,7 @@ export default async function MassEmailPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
       <MassEmailContent

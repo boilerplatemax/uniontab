@@ -7,6 +7,7 @@ import { db } from '@/lib/db/drizzle';
 import { unions, members, users } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
 import { cookies } from 'next/headers';
+import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -68,6 +69,7 @@ export default async function ProfilePage({
   const membership = await getMembership(union.id, user.id);
   const isOwner = membership?.member.role === 'owner';
   const pendingMembersCount = isOwner ? await getPendingMembersCount(union.id) : 0;
+  const navItems = await getUnionNavigationItems(union.id);
 
   // Get member's dues with receipts
   const memberDues = membership ? await getMemberDuesWithReceipts(membership.member.id) : [];
@@ -81,6 +83,7 @@ export default async function ProfilePage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
       <MemberProfile

@@ -23,6 +23,7 @@ interface InvitePageContentProps {
   themeColor?: string | null;
   unionId: number;
   canBulkInvite: boolean;
+  navigationItems?: any[];
 }
 
 export default function InvitePageContent({
@@ -36,6 +37,7 @@ export default function InvitePageContent({
   themeColor,
   unionId,
   canBulkInvite,
+  navigationItems,
 }: InvitePageContentProps) {
   const fullUnionName = localNumber
     ? `${unionName} Local ${localNumber}`
@@ -128,6 +130,7 @@ export default function InvitePageContent({
         handleSignOut={handleSignOut}
         pendingMembersCount={0}
         announcementId={null}
+        navigationItems={navigationItems}
       />
 
       {/* Spacing for fixed navbar */}

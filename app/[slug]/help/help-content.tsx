@@ -32,6 +32,7 @@ interface HelpContentProps {
   membership: { user: User; member: Member } | null;
   handleSignOut: () => Promise<void>;
   slug: string;
+  navigationItems?: any[];
 }
 
 const tutorials = [
@@ -98,6 +99,7 @@ export function HelpContent({
   membership,
   handleSignOut,
   slug,
+  navigationItems,
 }: HelpContentProps) {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -107,6 +109,7 @@ export function HelpContent({
         localNumber={union.publicName ? null : union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}
+        navigationItems={navigationItems}
       />
       <NavbarSpacer />
 

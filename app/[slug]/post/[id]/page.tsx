@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { formatDate } from '@/lib/utils/date';
 import { Button } from '@/components/ui/button';
+import { getUnionNavigationItems } from '../../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -142,6 +143,7 @@ export default async function PostPage({
 
   const membership = await checkMembership(union.id);
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
+  const navItems = await getUnionNavigationItems(union.id);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -151,6 +153,7 @@ export default async function PostPage({
         localNumber={union.publicName ? null : union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
 

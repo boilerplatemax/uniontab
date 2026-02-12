@@ -222,7 +222,7 @@ async function getActiveAnnouncements(unionId: number, userId?: number) {
   return { popup, banner };
 }
 
-async function getUnionNavigationItems(unionId: number) {
+export async function getUnionNavigationItems(unionId: number) {
   const items = await db
     .select({
       id: navigationItems.id,

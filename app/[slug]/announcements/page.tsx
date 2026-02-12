@@ -7,6 +7,7 @@ import { AnnouncementsContent } from './announcements-content';
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { signOut } from '@/app/(login)/actions';
+import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -102,6 +103,7 @@ export default async function AnnouncementsPage({
   }
 
   const pendingMembersCount = await getPendingMembersCount(union.id);
+  const navItems = await getUnionNavigationItems(union.id);
   const unionAnnouncements = await getUnionAnnouncements(union.id);
 
   async function handleSignOut() {
@@ -118,6 +120,7 @@ export default async function AnnouncementsPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
       <AnnouncementsContent slug={slug} union={union} announcements={unionAnnouncements} isOwner={true} />

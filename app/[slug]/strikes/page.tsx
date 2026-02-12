@@ -5,6 +5,7 @@ import { eq, and, count, desc } from 'drizzle-orm';
 import { getUser, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { StrikesContent } from './strikes-content';
 import { UnionNavbar } from '../union-navbar';
+import { getUnionNavigationItems } from '../get-union-page-data';
 import { NavbarSpacer } from '../navbar-spacer';
 import { cookies } from 'next/headers';
 
@@ -111,6 +112,7 @@ export default async function StrikesPage({
     notFound();
   }
 
+  const navItems = await getUnionNavigationItems(union.id);
   const membership = await getMembership(union.id, user.id);
   if (!membership || membership.member.status !== 'approved') {
     redirect(`/${slug}`);
@@ -134,6 +136,7 @@ export default async function StrikesPage({
         pendingMembersCount={pendingCount}
         grievanceNotificationCount={grievanceNotificationCount}
         strikeNotificationCount={strikeNotificationCount}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
       <StrikesContent

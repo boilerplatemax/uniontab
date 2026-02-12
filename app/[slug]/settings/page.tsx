@@ -7,6 +7,7 @@ import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { signOut } from '@/app/(login)/actions';
 import { SettingsContent } from './settings-content';
+import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -69,6 +70,7 @@ export default async function SettingsPage({
   }
 
   const pendingMembersCount = await getPendingMembersCount(union.id);
+  const navItems = await getUnionNavigationItems(union.id);
 
   async function handleSignOut() {
     'use server';
@@ -84,6 +86,7 @@ export default async function SettingsPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
       <SettingsContent />

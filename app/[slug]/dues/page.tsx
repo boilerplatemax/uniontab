@@ -5,6 +5,7 @@ import { eq, and, count } from 'drizzle-orm';
 import { getUser, getDuesForUnion, getDuesSummaryForUnion } from '@/lib/db/queries';
 import { DuesContent } from './dues-content';
 import { UnionNavbar } from '../union-navbar';
+import { getUnionNavigationItems } from '../get-union-page-data';
 import { NavbarSpacer } from '../navbar-spacer';
 import { cookies } from 'next/headers';
 
@@ -91,6 +92,7 @@ export default async function DuesPage({
     notFound();
   }
 
+  const navItems = await getUnionNavigationItems(union.id);
   const isOwnerOrAdmin = await checkOwnerOrAdmin(union.id, user.id);
 
   if (!isOwnerOrAdmin) {
@@ -112,6 +114,7 @@ export default async function DuesPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
       <DuesContent

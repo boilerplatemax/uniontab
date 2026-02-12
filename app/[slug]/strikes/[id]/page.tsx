@@ -5,6 +5,7 @@ import { eq, and, count, desc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { StrikeDetailContent } from './strike-detail-content';
 import { UnionNavbar } from '../../union-navbar';
+import { getUnionNavigationItems } from '../../get-union-page-data';
 import { NavbarSpacer } from '../../navbar-spacer';
 import { cookies } from 'next/headers';
 
@@ -131,6 +132,7 @@ export default async function StrikeDetailPage({
     notFound();
   }
 
+  const navItems = await getUnionNavigationItems(union.id);
   const membership = await getMembership(union.id, user.id);
   if (!membership || membership.member.status !== 'approved') {
     redirect(`/${slug}`);
@@ -153,6 +155,7 @@ export default async function StrikeDetailPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingCount}
+        navigationItems={navItems}
       />
       <NavbarSpacer />
       <StrikeDetailContent
