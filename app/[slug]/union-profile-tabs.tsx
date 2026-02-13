@@ -942,17 +942,9 @@ export function UnionProfileTabs({
           {/* Files Tab */}
           {activeTab === 'files' && (
             <>
-              {/* Upload button + Storage widget toolbar */}
+              {/* Storage widget toolbar */}
               {canManageContent && (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-1">
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700"
-                    size="sm"
-                    onClick={() => setUploadFileOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Upload File
-                  </Button>
                   <div className="flex-1 max-w-xs">
                     <CompactStorageWidget unionSlug={union.slug} />
                   </div>
