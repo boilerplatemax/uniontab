@@ -4,6 +4,7 @@ import { members, users, unions, massSMS, smsLogs } from '@/lib/db/schema';
 import { eq, and, inArray, isNull, isNotNull } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { sendSMS, isTwilioConfigured, isValidPhoneNumber } from '@/lib/sms/twilio';
+import { sendEmail } from '@/lib/email/sendgrid';
 import { checkSMSLimit, incrementSMSUsage, SMS_CHARACTER_LIMIT } from '@/lib/sms/limits';
 
 export async function POST(request: Request) {
@@ -229,6 +230,19 @@ export async function POST(request: Request) {
     if (successCount > 0) {
       await incrementSMSUsage(unionId, successCount);
     }
+
+    // Notify info@uniontab.com about the SMS blast
+    const unionDisplay = `${union.name.toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`;
+    const senderName = user.name || 'Unknown';
+    const senderRole = requestingMember.role;
+    sendEmail({
+      to: 'info@uniontab.com',
+      subject: `SMS blast sent - ${unionDisplay}`,
+      text: `SMS blast sent by ${unionDisplay}\n\nSender: ${senderName} (${senderRole})\nRecipients: ${successCount} sent, ${failureCount} failed\n\nMessage:\n${message}`,
+      html: `<p><strong>SMS blast sent by ${unionDisplay}</strong></p><p>Sender: ${senderName} (${senderRole})</p><p>Recipients: ${successCount} sent, ${failureCount} failed</p><hr/><p><strong>Message:</strong></p><p>${message}</p>`,
+    }).catch((error) => {
+      console.error('Failed to send blast notification:', error);
+    });
 
     return NextResponse.json({
       success: true,

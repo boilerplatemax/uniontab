@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutList, LayoutGrid } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -59,8 +59,8 @@ export function UnionProfileTabs({
   const router = useRouter();
   const { activeTab, setActiveTab } = useUnionTab();
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
-  // Default to grid view in prestige mode for masonry-style layout
-  const [postsView, setPostsView] = useState<'column' | 'grid'>(prestigeMode ? 'grid' : 'column');
+  // Default to grid view for all modes
+  const [postsView, setPostsView] = useState<'column' | 'grid'>('grid');
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [uploadFileOpen, setUploadFileOpen] = useState(false);
   const [createEventOpen, setCreateEventOpen] = useState(false);
@@ -268,36 +268,6 @@ export function UnionProfileTabs({
           </Button>
         )}
 
-        {activeTab === 'posts' && (
-          <div className="flex gap-1 bg-white border border-gray-200 rounded-full p-1">
-            <button
-              onClick={() => setPostsView('grid')}
-              className={`p-2 rounded-full transition-colors cursor-pointer ${postsView === 'grid' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
-              title="Grid view"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setPostsView('column')}
-              className={`p-2 rounded-full transition-colors cursor-pointer ${postsView === 'column' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}
-              title="List view"
-            >
-              <LayoutList className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-
-        {canManageContent && activeTab === 'files' && (
-          <Button
-            size="sm"
-            className="bg-rose-600 hover:bg-rose-700 rounded-full px-5"
-            onClick={() => setUploadFileOpen(true)}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Upload File
-          </Button>
-        )}
-
         {canManageContent && activeTab === 'events' && (
           <Button
             size="sm"
@@ -404,52 +374,15 @@ export function UnionProfileTabs({
             </>
           )}
 
-          {activeTab === 'posts' && (
-            <div className={`hidden lg:flex gap-1 ${canManageContent ? 'ml-2 border-l pl-2' : ''}`}>
-              <Button
-                variant={postsView === 'column' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setPostsView('column')}
-                title="Column view"
-                className="px-2"
-              >
-                <LayoutList className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={postsView === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setPostsView('grid')}
-                title="Grid view"
-                className="px-2"
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-
-          {canManageContent && (
-            <>
-              {activeTab === 'files' && (
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => setUploadFileOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Upload File
-                </Button>
-              )}
-              {activeTab === 'events' && (
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => setCreateEventOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Event
-                </Button>
-              )}
-            </>
+          {canManageContent && activeTab === 'events' && (
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => setCreateEventOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Event
+            </Button>
           )}
 
           {activeTab === 'events' && (
@@ -493,28 +426,6 @@ export function UnionProfileTabs({
               Create Post
             </Button>
           )}
-          {activeTab === 'posts' && (
-            <div className={`flex gap-1 ${prestigeMode ? 'bg-white border border-gray-200 rounded-full p-1' : ''}`}>
-              <Button
-                variant={postsView === 'column' ? 'default' : prestigeMode ? 'ghost' : 'ghost'}
-                size="sm"
-                onClick={() => setPostsView('column')}
-                title="Column view"
-                className={prestigeMode ? `p-2 rounded-full transition-colors cursor-pointer ${postsView === 'column' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}` : 'px-2'}
-              >
-                <LayoutList className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={postsView === 'grid' ? 'default' : prestigeMode ? 'ghost' : 'ghost'}
-                size="sm"
-                onClick={() => setPostsView('grid')}
-                title="Grid view"
-                className={prestigeMode ? `p-2 rounded-full transition-colors cursor-pointer ${postsView === 'grid' ? 'bg-rose-600 text-white' : 'text-gray-500 hover:text-gray-700'}` : 'px-2'}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
           {canManageContent && activeTab === 'events' && (
             <Button
               size="sm"
@@ -544,16 +455,6 @@ export function UnionProfileTabs({
                 Calendar
               </Button>
             </div>
-          )}
-          {canManageContent && activeTab === 'files' && (
-            <Button
-              size="sm"
-              className={prestigeMode ? 'bg-rose-600 hover:bg-rose-700 rounded-full px-5' : 'bg-blue-600 hover:bg-blue-700'}
-              onClick={() => setUploadFileOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Upload File
-            </Button>
           )}
         </div>
       )}
@@ -942,12 +843,20 @@ export function UnionProfileTabs({
           {/* Files Tab */}
           {activeTab === 'files' && (
             <>
-              {/* Storage widget toolbar */}
+              {/* Storage widget + upload button toolbar */}
               {canManageContent && (
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-1">
+                <div className="flex items-center gap-3 mb-1">
                   <div className="flex-1 max-w-xs">
                     <CompactStorageWidget unionSlug={union.slug} />
                   </div>
+                  <Button
+                    size="sm"
+                    className={prestigeMode ? 'bg-rose-600 hover:bg-rose-700 rounded-full px-5' : 'bg-blue-600 hover:bg-blue-700'}
+                    onClick={() => setUploadFileOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Upload File
+                  </Button>
                 </div>
               )}
 
