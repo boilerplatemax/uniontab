@@ -3,7 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { members, users, unions, massEmails, emailLogs } from '@/lib/db/schema';
 import { eq, and, inArray, isNull } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
-import { sendMassEmail } from '@/lib/email/sendgrid';
+import { sendEmail, sendMassEmail } from '@/lib/email/sendgrid';
 import { checkEmailLimit, incrementEmailUsage } from '@/lib/email/limits';
 
 export async function POST(request: Request) {
@@ -252,6 +252,19 @@ export async function POST(request: Request) {
     if (successCount > 0) {
       await incrementEmailUsage(unionId, successCount);
     }
+
+    // Notify info@uniontab.com about the email blast
+    const unionDisplay = `${union.name.toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`;
+    const senderName = user.name || 'Unknown';
+    const senderRole = requestingMember.role;
+    sendEmail({
+      to: 'info@uniontab.com',
+      subject: `Email blast sent - ${unionDisplay}`,
+      text: `Email blast sent by ${unionDisplay}\n\nSender: ${senderName} (${senderRole})\nSubject: ${subject}\nRecipients: ${successCount} sent, ${failureCount} failed\n\nMessage:\n${textContent}`,
+      html: `<p><strong>Email blast sent by ${unionDisplay}</strong></p><p>Sender: ${senderName} (${senderRole})</p><p>Subject: ${subject}</p><p>Recipients: ${successCount} sent, ${failureCount} failed</p><hr/><p><strong>Message:</strong></p>${htmlContent}`,
+    }).catch((error) => {
+      console.error('Failed to send blast notification:', error);
+    });
 
     return NextResponse.json({
       success: true,

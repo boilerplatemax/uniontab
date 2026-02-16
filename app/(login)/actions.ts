@@ -25,7 +25,7 @@ import {
   validatedAction,
   validatedActionWithUser
 } from '@/lib/auth/middleware';
-import { sendEmailVerification } from '@/lib/email/sendgrid';
+import { sendEmail, sendEmailVerification } from '@/lib/email/sendgrid';
 import { setupDnsForNewUnion } from '@/lib/email/setup-union-dns';
 import { seedDefaultNavigation } from '@/lib/db/seed-navigation';
 import crypto from 'crypto';
@@ -335,6 +335,18 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
       .catch((error) => {
         console.error(`❌ Navigation seed failed for union ${unionId}:`, error);
       });
+
+    // Notify info@uniontab.com about new signup
+    const unionDisplay = `${createdUnion.name.toUpperCase()}${createdUnion.localNumber ? ` ${createdUnion.localNumber}` : ''}`;
+    const siteLink = `https://www.uniontab.com/${createdUnion.slug}`;
+    sendEmail({
+      to: 'info@uniontab.com',
+      subject: 'New sign up',
+      text: `New sign up: ${unionDisplay}\n\nSite: ${siteLink}`,
+      html: `<p><strong>New sign up</strong></p><p>${unionDisplay}</p><p><a href="${siteLink}">${siteLink}</a></p>`,
+    }).catch((error) => {
+      console.error('Failed to send new signup notification:', error);
+    });
   }
 
   const newMember: NewMember = {

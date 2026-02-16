@@ -76,7 +76,7 @@ export function SettingsContent() {
     theme: 'default',
     themeColor: '#2563eb',
     socialLinks: {} as Record<string, string>,
-    showSocialInHero: false,
+    showSocialInHero: true,
     hidePoweredBy: false,
     defaultLanguage: 'en',
   });
@@ -100,7 +100,7 @@ export function SettingsContent() {
         theme: union.theme || 'default',
         themeColor: union.themeColor || '#2563eb',
         socialLinks: (union as any).socialLinks || {},
-        showSocialInHero: (union as any).showSocialInHero || false,
+        showSocialInHero: (union as any).showSocialInHero ?? true,
         hidePoweredBy: (union as any).hidePoweredBy || false,
         defaultLanguage: (union as any).defaultLanguage || 'en',
       });

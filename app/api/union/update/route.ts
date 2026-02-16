@@ -29,52 +29,35 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {
-      publicName,
-      logoUrl,
-      coverPhotoUrl,
-      email,
-      phone,
-      address,
-      website,
-      description,
-      about,
-      aboutImages,
-      aboutImageUrl,
-      aboutImagePosition,
-      theme,
-      themeColor,
-      socialLinks,
-      showSocialInHeader,
-      showSocialInHero,
-      hidePoweredBy,
-      defaultLanguage,
-    } = body;
 
-    // Update the union
+    // Only update fields that are explicitly provided in the request body
+    // This prevents partial updates (e.g. editing about) from wiping other fields
+    const updateData: Record<string, any> = {};
+
+    if ('publicName' in body) updateData.publicName = body.publicName || null;
+    if ('logoUrl' in body) updateData.logoUrl = body.logoUrl || null;
+    if ('coverPhotoUrl' in body) updateData.coverPhotoUrl = body.coverPhotoUrl || null;
+    if ('email' in body) updateData.email = body.email || null;
+    if ('phone' in body) updateData.phone = body.phone || null;
+    if ('address' in body) updateData.address = body.address || null;
+    if ('website' in body) updateData.website = body.website || null;
+    if ('description' in body) updateData.description = body.description || null;
+    if ('about' in body) updateData.about = body.about || null;
+    if ('aboutImages' in body) updateData.aboutImages = body.aboutImages || null;
+    if ('aboutImageUrl' in body) updateData.aboutImageUrl = body.aboutImageUrl || null;
+    if ('aboutImagePosition' in body) updateData.aboutImagePosition = body.aboutImagePosition || 'above';
+    if ('theme' in body) updateData.theme = body.theme || 'default';
+    if ('themeColor' in body) updateData.themeColor = body.themeColor || '#2563eb';
+    if ('socialLinks' in body) updateData.socialLinks = body.socialLinks || null;
+    if ('showSocialInHeader' in body) updateData.showSocialInHeader = body.showSocialInHeader ?? false;
+    if ('showSocialInHero' in body) updateData.showSocialInHero = body.showSocialInHero ?? true;
+    if ('hidePoweredBy' in body) updateData.hidePoweredBy = body.hidePoweredBy ?? false;
+    if ('defaultLanguage' in body) updateData.defaultLanguage = body.defaultLanguage || 'en';
+
+    // Update the union with only the provided fields
     const [updatedUnion] = await db
       .update(unions)
-      .set({
-        publicName: publicName || null,
-        logoUrl: logoUrl || null,
-        coverPhotoUrl: coverPhotoUrl || null,
-        email: email || null,
-        phone: phone || null,
-        address: address || null,
-        website: website || null,
-        description: description || null,
-        about: about || null,
-        aboutImages: aboutImages || null,
-        aboutImageUrl: aboutImageUrl || null,
-        aboutImagePosition: aboutImagePosition || 'above',
-        theme: theme || 'default',
-        themeColor: themeColor || '#2563eb',
-        socialLinks: socialLinks || null,
-        showSocialInHeader: showSocialInHeader ?? false,
-        showSocialInHero: showSocialInHero ?? false,
-        hidePoweredBy: hidePoweredBy ?? false,
-        defaultLanguage: defaultLanguage || 'en',
-      })
+      .set(updateData)
       .where(eq(unions.id, membership.unionId))
       .returning();
 
