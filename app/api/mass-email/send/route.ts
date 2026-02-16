@@ -4,7 +4,7 @@ import { members, users, unions, massEmails, emailLogs } from '@/lib/db/schema';
 import { eq, and, inArray, isNull } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { sendEmail, sendMassEmail } from '@/lib/email/sendgrid';
-import { checkEmailLimit, incrementEmailUsage } from '@/lib/email/limits';
+import { checkEmailLimit } from '@/lib/email/limits';
 
 export async function POST(request: Request) {
   try {
@@ -248,10 +248,9 @@ export async function POST(request: Request) {
       })
       .where(eq(massEmails.id, massEmailRecord.id));
 
-    // Increment email usage counter (only count successfully sent emails)
-    if (successCount > 0) {
-      await incrementEmailUsage(unionId, successCount);
-    }
+    // Note: monthly email usage is already incremented per-email inside
+    // sendMassEmail() via incrementRateLimitCounters(), so we don't call
+    // incrementEmailUsage() here to avoid double-counting.
 
     // Notify info@uniontab.com about the email blast
     const unionDisplay = `${union.name.toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`;
