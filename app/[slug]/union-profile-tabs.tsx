@@ -720,7 +720,7 @@ export function UnionProfileTabs({
                                 {post.isPrivate && postsView !== 'grid' && (
                                   <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Private</span>
                                 )}
-                                {isOwner && (
+                                {isOwner && postsView !== 'grid' && (
                                   <>
                                     <Button variant="outline" size="sm" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}>
                                       <Pin className={`h-4 w-4 ${(post as any).isPinned ? 'fill-current' : ''}`} />
@@ -799,8 +799,23 @@ export function UnionProfileTabs({
                                   <ShareButton itemType="post" itemId={post.id} itemTitle={post.title} itemUrl={`/${union.slug}/post/${post.id}`} slug={union.slug} isOwnerOrAdmin={isOwner} itemContent={post.content} itemImageUrl={post.imageUrl || undefined} itemAttachments={post.attachments} />
                                 )}
                               </div>
-                              <div className={`text-gray-500 ${postsView === 'grid' ? 'text-xs' : 'text-sm'}`}>
-                                {postsView === 'grid' ? formatDate(post.createdAt) : `Posted by ${(post as any).authorType === 'user' ? post.createdBy.name : `${(union.publicName || union.name).toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`} • ${formatDate(post.createdAt)}`}
+                              <div className={`flex items-center justify-between ${postsView === 'grid' ? '' : ''}`}>
+                                <div className={`text-gray-500 ${postsView === 'grid' ? 'text-xs' : 'text-sm'}`}>
+                                  {postsView === 'grid' ? formatDate(post.createdAt) : `Posted by ${(post as any).authorType === 'user' ? post.createdBy.name : `${(union.publicName || union.name).toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`} • ${formatDate(post.createdAt)}`}
+                                </div>
+                                {isOwner && postsView === 'grid' && (
+                                  <div className="flex items-center gap-1">
+                                    <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}>
+                                      <Pin className={`h-3.5 w-3.5 ${(post as any).isPinned ? 'fill-current' : ''}`} />
+                                    </Button>
+                                    <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => { setSelectedPost(post); setEditPostOpen(true); }} title="Edit">
+                                      <Edit className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button variant="destructive" size="sm" className="h-7 w-7 p-0" onClick={() => handleDeletePost(post.id)} disabled={deletingPost === post.id} title="Delete">
+                                      {deletingPost === post.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </CardContent>
