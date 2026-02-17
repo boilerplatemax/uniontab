@@ -503,7 +503,7 @@ export function SettingsContent() {
                         }`}
                       >
                         {/* Thumbnail Image */}
-                        <div className={`relative aspect-[4/3] ${theme.isPremium ? 'bg-slate-900' : 'bg-gray-100'}`}>
+                        <div className="relative aspect-[4/3] bg-gray-100">
                           <Image
                             src={`/assets/themes/${theme.id}.svg`}
                             alt={`${theme.name} theme preview`}
@@ -543,8 +543,6 @@ export function SettingsContent() {
                             ? theme.isPremium
                               ? 'bg-amber-50 border-t-2 border-amber-500'
                               : 'bg-blue-50 border-t-2 border-blue-500'
-                            : theme.isPremium
-                            ? 'bg-slate-800 border-t-2 border-slate-700'
                             : 'bg-white border-t-2 border-gray-100'
                         }`}>
                           <h3 className={`font-semibold mb-1 flex items-center gap-2 ${
@@ -552,8 +550,6 @@ export function SettingsContent() {
                               ? theme.isPremium
                                 ? 'text-amber-900'
                                 : 'text-blue-900'
-                              : theme.isPremium
-                              ? 'text-amber-400'
                               : 'text-gray-900'
                           }`}>
                             {theme.name}
@@ -563,8 +559,6 @@ export function SettingsContent() {
                               ? theme.isPremium
                                 ? 'text-amber-700'
                                 : 'text-blue-700'
-                              : theme.isPremium
-                              ? 'text-slate-400'
                               : 'text-gray-600'
                           }`}>
                             {theme.description}
@@ -573,7 +567,7 @@ export function SettingsContent() {
                             <p className={`text-xs mt-2 ${
                               formData.theme === theme.id && !isLocked
                                 ? 'text-amber-600'
-                                : 'text-slate-500'
+                                : 'text-gray-400'
                             }`}>
                               Requires {theme.requiredPlans.join(' or ')} plan
                             </p>

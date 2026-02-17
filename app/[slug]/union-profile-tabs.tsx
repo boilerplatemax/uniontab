@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -58,6 +58,14 @@ export function UnionProfileTabs({
   const canManageContent = isOwnerOrAdmin;
   const router = useRouter();
   const { activeTab, setActiveTab } = useUnionTab();
+
+  // Redirect elections tab to posts if user is not an approved member
+  useEffect(() => {
+    if (activeTab === 'elections' && !isApprovedMember) {
+      setActiveTab('posts');
+    }
+  }, [activeTab, isApprovedMember, setActiveTab]);
+
   const [eventsView, setEventsView] = useState<'calendar' | 'list'>('list');
   // Default to grid view for all modes
   const [postsView, setPostsView] = useState<'column' | 'grid'>('grid');
@@ -487,48 +495,50 @@ export function UnionProfileTabs({
               {/* Posts List */}
               {posts.length > 0 ? (
                 prestigeMode ? (
-                  /* Prestige Mode: Masonry-style grid */
+                  /* Prestige Mode: Uniform grid */
                   <div className={postsView === 'grid'
-                    ? 'columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5 space-y-5'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'
                     : 'space-y-6 max-w-3xl mx-auto'
                   }>
                     {posts.map((post) => {
                       if (post.isPrivate && !isApprovedMember) return null;
 
                       return postsView === 'grid' ? (
-                        /* Prestige Grid Card */
-                        <article key={post.id} className="break-inside-avoid mb-5 group">
-                          <Link href={`/${union.slug}/post/${post.id}`} className="block">
-                            {post.imageUrl && (
-                              <div className="relative overflow-hidden rounded-2xl bg-gray-100 mb-3">
+                        /* Prestige Grid Card - uniform height cards */
+                        <article key={post.id} className="group flex flex-col rounded-2xl overflow-hidden border border-gray-100 bg-white hover:shadow-md transition-shadow">
+                          <Link href={`/${union.slug}/post/${post.id}`} className="flex flex-col flex-1">
+                            {/* Fixed-height image area */}
+                            <div className="relative h-48 overflow-hidden bg-gradient-to-br from-rose-50 to-orange-50 flex-shrink-0">
+                              {post.imageUrl ? (
                                 <img
                                   src={post.imageUrl}
                                   alt={post.title}
-                                  className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                   loading="lazy"
                                 />
-                                {(post as any).isPinned && (
-                                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
-                                    <Pin className="h-3 w-3 text-rose-600 fill-current" />
-                                    <span className="text-xs font-medium text-gray-800">Pinned</span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            <div className={!post.imageUrl ? 'p-5 bg-gradient-to-br from-rose-50 to-orange-50 rounded-2xl' : ''}>
-                              {!post.imageUrl && (post as any).isPinned && (
-                                <div className="inline-flex items-center gap-1 bg-white rounded-full px-2.5 py-1 mb-3">
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <span className="text-4xl font-black text-rose-100 select-none leading-none">
+                                    {post.title.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                              {(post as any).isPinned && (
+                                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
                                   <Pin className="h-3 w-3 text-rose-600 fill-current" />
                                   <span className="text-xs font-medium text-gray-800">Pinned</span>
                                 </div>
                               )}
-                              <h3 className="font-semibold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 text-base leading-snug">
+                            </div>
+                            {/* Card body */}
+                            <div className="flex flex-col flex-1 p-4">
+                              <h3 className="font-semibold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 text-base leading-snug mb-2">
                                 {post.title}
                               </h3>
-                              <div className="mt-2 text-sm text-gray-500 line-clamp-2">
+                              <div className="text-sm text-gray-500 line-clamp-2 flex-1">
                                 <RichTextContent content={post.content} className="line-clamp-2" />
                               </div>
-                              <div className="mt-3 flex items-center justify-between">
+                              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
                                 <span className="text-xs text-gray-400">{formatDate(post.createdAt)}</span>
                                 <div className="flex items-center gap-2">
                                   {post.attachments && post.attachments.length > 0 && (
@@ -548,7 +558,7 @@ export function UnionProfileTabs({
                             </div>
                           </Link>
                           {isOwner && (
-                            <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center gap-1 px-4 pb-3 opacity-0 group-hover:opacity-100 transition-opacity border-t border-gray-100">
                               <button
                                 onClick={(e) => { e.preventDefault(); handleTogglePin(post.id, (post as any).isPinned || false); }}
                                 className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600"
@@ -687,14 +697,14 @@ export function UnionProfileTabs({
                   /* Standard Mode Grid/Column */
                   <div className={postsView === 'grid'
                     ? 'lg:grid lg:grid-cols-2 xl:grid-cols-3 gap-4 space-y-4 lg:space-y-0'
-                    : 'space-y-4'
+                    : 'space-y-3'
                   }>
                     {posts.map((post) => {
                       if (post.isPrivate && !isApprovedMember) return null;
 
                       return (
-                        <Card key={post.id} className={`shadow-sm hover:shadow-md transition-shadow ${postsView === 'grid' ? 'flex flex-col h-full' : ''}`}>
-                          <CardContent className={postsView === 'grid' ? 'p-4 flex flex-col h-full' : 'p-4 sm:p-6'}>
+                        <Card key={post.id} className={`overflow-hidden transition-shadow ${postsView === 'grid' ? 'flex flex-col h-full shadow-sm hover:shadow-md' : 'shadow-sm hover:shadow-md border-l-4 border-l-blue-500'}`}>
+                          <CardContent className={postsView === 'grid' ? 'p-4 flex flex-col h-full' : 'p-0'}>
                             {postsView === 'grid' && post.imageUrl && (
                               <Link href={`/${union.slug}/post/${post.id}`} className="block -mx-4 -mt-4 mb-4">
                                 <div className="relative aspect-video overflow-hidden rounded-t-lg bg-gray-100">
@@ -702,70 +712,105 @@ export function UnionProfileTabs({
                                 </div>
                               </Link>
                             )}
-                            <div className={`flex items-start justify-between ${postsView === 'grid' ? 'mb-2' : 'mb-4'}`}>
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <Link href={`/${union.slug}/post/${post.id}`} className="flex-1 min-w-0">
-                                  <h3 className={`font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors ${postsView === 'grid' ? 'text-base line-clamp-2' : 'text-lg sm:text-xl truncate'}`}>
-                                    {post.title}
-                                  </h3>
-                                </Link>
-                                {(post as any).isPinned && (
-                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1 flex-shrink-0">
-                                    <Pin className="h-3 w-3" />
-                                    {postsView !== 'grid' && 'Pinned'}
-                                  </span>
+
+                            {/* Column view layout */}
+                            {postsView !== 'grid' && (
+                              <>
+                                {/* Mobile image — fixed height, always on top */}
+                                {post.imageUrl && (
+                                  <div className="relative h-44 sm:hidden overflow-hidden bg-gray-100">
+                                    <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" loading="lazy" />
+                                    {/* Date chip overlaid on image */}
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-4 py-3">
+                                      <span className="text-xs text-white/80 font-medium">{formatDate(post.createdAt)}</span>
+                                    </div>
+                                  </div>
                                 )}
-                              </div>
-                              <div className={`flex items-center gap-2 flex-shrink-0 ml-2 ${postsView === 'grid' ? 'gap-1' : ''}`}>
-                                {post.isPrivate && postsView !== 'grid' && (
-                                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Private</span>
-                                )}
-                                {isOwner && postsView !== 'grid' && (
-                                  <>
-                                    <Button variant="outline" size="sm" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}>
-                                      <Pin className={`h-4 w-4 ${(post as any).isPinned ? 'fill-current' : ''}`} />
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => { setSelectedPost(post); setEditPostOpen(true); }}>
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="destructive" size="sm" onClick={() => handleDeletePost(post.id)} disabled={deletingPost === post.id}>
-                                      {deletingPost === post.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            {postsView === 'grid' ? (
+
+                                <div className="p-4 sm:p-6">
+                                  {/* Top meta row */}
+                                  <div className="flex items-center gap-2 mb-2">
+                                    {!post.imageUrl && (
+                                      <span className="text-xs text-gray-400 font-medium">{formatDate(post.createdAt)}</span>
+                                    )}
+                                    {(post as any).isPinned && (
+                                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                        <Pin className="h-2.5 w-2.5 fill-current" />
+                                        Pinned
+                                      </span>
+                                    )}
+                                    {post.isPrivate && (
+                                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Private</span>
+                                    )}
+                                    {isOwner && (
+                                      <div className="flex items-center gap-1 ml-auto">
+                                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin' : 'Pin'}>
+                                          <Pin className={`h-3.5 w-3.5 ${(post as any).isPinned ? 'fill-current text-blue-600' : 'text-gray-400'}`} />
+                                        </Button>
+                                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400 hover:text-gray-700" onClick={() => { setSelectedPost(post); setEditPostOpen(true); }}>
+                                          <Edit className="h-3.5 w-3.5" />
+                                        </Button>
+                                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400 hover:text-red-600" onClick={() => handleDeletePost(post.id)} disabled={deletingPost === post.id}>
+                                          {deletingPost === post.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Title + side image on desktop */}
+                                  <div className={post.imageUrl ? 'sm:flex sm:gap-5 sm:items-start' : ''}>
+                                    <div className="flex-1 min-w-0">
+                                      <Link href={`/${union.slug}/post/${post.id}`}>
+                                        <h3 className="text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors leading-snug mb-2">
+                                          {post.title}
+                                        </h3>
+                                      </Link>
+                                      <RichTextContent content={post.content} className="text-sm sm:text-base text-gray-600 line-clamp-3 sm:line-clamp-4" />
+                                      <Link href={`/${union.slug}/post/${post.id}`}>
+                                        <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700 text-sm">Read more →</Button>
+                                      </Link>
+                                    </div>
+                                    {post.imageUrl && (
+                                      <div className="hidden sm:block sm:flex-shrink-0 sm:w-40 sm:h-28 rounded-lg overflow-hidden bg-gray-100 self-start mt-1">
+                                        <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" loading="lazy" />
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </>
+                            )}
+
+                            {/* Grid view content */}
+                            {postsView === 'grid' && (
+                              <>
+                                <div className={`flex items-start justify-between mb-2`}>
+                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <Link href={`/${union.slug}/post/${post.id}`} className="flex-1 min-w-0">
+                                      <h3 className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors text-base line-clamp-2">
+                                        {post.title}
+                                      </h3>
+                                    </Link>
+                                    {(post as any).isPinned && (
+                                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1 flex-shrink-0">
+                                        <Pin className="h-3 w-3" />
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </>
+                            )}
+
+                            {postsView === 'grid' && (
                               <div className="flex-1">
                                 <RichTextContent content={post.content} className="text-sm text-gray-600 line-clamp-3" />
                                 <Link href={`/${union.slug}/post/${post.id}`}>
                                   <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700 text-sm">Read more →</Button>
                                 </Link>
                               </div>
-                            ) : (
-                              <div className="mb-4">
-                                {post.imageUrl && (
-                                  <div className="relative mb-4 sm:hidden rounded-lg overflow-hidden bg-gray-100">
-                                    <img src={post.imageUrl} alt={post.title} className="w-full h-auto object-cover" loading="lazy" />
-                                  </div>
-                                )}
-                                <div className={post.imageUrl ? "sm:flex sm:gap-6 sm:items-start" : ""}>
-                                  <div className="flex-1 min-w-0">
-                                    <RichTextContent content={post.content} className="text-sm sm:text-base line-clamp-6" />
-                                    <Link href={`/${union.slug}/post/${post.id}`}>
-                                      <Button variant="link" className="mt-2 px-0 text-blue-600 hover:text-blue-700">View Full Post →</Button>
-                                    </Link>
-                                  </div>
-                                  {post.imageUrl && (
-                                    <div className="hidden sm:block sm:w-80 sm:flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                                      <img src={post.imageUrl} alt={post.title} className="w-full h-auto max-h-[250px] object-cover" loading="lazy" />
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
                             )}
+                            {/* Column view: attachments + footer inside padded area */}
                             {postsView !== 'grid' && post.attachments && post.attachments.length > 0 && (
-                              <div className="mb-4 space-y-2">
+                              <div className="px-4 sm:px-6 pb-3 space-y-2">
                                 <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                                   <Paperclip className="h-4 w-4" />
                                   <span>Attachments ({post.attachments.length})</span>
@@ -786,38 +831,47 @@ export function UnionProfileTabs({
                                 </div>
                               </div>
                             )}
+                            {/* Column view footer */}
+                            {postsView !== 'grid' && (
+                              <div className="flex items-center justify-between gap-3 border-t px-4 sm:px-6 py-3">
+                                <div className="flex items-center gap-3">
+                                  <LikeButton postId={post.id} initialLiked={(post as any).isLikedByUser || false} initialCount={(post as any).likeCount || 0} userId={userId || null} />
+                                  <ShareButton itemType="post" itemId={post.id} itemTitle={post.title} itemUrl={`/${union.slug}/post/${post.id}`} slug={union.slug} isOwnerOrAdmin={isOwner} itemContent={post.content} itemImageUrl={post.imageUrl || undefined} itemAttachments={post.attachments} />
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  {`By ${(post as any).authorType === 'user' ? post.createdBy.name : (union.publicName || union.name)} • ${formatDate(post.createdAt)}`}
+                                </div>
+                              </div>
+                            )}
                             {postsView === 'grid' && post.attachments && post.attachments.length > 0 && (
                               <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
                                 <Paperclip className="h-3 w-3" />
                                 <span>{post.attachments.length} attachment{post.attachments.length > 1 ? 's' : ''}</span>
                               </div>
                             )}
-                            <div className={`flex ${postsView === 'grid' ? 'flex-col gap-2 mt-auto pt-3 border-t' : 'flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t pt-4 mt-4'}`}>
-                              <div className="flex items-center gap-3">
-                                <LikeButton postId={post.id} initialLiked={(post as any).isLikedByUser || false} initialCount={(post as any).likeCount || 0} userId={userId || null} />
-                                {postsView !== 'grid' && (
-                                  <ShareButton itemType="post" itemId={post.id} itemTitle={post.title} itemUrl={`/${union.slug}/post/${post.id}`} slug={union.slug} isOwnerOrAdmin={isOwner} itemContent={post.content} itemImageUrl={post.imageUrl || undefined} itemAttachments={post.attachments} />
-                                )}
-                              </div>
-                              <div className={`flex items-center justify-between ${postsView === 'grid' ? '' : ''}`}>
-                                <div className={`text-gray-500 ${postsView === 'grid' ? 'text-xs' : 'text-sm'}`}>
-                                  {postsView === 'grid' ? formatDate(post.createdAt) : `Posted by ${(post as any).authorType === 'user' ? post.createdBy.name : `${(union.publicName || union.name).toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`} • ${formatDate(post.createdAt)}`}
+                            {postsView === 'grid' && (
+                              <div className="flex flex-col gap-2 mt-auto pt-3 border-t">
+                                <div className="flex items-center gap-3">
+                                  <LikeButton postId={post.id} initialLiked={(post as any).isLikedByUser || false} initialCount={(post as any).likeCount || 0} userId={userId || null} />
                                 </div>
-                                {isOwner && postsView === 'grid' && (
-                                  <div className="flex items-center gap-1">
-                                    <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}>
-                                      <Pin className={`h-3.5 w-3.5 ${(post as any).isPinned ? 'fill-current' : ''}`} />
-                                    </Button>
-                                    <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => { setSelectedPost(post); setEditPostOpen(true); }} title="Edit">
-                                      <Edit className="h-3.5 w-3.5" />
-                                    </Button>
-                                    <Button variant="destructive" size="sm" className="h-7 w-7 p-0" onClick={() => handleDeletePost(post.id)} disabled={deletingPost === post.id} title="Delete">
-                                      {deletingPost === post.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                                    </Button>
-                                  </div>
-                                )}
+                                <div className="flex items-center justify-between">
+                                  <div className="text-xs text-gray-500">{formatDate(post.createdAt)}</div>
+                                  {isOwner && (
+                                    <div className="flex items-center gap-1">
+                                      <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}>
+                                        <Pin className={`h-3.5 w-3.5 ${(post as any).isPinned ? 'fill-current' : ''}`} />
+                                      </Button>
+                                      <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => { setSelectedPost(post); setEditPostOpen(true); }} title="Edit">
+                                        <Edit className="h-3.5 w-3.5" />
+                                      </Button>
+                                      <Button variant="destructive" size="sm" className="h-7 w-7 p-0" onClick={() => handleDeletePost(post.id)} disabled={deletingPost === post.id} title="Delete">
+                                        {deletingPost === post.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </CardContent>
                         </Card>
                       );
