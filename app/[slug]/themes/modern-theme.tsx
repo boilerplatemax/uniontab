@@ -46,7 +46,7 @@ export function ModernTheme({
 
   return (
     <UnionTabProvider slug={slug}>
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Announcement Banner - Above navbar */}
       <AnnouncementClient
         popup={activeAnnouncements.popup}
@@ -186,23 +186,25 @@ export function ModernTheme({
       </div>
 
       {/* Main Content - Less margins, cleaner layout */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-        <UnionProfileTabs
-          union={union}
-          posts={posts}
-          files={files}
-          events={events}
-          membership={membership}
-          isOwner={isOwner}
-          isOwnerOrAdmin={isOwnerOrAdmin}
-          isApprovedMember={isApprovedMember}
-          userId={userId}
-          hideTabNav={true}
-        />
+      <div className="flex-1">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+          <UnionProfileTabs
+            union={union}
+            posts={posts}
+            files={files}
+            events={events}
+            membership={membership}
+            isOwner={isOwner}
+            isOwnerOrAdmin={isOwnerOrAdmin}
+            isApprovedMember={isApprovedMember}
+            userId={userId}
+            hideTabNav={true}
+          />
+        </div>
       </div>
 
       {/* Footer - Minimal */}
-      <div className="border-t mt-12 bg-gray-50">
+      <div className="border-t mt-auto bg-gray-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6">
           <div className="flex flex-col items-center gap-4">
             {/* Social Media Icons */}

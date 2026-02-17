@@ -53,6 +53,7 @@ export async function PUT(request: NextRequest) {
     if ('showSocialInHero' in body) updateData.showSocialInHero = body.showSocialInHero ?? true;
     if ('hidePoweredBy' in body) updateData.hidePoweredBy = body.hidePoweredBy ?? false;
     if ('defaultLanguage' in body) updateData.defaultLanguage = body.defaultLanguage || 'en';
+    if ('homePage' in body) updateData.homePage = body.homePage || 'news';
 
     // Update the union with only the provided fields
     const [updatedUnion] = await db

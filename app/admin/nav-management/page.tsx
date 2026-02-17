@@ -52,6 +52,7 @@ import {
   saveNavigationTree,
   deleteNavigationItem,
 } from './actions';
+import { NAV_ICON_OPTIONS, getNavIconByName } from '@/lib/nav-icons';
 
 interface UnionOption {
   id: number;
@@ -75,6 +76,7 @@ interface NavItem {
   isEnabled: boolean;
   openInNewTab: boolean;
   isMandatory: boolean;
+  icon: string | null;
 }
 
 interface PageOption {
@@ -128,6 +130,7 @@ function emptyNavItem(): NavItem {
     isEnabled: true,
     openInNewTab: false,
     isMandatory: false,
+    icon: null,
   };
 }
 
@@ -552,6 +555,43 @@ export default function NavManagementPage() {
             </div>
 
             <div>
+              <Label>Icon</Label>
+              <Select
+                value={dialogItem.icon || 'none'}
+                onValueChange={(v) =>
+                  setDialogItem({ ...dialogItem, icon: v === 'none' ? null : v })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue>
+                    {dialogItem.icon ? (
+                      <span className="flex items-center gap-2">
+                        {getNavIconByName(dialogItem.icon)}
+                        <span>{NAV_ICON_OPTIONS.find(o => o.value === dialogItem.icon)?.label || dialogItem.icon}</span>
+                      </span>
+                    ) : (
+                      <span className="text-gray-500">None</span>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">
+                    <span className="text-gray-500">None</span>
+                  </SelectItem>
+                  {NAV_ICON_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <span className="flex items-center gap-2">
+                        {opt.icon}
+                        <span>{opt.label}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-400 mt-1">Optional icon shown next to the nav item label</p>
+            </div>
+
+            <div>
               <Label>Sort Order</Label>
               <Input
                 type="number"
@@ -647,6 +687,13 @@ function NavItemRow({
         onChange={(e) => onInlineChange(index, 'sortOrder', parseInt(e.target.value) || 0)}
         className="w-16 h-8 text-center text-sm"
       />
+
+      {/* Icon */}
+      {item.icon && (
+        <span className="text-gray-500 shrink-0" title={item.icon}>
+          {getNavIconByName(item.icon)}
+        </span>
+      )}
 
       {/* Label */}
       <Input

@@ -121,6 +121,18 @@ export default function PageManagementPage() {
   const [deletingPageId, setDeletingPageId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Fix: Clean up body pointer-events when dialogs close
+  // Radix UI Dialog can sometimes leave pointer-events: none on the body
+  useEffect(() => {
+    if (!editorOpen && !deleteDialogOpen) {
+      // Small delay to let the dialog animation finish before cleanup
+      const timer = setTimeout(() => {
+        document.body.style.pointerEvents = '';
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [editorOpen, deleteDialogOpen]);
+
   useEffect(() => {
     loadUnions();
   }, []);

@@ -25,6 +25,12 @@ import {
   Lock,
   Sparkles,
   Languages,
+  Home,
+  Upload,
+  Copy,
+  Trash2,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
@@ -79,10 +85,85 @@ export function SettingsContent() {
     showSocialInHero: true,
     hidePoweredBy: false,
     defaultLanguage: 'en',
+    homePage: 'news',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // Union pages for home page selector
+  const { data: unionPages } = useSWR<{ id: number; title: string; slug: string; isPublished: boolean }[]>(
+    union ? `/api/pages/list` : null,
+    fetcher
+  );
+
+  // Media library state
+  const [mediaFiles, setMediaFiles] = useState<{ url: string; name: string; type: string; size: number; createdAt: string }[]>([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+
+  const loadMedia = async () => {
+    setMediaLoading(true);
+    try {
+      const res = await fetch('/api/media/list');
+      if (res.ok) {
+        const data = await res.json();
+        setMediaFiles(data.files || []);
+      }
+    } catch (err) {
+      console.error('Failed to load media:', err);
+    } finally {
+      setMediaLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (union) {
+      loadMedia();
+    }
+  }, [union]);
+
+  const handleMediaUpload = async (file: File | null, url?: string) => {
+    if (url && file) {
+      // Register the uploaded file in the media library
+      try {
+        await fetch('/api/media/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url,
+            name: file.name,
+            type: file.type,
+            size: file.size,
+          }),
+        });
+        await loadMedia();
+      } catch (err) {
+        console.error('Failed to register media:', err);
+      }
+    }
+  };
+
+  const handleDeleteMedia = async (url: string) => {
+    try {
+      const res = await fetch('/api/media/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      if (res.ok) {
+        setMediaFiles((prev) => prev.filter((f) => f.url !== url));
+      }
+    } catch (err) {
+      console.error('Failed to delete media:', err);
+    }
+  };
+
+  const copyToClipboard = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedUrl(url);
+    setTimeout(() => setCopiedUrl(null), 2000);
+  };
 
   useEffect(() => {
     if (union) {
@@ -103,6 +184,7 @@ export function SettingsContent() {
         showSocialInHero: (union as any).showSocialInHero ?? true,
         hidePoweredBy: (union as any).hidePoweredBy || false,
         defaultLanguage: (union as any).defaultLanguage || 'en',
+        homePage: (union as any).homePage || 'news',
       });
     }
   }, [union]);
@@ -755,6 +837,140 @@ export function SettingsContent() {
                   A longer display name if you don't want to go by your union + local number (e.g. "CUPE 123")
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Home Page Selection */}
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Home className="h-5 w-5" />
+                Home Page
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-500">
+                Choose which page visitors see first when they visit your union's site
+              </p>
+              <div>
+                <Label htmlFor="homePage">Default Home Page</Label>
+                <select
+                  id="homePage"
+                  value={formData.homePage}
+                  onChange={(e) => setFormData({ ...formData, homePage: e.target.value })}
+                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <optgroup label="Built-in Pages">
+                    <option value="news">News (Default)</option>
+                    <option value="about">About</option>
+                    <option value="events">Events</option>
+                    <option value="files">Files</option>
+                    <option value="elections">Elections</option>
+                    <option value="contact">Contact</option>
+                  </optgroup>
+                  {unionPages && unionPages.filter(p => p.isPublished).length > 0 && (
+                    <optgroup label="Custom Pages">
+                      {unionPages.filter(p => p.isPublished).map((page) => (
+                        <option key={page.id} value={`page:${page.slug}`}>
+                          {page.title}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+              </div>
+              <p className="text-xs text-gray-400">
+                When visitors navigate to your union's URL, they will be shown this page.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Media Library */}
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                Media Library
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-500">
+                Upload images and files to use in your custom page content. Copy a URL to paste into your page HTML.
+              </p>
+
+              <FileUpload
+                onFileSelect={handleMediaUpload}
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                maxSize={10}
+                label="Upload Media"
+                hint="Click to browse or drag and drop files (images, PDFs, documents)"
+                bucket="union-files"
+                path="media"
+              />
+
+              {/* Media Grid */}
+              {mediaLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                </div>
+              ) : mediaFiles.length === 0 ? (
+                <div className="text-center py-6 text-gray-400 text-sm">
+                  No media uploaded yet. Upload files above to get started.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {mediaFiles.map((file) => (
+                    <div
+                      key={file.url}
+                      className="relative group border rounded-lg overflow-hidden bg-gray-50"
+                    >
+                      {file.type.startsWith('image/') ? (
+                        <img
+                          src={file.url}
+                          alt={file.name}
+                          className="w-full h-32 object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-32 flex items-center justify-center bg-gray-100">
+                          <div className="text-center">
+                            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-1" />
+                            <span className="text-xs text-gray-500 block truncate max-w-[120px] px-2">
+                              {file.name}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="flex gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(file.url)}
+                            className="p-2 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+                            title="Copy URL"
+                          >
+                            {copiedUrl === file.url ? (
+                              <Check className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <Copy className="h-4 w-4 text-gray-700" />
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMedia(file.url)}
+                            className="p-2 bg-white rounded-lg shadow-sm hover:bg-red-50 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="px-2 py-1.5 text-xs text-gray-600 truncate border-t">
+                        {file.name}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
