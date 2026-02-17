@@ -240,6 +240,7 @@ export async function getUnionNavigationItems(unionId: number) {
       openInNewTab: navigationItems.openInNewTab,
       isMandatory: navigationItems.isMandatory,
       icon: navigationItems.icon,
+      showBanner: navigationItems.showBanner,
       createdAt: navigationItems.createdAt,
       updatedAt: navigationItems.updatedAt,
       pageSlug: unionPages.slug,
