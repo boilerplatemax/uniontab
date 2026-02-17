@@ -221,14 +221,8 @@ export function UnionNavbar({
     const customIcon = getNavIconByName((item as any).icon);
     if (customIcon) return customIcon;
 
-    // Fall back to default icons based on link type
-    if (item.linkType === 'built_in_route' && item.builtInRoute) {
-      return builtInRouteIcons[item.builtInRoute] || <FileText className="h-4 w-4" />;
-    }
-    if (item.linkType === 'page') return <FileText className="h-4 w-4" />;
-    if (item.linkType === 'file') return <Download className="h-4 w-4" />;
-    if (item.linkType === 'external_url') return <ExternalLink className="h-4 w-4" />;
-    return <FileText className="h-4 w-4" />;
+    // If icon field is explicitly null/undefined (user chose "None"), don't show default
+    return null;
   };
 
   // Resolve href for non-built-in nav items

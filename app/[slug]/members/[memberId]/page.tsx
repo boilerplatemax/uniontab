@@ -157,15 +157,19 @@ export default async function MemberProfilePage({
 
   const isAdminOrOwner = await checkAdminOrOwner(union.id, user.id);
 
-  if (!isAdminOrOwner) {
-    redirect(`/${slug}`);
-  }
-
+  // Check if the current user is viewing their own member profile
   const navItems = await getUnionNavigationItems(union.id);
   const memberData = await getMemberById(memberId, union.id);
 
   if (!memberData) {
     notFound();
+  }
+
+  const isOwnProfile = memberData.user.id === user.id;
+
+  // Allow access if admin/owner OR viewing own profile
+  if (!isAdminOrOwner && !isOwnProfile) {
+    redirect(`/${slug}`);
   }
 
   const [documents, certifications, positions, notes, membership, pendingMembersCount] = await Promise.all([
@@ -198,6 +202,7 @@ export default async function MemberProfilePage({
         positions={positions}
         notes={notes}
         currentUserId={user.id}
+        isAdminOrOwner={isAdminOrOwner}
       />
     </>
   );

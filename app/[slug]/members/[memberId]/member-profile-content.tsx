@@ -80,6 +80,7 @@ interface MemberProfileContentProps {
   positions: PositionWithCreator[];
   notes: NoteWithCreator[];
   currentUserId: number;
+  isAdminOrOwner?: boolean;
 }
 
 export function MemberProfileContent({
@@ -91,6 +92,7 @@ export function MemberProfileContent({
   positions: initialPositions,
   notes: initialNotes,
   currentUserId,
+  isAdminOrOwner = false,
 }: MemberProfileContentProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
@@ -167,8 +169,8 @@ export function MemberProfileContent({
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'certifications', label: 'Training', icon: Award },
     { id: 'positions', label: 'Positions', icon: Users },
-    { id: 'notes', label: 'Notes', icon: StickyNote },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    ...(isAdminOrOwner ? [{ id: 'notes', label: 'Notes', icon: StickyNote }] : []),
+    ...(isAdminOrOwner ? [{ id: 'settings', label: 'Settings', icon: Settings }] : []),
   ];
 
   return (

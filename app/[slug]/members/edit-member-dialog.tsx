@@ -56,7 +56,8 @@ export function EditMemberDialog({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     employer: '',
     jobTitle: '',
@@ -74,8 +75,12 @@ export function EditMemberDialog({
 
   useEffect(() => {
     if (member) {
+      const nameParts = (member.user.name || '').split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
       setFormData({
-        name: member.user.name || '',
+        firstName,
+        lastName,
         phone: member.member.phone || '',
         employer: member.member.employer || '',
         jobTitle: member.member.jobTitle || '',
@@ -111,7 +116,7 @@ export function EditMemberDialog({
     setError('');
 
     try {
-      const { memberId: memberIdNumber, ...restFormData } = formData;
+      const { memberId: memberIdNumber, firstName, lastName, ...restFormData } = formData;
       const response = await fetch('/api/members/update-admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -119,6 +124,7 @@ export function EditMemberDialog({
           memberId: member.member.id,
           unionId,
           ...restFormData,
+          name: `${firstName} ${lastName}`.trim(),
           memberIdNumber, // API expects memberIdNumber
         }),
       });
@@ -160,12 +166,21 @@ export function EditMemberDialog({
             <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="firstName">First Name</Label>
                 <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => updateField('name', e.target.value)}
-                  placeholder="John Doe"
+                  id="firstName"
+                  value={formData.firstName}
+                  onChange={(e) => updateField('firstName', e.target.value)}
+                  placeholder="John"
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  value={formData.lastName}
+                  onChange={(e) => updateField('lastName', e.target.value)}
+                  placeholder="Doe"
                 />
               </div>
               <div>

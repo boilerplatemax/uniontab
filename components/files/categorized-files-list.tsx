@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Eye, Edit, Trash2, Loader2, ChevronDown, ChevronRight, FolderOpen, Pencil, ArrowUp, ArrowDown, File, FileImage, FileSpreadsheet, FileArchive, FileVideo, FileAudio, MoreHorizontal } from 'lucide-react';
+import { FileText, Download, Eye, Edit, Trash2, Loader2, FolderOpen, Folder, Pencil, ArrowUp, ArrowDown, File, FileImage, FileSpreadsheet, FileArchive, FileVideo, FileAudio, MoreHorizontal, LayoutGrid } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,127 +54,67 @@ function formatFileSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-// File Item Component with Arrow Controls
-function FileItem({
+// File Grid Card Component
+function FileGridCard({
   file,
   isOwner,
-  isApprovedMember,
   onEdit,
   onDelete,
   deletingFile,
-  onMoveUp,
-  onMoveDown,
-  isFirst,
-  isLast,
-  slug,
 }: {
   file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } };
   isOwner: boolean;
-  isApprovedMember: boolean;
   onEdit: (file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } }) => void;
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  isFirst: boolean;
-  isLast: boolean;
-  slug: string;
 }) {
   const { icon: FileIcon, color: iconColor, bg: iconBg } = getFileIcon(file.originalName);
   const ext = file.originalName.split('.').pop()?.toUpperCase() || '';
 
   return (
-    <div className="group flex items-center gap-3 px-4 py-3 hover:bg-gray-50/80 transition-colors">
-      {isOwner && (
-        <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onMoveUp}
-            disabled={isFirst}
-            className="h-5 w-5 p-0"
-            title="Move up"
-          >
-            <ArrowUp className={`h-3 w-3 ${isFirst ? 'text-gray-300' : 'text-gray-500'}`} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onMoveDown}
-            disabled={isLast}
-            className="h-5 w-5 p-0"
-            title="Move down"
-          >
-            <ArrowDown className={`h-3 w-3 ${isLast ? 'text-gray-300' : 'text-gray-500'}`} />
-          </Button>
-        </div>
-      )}
-
-      {/* File icon */}
-      <div className={`w-9 h-9 ${iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
-        <FileIcon className={`h-5 w-5 ${iconColor}`} />
+    <div
+      className="group relative bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all cursor-pointer"
+      onClick={() => window.open(file.fileUrl, '_blank')}
+    >
+      {/* File preview area */}
+      <div className={`${iconBg} rounded-t-xl flex items-center justify-center h-28`}>
+        <FileIcon className={`h-10 w-10 ${iconColor}`} />
       </div>
 
-      {/* File info - clickable name */}
-      <div className="flex-1 min-w-0">
-        <button
-          onClick={() => window.open(file.fileUrl, '_blank')}
-          className="text-left max-w-full"
-          title={file.originalName}
-        >
-          <p className="font-medium text-gray-900 truncate max-w-[280px] sm:max-w-[360px] md:max-w-[440px] hover:text-blue-600 transition-colors text-sm">
-            {file.originalName}
-          </p>
-        </button>
-        <div className="flex items-center gap-2 mt-0.5">
+      {/* File info */}
+      <div className="p-3">
+        <p className="text-sm font-medium text-gray-900 truncate" title={file.originalName}>
+          {file.originalName}
+        </p>
+        <div className="flex items-center gap-1.5 mt-1">
           <span className="text-xs text-gray-400">{formatFileSize(file.fileSize)}</span>
-          <span className="text-gray-300 text-xs">·</span>
-          <span className="text-xs text-gray-400">{formatDate(file.createdAt)}</span>
           {ext && (
             <>
-              <span className="text-gray-300 text-xs">·</span>
-              <span className="text-xs font-medium text-gray-400 uppercase">{ext}</span>
-            </>
-          )}
-          {file.isPrivate && (
-            <>
-              <span className="text-gray-300 text-xs">·</span>
-              <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">
-                Private
-              </span>
+              <span className="text-gray-300 text-xs">&middot;</span>
+              <span className="text-xs text-gray-400 uppercase">{ext}</span>
             </>
           )}
         </div>
+        {file.isPrivate && (
+          <span className="inline-block mt-1.5 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">
+            Private
+          </span>
+        )}
       </div>
 
-      {/* Actions - compact */}
-      <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            const a = document.createElement('a');
-            a.href = file.fileUrl;
-            a.download = file.originalName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-          }}
-          title="Download"
-          className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-        >
-          <Download className="h-4 w-4" />
-        </Button>
-
-        {/* More actions dropdown */}
+      {/* Actions overlay */}
+      <div
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={(e) => e.stopPropagation()}
+      >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
-              className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
+              className="h-7 w-7 p-0 bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white"
             >
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreHorizontal className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
@@ -196,9 +135,9 @@ function FileItem({
               <Download className="h-4 w-4 mr-2" />
               Download
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
             {isOwner && (
               <>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onEdit(file)}>
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
@@ -225,132 +164,6 @@ function FileItem({
   );
 }
 
-// Category Component with Arrow Controls
-function CategorySection({
-  category,
-  categoryFiles,
-  isExpanded,
-  onToggle,
-  isOwner,
-  isApprovedMember,
-  onEdit,
-  onDelete,
-  deletingFile,
-  onMoveFileUp,
-  onMoveFileDown,
-  onRenameCategory,
-  onMoveCategoryUp,
-  onMoveCategoryDown,
-  isFirstCategory,
-  isLastCategory,
-  slug,
-}: {
-  category: string;
-  categoryFiles: (Omit<FileType, 'createdBy'> & { createdBy: { name: string } })[];
-  isExpanded: boolean;
-  onToggle: () => void;
-  isOwner: boolean;
-  isApprovedMember: boolean;
-  onEdit: (file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } }) => void;
-  onDelete: (fileId: number) => void;
-  deletingFile: number | null;
-  onMoveFileUp: (fileId: number) => void;
-  onMoveFileDown: (fileId: number) => void;
-  onRenameCategory: (category: string) => void;
-  onMoveCategoryUp: () => void;
-  onMoveCategoryDown: () => void;
-  isFirstCategory: boolean;
-  isLastCategory: boolean;
-  slug: string;
-}) {
-  return (
-    <Card className="shadow-sm border border-gray-200 overflow-hidden">
-      <CardContent className="p-0">
-        {/* Category Header */}
-        <div className="flex items-center gap-2 px-4 py-3 bg-gray-50/60 border-b border-gray-100">
-          {isOwner && category !== 'Uncategorized' && (
-            <div className="flex flex-col gap-0.5 opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onMoveCategoryUp}
-                disabled={isFirstCategory}
-                className="h-5 w-5 p-0"
-                title="Move category up"
-              >
-                <ArrowUp className={`h-3 w-3 ${isFirstCategory ? 'text-gray-300' : 'text-gray-500'}`} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onMoveCategoryDown}
-                disabled={isLastCategory}
-                className="h-5 w-5 p-0"
-                title="Move category down"
-              >
-                <ArrowDown className={`h-3 w-3 ${isLastCategory ? 'text-gray-300' : 'text-gray-500'}`} />
-              </Button>
-            </div>
-          )}
-          <button
-            onClick={onToggle}
-            className="flex-1 flex items-center gap-2.5 hover:bg-gray-100/60 transition-colors rounded-md px-2 py-1"
-          >
-            {isExpanded ? (
-              <ChevronDown className="h-4 w-4 text-gray-500" />
-            ) : (
-              <ChevronRight className="h-4 w-4 text-gray-500" />
-            )}
-            <FolderOpen className="h-4 w-4 text-blue-500" />
-            <span className="text-sm font-semibold text-gray-800">
-              {category}
-            </span>
-            <span className="ml-auto text-xs text-gray-400 font-medium">
-              {categoryFiles.length} {categoryFiles.length === 1 ? 'file' : 'files'}
-            </span>
-          </button>
-          {isOwner && category !== 'Uncategorized' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRenameCategory(category);
-              }}
-              title="Rename category"
-              className="h-7 w-7 p-0 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
-            >
-              <Pencil className="h-3.5 w-3.5 text-gray-500" />
-            </Button>
-          )}
-        </div>
-
-        {/* Category Files */}
-        {isExpanded && (
-          <div className="divide-y">
-            {categoryFiles.map((file, index) => (
-              <FileItem
-                key={file.id}
-                file={file}
-                isOwner={isOwner}
-                isApprovedMember={isApprovedMember}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                deletingFile={deletingFile}
-                onMoveUp={() => onMoveFileUp(file.id)}
-                onMoveDown={() => onMoveFileDown(file.id)}
-                isFirst={index === 0}
-                isLast={index === categoryFiles.length - 1}
-                slug={slug}
-              />
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
 export function CategorizedFilesList({
   files,
   isOwner,
@@ -366,6 +179,7 @@ export function CategorizedFilesList({
   const [loading, setLoading] = useState(true);
   const [renameCategoryDialog, setRenameCategoryDialog] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Fetch and sync category orders
   useEffect(() => {
@@ -393,13 +207,11 @@ export function CategorizedFilesList({
 
   const handleRenameSuccess = () => {
     setRefreshKey((prev) => prev + 1);
-    // Trigger a refresh in the parent component
     window.location.reload();
   };
 
   // Group files by category
   const categorizedFiles = files.reduce((acc, file) => {
-    // Hide private files from non-approved members
     if (file.isPrivate && !isApprovedMember) {
       return acc;
     }
@@ -423,33 +235,19 @@ export function CategorizedFilesList({
     const orderA = categoryOrderMap.get(a) ?? 999;
     const orderB = categoryOrderMap.get(b) ?? 999;
 
-    // Uncategorized always last
     if (a === 'Uncategorized') return 1;
     if (b === 'Uncategorized') return -1;
 
     return orderA - orderB;
   });
 
-  // Track which categories are expanded (all expanded by default)
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(sortedCategories)
-  );
-
-  const toggleCategory = (category: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(category)) {
-      newExpanded.delete(category);
-    } else {
-      newExpanded.add(category);
-    }
-    setExpandedCategories(newExpanded);
-  };
-
-  // Check if category should be hidden (all files are private and viewer is not approved)
+  // Check if category should be hidden
   const isCategoryHidden = (category: string) => {
     const categoryFiles = categorizedFiles[category];
     return !isApprovedMember && categoryFiles.every((file) => file.isPrivate);
   };
+
+  const visibleCategories = sortedCategories.filter((c) => !isCategoryHidden(c));
 
   const handleMoveCategoryUp = async (category: string) => {
     const currentIndex = sortedCategories.indexOf(category);
@@ -471,7 +269,6 @@ export function CategorizedFilesList({
         body: JSON.stringify({ unionId, categoryOrders }),
       });
 
-      // Refresh category orders
       const response = await fetch('/api/files/categories/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -507,7 +304,6 @@ export function CategorizedFilesList({
         body: JSON.stringify({ unionId, categoryOrders }),
       });
 
-      // Refresh category orders
       const response = await fetch('/api/files/categories/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -523,75 +319,17 @@ export function CategorizedFilesList({
     }
   };
 
-  const handleMoveFileUp = async (fileId: number) => {
-    const file = files.find((f) => f.id === fileId);
-    if (!file) return;
+  // Get files for the selected category (or all files)
+  const displayFiles = selectedCategory
+    ? categorizedFiles[selectedCategory] || []
+    : files.filter((f) => !f.isPrivate || isApprovedMember);
 
-    const category = file.category || 'Uncategorized';
-    const categoryFiles = categorizedFiles[category];
-    const currentIndex = categoryFiles.findIndex((f) => f.id === fileId);
+  // Count all visible files
+  const totalFileCount = files.filter((f) => !f.isPrivate || isApprovedMember).length;
 
-    if (currentIndex <= 0) return;
-
-    const newFiles = [...categoryFiles];
-    [newFiles[currentIndex - 1], newFiles[currentIndex]] =
-      [newFiles[currentIndex], newFiles[currentIndex - 1]];
-
-    const fileUpdates = newFiles.map((file, index) => ({
-      fileId: file.id,
-      sortOrder: index,
-    }));
-
-    try {
-      const response = await fetch('/api/files/reorder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileUpdates }),
-      });
-
-      if (response.ok) {
-        // Trigger a Next.js refresh to show updated order
-        router.refresh();
-      }
-    } catch (error) {
-      console.error('Error reordering files:', error);
-    }
-  };
-
-  const handleMoveFileDown = async (fileId: number) => {
-    const file = files.find((f) => f.id === fileId);
-    if (!file) return;
-
-    const category = file.category || 'Uncategorized';
-    const categoryFiles = categorizedFiles[category];
-    const currentIndex = categoryFiles.findIndex((f) => f.id === fileId);
-
-    if (currentIndex < 0 || currentIndex >= categoryFiles.length - 1) return;
-
-    const newFiles = [...categoryFiles];
-    [newFiles[currentIndex], newFiles[currentIndex + 1]] =
-      [newFiles[currentIndex + 1], newFiles[currentIndex]];
-
-    const fileUpdates = newFiles.map((file, index) => ({
-      fileId: file.id,
-      sortOrder: index,
-    }));
-
-    try {
-      const response = await fetch('/api/files/reorder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileUpdates }),
-      });
-
-      if (response.ok) {
-        // Trigger a Next.js refresh to show updated order
-        router.refresh();
-      }
-    } catch (error) {
-      console.error('Error reordering files:', error);
-    }
-  };
+  // Determine if we have multiple categories (to show sidebar)
+  const hasCategories = visibleCategories.length > 1 ||
+    (visibleCategories.length === 1 && visibleCategories[0] !== 'Uncategorized');
 
   if (loading) {
     return (
@@ -605,50 +343,142 @@ export function CategorizedFilesList({
     return null;
   }
 
-  // Filter out "Uncategorized" for first/last checks
   const reorderableCategories = sortedCategories.filter((c) => c !== 'Uncategorized');
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {sortedCategories.map((category) => {
-          // Skip hidden categories
-          if (isCategoryHidden(category)) {
-            return null;
-          }
+      <div className={`flex gap-0 ${hasCategories ? 'min-h-[400px]' : ''}`}>
+        {/* Folder Sidebar */}
+        {hasCategories && (
+          <div className="w-52 flex-shrink-0 border-r border-gray-200 pr-0">
+            <nav className="space-y-0.5 py-1">
+              {/* All Files button */}
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
+                  selectedCategory === null
+                    ? 'bg-blue-50 text-blue-700 font-medium'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <LayoutGrid className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">All Files</span>
+                <span className="ml-auto text-xs text-gray-400">{totalFileCount}</span>
+              </button>
 
-          const categoryFiles = categorizedFiles[category];
-          const isExpanded = expandedCategories.has(category);
+              {/* Divider */}
+              <div className="border-t border-gray-100 my-1.5 mx-3" />
 
-          // Calculate if this category is first or last (excluding Uncategorized)
-          const reorderableIndex = reorderableCategories.indexOf(category);
-          const isFirstCategory = reorderableIndex === 0;
-          const isLastCategory = reorderableIndex === reorderableCategories.length - 1;
+              {/* Category folders */}
+              {visibleCategories.map((category) => {
+                const fileCount = categorizedFiles[category]?.length || 0;
+                const isSelected = selectedCategory === category;
+                const reorderableIndex = reorderableCategories.indexOf(category);
+                const isFirstCategory = reorderableIndex === 0;
+                const isLastCategory = reorderableIndex === reorderableCategories.length - 1;
 
-          return (
-            <CategorySection
-              key={category}
-              category={category}
-              categoryFiles={categoryFiles}
-              isExpanded={isExpanded}
-              onToggle={() => toggleCategory(category)}
-              isOwner={isOwner}
-              isApprovedMember={isApprovedMember}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              deletingFile={deletingFile}
-              onMoveFileUp={handleMoveFileUp}
-              onMoveFileDown={handleMoveFileDown}
-              onRenameCategory={(cat) => setRenameCategoryDialog(cat)}
-              onMoveCategoryUp={() => handleMoveCategoryUp(category)}
-              onMoveCategoryDown={() => handleMoveCategoryDown(category)}
-              isFirstCategory={isFirstCategory}
-              isLastCategory={isLastCategory}
-              slug={slug}
-            />
-          );
-        })}
+                return (
+                  <div key={category} className="group relative">
+                    <button
+                      onClick={() => setSelectedCategory(category)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
+                        isSelected
+                          ? 'bg-blue-50 text-blue-700 font-medium'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      {isSelected ? (
+                        <FolderOpen className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                      ) : (
+                        <Folder className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                      )}
+                      <span className="truncate">{category}</span>
+                      <span className="ml-auto text-xs text-gray-400">{fileCount}</span>
+                    </button>
+
+                    {/* Admin controls on hover */}
+                    {isOwner && category !== 'Uncategorized' && (
+                      <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMoveCategoryUp(category);
+                          }}
+                          disabled={isFirstCategory}
+                          className="h-5 w-5 p-0"
+                          title="Move up"
+                        >
+                          <ArrowUp className={`h-3 w-3 ${isFirstCategory ? 'text-gray-300' : 'text-gray-500'}`} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMoveCategoryDown(category);
+                          }}
+                          disabled={isLastCategory}
+                          className="h-5 w-5 p-0"
+                          title="Move down"
+                        >
+                          <ArrowDown className={`h-3 w-3 ${isLastCategory ? 'text-gray-300' : 'text-gray-500'}`} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRenameCategoryDialog(category);
+                          }}
+                          className="h-5 w-5 p-0"
+                          title="Rename"
+                        >
+                          <Pencil className="h-3 w-3 text-gray-500" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          </div>
+        )}
+
+        {/* Files Grid */}
+        <div className={`flex-1 ${hasCategories ? 'pl-6' : ''}`}>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-500">
+              {selectedCategory || 'All Files'}
+              <span className="ml-2 text-gray-400">({displayFiles.length})</span>
+            </h3>
+          </div>
+
+          {/* Grid */}
+          {displayFiles.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {displayFiles.map((file) => (
+                <FileGridCard
+                  key={file.id}
+                  file={file}
+                  isOwner={isOwner}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  deletingFile={deletingFile}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              <File className="h-12 w-12 mb-3" />
+              <p className="text-sm">No files in this folder</p>
+            </div>
+          )}
+        </div>
       </div>
+
       <RenameCategoryDialog
         open={renameCategoryDialog !== null}
         onOpenChange={(open) => !open && setRenameCategoryDialog(null)}
