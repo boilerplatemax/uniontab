@@ -203,6 +203,10 @@ export function UnionNavbar({
   // Visibility filter for navigation items
   const isNavItemVisible = (item: NavigationItem): boolean => {
     if (!item.isEnabled) return false;
+    // Elections is always members-only — approved login required regardless of configured visibility
+    if (item.linkType === 'built_in_route' && item.builtInRoute === 'elections') {
+      return !!membership && isApprovedMember;
+    }
     if (item.visibility === 'public') return true;
     if (item.visibility === 'members_only') return !!membership && isApprovedMember;
     if (item.visibility === 'admins_only') return isOwnerOrAdmin;
@@ -417,8 +421,10 @@ export function UnionNavbar({
   // ── Non-member navbar ──────────────────────────────────────────────────
 
   // Public nav items (visible to non-members)
+  // Elections is always excluded from public nav regardless of configured visibility
   const publicNavItems = enabledNavItems.filter(
-    (item) => item.isEnabled && item.visibility === 'public'
+    (item) => item.isEnabled && item.visibility === 'public' &&
+      !(item.linkType === 'built_in_route' && item.builtInRoute === 'elections')
   );
   const publicTopLevelNavItems = publicNavItems.filter((item) => !item.parentId);
   const getPublicNavChildren = (parentId: number) =>
