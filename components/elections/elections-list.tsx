@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
 import { CreateElectionDialog } from '@/components/elections/create-election-dialog';
+import { EditElectionDialog } from '@/components/elections/edit-election-dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Calendar, Users, Lock, Globe, Eye, Vote as VoteIcon } from 'lucide-react';
+import { Calendar, Users, Lock, Globe, Eye, Vote as VoteIcon, Edit, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -21,6 +22,32 @@ export function ElectionsList({ slug, unionId, isOwner }: ElectionsListProps) {
     unionId ? `/api/elections/list?unionId=${unionId}` : null,
     fetcher
   );
+  const [editingElection, setEditingElection] = useState<any>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deletingElection, setDeletingElection] = useState<number | null>(null);
+
+  const handleDeleteElection = async (electionId: number) => {
+    if (!confirm('Are you sure you want to delete this election? This will permanently remove all votes and responses.')) return;
+
+    setDeletingElection(electionId);
+    try {
+      const response = await fetch(`/api/elections/${electionId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete election');
+      }
+
+      mutate(`/api/elections/list?unionId=${unionId}`);
+    } catch (err: any) {
+      console.error('Error deleting election:', err);
+      alert(err.message || 'Failed to delete election');
+    } finally {
+      setDeletingElection(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -170,12 +197,51 @@ export function ElectionsList({ slug, unionId, isOwner }: ElectionsListProps) {
                           </Link>
                         </Button>
                       )}
+                    {isAdmin && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 sm:flex-none"
+                          onClick={() => { setEditingElection(election); setEditOpen(true); }}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="flex-1 sm:flex-none"
+                          onClick={() => handleDeleteElection(election.id)}
+                          disabled={deletingElection === election.id}
+                        >
+                          {deletingElection === election.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Edit Election Dialog */}
+      {editingElection && (
+        <EditElectionDialog
+          open={editOpen}
+          onOpenChange={(open) => { setEditOpen(open); if (!open) setEditingElection(null); }}
+          election={editingElection}
+          onSuccess={() => mutate(`/api/elections/list?unionId=${unionId}`)}
+        />
       )}
     </>
   );
