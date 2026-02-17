@@ -39,7 +39,7 @@ export function DefaultTheme({
 }: ThemeProps) {
   return (
     <UnionTabProvider slug={slug}>
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Announcement Banner - Above navbar */}
       <AnnouncementClient
         popup={activeAnnouncements.popup}
@@ -213,23 +213,25 @@ export function DefaultTheme({
       </div>
 
       {/* Content Area with Tabs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <UnionProfileTabs
-          union={union}
-          posts={posts}
-          files={files}
-          events={events}
-          membership={membership}
-          isOwner={isOwner}
-          isOwnerOrAdmin={isOwnerOrAdmin}
-          isApprovedMember={isApprovedMember}
-          userId={userId}
-          hideTabNav={true}
-        />
+      <div className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <UnionProfileTabs
+            union={union}
+            posts={posts}
+            files={files}
+            events={events}
+            membership={membership}
+            isOwner={isOwner}
+            isOwnerOrAdmin={isOwnerOrAdmin}
+            isApprovedMember={isApprovedMember}
+            userId={userId}
+            hideTabNav={true}
+          />
+        </div>
       </div>
 
       {/* Footer */}
-      <div className="bg-white border-t mt-8">
+      <div className="bg-white border-t mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col items-center gap-4">
             {/* Social Media Icons */}

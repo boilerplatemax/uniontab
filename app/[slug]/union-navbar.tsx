@@ -15,6 +15,7 @@ import { hasPermission, type AdminPermissionKey } from '@/lib/admin-permissions'
 import type { AdminPermissions, NavigationItem as BaseNavigationItem } from '@/lib/db/schema';
 import { MemberLoginDropdown } from './member-login-dropdown';
 import { useUnionTab, type TabKey } from './union-tab-context';
+import { getNavIconByName } from '@/lib/nav-icons';
 
 type NavigationItem = BaseNavigationItem & { pageSlug?: string | null; fileUrl?: string | null };
 
@@ -214,8 +215,13 @@ export function UnionNavbar({
   const getNavChildren = (parentId: number) =>
     enabledNavItems.filter((item) => item.parentId === parentId && isNavItemVisible(item));
 
-  // Resolve icon for a nav item
+  // Resolve icon for a nav item - custom icon takes priority
   const getNavIcon = (item: NavigationItem): React.ReactNode => {
+    // Check for custom icon first
+    const customIcon = getNavIconByName((item as any).icon);
+    if (customIcon) return customIcon;
+
+    // Fall back to default icons based on link type
     if (item.linkType === 'built_in_route' && item.builtInRoute) {
       return builtInRouteIcons[item.builtInRoute] || <FileText className="h-4 w-4" />;
     }

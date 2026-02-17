@@ -60,6 +60,7 @@ export const unions = pgTable('unions', {
   showSocialInHero: boolean('show_social_in_hero').notNull().default(false), // Toggle to show social icons in hero section
   hidePoweredBy: boolean('hide_powered_by').notNull().default(false), // Allow paid users to hide "Powered by UnionTab" in footer
   defaultLanguage: varchar('default_language', { length: 10 }).notNull().default('en'), // Default language for the union (en, fr)
+  homePage: varchar('home_page', { length: 255 }).notNull().default('news'), // Default home page: 'news', 'about', 'events', 'files', 'elections', 'contact', or 'page:<slug>' for custom pages
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   publishedAt: timestamp('published_at'),
@@ -324,6 +325,7 @@ export const navigationItems = pgTable('navigation_items', {
   isEnabled: boolean('is_enabled').notNull().default(true),
   openInNewTab: boolean('open_in_new_tab').notNull().default(false),
   isMandatory: boolean('is_mandatory').notNull().default(false),
+  icon: varchar('icon', { length: 50 }), // Optional icon name from lucide-react icon set (e.g., 'FileText', 'Newspaper', etc.)
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

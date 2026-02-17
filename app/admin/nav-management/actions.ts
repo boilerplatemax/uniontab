@@ -70,6 +70,7 @@ export async function saveNavigationTree(
     isEnabled: boolean;
     openInNewTab: boolean;
     isMandatory: boolean;
+    icon?: string | null;
   }[]
 ) {
   await requireWebmaster();
@@ -111,6 +112,7 @@ export async function saveNavigationTree(
           isEnabled: item.isEnabled,
           openInNewTab: item.openInNewTab,
           isMandatory: item.isMandatory,
+          icon: item.icon ?? null,
           updatedAt: new Date(),
         })
         .where(eq(navigationItems.id, item.id))
@@ -134,6 +136,7 @@ export async function saveNavigationTree(
           isEnabled: item.isEnabled,
           openInNewTab: item.openInNewTab,
           isMandatory: item.isMandatory,
+          icon: item.icon ?? null,
         })
         .returning();
       results.push(inserted);

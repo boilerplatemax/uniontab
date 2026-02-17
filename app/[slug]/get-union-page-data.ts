@@ -239,6 +239,7 @@ export async function getUnionNavigationItems(unionId: number) {
       isEnabled: navigationItems.isEnabled,
       openInNewTab: navigationItems.openInNewTab,
       isMandatory: navigationItems.isMandatory,
+      icon: navigationItems.icon,
       createdAt: navigationItems.createdAt,
       updatedAt: navigationItems.updatedAt,
       pageSlug: unionPages.slug,

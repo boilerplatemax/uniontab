@@ -51,7 +51,7 @@ export function PrestigeTheme({
 
   return (
     <UnionTabProvider slug={slug}>
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Announcement Banner - Above navbar */}
       <AnnouncementClient
         popup={activeAnnouncements.popup}
@@ -241,25 +241,27 @@ export function PrestigeTheme({
       )}
 
       {/* Main Content - Open airy design */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <UnionProfileTabs
-          union={union}
-          posts={posts}
-          files={files}
-          events={events}
-          membership={membership}
-          isOwner={isOwner}
-          isOwnerOrAdmin={isOwnerOrAdmin}
-          isApprovedMember={isApprovedMember}
-          userId={userId}
-          prestigeMode={true}
-          hideTabNav={true}
-        />
+      <div className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <UnionProfileTabs
+            union={union}
+            posts={posts}
+            files={files}
+            events={events}
+            membership={membership}
+            isOwner={isOwner}
+            isOwnerOrAdmin={isOwnerOrAdmin}
+            isApprovedMember={isApprovedMember}
+            userId={userId}
+            prestigeMode={true}
+            hideTabNav={true}
+          />
+        </div>
       </div>
 
       {/* Footer - Minimal elegant */}
       <div
-        className="border-t mt-8"
+        className="border-t mt-auto"
         style={{ borderColor: borderLight }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
