@@ -111,6 +111,12 @@ export function MultiStepMemberSignUp({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // If not on the final step, advance to next step instead of submitting
+    if (step < totalSteps) {
+      handleNext();
+      return;
+    }
+
     if (!validateStep(step)) {
       return;
     }
