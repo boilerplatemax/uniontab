@@ -720,7 +720,7 @@ export function UnionProfileTabs({
                                 {post.isPrivate && postsView !== 'grid' && (
                                   <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Private</span>
                                 )}
-                                {isOwner && postsView !== 'grid' && (
+                                {isOwner && (
                                   <>
                                     <Button variant="outline" size="sm" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}>
                                       <Pin className={`h-4 w-4 ${(post as any).isPinned ? 'fill-current' : ''}`} />
