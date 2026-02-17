@@ -326,6 +326,7 @@ export const navigationItems = pgTable('navigation_items', {
   openInNewTab: boolean('open_in_new_tab').notNull().default(false),
   isMandatory: boolean('is_mandatory').notNull().default(false),
   icon: varchar('icon', { length: 50 }), // Optional icon name from lucide-react icon set (e.g., 'FileText', 'Newspaper', etc.)
+  showBanner: boolean('show_banner').notNull().default(false), // Whether to show the theme's default banner on this page
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

@@ -77,6 +77,7 @@ interface NavItem {
   openInNewTab: boolean;
   isMandatory: boolean;
   icon: string | null;
+  showBanner: boolean;
 }
 
 interface PageOption {
@@ -131,6 +132,7 @@ function emptyNavItem(): NavItem {
     openInNewTab: false,
     isMandatory: false,
     icon: null,
+    showBanner: false,
   };
 }
 
@@ -602,6 +604,21 @@ export default function NavManagementPage() {
                 className="w-24"
               />
             </div>
+
+            {dialogItem.linkType === 'page' && (
+              <div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={dialogItem.showBanner}
+                    onCheckedChange={(checked) =>
+                      setDialogItem({ ...dialogItem, showBanner: !!checked })
+                    }
+                  />
+                  <span className="text-sm">Show Banner</span>
+                </label>
+                <p className="text-xs text-gray-400 mt-1">Display the theme&apos;s default banner (union name, socials, contact info) on this page</p>
+              </div>
+            )}
 
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer">

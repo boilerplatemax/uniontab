@@ -90,6 +90,7 @@ async function getNavigationItems(unionId: number) {
       openInNewTab: navigationItems.openInNewTab,
       isMandatory: navigationItems.isMandatory,
       icon: navigationItems.icon,
+      showBanner: navigationItems.showBanner,
       createdAt: navigationItems.createdAt,
       updatedAt: navigationItems.updatedAt,
       pageSlug: unionPages.slug,
@@ -141,6 +142,12 @@ export default async function CustomPage({
 
   const navItems = await getNavigationItems(union.id);
 
+  // Check if the current page's nav item has showBanner enabled
+  const currentNavItem = navItems.find(
+    (item) => item.linkType === 'page' && item.pageId === page.id
+  );
+  const showBanner = currentNavItem?.showBanner ?? false;
+
   return (
     <CustomPageContent
       union={union}
@@ -149,6 +156,7 @@ export default async function CustomPage({
       handleSignOut={handleSignOut}
       slug={slug}
       navigationItems={navItems}
+      showBanner={showBanner}
     />
   );
 }

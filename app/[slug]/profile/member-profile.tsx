@@ -28,7 +28,9 @@ export function MemberProfile({ slug, user, userWithUnion, membership, union, me
   const [message, setMessage] = useState({ type: '', text: '' });
 
   // General Settings
-  const [name, setName] = useState(user.name || '');
+  const nameParts = (user.name || '').split(' ');
+  const [firstName, setFirstName] = useState(nameParts[0] || '');
+  const [lastName, setLastName] = useState(nameParts.slice(1).join(' ') || '');
   const [email, setEmail] = useState(user.email);
 
   // Member Information
@@ -63,7 +65,7 @@ export function MemberProfile({ slug, user, userWithUnion, membership, union, me
       const response = await fetch('/api/profile/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email })
+        body: JSON.stringify({ name: `${firstName} ${lastName}`.trim(), email })
       });
 
       const data = await response.json();
@@ -93,7 +95,7 @@ export function MemberProfile({ slug, user, userWithUnion, membership, union, me
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           unionId: union.id,
-          name,
+          name: `${firstName} ${lastName}`.trim(),
           phone,
           employer,
           jobTitle,
@@ -311,15 +313,27 @@ export function MemberProfile({ slug, user, userWithUnion, membership, union, me
             </CardHeader>
             <CardContent>
               <form onSubmit={handleUpdateGeneral} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="John Doe"
-                    required
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="John"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Doe"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div>
