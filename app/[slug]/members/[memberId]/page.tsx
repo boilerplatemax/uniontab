@@ -203,6 +203,7 @@ export default async function MemberProfilePage({
         notes={notes}
         currentUserId={user.id}
         isAdminOrOwner={isAdminOrOwner}
+        isOwnProfile={isOwnProfile}
       />
     </>
   );

@@ -41,10 +41,13 @@ export function getMemberLimit(union: {
   stripeCustomerId: string | null;
   planName: string | null;
   subscriptionStatus: string | null;
+  extraMemberLimit?: number | null;
 }): number {
+  const extra = union.extraMemberLimit || 0;
+
   // Free tier - no stripe customer ID
   if (!union.stripeCustomerId) {
-    return MEMBER_LIMITS.FREE;
+    return MEMBER_LIMITS.FREE + extra;
   }
 
   // Check subscription status - must be active or trialing
@@ -53,17 +56,17 @@ export function getMemberLimit(union: {
     union.subscriptionStatus === 'trialing';
 
   if (!isActiveSubscription) {
-    return MEMBER_LIMITS.FREE;
+    return MEMBER_LIMITS.FREE + extra;
   }
 
   // Plus plan
   if (union.planName?.toLowerCase().includes('plus') ||
       union.planName?.toLowerCase().includes('premium')) {
-    return MEMBER_LIMITS.PLUS;
+    return MEMBER_LIMITS.PLUS + extra;
   }
 
   // Base plan (default for paying customers)
-  return MEMBER_LIMITS.BASE;
+  return MEMBER_LIMITS.BASE + extra;
 }
 
 /**
@@ -73,6 +76,7 @@ export function getPlanTierName(union: {
   stripeCustomerId: string | null;
   planName: string | null;
   subscriptionStatus: string | null;
+  extraMemberLimit?: number | null;
 }): string {
   if (!union.stripeCustomerId) {
     return 'Free';

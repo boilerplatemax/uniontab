@@ -92,6 +92,11 @@ export function MultiStepMemberSignUp({
         setError('Please fill in all required employment information');
         return false;
       }
+    } else if (currentStep === 3) {
+      if (!formData.localChapter) {
+        setError('Please enter your Local / Chapter Assignment before submitting');
+        return false;
+      }
     }
     return true;
   };
@@ -209,7 +214,7 @@ export function MultiStepMemberSignUp({
             <CardDescription>
               {step === 1 && 'Step 1 of 3: Basic Information'}
               {step === 2 && 'Step 2 of 3: Employment Details'}
-              {step === 3 && 'Step 3 of 3: Additional Information (Optional)'}
+              {step === 3 && 'Step 3 of 3: Additional Information'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -338,11 +343,11 @@ export function MultiStepMemberSignUp({
                 </div>
               )}
 
-              {/* Step 3: Optional Information */}
+              {/* Step 3: Additional Information */}
               {step === 3 && (
                 <div className="space-y-4">
                   <p className="text-sm text-gray-600 mb-4">
-                    The following fields are optional but help us serve you better.
+                    Please provide your union assignment details. Fields marked with * are required.
                   </p>
 
                   <div>
@@ -387,9 +392,10 @@ export function MultiStepMemberSignUp({
                   </div>
 
                   <div>
-                    <Label htmlFor="localChapter">Local / Chapter Assignment</Label>
+                    <Label htmlFor="localChapter">Local / Chapter Assignment *</Label>
                     <Input
                       id="localChapter"
+                      required
                       value={formData.localChapter}
                       onChange={(e) => updateField('localChapter', e.target.value)}
                       placeholder="Local 123"

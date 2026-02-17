@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -17,7 +19,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Loader2, MoreVertical, Download, Trash2, AlertTriangle, ExternalLink } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Loader2, MoreVertical, Download, Trash2, AlertTriangle, ExternalLink, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -53,6 +63,17 @@ interface UnionStats {
   ownerName?: string;
   ownerEmail?: string;
   lastLoginAt: Date | null;
+  extraMemberLimit: number;
+  extraMonthlyEmails: number;
+  extraMonthlySMS: number;
+  extraStorageBytes: number;
+}
+
+interface PrivilegeForm {
+  extraMemberLimit: string;
+  extraMonthlyEmails: string;
+  extraMonthlySMS: string;
+  extraStorageBytes: string;
 }
 
 export default function UnionManagementPage() {
@@ -61,8 +82,17 @@ export default function UnionManagementPage() {
   const [error, setError] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [warningDialogOpen, setWarningDialogOpen] = useState(false);
+  const [privilegesDialogOpen, setPrivilegesDialogOpen] = useState(false);
   const [selectedUnion, setSelectedUnion] = useState<UnionStats | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [privilegeForm, setPrivilegeForm] = useState<PrivilegeForm>({
+    extraMemberLimit: '0',
+    extraMonthlyEmails: '0',
+    extraMonthlySMS: '0',
+    extraStorageBytes: '0',
+  });
+  const [privilegeSuccess, setPrivilegeSuccess] = useState('');
+  const [privilegeError, setPrivilegeError] = useState('');
 
   useEffect(() => {
     fetchUnions();
@@ -159,6 +189,66 @@ export default function UnionManagementPage() {
     }
   };
 
+  const openPrivilegesDialog = (union: UnionStats) => {
+    setSelectedUnion(union);
+    setPrivilegeForm({
+      extraMemberLimit: String(union.extraMemberLimit ?? 0),
+      extraMonthlyEmails: String(union.extraMonthlyEmails ?? 0),
+      extraMonthlySMS: String(union.extraMonthlySMS ?? 0),
+      extraStorageBytes: String(union.extraStorageBytes ?? 0),
+    });
+    setPrivilegeSuccess('');
+    setPrivilegeError('');
+    setPrivilegesDialogOpen(true);
+  };
+
+  const handleSavePrivileges = async () => {
+    if (!selectedUnion) return;
+
+    setActionLoading(true);
+    setPrivilegeSuccess('');
+    setPrivilegeError('');
+
+    try {
+      const response = await fetch(`/api/admin/unions/${selectedUnion.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          extraMemberLimit: parseInt(privilegeForm.extraMemberLimit) || 0,
+          extraMonthlyEmails: parseInt(privilegeForm.extraMonthlyEmails) || 0,
+          extraMonthlySMS: parseInt(privilegeForm.extraMonthlySMS) || 0,
+          extraStorageBytes: parseInt(privilegeForm.extraStorageBytes) || 0,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update privileges');
+      }
+
+      setPrivilegeSuccess('Privileges updated successfully.');
+      // Update the local state so the table reflects changes immediately
+      setUnions((prev) =>
+        prev.map((u) =>
+          u.id === selectedUnion.id
+            ? {
+                ...u,
+                extraMemberLimit: parseInt(privilegeForm.extraMemberLimit) || 0,
+                extraMonthlyEmails: parseInt(privilegeForm.extraMonthlyEmails) || 0,
+                extraMonthlySMS: parseInt(privilegeForm.extraMonthlySMS) || 0,
+                extraStorageBytes: parseInt(privilegeForm.extraStorageBytes) || 0,
+              }
+            : u
+        )
+      );
+    } catch (err: any) {
+      setPrivilegeError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getActivityStatus = (lastActivityAt: Date | null) => {
     if (!lastActivityAt) return { status: 'Inactive', variant: 'destructive' as const };
 
@@ -170,6 +260,12 @@ export default function UnionManagementPage() {
     if (daysSinceActivity <= 30) return { status: 'Moderate', variant: 'secondary' as const };
     return { status: 'Inactive', variant: 'destructive' as const };
   };
+
+  const hasPrivilegeOverrides = (union: UnionStats) =>
+    (union.extraMemberLimit ?? 0) > 0 ||
+    (union.extraMonthlyEmails ?? 0) > 0 ||
+    (union.extraMonthlySMS ?? 0) > 0 ||
+    (union.extraStorageBytes ?? 0) > 0;
 
   if (loading) {
     return (
@@ -214,6 +310,7 @@ export default function UnionManagementPage() {
                     <TableHead>Activity</TableHead>
                     <TableHead>Onboarding</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Privileges</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -292,6 +389,26 @@ export default function UnionManagementPage() {
                             <Badge variant="secondary">Draft</Badge>
                           )}
                         </TableCell>
+                        <TableCell>
+                          {hasPrivilegeOverrides(union) ? (
+                            <div className="flex flex-col gap-0.5 text-xs text-gray-600">
+                              {(union.extraMemberLimit ?? 0) > 0 && (
+                                <span className="text-green-700">+{union.extraMemberLimit} members</span>
+                              )}
+                              {(union.extraMonthlyEmails ?? 0) > 0 && (
+                                <span className="text-green-700">+{union.extraMonthlyEmails} emails</span>
+                              )}
+                              {(union.extraMonthlySMS ?? 0) > 0 && (
+                                <span className="text-green-700">+{union.extraMonthlySMS} SMS</span>
+                              )}
+                              {(union.extraStorageBytes ?? 0) > 0 && (
+                                <span className="text-green-700">+{Math.round((union.extraStorageBytes ?? 0) / 1024 / 1024)}MB storage</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400">None</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-sm text-gray-600">
                           {new Date(union.createdAt).toLocaleDateString()}
                         </TableCell>
@@ -303,6 +420,12 @@ export default function UnionManagementPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => openPrivilegesDialog(union)}
+                              >
+                                <Shield className="mr-2 h-4 w-4" />
+                                Edit Privileges
+                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleBackup(union.id, union.slug)}
                               >
@@ -346,6 +469,132 @@ export default function UnionManagementPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Privileges Dialog */}
+      <Dialog open={privilegesDialogOpen} onOpenChange={setPrivilegesDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-blue-600" />
+              Edit Privileges
+            </DialogTitle>
+            <DialogDescription>
+              Extend monthly limits for <strong>{selectedUnion?.publicName || selectedUnion?.name}</strong>.
+              These amounts are added on top of the union's current plan limits.
+              Setting a value to 0 removes the override.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="extraMemberLimit">Extra Members</Label>
+              <p className="text-xs text-gray-500 mb-1">
+                Added on top of plan limit (Free: 150, Base: 500, Plus: 2000)
+              </p>
+              <Input
+                id="extraMemberLimit"
+                type="number"
+                min="0"
+                value={privilegeForm.extraMemberLimit}
+                onChange={(e) =>
+                  setPrivilegeForm((prev) => ({ ...prev, extraMemberLimit: e.target.value }))
+                }
+                placeholder="0"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="extraMonthlyEmails">Extra Monthly Emails</Label>
+              <p className="text-xs text-gray-500 mb-1">
+                Added on top of plan limit (Free: 500, Base: 5,000, Plus: 15,000)
+              </p>
+              <Input
+                id="extraMonthlyEmails"
+                type="number"
+                min="0"
+                value={privilegeForm.extraMonthlyEmails}
+                onChange={(e) =>
+                  setPrivilegeForm((prev) => ({ ...prev, extraMonthlyEmails: e.target.value }))
+                }
+                placeholder="0"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="extraMonthlySMS">Extra Monthly SMS</Label>
+              <p className="text-xs text-gray-500 mb-1">
+                Added on top of plan limit (Free: 0, Base: 1,500, Plus: 4,000)
+              </p>
+              <Input
+                id="extraMonthlySMS"
+                type="number"
+                min="0"
+                value={privilegeForm.extraMonthlySMS}
+                onChange={(e) =>
+                  setPrivilegeForm((prev) => ({ ...prev, extraMonthlySMS: e.target.value }))
+                }
+                placeholder="0"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="extraStorageBytes">Extra Storage (MB)</Label>
+              <p className="text-xs text-gray-500 mb-1">
+                Additional storage in megabytes (stored internally as bytes)
+              </p>
+              <Input
+                id="extraStorageBytes"
+                type="number"
+                min="0"
+                value={String(Math.round(parseInt(privilegeForm.extraStorageBytes || '0') / 1024 / 1024))}
+                onChange={(e) =>
+                  setPrivilegeForm((prev) => ({
+                    ...prev,
+                    extraStorageBytes: String(Math.max(0, parseInt(e.target.value) || 0) * 1024 * 1024),
+                  }))
+                }
+                placeholder="0"
+              />
+            </div>
+
+            {privilegeSuccess && (
+              <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm">
+                {privilegeSuccess}
+              </div>
+            )}
+
+            {privilegeError && (
+              <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">
+                {privilegeError}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setPrivilegesDialogOpen(false)}
+              disabled={actionLoading}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={handleSavePrivileges}
+              disabled={actionLoading}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Privileges'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

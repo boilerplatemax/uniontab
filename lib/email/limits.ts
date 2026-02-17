@@ -18,10 +18,13 @@ export function getEmailLimit(union: {
   stripeCustomerId: string | null;
   planName: string | null;
   subscriptionStatus: string | null;
+  extraMonthlyEmails?: number | null;
 }): number {
+  const extra = union.extraMonthlyEmails || 0;
+
   // Free tier - no stripe customer ID
   if (!union.stripeCustomerId) {
-    return EMAIL_LIMITS.FREE;
+    return EMAIL_LIMITS.FREE + extra;
   }
 
   // Check subscription status - must be active or trialing
@@ -30,17 +33,17 @@ export function getEmailLimit(union: {
     union.subscriptionStatus === 'trialing';
 
   if (!isActiveSubscription) {
-    return EMAIL_LIMITS.FREE;
+    return EMAIL_LIMITS.FREE + extra;
   }
 
   // Premium/Plus plan
   if (union.planName?.toLowerCase().includes('plus') ||
       union.planName?.toLowerCase().includes('premium')) {
-    return EMAIL_LIMITS.PREMIUM;
+    return EMAIL_LIMITS.PREMIUM + extra;
   }
 
   // Base plan (default for paying customers)
-  return EMAIL_LIMITS.BASE;
+  return EMAIL_LIMITS.BASE + extra;
 }
 
 /**

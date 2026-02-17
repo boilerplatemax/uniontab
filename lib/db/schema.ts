@@ -79,6 +79,11 @@ export const unions = pgTable('unions', {
   emailInviteUsageResetDate: timestamp('email_invite_usage_reset_date').notNull().default(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)),
   // Estimated member count collected at signup (for internal tracking only)
   estimatedMemberCount: varchar('estimated_member_count', { length: 50 }),
+  // Site-master privilege overrides (added on top of plan limits per union)
+  extraMemberLimit: integer('extra_member_limit').notNull().default(0),
+  extraMonthlyEmails: integer('extra_monthly_emails').notNull().default(0),
+  extraMonthlySMS: integer('extra_monthly_sms').notNull().default(0),
+  extraStorageBytes: integer('extra_storage_bytes').notNull().default(0),
 });
 
 export const members = pgTable('members', {

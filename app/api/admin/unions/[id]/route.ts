@@ -39,6 +39,52 @@ import { stripe } from '@/lib/payments/stripe';
 // Force this route to use Node.js runtime to support bcryptjs
 export const runtime = 'nodejs';
 
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  try {
+    const sessionCookie = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
+
+    if (!sessionCookie) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const session = await verifyToken(sessionCookie);
+
+    const [currentUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, session.user.id))
+      .limit(1);
+
+    if (!currentUser || currentUser.role !== 'webmaster') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const unionId = parseInt(id);
+    const body = await request.json();
+
+    const { extraMemberLimit, extraMonthlyEmails, extraMonthlySMS, extraStorageBytes } = body;
+
+    await db
+      .update(unions)
+      .set({
+        extraMemberLimit: Math.max(0, parseInt(extraMemberLimit) || 0),
+        extraMonthlyEmails: Math.max(0, parseInt(extraMonthlyEmails) || 0),
+        extraMonthlySMS: Math.max(0, parseInt(extraMonthlySMS) || 0),
+        extraStorageBytes: Math.max(0, parseInt(extraStorageBytes) || 0),
+      })
+      .where(eq(unions.id, unionId));
+
+    return NextResponse.json({ success: true, message: 'Privileges updated successfully' });
+  } catch (error) {
+    console.error('Error updating union privileges:', error);
+    return NextResponse.json({ error: 'Failed to update privileges' }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
