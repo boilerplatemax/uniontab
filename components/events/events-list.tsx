@@ -1,11 +1,10 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { ShareButton } from '@/components/share-button';
-import { MapPin, Clock, Calendar, Edit, Trash2, Loader2 } from 'lucide-react';
+import { MapPin, Clock, Calendar, Edit, Trash2, Loader2, ExternalLink } from 'lucide-react';
 import type { Event } from '@/lib/db/schema';
 import { useState } from 'react';
 import { getContrastColor, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
@@ -19,6 +18,9 @@ interface EventsListProps {
   slug: string;
   themeColor?: string | null;
 }
+
+const DAY_ABBREVS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const MONTH_ABBREVS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
 export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, slug, themeColor }: EventsListProps) {
   const bgColor = themeColor || DEFAULT_THEME_COLOR;
@@ -34,7 +36,6 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, sl
 
   const handleDeleteConfirm = async () => {
     if (!eventToDelete) return;
-
     setDeletingId(eventToDelete);
     try {
       await onDelete?.(eventToDelete);
@@ -42,15 +43,6 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, sl
       setDeletingId(null);
       setEventToDelete(null);
     }
-  };
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   };
 
   const formatTime = (time: string) => {
@@ -62,6 +54,11 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, sl
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
+  const formatMonthYear = (date: Date) => {
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
   // Sort events by start date
   const sortedEvents = [...events].sort(
     (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
@@ -69,178 +66,179 @@ export function EventsList({ events, isOwner, onEventClick, onEdit, onDelete, sl
 
   // Group events by month
   const groupedEvents = sortedEvents.reduce((acc, event) => {
-    const month = new Date(event.startDate).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-    });
-    if (!acc[month]) {
-      acc[month] = [];
+    const d = new Date(event.startDate);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    if (!acc[key]) {
+      acc[key] = { label: formatMonthYear(d), events: [] };
     }
-    acc[month].push(event);
+    acc[key].events.push(event);
     return acc;
-  }, {} as Record<string, typeof sortedEvents>);
+  }, {} as Record<string, { label: string; events: typeof sortedEvents }>);
 
   if (events.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-12 text-center">
-          <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No events yet</h3>
-          <p className="text-gray-500">
-            {isOwner
-              ? 'Create your first event to get started!'
-              : 'Check back later for upcoming events.'}
-          </p>
-        </CardContent>
-      </Card>
+      <div className="text-center py-16 px-4">
+        <Calendar className="h-14 w-14 text-gray-200 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-700 mb-1">No events yet</h3>
+        <p className="text-sm text-gray-400">
+          {isOwner ? 'Create your first event to get started.' : 'Check back later for upcoming events.'}
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {Object.entries(groupedEvents).map(([month, monthEvents]) => (
-        <div key={month}>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">{month}</h3>
-          <div className="space-y-3">
+    <div className="space-y-10">
+      {Object.entries(groupedEvents).map(([key, { label, events: monthEvents }]) => (
+        <div key={key}>
+          {/* Month / Year header */}
+          <div className="flex items-center gap-3 mb-5">
+            <h2 className="text-base font-bold uppercase tracking-widest text-gray-500">{label}</h2>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          <div className="space-y-0 divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden shadow-sm">
             {monthEvents.map((event) => {
               const startDate = new Date(event.startDate);
               const endDate = new Date(event.endDate);
+              const dayAbbrev = DAY_ABBREVS[startDate.getDay()];
+              const dayNum = startDate.getDate();
+              const monthAbbrev = MONTH_ABBREVS[startDate.getMonth()];
               const isMultiDay =
                 endDate.getDate() !== startDate.getDate() ||
                 endDate.getMonth() !== startDate.getMonth() ||
                 endDate.getFullYear() !== startDate.getFullYear();
 
               return (
-                <Card
+                <article
                   key={event.id}
-                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  className="flex gap-0 bg-white hover:bg-gray-50 transition-colors cursor-pointer group"
                   onClick={() => onEventClick?.(event)}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex gap-4">
-                      {/* Date Badge - Square with centered content */}
-                      <div className="flex-shrink-0">
-                        <div
-                          className="rounded-lg text-center w-16 h-16 flex flex-col items-center justify-center"
-                          style={{ backgroundColor: bgColor, color: textColor }}
-                        >
-                          <div className="text-xs font-semibold uppercase">
-                            {startDate.toLocaleDateString('en-US', { month: 'short' })}
-                          </div>
-                          <div className="text-2xl font-bold leading-none">{startDate.getDate()}</div>
-                        </div>
-                      </div>
+                  {/* Left date column */}
+                  <div
+                    className="flex-shrink-0 w-20 sm:w-24 flex flex-col items-center justify-center py-5 px-2 text-center select-none"
+                    style={{ backgroundColor: bgColor, color: textColor }}
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-90">{dayAbbrev}</span>
+                    <span className="text-3xl font-extrabold leading-none mt-0.5">{dayNum}</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide opacity-80 mt-0.5">{monthAbbrev}</span>
+                  </div>
 
-                      {/* Event Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h4 className="text-lg font-semibold text-gray-900 mb-1">
-                              {event.title}
-                              {event.isPrivate && (
-                                <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                  Private
-                                </span>
-                              )}
-                              {event.category && (
-                                <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                  {event.category}
-                                </span>
-                              )}
-                            </h4>
-
-                            <div className="space-y-1 text-sm text-gray-600">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4" />
-                                {event.isAllDay ? (
-                                  <span>All day</span>
-                                ) : (
-                                  <span>
-                                    {event.startTime && formatTime(event.startTime)}
-                                    {event.endTime && ` - ${formatTime(event.endTime)}`}
-                                  </span>
-                                )}
-                                {isMultiDay && (
-                                  <span className="text-gray-500">
-                                    • {formatDate(startDate)} - {formatDate(endDate)}
-                                  </span>
-                                )}
-                              </div>
-
-                              {event.location && (
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4" />
-                                  <span>{event.location}</span>
-                                </div>
-                              )}
-                            </div>
-
-                            {event.description && (
-                              <div className="mt-2 line-clamp-2">
-                                <RichTextContent content={event.description} className="text-sm" />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex items-center gap-2">
-                            <div onClick={(e) => e.stopPropagation()}>
-                              <ShareButton
-                                itemType="event"
-                                itemId={event.id}
-                                itemTitle={event.title}
-                                itemUrl={`/${slug}/event/${event.id}`}
-                                slug={slug}
-                                isOwnerOrAdmin={isOwner}
-                                size="sm"
-                              />
-                            </div>
-                            {isOwner && (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onEdit?.(event);
-                                  }}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteClick(event.id);
-                                  }}
-                                  disabled={deletingId === event.id}
-                                >
-                                  {deletingId === event.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Event Image */}
-                        {event.mediaUrl && (
-                          <div className="mt-3">
-                            <img
-                              src={event.mediaUrl}
-                              alt={event.title}
-                              className="w-full max-h-96 object-contain rounded-lg bg-gray-100"
-                            />
-                          </div>
+                  {/* Main content */}
+                  <div className="flex-1 min-w-0 flex gap-4 py-4 px-4 sm:px-5">
+                    <div className="flex-1 min-w-0">
+                      {/* Time / date row */}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mb-1.5">
+                        {event.isAllDay ? (
+                          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">All Day</span>
+                        ) : (
+                          <span className="text-xs font-semibold text-gray-500">
+                            <Clock className="h-3 w-3 inline mr-1 -mt-0.5 text-gray-400" />
+                            {event.startTime && formatTime(event.startTime)}
+                            {event.endTime && <span className="text-gray-400"> – {formatTime(event.endTime)}</span>}
+                          </span>
+                        )}
+                        {isMultiDay && (
+                          <span className="text-xs text-gray-400">
+                            – {new Date(event.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </span>
+                        )}
+                        {event.category && (
+                          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
+                            {event.category}
+                          </span>
+                        )}
+                        {event.isPrivate && (
+                          <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-medium">
+                            Private
+                          </span>
                         )}
                       </div>
+
+                      {/* Title */}
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-1.5">
+                        {event.title}
+                      </h3>
+
+                      {/* Location */}
+                      {event.location && (
+                        <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-2">
+                          <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+                          <span className="truncate">{event.location}</span>
+                        </div>
+                      )}
+
+                      {/* Description */}
+                      {event.description && (
+                        <div className="text-sm text-gray-500 line-clamp-2 mt-1">
+                          <RichTextContent content={event.description} className="text-sm" />
+                        </div>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
+
+                    {/* Event image */}
+                    {event.mediaUrl && (
+                      <div className="hidden sm:block flex-shrink-0 w-28 h-24 rounded-lg overflow-hidden bg-gray-100 self-start">
+                        <img
+                          src={event.mediaUrl}
+                          alt={event.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div
+                      className="flex flex-col items-end justify-between flex-shrink-0 py-0.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <ShareButton
+                          itemType="event"
+                          itemId={event.id}
+                          itemTitle={event.title}
+                          itemUrl={`/${slug}/event/${event.id}`}
+                          slug={slug}
+                          isOwnerOrAdmin={isOwner}
+                          size="sm"
+                        />
+                        {isOwner && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-gray-400 hover:text-gray-700"
+                              onClick={() => onEdit?.(event)}
+                              title="Edit event"
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-gray-400 hover:text-red-600"
+                              onClick={() => handleDeleteClick(event.id)}
+                              disabled={deletingId === event.id}
+                              title="Delete event"
+                            >
+                              {deletingId === event.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                          </>
+                        )}
+                      </div>
+
+                      {/* View details link */}
+                      <span className="text-xs text-gray-400 group-hover:text-gray-600 flex items-center gap-0.5 transition-colors mt-2">
+                        Details <ExternalLink className="h-2.5 w-2.5" />
+                      </span>
+                    </div>
+                  </div>
+                </article>
               );
             })}
           </div>

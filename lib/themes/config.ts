@@ -30,7 +30,7 @@ export const themes: Record<ThemeId, ThemeConfig> = {
   prestige: {
     id: 'prestige',
     name: 'Prestige',
-    description: 'Premium Airbnb-inspired design with clean layouts and elegant rose accents',
+    description: 'Premium design with clean layouts, masonry posts, and elegant rose accents',
     isPremium: true,
     requiredPlans: ['Base', 'Plus'],
   },
