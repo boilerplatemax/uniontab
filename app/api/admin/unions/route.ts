@@ -51,6 +51,10 @@ export async function GET() {
         publishedAt: unions.publishedAt,
         subscriptionStatus: unions.subscriptionStatus,
         planName: unions.planName,
+        extraMemberLimit: unions.extraMemberLimit,
+        extraMonthlyEmails: unions.extraMonthlyEmails,
+        extraMonthlySMS: unions.extraMonthlySMS,
+        extraStorageBytes: unions.extraStorageBytes,
       })
       .from(unions)
       .orderBy(desc(unions.createdAt));

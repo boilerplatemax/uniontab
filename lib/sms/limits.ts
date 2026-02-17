@@ -24,10 +24,14 @@ export function getSMSLimit(union: {
   stripeCustomerId: string | null;
   planName: string | null;
   subscriptionStatus: string | null;
+  extraMonthlySMS?: number | null;
 }): number {
+  const extra = union.extraMonthlySMS || 0;
+
   // Free tier - no stripe customer ID - no SMS access
+  // (Extra SMS can grant access even on free tier)
   if (!union.stripeCustomerId) {
-    return SMS_LIMITS.FREE;
+    return SMS_LIMITS.FREE + extra;
   }
 
   // Check subscription status - must be active or trialing
@@ -36,17 +40,17 @@ export function getSMSLimit(union: {
     union.subscriptionStatus === 'trialing';
 
   if (!isActiveSubscription) {
-    return SMS_LIMITS.FREE;
+    return SMS_LIMITS.FREE + extra;
   }
 
   // Premium/Plus plan
   if (union.planName?.toLowerCase().includes('plus') ||
       union.planName?.toLowerCase().includes('premium')) {
-    return SMS_LIMITS.PREMIUM;
+    return SMS_LIMITS.PREMIUM + extra;
   }
 
   // Base plan (default for paying customers)
-  return SMS_LIMITS.BASE;
+  return SMS_LIMITS.BASE + extra;
 }
 
 /**
@@ -56,6 +60,7 @@ export function hasSMSAccess(union: {
   stripeCustomerId: string | null;
   planName: string | null;
   subscriptionStatus: string | null;
+  extraMonthlySMS?: number | null;
 }): boolean {
   return getSMSLimit(union) > 0;
 }

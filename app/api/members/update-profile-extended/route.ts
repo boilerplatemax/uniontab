@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user is admin or owner of this union
+    // Get the requesting user's membership in this union
     const [userMembership] = await db
       .select()
       .from(members)
@@ -33,9 +33,9 @@ export async function POST(request: NextRequest) {
       )
       .limit(1);
 
-    if (!userMembership || (userMembership.role !== 'owner' && userMembership.role !== 'admin')) {
+    if (!userMembership) {
       return NextResponse.json(
-        { error: 'You do not have permission to edit members' },
+        { error: 'You are not a member of this union' },
         { status: 403 }
       );
     }
@@ -54,8 +54,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prevent editing owners unless you are also an owner
-    if (memberToUpdate.role === 'owner' && userMembership.role !== 'owner') {
+    const isAdminOrOwner = userMembership.role === 'owner' || userMembership.role === 'admin';
+    const isOwnProfile = memberToUpdate.userId === session.user.id;
+
+    // Allow if admin/owner OR if editing own profile
+    if (!isAdminOrOwner && !isOwnProfile) {
+      return NextResponse.json(
+        { error: 'You do not have permission to edit this member' },
+        { status: 403 }
+      );
+    }
+
+    // Prevent editing another owner unless you are also an owner
+    if (memberToUpdate.role === 'owner' && !isAdminOrOwner && !isOwnProfile) {
       return NextResponse.json(
         { error: 'Only owners can edit other owners' },
         { status: 403 }

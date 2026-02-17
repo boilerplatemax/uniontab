@@ -81,6 +81,7 @@ interface MemberProfileContentProps {
   notes: NoteWithCreator[];
   currentUserId: number;
   isAdminOrOwner?: boolean;
+  isOwnProfile?: boolean;
 }
 
 export function MemberProfileContent({
@@ -93,6 +94,7 @@ export function MemberProfileContent({
   notes: initialNotes,
   currentUserId,
   isAdminOrOwner = false,
+  isOwnProfile = false,
 }: MemberProfileContentProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
@@ -170,7 +172,8 @@ export function MemberProfileContent({
     { id: 'certifications', label: 'Training', icon: Award },
     { id: 'positions', label: 'Positions', icon: Users },
     ...(isAdminOrOwner ? [{ id: 'notes', label: 'Notes', icon: StickyNote }] : []),
-    ...(isAdminOrOwner ? [{ id: 'settings', label: 'Settings', icon: Settings }] : []),
+    // Settings tab is shown to admins/owners AND to members viewing their own profile
+    ...((isAdminOrOwner || isOwnProfile) ? [{ id: 'settings', label: 'Settings', icon: Settings }] : []),
   ];
 
   return (
@@ -179,11 +182,11 @@ export function MemberProfileContent({
         {/* Header */}
         <div className="mb-6">
           <Link
-            href={`/${slug}/members`}
+            href={isAdminOrOwner ? `/${slug}/members` : `/${slug}`}
             className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Members
+            {isAdminOrOwner ? 'Back to Members' : 'Back to Home'}
           </Link>
 
           <div className="bg-white rounded-lg shadow-sm border p-6">

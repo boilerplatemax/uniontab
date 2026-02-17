@@ -1,13 +1,8 @@
 import { redirect, notFound } from 'next/navigation';
-import { getUser, getUserWithTeam, getMemberDuesWithReceipts } from '@/lib/db/queries';
-import { MemberProfile } from './member-profile';
-import { UnionNavbar } from '../union-navbar';
-import { NavbarSpacer } from '../navbar-spacer';
+import { getUser } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
-import { unions, members, users } from '@/lib/db/schema';
-import { eq, and, count } from 'drizzle-orm';
-import { cookies } from 'next/headers';
-import { getUnionNavigationItems } from '../get-union-page-data';
+import { unions, members } from '@/lib/db/schema';
+import { eq, and } from 'drizzle-orm';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -21,30 +16,12 @@ async function getUnionBySlug(slug: string) {
 
 async function getMembership(unionId: number, userId: number) {
   const [membership] = await db
-    .select({
-      user: users,
-      member: members
-    })
+    .select()
     .from(members)
-    .innerJoin(users, eq(members.userId, users.id))
     .where(and(eq(members.unionId, unionId), eq(members.userId, userId)))
     .limit(1);
 
   return membership;
-}
-
-async function getPendingMembersCount(unionId: number) {
-  const [result] = await db
-    .select({ value: count() })
-    .from(members)
-    .where(and(eq(members.unionId, unionId), eq(members.status, 'pending')));
-
-  return Number(result.value);
-}
-
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
 }
 
 export default async function ProfilePage({
@@ -65,35 +42,12 @@ export default async function ProfilePage({
     notFound();
   }
 
-  const userWithUnion = await getUserWithTeam(user.id);
   const membership = await getMembership(union.id, user.id);
-  const isOwner = membership?.member.role === 'owner';
-  const pendingMembersCount = isOwner ? await getPendingMembersCount(union.id) : 0;
-  const navItems = await getUnionNavigationItems(union.id);
 
-  // Get member's dues with receipts
-  const memberDues = membership ? await getMemberDuesWithReceipts(membership.member.id) : [];
+  if (!membership) {
+    redirect(`/${slug}`);
+  }
 
-  return (
-    <>
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingMembersCount}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-      <MemberProfile
-        slug={slug}
-        user={user}
-        userWithUnion={userWithUnion}
-        membership={membership}
-        union={union}
-        memberDues={memberDues}
-      />
-    </>
-  );
+  // Redirect to the rich member profile view
+  redirect(`/${slug}/members/${membership.id}`);
 }
