@@ -26,7 +26,6 @@ import {
   validatedActionWithUser
 } from '@/lib/auth/middleware';
 import { sendEmail, sendEmailVerification } from '@/lib/email/sendgrid';
-import { setupDnsForNewUnion } from '@/lib/email/setup-union-dns';
 import { seedDefaultNavigation } from '@/lib/db/seed-navigation';
 import crypto from 'crypto';
 
@@ -312,20 +311,6 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     userRole = 'owner';
 
     await logActivity(unionId, createdUser.id, ActivityType.CREATE_TEAM);
-
-    // Automatically set up DNS records for the new union
-    // This runs in the background and doesn't block signup
-    setupDnsForNewUnion(unionId, createdUnion.name, createdUnion.localNumber)
-      .then((result) => {
-        if (result.success) {
-          console.log(`✅ DNS setup successful for union ${unionId}: ${result.fullDomain}`);
-        } else {
-          console.error(`❌ DNS setup failed for union ${unionId}:`, result.error);
-        }
-      })
-      .catch((error) => {
-        console.error(`❌ DNS setup error for union ${unionId}:`, error);
-      });
 
     // Seed default navigation items for the new union
     seedDefaultNavigation(unionId)

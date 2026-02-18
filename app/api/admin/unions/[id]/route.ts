@@ -32,8 +32,6 @@ import {
 import { eq, inArray } from 'drizzle-orm';
 import { verifyToken } from '@/lib/auth/session';
 import { sendEmail } from '@/lib/email/sendgrid';
-import { deleteDnsRecords } from '@/lib/email/cloudflare-client';
-import { deleteDomainAuthentication } from '@/lib/email/sendgrid-domains';
 import { stripe } from '@/lib/payments/stripe';
 
 // Force this route to use Node.js runtime to support bcryptjs
@@ -127,46 +125,8 @@ export async function DELETE(
     console.log(`Starting deletion of union: ${union.name} (ID: ${unionId})`);
 
     // =====================================================
-    // STEP 1: Clean up external services (Cloudflare, SendGrid, Stripe)
+    // STEP 1: Clean up external services (Stripe)
     // =====================================================
-
-    // Get union email domain configuration to clean up DNS records
-    const [emailDomain] = await db
-      .select()
-      .from(unionEmailDomains)
-      .where(eq(unionEmailDomains.unionId, unionId))
-      .limit(1);
-
-    if (emailDomain) {
-      console.log('Found email domain configuration for cleanup');
-
-      // Delete Cloudflare DNS records
-      if (emailDomain.cloudflareRecordIds && Array.isArray(emailDomain.cloudflareRecordIds)) {
-        const recordIds = emailDomain.cloudflareRecordIds as string[];
-        if (recordIds.length > 0) {
-          try {
-            console.log(`Deleting ${recordIds.length} Cloudflare DNS records...`);
-            await deleteDnsRecords(recordIds);
-            console.log('Successfully deleted Cloudflare DNS records');
-          } catch (error) {
-            console.error('Failed to delete Cloudflare DNS records:', error);
-            // Continue with deletion even if Cloudflare cleanup fails
-          }
-        }
-      }
-
-      // Delete SendGrid domain authentication
-      if (emailDomain.sendgridDomainId) {
-        try {
-          console.log(`Deleting SendGrid domain authentication (ID: ${emailDomain.sendgridDomainId})...`);
-          await deleteDomainAuthentication(parseInt(emailDomain.sendgridDomainId));
-          console.log('Successfully deleted SendGrid domain authentication');
-        } catch (error) {
-          console.error('Failed to delete SendGrid domain authentication:', error);
-          // Continue with deletion even if SendGrid cleanup fails
-        }
-      }
-    }
 
     // Cancel Stripe subscription if one exists
     if (union.stripeSubscriptionId) {
@@ -468,8 +428,6 @@ The UnionTab Team`,
       notifiedMembers: unionMembers.length,
       orphanedUsersDeleted: orphanedUserIds.length,
       externalServicesCleanedUp: {
-        cloudflare: emailDomain?.cloudflareRecordIds ? true : false,
-        sendgrid: emailDomain?.sendgridDomainId ? true : false,
         stripe: union.stripeSubscriptionId ? true : false,
       },
     });

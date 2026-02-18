@@ -1,9 +1,5 @@
 import sgMail from '@sendgrid/mail';
-import { db } from '@/lib/db/drizzle';
-import { unionEmailDomains } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
 import { checkRateLimit, incrementRateLimitCounters } from './rate-limits';
-import { getEmailAddress } from './subdomain';
 import { getContrastColor, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
 
 /**
@@ -47,41 +43,10 @@ interface SendEmailOptions {
 }
 
 /**
- * Get FROM email address for a union
- * Uses verified subdomain if available, falls back to default
+ * Get FROM email address — always uses the default noreply@uniontab.com.
+ * Union branding is conveyed via the display name set at the call site.
  */
-async function getFromEmail(
-  unionId?: number,
-  fromLocalPart: string = 'notify'
-): Promise<{ email: string; name: string }> {
-  // If no unionId, use default
-  if (!unionId) {
-    return {
-      email: FROM_EMAIL,
-      name: FROM_NAME,
-    };
-  }
-
-  try {
-    // Check if union has a verified email domain
-    const emailDomain = await db
-      .select()
-      .from(unionEmailDomains)
-      .where(eq(unionEmailDomains.unionId, unionId))
-      .limit(1);
-
-    // If domain exists and is verified, use it
-    if (emailDomain.length > 0 && emailDomain[0].verificationStatus === 'verified') {
-      return {
-        email: getEmailAddress(emailDomain[0].subdomain, fromLocalPart),
-        name: FROM_NAME,
-      };
-    }
-  } catch (error) {
-    console.error(`Failed to get email domain for union ${unionId}:`, error);
-  }
-
-  // Fall back to default
+function getFromEmail(): { email: string; name: string } {
   return {
     email: FROM_EMAIL,
     name: FROM_NAME,
@@ -109,8 +74,7 @@ export async function sendEmail({ to, subject, text, html, unionId, fromLocalPar
     }
   }
 
-  // Get FROM email (subdomain for mass emails, default for regular emails)
-  const fromEmail = await getFromEmail(unionId, fromLocalPart);
+  const fromEmail = getFromEmail();
 
   try {
     await sgMail.send({
@@ -784,8 +748,7 @@ export async function sendMassEmail({
     }
   }
 
-  // Get FROM email (subdomain or default)
-  const fromEmail = await getFromEmail(unionInfo.id, 'notify');
+  const fromEmail = getFromEmail();
 
   const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
   const unionNameUppercase = unionName.toUpperCase();
@@ -931,8 +894,7 @@ export async function sendMeetingInviteEmail({
     }
   }
 
-  // Get FROM email
-  const fromEmail = await getFromEmail(unionInfo.id, 'meetings');
+  const fromEmail = getFromEmail();
 
   const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
   const unionNameUppercase = unionName.toUpperCase();

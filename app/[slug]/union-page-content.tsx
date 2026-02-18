@@ -1,7 +1,6 @@
 import { DefaultTheme } from './themes/default-theme';
 import { ModernTheme } from './themes/modern-theme';
 import { PrestigeTheme } from './themes/prestige-theme';
-import { AutoVerifyEmailDomain } from '@/components/auto-verify-email-domain';
 import { getUnionPageData } from './get-union-page-data';
 
 export async function UnionPageContent({ slug }: { slug: string }) {
@@ -39,10 +38,5 @@ export async function UnionPageContent({ slug }: { slug: string }) {
     }
   })();
 
-  return (
-    <>
-      <AutoVerifyEmailDomain unionId={data.union.id} />
-      {ThemeComponent}
-    </>
-  );
+  return ThemeComponent;
 }
