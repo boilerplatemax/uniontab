@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { UnionTabProvider } from './union-tab-context';
 
 export default async function UnionSlugLayout({
@@ -10,8 +11,10 @@ export default async function UnionSlugLayout({
   const { slug } = await params;
 
   return (
-    <UnionTabProvider slug={slug}>
-      {children}
-    </UnionTabProvider>
+    <Suspense>
+      <UnionTabProvider slug={slug}>
+        {children}
+      </UnionTabProvider>
+    </Suspense>
   );
 }

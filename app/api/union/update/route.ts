@@ -67,8 +67,6 @@ export async function PUT(request: NextRequest) {
       // Revalidate the main union page and all nested paths
       revalidatePath(`/${updatedUnion.slug}`, 'page');
       revalidatePath(`/${updatedUnion.slug}/settings`, 'page');
-      // Also revalidate with layout to ensure full page refresh
-      revalidatePath(`/${updatedUnion.slug}`, 'layout');
     }
 
     return NextResponse.json({ success: true });
