@@ -428,8 +428,6 @@ The UnionTab Team`,
       notifiedMembers: unionMembers.length,
       orphanedUsersDeleted: orphanedUserIds.length,
       externalServicesCleanedUp: {
-        cloudflare: emailDomain?.cloudflareRecordIds ? true : false,
-        sendgrid: emailDomain?.sendgridDomainId ? true : false,
         stripe: union.stripeSubscriptionId ? true : false,
       },
     });
