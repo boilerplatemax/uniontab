@@ -461,7 +461,7 @@ export async function sendMembershipRejectionEmail(
   name: string,
   unionInfo: { name: string; localNumber: string | null }
 ) {
-  const unionName = `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}`;
+  const unionName = `${unionInfo.name.toUpperCase()}${unionInfo.localNumber ? ` LOCAL ${unionInfo.localNumber}` : ''}`;
   const subject = `Membership Application Update - ${unionName}`;
 
   const text = `

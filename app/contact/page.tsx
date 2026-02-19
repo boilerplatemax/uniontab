@@ -185,7 +185,7 @@ export default function ContactPage() {
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           className="h-12 border-2 focus:border-blue-500 transition-colors"
-                          placeholder="John Smith"
+                          placeholder="Your Name"
                         />
                       </div>
 
@@ -201,7 +201,7 @@ export default function ContactPage() {
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           className="h-12 border-2 focus:border-blue-500 transition-colors"
-                          placeholder="john@example.com"
+                          placeholder="Your Email"
                         />
                       </div>
                     </div>

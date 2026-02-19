@@ -39,6 +39,7 @@ export function PrestigeTheme({
   activeAnnouncements,
   accessibilityWidgetEnabled,
   navigationItems: navItems,
+  hasGalleryImages,
 }: ThemeProps) {
   // Dynamic color palette based on theme color from settings
   const themeColor = union.themeColor || DEFAULT_THEME_COLOR;
@@ -71,6 +72,7 @@ export function PrestigeTheme({
         contactEmail={union.email}
         isApprovedMember={isApprovedMember}
         navigationItems={navItems}
+        hasGalleryImages={hasGalleryImages}
       />
 
       {/* Spacing for fixed navbar and announcement */}

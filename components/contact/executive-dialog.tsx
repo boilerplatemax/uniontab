@@ -137,7 +137,7 @@ export function ExecutiveDialog({
               id="execName"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="John Smith"
+              placeholder="Your Name"
               required
             />
           </div>
@@ -160,7 +160,7 @@ export function ExecutiveDialog({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="john@union.org"
+              placeholder="Your Email"
             />
           </div>
 
@@ -171,7 +171,7 @@ export function ExecutiveDialog({
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="(555) 123-4567"
+              placeholder="Your Number"
             />
           </div>
 

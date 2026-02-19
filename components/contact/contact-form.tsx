@@ -95,7 +95,7 @@ export function ContactForm({ unionId }: ContactFormProps) {
             id="contactName"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="John Smith"
+            placeholder="Your Name"
             required
           />
         </div>
@@ -107,7 +107,7 @@ export function ContactForm({ unionId }: ContactFormProps) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="john@example.com"
+            placeholder="Your Email"
             required
           />
         </div>
@@ -121,7 +121,7 @@ export function ContactForm({ unionId }: ContactFormProps) {
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="(555) 123-4567"
+            placeholder="Your Number"
           />
         </div>
 

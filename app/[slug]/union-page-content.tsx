@@ -24,6 +24,7 @@ export async function UnionPageContent({ slug }: { slug: string }) {
     activeAnnouncements: data.activeAnnouncements,
     accessibilityWidgetEnabled: data.union.accessibilityWidgetEnabled ?? true,
     navigationItems: data.navigationItems,
+    hasGalleryImages: data.hasGalleryImages,
   };
 
   const ThemeComponent = (() => {

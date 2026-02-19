@@ -291,6 +291,13 @@ export async function getUnionPageData(slug: string) {
   const unionFiles = await getUnionFiles(union.id);
   const unionEvents = await getUnionEvents(union.id);
 
+  // Check if the union has any gallery images (for conditional nav display)
+  const [galleryCountResult] = await db
+    .select({ value: count() })
+    .from(files)
+    .where(and(eq(files.unionId, union.id), eq(files.category, 'gallery')));
+  const hasGalleryImages = Number(galleryCountResult.value) > 0;
+
   const activeAnnouncements = await getActiveAnnouncements(union.id, currentUser?.id);
   const unionNavigationItems = await getUnionNavigationItems(union.id);
 
@@ -313,6 +320,7 @@ export async function getUnionPageData(slug: string) {
     unionEvents,
     activeAnnouncements,
     navigationItems: unionNavigationItems,
+    hasGalleryImages,
     theme,
     handleSignOut,
     slug,
