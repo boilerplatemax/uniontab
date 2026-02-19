@@ -26,4 +26,5 @@ export interface ThemeProps {
   };
   accessibilityWidgetEnabled: boolean;
   navigationItems?: (NavigationItem & { pageSlug?: string | null; fileUrl?: string | null })[];
+  hasGalleryImages?: boolean;
 }

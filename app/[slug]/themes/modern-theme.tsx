@@ -38,6 +38,7 @@ export function ModernTheme({
   activeAnnouncements,
   accessibilityWidgetEnabled,
   navigationItems: navItems,
+  hasGalleryImages,
 }: ThemeProps) {
   // Calculate contrast color for hero text based on theme color
   const heroTextColor = getContrastColor(union.themeColor || DEFAULT_THEME_COLOR);
@@ -66,6 +67,7 @@ export function ModernTheme({
         contactEmail={union.email}
         isApprovedMember={isApprovedMember}
         navigationItems={navItems}
+        hasGalleryImages={hasGalleryImages}
       />
 
       {/* Spacing for fixed navbar and announcement */}

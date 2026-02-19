@@ -5,7 +5,7 @@ import {
   Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone,
   Mail, ChevronDown, ChevronRight, UserPlus, DollarSign, FileText, Zap,
   Video, MessageSquare, BarChart3, Newspaper, Info, FolderOpen, CalendarDays,
-  Vote, Phone, ArrowLeft, Shield, Download, ExternalLink,
+  Vote, Phone, ArrowLeft, Shield, Download, ExternalLink, Images,
 } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
@@ -37,6 +37,7 @@ interface UnionNavbarProps {
   contactEmail?: string | null;
   isApprovedMember?: boolean;
   navigationItems?: (NavigationItem & { pageSlug?: string | null; fileUrl?: string | null })[];
+  hasGalleryImages?: boolean;
 }
 
 interface MegaMenuItem {
@@ -67,6 +68,7 @@ export function UnionNavbar({
   contactEmail,
   isApprovedMember = false,
   navigationItems = [],
+  hasGalleryImages = false,
 }: UnionNavbarProps) {
   const pathname = usePathname();
   const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
@@ -140,6 +142,9 @@ export function UnionNavbar({
   }, [mobileOpen]);
 
   const displayName = `${unionName.toUpperCase()}${localNumber ? ` ${localNumber}` : ''}`;
+
+  // Gallery link is always visible to admins/owners; visible to others only if there are gallery images
+  const showGalleryLink = isOwnerOrAdmin || hasGalleryImages;
 
   const hasAdminAccess = isOwnerOrAdmin && (
     canAccess('members') || canAccess('communications') || canAccess('dues') ||
@@ -588,6 +593,19 @@ export function UnionNavbar({
                   })
                 )}
 
+                {showGalleryLink && (
+                  <Link
+                    href={`/${slug}/gallery`}
+                    className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap
+                      ${pathname === `/${slug}/gallery`
+                        ? 'text-gray-900 bg-gray-100'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                  >
+                    Gallery
+                  </Link>
+                )}
+
                 <div className="h-5 w-px bg-gray-200 mx-1" />
                 <MemberLoginDropdown slug={slug} contactEmail={contactEmail} />
               </div>
@@ -710,6 +728,17 @@ export function UnionNavbar({
                       </div>
                     );
                   })
+                )}
+                {/* Gallery link in mobile non-member nav */}
+                {showGalleryLink && (
+                  <Link
+                    href={`/${slug}/gallery`}
+                    onClick={() => setNonMemberMobileOpen(false)}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
+                  >
+                    <span className="text-gray-500"><Images className="h-4 w-4" /></span>
+                    <span className="text-[15px] font-medium">Gallery</span>
+                  </Link>
                 )}
               </div>
             </div>
@@ -880,6 +909,20 @@ export function UnionNavbar({
                     </Link>
                   );
                 })
+              )}
+
+              {/* Gallery link (member desktop) */}
+              {showGalleryLink && (
+                <Link
+                  href={`/${slug}/gallery`}
+                  className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap
+                    ${pathname === `/${slug}/gallery`
+                      ? 'text-gray-900 bg-gray-100'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                >
+                  Gallery
+                </Link>
               )}
 
               {/* Separator between pages and controls */}
@@ -1167,6 +1210,17 @@ export function UnionNavbar({
                       </div>
                     );
                   })
+                )}
+                {/* Gallery link in member mobile nav */}
+                {showGalleryLink && (
+                  <Link
+                    href={`/${slug}/gallery`}
+                    onClick={closeMobile}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
+                  >
+                    <span className="text-gray-500"><Images className="h-4 w-4" /></span>
+                    <span className="text-[15px] font-medium">Gallery</span>
+                  </Link>
                 )}
               </div>
 

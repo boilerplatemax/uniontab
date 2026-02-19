@@ -19,6 +19,7 @@ export function UnionMemberSignUp({
 }) {
   const { slug } = use(params);
   const unionDisplayName = union.publicName || union.name;
+  const backButtonLabel = `${union.name.toUpperCase()}${union.localNumber ? ` ${union.localNumber}` : ''}`;
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -70,7 +71,7 @@ export function UnionMemberSignUp({
           className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to {unionDisplayName}
+          Back to {backButtonLabel}
         </Link>
 
         <Card className="shadow-xl">

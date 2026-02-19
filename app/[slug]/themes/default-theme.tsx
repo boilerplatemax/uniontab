@@ -35,6 +35,7 @@ export function DefaultTheme({
   activeAnnouncements,
   accessibilityWidgetEnabled,
   navigationItems: navItems,
+  hasGalleryImages,
 }: ThemeProps) {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -59,6 +60,7 @@ export function DefaultTheme({
         contactEmail={union.email}
         isApprovedMember={isApprovedMember}
         navigationItems={navItems}
+        hasGalleryImages={hasGalleryImages}
       />
 
       {/* Spacing for fixed navbar and announcement */}
