@@ -51,6 +51,7 @@ import {
   getUnionFiles,
   saveNavigationTree,
   deleteNavigationItem,
+  addMissingDefaultNavItems,
 } from './actions';
 import { NAV_ICON_OPTIONS, getNavIconByName } from '@/lib/nav-icons';
 
@@ -146,6 +147,7 @@ export default function NavManagementPage() {
   const [loadingItems, setLoadingItems] = useState(false);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   // Dialog states
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -251,6 +253,23 @@ export default function NavManagementPage() {
     setDeletingIndex(null);
   };
 
+  const handleSeedDefaults = async () => {
+    if (!selectedUnionId) return;
+    setSeeding(true);
+    try {
+      const result = await addMissingDefaultNavItems(parseInt(selectedUnionId));
+      if (result.added > 0) {
+        await loadNavItems(parseInt(selectedUnionId));
+      } else {
+        alert('No missing default nav items — all defaults are already present.');
+      }
+    } catch (error) {
+      console.error('Failed to seed defaults:', error);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const handleSaveAll = async () => {
     if (!selectedUnionId) return;
     setSaving(true);
@@ -317,6 +336,20 @@ export default function NavManagementPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Navigation Items</CardTitle>
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSeedDefaults}
+                disabled={seeding}
+                title="Add any default nav items (News, About, Events, Files, Elections, Gallery, Contact) that are missing for this union"
+              >
+                {seeding ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-1" />
+                )}
+                Add Missing Defaults
+              </Button>
               <Button variant="outline" size="sm" onClick={handleOpenAdd}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add Nav Item

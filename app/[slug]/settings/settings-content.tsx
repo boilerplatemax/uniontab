@@ -228,7 +228,7 @@ export function SettingsContent() {
                 <Label htmlFor="description">
                   Short Description (One-liner)
                 </Label>
-                <Input
+                <Textarea
                   id="description"
                   placeholder="A brief description of your union..."
                   value={formData.description}
@@ -236,6 +236,8 @@ export function SettingsContent() {
                     setFormData({ ...formData, description: e.target.value })
                   }
                   maxLength={200}
+                  rows={2}
+                  className="resize-none"
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   {formData.description.length}/200 characters

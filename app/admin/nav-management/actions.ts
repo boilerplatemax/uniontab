@@ -214,6 +214,46 @@ export async function deleteNavigationItem(itemId: number) {
   return { success: true };
 }
 
+export async function addMissingDefaultNavItems(unionId: number) {
+  await requireWebmaster();
+
+  const DEFAULT_NAV_ITEMS = [
+    { label: 'News', builtInRoute: 'news', sortOrder: 0 },
+    { label: 'About', builtInRoute: 'about', sortOrder: 1 },
+    { label: 'Events', builtInRoute: 'events', sortOrder: 2 },
+    { label: 'Files', builtInRoute: 'files', sortOrder: 3 },
+    { label: 'Elections', builtInRoute: 'elections', sortOrder: 4 },
+    { label: 'Gallery', builtInRoute: 'gallery', sortOrder: 5 },
+    { label: 'Contact', builtInRoute: 'contact', sortOrder: 6 },
+  ];
+
+  const existing = await db
+    .select({ builtInRoute: navigationItems.builtInRoute })
+    .from(navigationItems)
+    .where(eq(navigationItems.unionId, unionId));
+
+  const existingRoutes = new Set(existing.map((e) => e.builtInRoute));
+  const toAdd = DEFAULT_NAV_ITEMS.filter((item) => !existingRoutes.has(item.builtInRoute));
+
+  if (toAdd.length === 0) return { added: 0 };
+
+  await db.insert(navigationItems).values(
+    toAdd.map((item) => ({
+      unionId,
+      label: item.label,
+      builtInRoute: item.builtInRoute,
+      sortOrder: item.sortOrder,
+      visibility: 'public' as const,
+      linkType: 'built_in_route' as const,
+      isEnabled: true,
+      isMandatory: true,
+      openInNewTab: false,
+    }))
+  );
+
+  return { added: toAdd.length };
+}
+
 export async function getAllUnions() {
   await requireWebmaster();
 
