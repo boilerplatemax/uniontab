@@ -171,6 +171,7 @@ export function UnionNavbar({
     events: <CalendarDays className="h-4 w-4" />,
     files: <FolderOpen className="h-4 w-4" />,
     elections: <Vote className="h-4 w-4" />,
+    gallery: <Images className="h-4 w-4" />,
     contact: <Phone className="h-4 w-4" />,
     members: <Users className="h-4 w-4" />,
     dues: <DollarSign className="h-4 w-4" />,
@@ -234,8 +235,9 @@ export function UnionNavbar({
     return null;
   };
 
-  // Resolve href for non-built-in nav items
+  // Resolve href for non-tab built-in routes and other nav items
   const getNavHref = (item: NavigationItem): string | null => {
+    if (item.linkType === 'built_in_route' && item.builtInRoute === 'gallery') return `/${slug}/gallery`;
     if (item.linkType === 'page' && item.pageId && item.pageSlug) return `/${slug}/p/${item.pageSlug}`;
     if (item.linkType === 'file' && item.fileId && item.fileUrl) return item.fileUrl;
     if (item.linkType === 'external_url' && item.externalUrl) return item.externalUrl;
