@@ -3,10 +3,17 @@
  *
  * Handles creation, verification, and deletion of DNS records via Cloudflare API.
  * Used for setting up DKIM, Return-Path, and tracking CNAMEs for SendGrid.
+ *
+ * NOTE: Automatic DNS record creation is DISABLED. createDnsRecord,
+ * createDnsRecords, and createSendGridDnsRecords will throw if called.
+ * DNS records must be managed manually via the Cloudflare dashboard.
  */
 
 // Cloudflare API configuration
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4';
+
+// Automatic DNS record creation is disabled. Set to false to re-enable.
+const DNS_RECORD_CREATION_DISABLED = true;
 
 // Helper functions to get environment variables (lazy evaluation)
 function getApiToken(): string | undefined {
@@ -104,6 +111,12 @@ async function cloudflareRequest<T>(
  * Create a DNS record in Cloudflare
  */
 export async function createDnsRecord(record: DnsRecord): Promise<CloudflareDnsRecord> {
+  if (DNS_RECORD_CREATION_DISABLED) {
+    throw new Error(
+      '[Cloudflare] DNS record creation is disabled. Records must be managed manually via the Cloudflare dashboard.'
+    );
+  }
+
   const payload: Record<string, unknown> = {
     type: record.type,
     name: record.name,
@@ -133,6 +146,12 @@ export async function createDnsRecord(record: DnsRecord): Promise<CloudflareDnsR
  * Checks if records already exist and reuses them instead of creating duplicates
  */
 export async function createDnsRecords(records: DnsRecord[]): Promise<CloudflareDnsRecord[]> {
+  if (DNS_RECORD_CREATION_DISABLED) {
+    throw new Error(
+      '[Cloudflare] DNS record creation is disabled. Records must be managed manually via the Cloudflare dashboard.'
+    );
+  }
+
   const createdRecords: CloudflareDnsRecord[] = [];
 
   // Create records sequentially to avoid rate limits
@@ -287,6 +306,12 @@ export async function createSendGridDnsRecords(
   subdomain: string,
   sendgridRecords: SendGridDnsRecords
 ): Promise<CloudflareDnsRecord[]> {
+  if (DNS_RECORD_CREATION_DISABLED) {
+    throw new Error(
+      '[Cloudflare] DNS record creation is disabled. Records must be managed manually via the Cloudflare dashboard.'
+    );
+  }
+
   const records: DnsRecord[] = [];
 
   // DKIM 1
