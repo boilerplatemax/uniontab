@@ -146,6 +146,11 @@ export function UnionNavbar({
   // Gallery link is always visible to admins/owners; visible to others only if there are gallery images
   const showGalleryLink = isOwnerOrAdmin || hasGalleryImages;
 
+  // True when Gallery is already a dynamic nav item — prevents double-rendering
+  const galleryIsNavItem = enabledNavItems.some(
+    (item) => item.linkType === 'built_in_route' && item.builtInRoute === 'gallery'
+  );
+
   const hasAdminAccess = isOwnerOrAdmin && (
     canAccess('members') || canAccess('communications') || canAccess('dues') ||
     canAccess('strikes') || canAccess('grievances') || canAccess('meetings') ||
@@ -622,7 +627,7 @@ export function UnionNavbar({
                   })
                 )}
 
-                {hasPublicNav && showGalleryLink && (
+                {hasPublicNav && showGalleryLink && !galleryIsNavItem && (
                   <Link
                     href={`/${slug}/gallery`}
                     className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap
@@ -779,7 +784,7 @@ export function UnionNavbar({
                   })
                 )}
                 {/* Gallery link in mobile non-member nav (dynamic nav only) */}
-                {hasPublicNav && showGalleryLink && (
+                {hasPublicNav && showGalleryLink && !galleryIsNavItem && (
                   <Link
                     href={`/${slug}/gallery`}
                     onClick={() => setNonMemberMobileOpen(false)}
@@ -988,7 +993,7 @@ export function UnionNavbar({
               )}
 
               {/* Gallery link (member desktop, dynamic nav only) */}
-              {useDynamicNav && showGalleryLink && (
+              {useDynamicNav && showGalleryLink && !galleryIsNavItem && (
                 <Link
                   href={`/${slug}/gallery`}
                   className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap
@@ -1308,7 +1313,7 @@ export function UnionNavbar({
                   })
                 )}
                 {/* Gallery link in member mobile nav (dynamic nav only) */}
-                {useDynamicNav && showGalleryLink && (
+                {useDynamicNav && showGalleryLink && !galleryIsNavItem && (
                   <Link
                     href={`/${slug}/gallery`}
                     onClick={closeMobile}

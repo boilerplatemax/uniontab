@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { SocialMediaIcons } from '@/components/social-media-icons';
+import { getContrastColor, getDarkerShade, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
 import {
   Loader2,
   Trash2,
@@ -43,6 +44,7 @@ interface UnionInfo {
   description: string | null;
   coverPhotoUrl: string | null;
   themeColor: string | null;
+  theme?: string | null;
   logoUrl: string | null;
   email: string | null;
   phone: string | null;
@@ -84,6 +86,18 @@ export function GalleryContent({
   const displayName =
     ((union.publicName || union.name)).toUpperCase() +
     (!union.publicName && union.localNumber ? ` ${union.localNumber}` : '');
+
+  const activeTheme = union.theme || 'default';
+  const themeColor = union.themeColor || DEFAULT_THEME_COLOR;
+
+  // Modern theme colors
+  const heroTextColor = getContrastColor(themeColor);
+  const heroTextOpacity = heroTextColor === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)';
+
+  // Prestige theme colors
+  const themeColorDark = getDarkerShade(themeColor, 15);
+  const textSecondary = '#717171';
+  const borderLight = '#EBEBEB';
 
   // ── Data helpers ──────────────────────────────────────────────────────────
 
@@ -233,97 +247,207 @@ export function GalleryContent({
   return (
     <>
       {/* ── Union Banner ───────────────────────────────────────────────────── */}
-      <div className="relative bg-white">
+
+      {activeTheme === 'modern' ? (
+        /* ── Modern Theme Banner ─────────────────────────────────────────── */
         <div
-          className={`relative overflow-hidden ${hasCoverPhoto ? 'h-[300px] sm:h-[400px]' : 'h-[120px] sm:h-[150px]'}`}
+          className="relative overflow-hidden"
           style={{
-            background: hasCoverPhoto
-              ? undefined
-              : `linear-gradient(135deg, ${union.themeColor || '#2563eb'} 0%, ${union.themeColor || '#2563eb'}dd 50%, ${union.themeColor || '#2563eb'}bb 100%)`,
+            background: `linear-gradient(to bottom right, ${themeColor}, ${themeColor}dd, ${themeColor}bb)`,
           }}
         >
           {hasCoverPhoto && (
-            <img
-              src={union.coverPhotoUrl!}
-              alt={`${union.name} cover`}
-              className="w-full h-full object-cover"
-            />
+            <div className="absolute inset-0">
+              <img src={union.coverPhotoUrl!} alt={`${union.name} cover`} className="w-full h-full object-cover" />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(to bottom right, ${themeColor}80, ${themeColor}90, ${themeColor}a0)`,
+                }}
+              />
+            </div>
           )}
-        </div>
-      </div>
-
-      <div
-        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${hasCoverPhoto ? '-mt-20' : '-mt-10 sm:-mt-12'}`}
-      >
-        <div className="bg-white rounded-lg shadow-sm pb-4">
-          {/* Logo and Name */}
-          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 px-6 pt-6">
-            <div className={`flex-shrink-0 relative z-20 ${hasCoverPhoto ? '-mt-8 sm:-mt-16' : '-mt-4 sm:-mt-8'}`}>
-              {union.logoUrl ? (
-                <div className="relative w-32 h-32 sm:w-40 sm:h-40 bg-white rounded-xl border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">
-                  <img
-                    src={union.logoUrl}
-                    alt={`${union.name} logo`}
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-xl bg-blue-600 flex items-center justify-center border-4 border-white shadow-xl">
-                  <Users className="h-16 w-16 sm:h-20 sm:w-20 text-white" />
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1 text-center sm:text-left pb-4">
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                {displayName}
-              </h1>
-              {union.description && (
-                <p className="text-gray-600 mt-2 text-sm sm:text-base">{union.description}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Contact bar */}
-          {(union.email || union.phone || union.address || union.website) && (
-            <div className="px-6 pb-4 border-t pt-4">
-              <div className="flex flex-wrap gap-4 text-sm">
-                {union.email && (
-                  <a href={`mailto:${union.email}`} className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors">
-                    <Mail className="h-4 w-4" />
-                    <span>{union.email}</span>
-                  </a>
-                )}
-                {union.phone && (
-                  <a href={`tel:${union.phone}`} className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors">
-                    <Phone className="h-4 w-4" />
-                    <span>{union.phone}</span>
-                  </a>
-                )}
-                {union.address && (
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <MapPin className="h-4 w-4" />
-                    <span>{union.address}</span>
+          <div className={`relative max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 ${hasCoverPhoto ? 'py-12 sm:py-16 lg:py-20' : 'py-8 sm:py-10 lg:py-12'}`}>
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-6 sm:gap-8">
+              {union.logoUrl && (
+                <div className="flex-shrink-0">
+                  <div
+                    className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 backdrop-blur-sm rounded-2xl p-3 shadow-2xl overflow-hidden flex items-center justify-center"
+                    style={{
+                      backgroundColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+                      borderWidth: 2,
+                      borderColor: heroTextColor === '#000000' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
+                    }}
+                  >
+                    <img src={union.logoUrl} alt={`${union.name} logo`} className="max-h-full max-w-full object-contain" />
                   </div>
+                </div>
+              )}
+              <div className="flex-1 text-center sm:text-left">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3" style={{ color: heroTextColor }}>
+                  {displayName}
+                </h1>
+                {union.description && (
+                  <p className="text-base sm:text-lg lg:text-xl max-w-3xl" style={{ color: heroTextOpacity }}>
+                    {union.description}
+                  </p>
                 )}
-                {union.website && (
-                  <a href={union.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors">
-                    <Globe className="h-4 w-4" />
-                    <span className="hover:underline">{union.website.replace(/^https?:\/\//, '')}</span>
-                  </a>
+                {union.showSocialInHero && union.socialLinks && Object.values(union.socialLinks).some((v) => v) && (
+                  <div className="mt-4 sm:mt-6 flex justify-center sm:justify-start">
+                    <SocialMediaIcons socialLinks={union.socialLinks} size="md" variant="subtle" subtleColor={heroTextColor} />
+                  </div>
                 )}
               </div>
             </div>
-          )}
-
-          {/* Social icons */}
-          {union.showSocialInHero && union.socialLinks && Object.values(union.socialLinks).some((v) => v) && (
-            <div className="px-6 pb-4 border-t pt-4 flex justify-center sm:justify-start">
-              <SocialMediaIcons socialLinks={union.socialLinks} size="md" />
+          </div>
+        </div>
+      ) : activeTheme === 'prestige' ? (
+        /* ── Prestige Theme Banner ───────────────────────────────────────── */
+        <>
+          <div className="relative overflow-hidden">
+            {hasCoverPhoto ? (
+              <div className="absolute inset-0">
+                <img src={union.coverPhotoUrl!} alt={`${union.name} cover`} className="w-full h-full object-cover" />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.4) 100%)' }} />
+              </div>
+            ) : (
+              <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColorDark} 100%)` }} />
+            )}
+            <div className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${hasCoverPhoto ? 'py-20 sm:py-28 lg:py-36' : 'py-16 sm:py-20 lg:py-24'}`}>
+              <div className="flex flex-col items-center text-center">
+                {union.logoUrl && (
+                  <div className="mb-8">
+                    <div className="relative w-28 h-28 sm:w-36 sm:h-36 lg:w-44 lg:h-44 rounded-3xl overflow-hidden shadow-2xl bg-white p-2 flex items-center justify-center">
+                      <img src={union.logoUrl} alt={`${union.name} logo`} className="max-h-[90%] max-w-[90%] object-contain" />
+                    </div>
+                  </div>
+                )}
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 tracking-tight text-white uppercase">
+                  {displayName}
+                </h1>
+                {union.description && (
+                  <p className="text-lg sm:text-xl lg:text-2xl max-w-3xl text-white/90 leading-relaxed font-light">
+                    {union.description}
+                  </p>
+                )}
+                {union.showSocialInHero && union.socialLinks && Object.values(union.socialLinks).some((v) => v) && (
+                  <div className="mt-8">
+                    <SocialMediaIcons socialLinks={union.socialLinks} size="lg" variant="subtle" subtleColor="#ffffff" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          {(union.email || union.phone || union.address || union.website) && (
+            <div className="border-b" style={{ borderColor: borderLight }}>
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
+                  {union.email && (
+                    <a href={`mailto:${union.email}`} className="flex items-center gap-2 transition-colors group" style={{ color: textSecondary }}>
+                      <Mail className="h-4 w-4" />
+                      <span className="text-sm">{union.email}</span>
+                    </a>
+                  )}
+                  {union.phone && (
+                    <a href={`tel:${union.phone}`} className="flex items-center gap-2 transition-colors group" style={{ color: textSecondary }}>
+                      <Phone className="h-4 w-4" />
+                      <span className="text-sm">{union.phone}</span>
+                    </a>
+                  )}
+                  {union.address && (
+                    <div className="flex items-center gap-2" style={{ color: textSecondary }}>
+                      <MapPin className="h-4 w-4" />
+                      <span className="text-sm">{union.address}</span>
+                    </div>
+                  )}
+                  {union.website && (
+                    <a href={union.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors group" style={{ color: textSecondary }}>
+                      <Globe className="h-4 w-4" />
+                      <span className="text-sm hover:underline">{union.website.replace(/^https?:\/\//, '')}</span>
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
           )}
-        </div>
-      </div>
+        </>
+      ) : (
+        /* ── Default / Classic Theme Banner ─────────────────────────────── */
+        <>
+          <div className="relative bg-white">
+            <div
+              className={`relative overflow-hidden ${hasCoverPhoto ? 'h-[300px] sm:h-[400px]' : 'h-[120px] sm:h-[150px]'}`}
+              style={{
+                background: hasCoverPhoto
+                  ? undefined
+                  : `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}dd 50%, ${themeColor}bb 100%)`,
+              }}
+            >
+              {hasCoverPhoto && (
+                <img src={union.coverPhotoUrl!} alt={`${union.name} cover`} className="w-full h-full object-cover" />
+              )}
+            </div>
+          </div>
+          <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${hasCoverPhoto ? '-mt-20' : '-mt-10 sm:-mt-12'}`}>
+            <div className="bg-white rounded-lg shadow-sm pb-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 px-6 pt-6">
+                <div className={`flex-shrink-0 relative z-20 ${hasCoverPhoto ? '-mt-8 sm:-mt-16' : '-mt-4 sm:-mt-8'}`}>
+                  {union.logoUrl ? (
+                    <div className="relative w-32 h-32 sm:w-40 sm:h-40 bg-white rounded-xl border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">
+                      <img src={union.logoUrl} alt={`${union.name} logo`} className="max-h-full max-w-full object-contain" />
+                    </div>
+                  ) : (
+                    <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-xl bg-blue-600 flex items-center justify-center border-4 border-white shadow-xl">
+                      <Users className="h-16 w-16 sm:h-20 sm:w-20 text-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 text-center sm:text-left pb-4">
+                  <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">{displayName}</h1>
+                  {union.description && (
+                    <p className="text-gray-600 mt-2 text-sm sm:text-base">{union.description}</p>
+                  )}
+                </div>
+              </div>
+              {(union.email || union.phone || union.address || union.website) && (
+                <div className="px-6 pb-4 border-t pt-4">
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    {union.email && (
+                      <a href={`mailto:${union.email}`} className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors">
+                        <Mail className="h-4 w-4" />
+                        <span>{union.email}</span>
+                      </a>
+                    )}
+                    {union.phone && (
+                      <a href={`tel:${union.phone}`} className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors">
+                        <Phone className="h-4 w-4" />
+                        <span>{union.phone}</span>
+                      </a>
+                    )}
+                    {union.address && (
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <MapPin className="h-4 w-4" />
+                        <span>{union.address}</span>
+                      </div>
+                    )}
+                    {union.website && (
+                      <a href={union.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors">
+                        <Globe className="h-4 w-4" />
+                        <span className="hover:underline">{union.website.replace(/^https?:\/\//, '')}</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+              {union.showSocialInHero && union.socialLinks && Object.values(union.socialLinks).some((v) => v) && (
+                <div className="px-6 pb-4 border-t pt-4 flex justify-center sm:justify-start">
+                  <SocialMediaIcons socialLinks={union.socialLinks} size="md" />
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Gallery Body ───────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

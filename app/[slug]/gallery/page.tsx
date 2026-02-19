@@ -121,6 +121,7 @@ export default async function GalleryPage({
             description: union.description,
             coverPhotoUrl: union.coverPhotoUrl,
             themeColor: union.themeColor,
+            theme: union.theme,
             logoUrl: union.logoUrl,
             email: union.email,
             phone: union.phone,
