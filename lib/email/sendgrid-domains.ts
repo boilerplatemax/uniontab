@@ -3,10 +3,17 @@
  *
  * Handles domain authentication setup and verification via SendGrid API.
  * This allows each tenant to send emails from their own subdomain.
+ *
+ * NOTE: Automatic sender domain creation and validation is DISABLED.
+ * createDomainAuthentication and validateDomainAuthentication will throw
+ * if called. Domain setup must be done manually via the SendGrid dashboard.
  */
 
 // SendGrid API configuration
 const SENDGRID_API_BASE = 'https://api.sendgrid.com/v3';
+
+// Automatic sender domain creation and validation is disabled. Set to false to re-enable.
+const SENDGRID_DOMAIN_SETUP_DISABLED = true;
 
 // Helper function to get environment variable (lazy evaluation)
 function getApiKey(): string | undefined {
@@ -141,6 +148,12 @@ export async function createDomainAuthentication(
   domain: string,
   subdomain: string
 ): Promise<SendGridDomainAuth> {
+  if (SENDGRID_DOMAIN_SETUP_DISABLED) {
+    throw new Error(
+      '[SendGrid] Sender domain authentication creation is disabled. Domains must be configured manually via the SendGrid dashboard.'
+    );
+  }
+
   const payload: CreateDomainAuthRequest = {
     domain,
     subdomain,
@@ -185,6 +198,12 @@ export async function listDomainAuthentications(): Promise<SendGridDomainAuth[]>
 export async function validateDomainAuthentication(
   domainId: number
 ): Promise<ValidationResponse> {
+  if (SENDGRID_DOMAIN_SETUP_DISABLED) {
+    throw new Error(
+      '[SendGrid] Sender domain validation is disabled. Domains must be validated manually via the SendGrid dashboard.'
+    );
+  }
+
   const response = await sendgridRequest<ValidationResponse>(
     `/whitelabel/domains/${domainId}/validate`,
     'POST'
