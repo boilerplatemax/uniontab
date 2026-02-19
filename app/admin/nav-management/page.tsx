@@ -94,7 +94,7 @@ interface FileOption {
 }
 
 const BUILT_IN_ROUTES = [
-  'news', 'about', 'events', 'files', 'elections', 'contact',
+  'news', 'about', 'events', 'files', 'elections', 'gallery', 'contact',
   'members', 'dues', 'grievances', 'meetings', 'announcements', 'analytics', 'settings',
 ];
 

@@ -3,6 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { unions, members, users, files } from '@/lib/db/schema';
 import { eq, and, asc, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
+import { UnionTabProvider } from '../union-tab-context';
 import { UnionNavbar } from '../union-navbar';
 import { NavbarSpacer } from '../navbar-spacer';
 import { signOut } from '@/app/(login)/actions';
@@ -90,28 +91,46 @@ export default async function GalleryPage({
   }
 
   return (
-    <>
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingMembersCount}
-        isApprovedMember={isApprovedMember}
-        navigationItems={navItems}
-        hasGalleryImages={hasGalleryImages}
-      />
-      <NavbarSpacer />
-      <GalleryContent
-        slug={slug}
-        isAdminOrOwner={isOwnerOrAdmin}
-        initialImages={galleryImages.map((img) => ({
-          ...img,
-          sortOrder: img.sortOrder ?? 0,
-          createdAt: img.createdAt.toISOString(),
-        }))}
-      />
-    </>
+    <UnionTabProvider slug={slug}>
+      <div className="min-h-screen bg-white">
+        <UnionNavbar
+          slug={slug}
+          unionName={union.publicName || union.name}
+          localNumber={union.publicName ? null : union.localNumber}
+          membership={membership}
+          handleSignOut={handleSignOut}
+          pendingMembersCount={pendingMembersCount}
+          isApprovedMember={isApprovedMember}
+          navigationItems={navItems}
+          hasGalleryImages={hasGalleryImages}
+        />
+        <NavbarSpacer />
+        <GalleryContent
+          slug={slug}
+          isAdminOrOwner={isOwnerOrAdmin}
+          initialImages={galleryImages.map((img) => ({
+            ...img,
+            sortOrder: img.sortOrder ?? 0,
+            createdAt: img.createdAt.toISOString(),
+          }))}
+          initialShowTitles={union.galleryShowTitles ?? false}
+          union={{
+            name: union.name,
+            publicName: union.publicName,
+            localNumber: union.localNumber,
+            description: union.description,
+            coverPhotoUrl: union.coverPhotoUrl,
+            themeColor: union.themeColor,
+            logoUrl: union.logoUrl,
+            email: union.email,
+            phone: union.phone,
+            address: union.address,
+            website: union.website,
+            showSocialInHero: union.showSocialInHero,
+            socialLinks: union.socialLinks,
+          }}
+        />
+      </div>
+    </UnionTabProvider>
   );
 }
