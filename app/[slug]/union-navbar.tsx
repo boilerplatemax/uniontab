@@ -146,11 +146,6 @@ export function UnionNavbar({
   // Gallery link is always visible to admins/owners; visible to others only if there are gallery images
   const showGalleryLink = isOwnerOrAdmin || hasGalleryImages;
 
-  // True when Gallery is already a dynamic nav item — prevents double-rendering
-  const galleryIsNavItem = enabledNavItems.some(
-    (item) => item.linkType === 'built_in_route' && item.builtInRoute === 'gallery'
-  );
-
   const hasAdminAccess = isOwnerOrAdmin && (
     canAccess('members') || canAccess('communications') || canAccess('dues') ||
     canAccess('strikes') || canAccess('grievances') || canAccess('meetings') ||
@@ -210,6 +205,11 @@ export function UnionNavbar({
   // Determine if we should use dynamic navigation
   const enabledNavItems = navigationItems.filter((item) => item.isEnabled);
   const useDynamicNav = enabledNavItems.length > 0;
+
+  // True when Gallery is already a dynamic nav item — prevents double-rendering
+  const galleryIsNavItem = enabledNavItems.some(
+    (item) => item.linkType === 'built_in_route' && item.builtInRoute === 'gallery'
+  );
 
   // Visibility filter for navigation items
   const isNavItemVisible = (item: NavigationItem): boolean => {
