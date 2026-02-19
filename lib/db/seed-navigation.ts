@@ -8,7 +8,8 @@ const DEFAULT_NAV_ITEMS = [
   { label: 'Events', builtInRoute: 'events', sortOrder: 2 },
   { label: 'Files', builtInRoute: 'files', sortOrder: 3 },
   { label: 'Elections', builtInRoute: 'elections', sortOrder: 4 },
-  { label: 'Contact', builtInRoute: 'contact', sortOrder: 5 },
+  { label: 'Gallery', builtInRoute: 'gallery', sortOrder: 5 },
+  { label: 'Contact', builtInRoute: 'contact', sortOrder: 6 },
 ] as const;
 
 export async function seedDefaultNavigation(unionId: number): Promise<void> {
