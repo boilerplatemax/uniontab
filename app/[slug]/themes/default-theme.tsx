@@ -119,7 +119,7 @@ export function DefaultTheme({
       </div>
 
       {/* Profile Section - Facebook style */}
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${union.coverPhotoUrl ? '-mt-20' : '-mt-10 sm:-mt-12'}`}>
+      <div className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${union.coverPhotoUrl ? '-mt-20' : '-mt-10 sm:-mt-12'}`}>
         <div className="bg-white rounded-lg shadow-sm pb-6">
           {/* Logo and Name */}
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 px-6 pt-6">
