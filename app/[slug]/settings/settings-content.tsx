@@ -25,7 +25,6 @@ import {
   Lock,
   Sparkles,
   Languages,
-  Home,
   X,
 } from 'lucide-react';
 import useSWR from 'swr';
@@ -760,51 +759,6 @@ export function SettingsContent() {
                   A longer display name if you don't want to go by your union + local number (e.g. "CUPE 123")
                 </p>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Home Page Selection */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Home className="h-5 w-5" />
-                Home Page
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-500">
-                Choose which page visitors see first when they visit your union's site
-              </p>
-              <div>
-                <Label htmlFor="homePage">Default Home Page</Label>
-                <select
-                  id="homePage"
-                  value={formData.homePage}
-                  onChange={(e) => setFormData({ ...formData, homePage: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                >
-                  <optgroup label="Built-in Pages">
-                    <option value="news">News (Default)</option>
-                    <option value="about">About</option>
-                    <option value="events">Events</option>
-                    <option value="files">Files</option>
-                    <option value="elections">Elections</option>
-                    <option value="contact">Contact</option>
-                  </optgroup>
-                  {unionPages && unionPages.filter(p => p.isPublished).length > 0 && (
-                    <optgroup label="Custom Pages">
-                      {unionPages.filter(p => p.isPublished).map((page) => (
-                        <option key={page.id} value={`page:${page.slug}`}>
-                          {page.title}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                </select>
-              </div>
-              <p className="text-xs text-gray-400">
-                When visitors navigate to your union's URL, they will be shown this page.
-              </p>
             </CardContent>
           </Card>
 
