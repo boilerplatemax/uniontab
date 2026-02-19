@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import { FileUpload } from '@/components/ui/file-upload';
 import { Card } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   Loader2,
   Trash2,
@@ -12,6 +13,8 @@ import {
   Upload,
   Images,
   X,
+  Pencil,
+  Check,
 } from 'lucide-react';
 
 interface GalleryImage {
@@ -37,6 +40,12 @@ export function GalleryContent({ slug, isAdminOrOwner, initialImages }: GalleryC
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number>(0);
   const [reordering, setReordering] = useState(false);
+  const [showTitles, setShowTitles] = useState(true);
+  const [customName, setCustomName] = useState('');
+  const [uploadKey, setUploadKey] = useState(0);
+  const [editingImageId, setEditingImageId] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [savingRename, setSavingRename] = useState(false);
 
   const refreshImages = async () => {
     try {
@@ -54,16 +63,19 @@ export function GalleryContent({ slug, isAdminOrOwner, initialImages }: GalleryC
     if (url && file) {
       setLoading(true);
       setError('');
+      const name = customName.trim() || file.name;
       try {
         const res = await fetch('/api/gallery/upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, name: file.name, type: file.type, size: file.size }),
+          body: JSON.stringify({ url, name, type: file.type, size: file.size }),
         });
         if (!res.ok) {
           const data = await res.json();
           throw new Error(data.error || 'Upload failed');
         }
+        setCustomName('');
+        setUploadKey((k) => k + 1);
         await refreshImages();
       } catch (err: any) {
         setError(err.message);
@@ -116,6 +128,41 @@ export function GalleryContent({ slug, isAdminOrOwner, initialImages }: GalleryC
     }
   };
 
+  const startRename = (image: GalleryImage) => {
+    setEditingImageId(image.id);
+    setEditingName(image.name);
+  };
+
+  const cancelRename = () => {
+    setEditingImageId(null);
+    setEditingName('');
+  };
+
+  const saveRename = async (id: number) => {
+    if (!editingName.trim()) return;
+    setSavingRename(true);
+    try {
+      const res = await fetch('/api/gallery/rename', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name: editingName.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to rename');
+      }
+      setImages((prev) =>
+        prev.map((img) => (img.id === id ? { ...img, name: editingName.trim() } : img))
+      );
+      setEditingImageId(null);
+      setEditingName('');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSavingRename(false);
+    }
+  };
+
   const openLightbox = (url: string, index: number) => {
     setLightboxUrl(url);
     setLightboxIndex(index);
@@ -140,9 +187,23 @@ export function GalleryContent({ slug, isAdminOrOwner, initialImages }: GalleryC
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Images className="h-7 w-7 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Gallery</h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <Images className="h-7 w-7 text-blue-600" />
+              <h1 className="text-3xl font-bold text-gray-900">Gallery</h1>
+            </div>
+            {isAdminOrOwner && images.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="show-titles"
+                  checked={showTitles}
+                  onCheckedChange={setShowTitles}
+                />
+                <Label htmlFor="show-titles" className="text-sm text-gray-600 cursor-pointer">
+                  Show titles
+                </Label>
+              </div>
+            )}
           </div>
           <p className="text-gray-500">
             {isAdminOrOwner
@@ -163,7 +224,22 @@ export function GalleryContent({ slug, isAdminOrOwner, initialImages }: GalleryC
                 {error}
               </div>
             )}
+            {/* Custom image name */}
+            <div className="mb-4">
+              <Label htmlFor="custom-name" className="text-sm font-medium text-gray-700 mb-1 block">
+                Image name <span className="font-normal text-gray-400">(optional — defaults to filename)</span>
+              </Label>
+              <input
+                id="custom-name"
+                type="text"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                placeholder="Enter a name for this image"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
             <FileUpload
+              key={uploadKey}
               onFileSelect={handleUpload}
               accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.svg,.bmp,.tiff,.avif"
               maxSize={20}
@@ -209,12 +285,60 @@ export function GalleryContent({ slug, isAdminOrOwner, initialImages }: GalleryC
                   />
                 </div>
 
-                {/* Image name */}
-                <div className="px-3 py-2">
-                  <p className="text-xs text-gray-500 truncate" title={image.name}>
-                    {image.name}
-                  </p>
-                </div>
+                {/* Image name / rename area */}
+                {(showTitles || editingImageId === image.id) && (
+                  <div className="px-3 py-2">
+                    {editingImageId === image.id ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveRename(image.id);
+                            if (e.key === 'Escape') cancelRename();
+                          }}
+                          autoFocus
+                          className="flex-1 min-w-0 text-xs border border-gray-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                        <button
+                          onClick={() => saveRename(image.id)}
+                          disabled={savingRename}
+                          className="p-1 text-green-600 hover:text-green-700 transition-colors flex-shrink-0"
+                          title="Save"
+                        >
+                          {savingRename ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Check className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                        <button
+                          onClick={cancelRename}
+                          className="p-1 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                          title="Cancel"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 group/name">
+                        <p className="text-xs text-gray-500 truncate flex-1" title={image.name}>
+                          {image.name}
+                        </p>
+                        {isAdminOrOwner && (
+                          <button
+                            onClick={() => startRename(image)}
+                            className="p-0.5 text-gray-300 hover:text-gray-500 transition-colors opacity-0 group-hover/name:opacity-100 flex-shrink-0"
+                            title="Rename"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Admin controls overlay */}
                 {isAdminOrOwner && (

@@ -461,25 +461,52 @@ export function UnionNavbar({
               {/* Desktop nav items */}
               <div className="hidden lg:flex items-center gap-1">
                 {!hasPublicNav ? (
-                  publicFallbackTabs.map((item) => {
-                    const isActive = activeTab === item.key;
-                    return (
-                      <button
-                        key={item.key}
-                        onClick={() => setActiveTab(item.key)}
-                        className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
-                          ${isActive
+                  <>
+                    {publicFallbackTabs.filter((t) => t.key !== 'contact').map((item) => {
+                      const isActive = activeTab === item.key;
+                      return (
+                        <button
+                          key={item.key}
+                          onClick={() => setActiveTab(item.key)}
+                          className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
+                            ${isActive
+                              ? 'text-gray-900 bg-gray-100'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            }`}
+                        >
+                          {item.label}
+                          {isActive && (
+                            <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                          )}
+                        </button>
+                      );
+                    })}
+                    {showGalleryLink && (
+                      <Link
+                        href={`/${slug}/gallery`}
+                        className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap
+                          ${pathname === `/${slug}/gallery`
                             ? 'text-gray-900 bg-gray-100'
                             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                           }`}
                       >
-                        {item.label}
-                        {isActive && (
-                          <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
-                        )}
-                      </button>
-                    );
-                  })
+                        Gallery
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => setActiveTab('contact')}
+                      className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
+                        ${activeTab === 'contact'
+                          ? 'text-gray-900 bg-gray-100'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                    >
+                      Contact
+                      {activeTab === 'contact' && (
+                        <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                      )}
+                    </button>
+                  </>
                 ) : (
                   publicTopLevelNavItems.sort((a, b) => a.sortOrder - b.sortOrder).map((navItem) => {
                     const children = navItem.id ? getPublicNavChildren(navItem.id) : [];
@@ -593,7 +620,7 @@ export function UnionNavbar({
                   })
                 )}
 
-                {showGalleryLink && (
+                {hasPublicNav && showGalleryLink && (
                   <Link
                     href={`/${slug}/gallery`}
                     className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap
@@ -639,20 +666,40 @@ export function UnionNavbar({
               <div className="px-3 py-3">
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Pages</p>
                 {!hasPublicNav ? (
-                  publicFallbackTabs.map((item) => {
-                    const isActive = activeTab === item.key;
-                    return (
-                      <button
-                        key={item.key}
-                        onClick={() => { setActiveTab(item.key); setNonMemberMobileOpen(false); }}
-                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
-                          ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                  <>
+                    {publicFallbackTabs.filter((t) => t.key !== 'contact').map((item) => {
+                      const isActive = activeTab === item.key;
+                      return (
+                        <button
+                          key={item.key}
+                          onClick={() => { setActiveTab(item.key); setNonMemberMobileOpen(false); }}
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
+                            ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                        >
+                          <span className="text-gray-500">{item.icon}</span>
+                          <span className="text-[15px] font-medium">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                    {showGalleryLink && (
+                      <Link
+                        href={`/${slug}/gallery`}
+                        onClick={() => setNonMemberMobileOpen(false)}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
                       >
-                        <span className="text-gray-500">{item.icon}</span>
-                        <span className="text-[15px] font-medium">{item.label}</span>
-                      </button>
-                    );
-                  })
+                        <span className="text-gray-500"><Images className="h-4 w-4" /></span>
+                        <span className="text-[15px] font-medium">Gallery</span>
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => { setActiveTab('contact'); setNonMemberMobileOpen(false); }}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
+                        ${activeTab === 'contact' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                    >
+                      <span className="text-gray-500"><Phone className="h-4 w-4" /></span>
+                      <span className="text-[15px] font-medium">Contact</span>
+                    </button>
+                  </>
                 ) : (
                   publicTopLevelNavItems.sort((a, b) => a.sortOrder - b.sortOrder).map((navItem) => {
                     const children = navItem.id ? getPublicNavChildren(navItem.id) : [];
@@ -729,8 +776,8 @@ export function UnionNavbar({
                     );
                   })
                 )}
-                {/* Gallery link in mobile non-member nav */}
-                {showGalleryLink && (
+                {/* Gallery link in mobile non-member nav (dynamic nav only) */}
+                {hasPublicNav && showGalleryLink && (
                   <Link
                     href={`/${slug}/gallery`}
                     onClick={() => setNonMemberMobileOpen(false)}
@@ -776,26 +823,53 @@ export function UnionNavbar({
               {/* Tab pages — dynamic or fallback */}
               {!useDynamicNav ? (
                 /* Hardcoded fallback */
-                tabItems.map((item) => {
-                  if (item.membersOnly && !isApprovedMember) return null;
-                  const isActive = activeTab === item.key;
-                  return (
-                    <button
-                      key={item.key}
-                      onClick={() => setActiveTab(item.key)}
-                      className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
-                        ${isActive
+                <>
+                  {tabItems.filter((t) => t.key !== 'contact').map((item) => {
+                    if (item.membersOnly && !isApprovedMember) return null;
+                    const isActive = activeTab === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => setActiveTab(item.key)}
+                        className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
+                          ${isActive
+                            ? 'text-gray-900 bg-gray-100'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`}
+                      >
+                        {item.label}
+                        {isActive && (
+                          <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                        )}
+                      </button>
+                    );
+                  })}
+                  {showGalleryLink && (
+                    <Link
+                      href={`/${slug}/gallery`}
+                      className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap
+                        ${pathname === `/${slug}/gallery`
                           ? 'text-gray-900 bg-gray-100'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                         }`}
                     >
-                      {item.label}
-                      {isActive && (
-                        <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
-                      )}
-                    </button>
-                  );
-                })
+                      Gallery
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => setActiveTab('contact')}
+                    className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
+                      ${activeTab === 'contact'
+                        ? 'text-gray-900 bg-gray-100'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                  >
+                    Contact
+                    {activeTab === 'contact' && (
+                      <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                    )}
+                  </button>
+                </>
               ) : (
                 /* Dynamic navigation items */
                 topLevelNavItems.filter(isNavItemVisible).sort((a, b) => a.sortOrder - b.sortOrder).map((navItem) => {
@@ -911,8 +985,8 @@ export function UnionNavbar({
                 })
               )}
 
-              {/* Gallery link (member desktop) */}
-              {showGalleryLink && (
+              {/* Gallery link (member desktop, dynamic nav only) */}
+              {useDynamicNav && showGalleryLink && (
                 <Link
                   href={`/${slug}/gallery`}
                   className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap
@@ -1116,21 +1190,41 @@ export function UnionNavbar({
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Pages</p>
                 {!useDynamicNav ? (
                   /* Hardcoded fallback */
-                  tabItems.map((item) => {
-                    if (item.membersOnly && !isApprovedMember) return null;
-                    const isActive = activeTab === item.key;
-                    return (
-                      <button
-                        key={item.key}
-                        onClick={() => { setActiveTab(item.key); closeMobile(); }}
-                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
-                          ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                  <>
+                    {tabItems.filter((t) => t.key !== 'contact').map((item) => {
+                      if (item.membersOnly && !isApprovedMember) return null;
+                      const isActive = activeTab === item.key;
+                      return (
+                        <button
+                          key={item.key}
+                          onClick={() => { setActiveTab(item.key); closeMobile(); }}
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
+                            ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                        >
+                          <span className="text-gray-500">{item.icon}</span>
+                          <span className="text-[15px] font-medium">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                    {showGalleryLink && (
+                      <Link
+                        href={`/${slug}/gallery`}
+                        onClick={closeMobile}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
                       >
-                        <span className="text-gray-500">{item.icon}</span>
-                        <span className="text-[15px] font-medium">{item.label}</span>
-                      </button>
-                    );
-                  })
+                        <span className="text-gray-500"><Images className="h-4 w-4" /></span>
+                        <span className="text-[15px] font-medium">Gallery</span>
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => { setActiveTab('contact'); closeMobile(); }}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
+                        ${activeTab === 'contact' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                    >
+                      <span className="text-gray-500"><Phone className="h-4 w-4" /></span>
+                      <span className="text-[15px] font-medium">Contact</span>
+                    </button>
+                  </>
                 ) : (
                   /* Dynamic navigation items */
                   topLevelNavItems.filter(isNavItemVisible).sort((a, b) => a.sortOrder - b.sortOrder).map((navItem) => {
@@ -1211,8 +1305,8 @@ export function UnionNavbar({
                     );
                   })
                 )}
-                {/* Gallery link in member mobile nav */}
-                {showGalleryLink && (
+                {/* Gallery link in member mobile nav (dynamic nav only) */}
+                {useDynamicNav && showGalleryLink && (
                   <Link
                     href={`/${slug}/gallery`}
                     onClick={closeMobile}
