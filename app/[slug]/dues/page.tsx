@@ -104,6 +104,7 @@ export default async function DuesPage({
   const membership = await getMembership(union.id, user.id);
   const pendingMembersCount = await getPendingMembersCount(union.id);
   const unionMembers = await getUnionMembers(union.id);
+  const isApprovedMember = membership?.member.status === 'approved' || isOwnerOrAdmin;
 
   return (
     <>
@@ -114,6 +115,7 @@ export default async function DuesPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        isApprovedMember={isApprovedMember}
         navigationItems={navItems}
       />
       <NavbarSpacer />

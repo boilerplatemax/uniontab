@@ -181,6 +181,8 @@ export default async function MemberProfilePage({
     getPendingMembersCount(union.id),
   ]);
 
+  const isApprovedMember = membership?.member.status === 'approved' || isAdminOrOwner;
+
   return (
     <>
       <UnionNavbar
@@ -190,6 +192,7 @@ export default async function MemberProfilePage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        isApprovedMember={isApprovedMember}
         navigationItems={navItems}
       />
       <NavbarSpacer />

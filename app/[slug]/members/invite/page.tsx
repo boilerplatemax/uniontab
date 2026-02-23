@@ -87,6 +87,7 @@ export default async function InvitePage({ params }: PageProps) {
       unionId={union.id}
       canBulkInvite={canBulkInvite}
       navigationItems={navItems}
+      isApprovedMember={membership.status === 'approved' || isOwnerOrAdmin}
     />
   );
 }

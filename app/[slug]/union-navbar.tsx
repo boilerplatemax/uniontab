@@ -289,33 +289,6 @@ export function UnionNavbar({
   const buildManageGroups = (): MegaMenuGroup[] => {
     const groups: MegaMenuGroup[] = [];
 
-    // Member Tools (visible to ALL approved members)
-    if (isApprovedMember) {
-      const memberToolsGroup: MegaMenuItem[] = [
-        {
-          href: `/${slug}/grievances`,
-          icon: <FileText className="h-5 w-5" />,
-          label: 'Grievances',
-          description: 'View and submit member grievances',
-          badge: grievanceNotificationCount,
-        },
-        {
-          href: `/${slug}/meetings`,
-          icon: <Video className="h-5 w-5" />,
-          label: 'Meetings',
-          description: 'View upcoming union meetings',
-        },
-        {
-          href: `/${slug}/strikes`,
-          icon: <Zap className="h-5 w-5" />,
-          label: 'Strikes',
-          description: 'View strike activities and schedules',
-          badge: strikeNotificationCount,
-        },
-      ];
-      groups.push({ title: 'Member Tools', items: memberToolsGroup });
-    }
-
     // Members & Outreach (admin only)
     const membersGroup: MegaMenuItem[] = [];
     if (canAccess('members')) {
@@ -352,6 +325,33 @@ export function UnionNavbar({
       });
     }
     if (commsGroup.length) groups.push({ title: 'Communications', items: commsGroup });
+
+    // Member Tools (visible to ALL approved members)
+    if (isApprovedMember) {
+      const memberToolsGroup: MegaMenuItem[] = [
+        {
+          href: `/${slug}/grievances`,
+          icon: <FileText className="h-5 w-5" />,
+          label: 'Grievances',
+          description: 'View and submit member grievances',
+          badge: grievanceNotificationCount,
+        },
+        {
+          href: `/${slug}/meetings`,
+          icon: <Video className="h-5 w-5" />,
+          label: 'Meetings',
+          description: 'View upcoming union meetings',
+        },
+        {
+          href: `/${slug}/strikes`,
+          icon: <Zap className="h-5 w-5" />,
+          label: 'Strikes',
+          description: 'View strike activities and schedules',
+          badge: strikeNotificationCount,
+        },
+      ];
+      groups.push({ title: 'Member Tools', items: memberToolsGroup });
+    }
 
     // Union Activities (admin only - elections)
     const activitiesGroup: MegaMenuItem[] = [];

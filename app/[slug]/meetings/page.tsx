@@ -101,6 +101,7 @@ export default async function MeetingsPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        isApprovedMember={true}
         navigationItems={navItems}
       />
       <NavbarSpacer />

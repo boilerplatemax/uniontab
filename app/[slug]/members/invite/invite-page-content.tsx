@@ -24,6 +24,7 @@ interface InvitePageContentProps {
   unionId: number;
   canBulkInvite: boolean;
   navigationItems?: any[];
+  isApprovedMember?: boolean;
 }
 
 export default function InvitePageContent({
@@ -38,6 +39,7 @@ export default function InvitePageContent({
   unionId,
   canBulkInvite,
   navigationItems,
+  isApprovedMember,
 }: InvitePageContentProps) {
   const fullUnionName = localNumber
     ? `${unionName} Local ${localNumber}`
@@ -130,6 +132,7 @@ export default function InvitePageContent({
         handleSignOut={handleSignOut}
         pendingMembersCount={0}
         announcementId={null}
+        isApprovedMember={isApprovedMember}
         navigationItems={navigationItems}
       />
 

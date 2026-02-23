@@ -102,6 +102,7 @@ export default async function MassEmailPage({
   const unionMembers = await getUnionMembers(union.id);
   const membership = await getMembership(union.id, user.id);
   const pendingMembersCount = await getPendingMembersCount(union.id);
+  const isApprovedMember = membership?.member.status === 'approved' || isOwnerOrAdmin;
 
   return (
     <>
@@ -112,6 +113,7 @@ export default async function MassEmailPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        isApprovedMember={isApprovedMember}
         navigationItems={navItems}
       />
       <NavbarSpacer />
