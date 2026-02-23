@@ -134,6 +134,7 @@ export default async function GrievancesPage({
         pendingMembersCount={pendingCount}
         grievanceNotificationCount={grievanceNotificationCount}
         strikeNotificationCount={strikeNotificationCount}
+        isApprovedMember={true}
         navigationItems={navItems}
       />
       <NavbarSpacer />

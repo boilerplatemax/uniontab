@@ -155,6 +155,7 @@ export default async function StrikeDetailPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingCount}
+        isApprovedMember={true}
         navigationItems={navItems}
       />
       <NavbarSpacer />

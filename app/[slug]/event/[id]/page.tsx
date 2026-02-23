@@ -136,6 +136,7 @@ export default async function EventPage({
         localNumber={union.publicName ? null : union.localNumber}
         membership={membership}
         handleSignOut={handleSignOut}
+        isApprovedMember={membership?.member.status === 'approved' || isOwnerOrAdmin}
         navigationItems={navItems}
       />
       <NavbarSpacer />

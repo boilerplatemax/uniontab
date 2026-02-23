@@ -103,6 +103,7 @@ export default async function MassSMSPage({
   const unionMembers = await getUnionMembersWithPhone(union.id);
   const membership = await getMembership(union.id, user.id);
   const pendingMembersCount = await getPendingMembersCount(union.id);
+  const isApprovedMember = membership?.member.status === 'approved' || isOwnerOrAdmin;
 
   return (
     <>
@@ -113,6 +114,7 @@ export default async function MassSMSPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        isApprovedMember={isApprovedMember}
         navigationItems={navItems}
       />
       <NavbarSpacer />

@@ -71,6 +71,7 @@ export default async function BillingPage({
 
   const pendingMembersCount = await getPendingMembersCount(union.id);
   const navItems = await getUnionNavigationItems(union.id);
+  const isApprovedMember = membership.member.status === 'approved' || membership.member.role === 'owner';
 
   async function handleSignOut() {
     'use server';
@@ -86,6 +87,7 @@ export default async function BillingPage({
         membership={membership}
         handleSignOut={handleSignOut}
         pendingMembersCount={pendingMembersCount}
+        isApprovedMember={isApprovedMember}
         navigationItems={navItems}
       />
       <NavbarSpacer />
