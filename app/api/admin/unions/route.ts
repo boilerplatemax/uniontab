@@ -55,6 +55,7 @@ export async function GET() {
         extraMonthlyEmails: unions.extraMonthlyEmails,
         extraMonthlySMS: unions.extraMonthlySMS,
         extraStorageBytes: unions.extraStorageBytes,
+        requireEmailVerification: unions.requireEmailVerification,
       })
       .from(unions)
       .orderBy(desc(unions.createdAt));

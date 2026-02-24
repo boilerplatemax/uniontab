@@ -27,8 +27,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Loader2, MoreVertical, Download, Trash2, AlertTriangle, ExternalLink, Shield } from 'lucide-react';
+import { Loader2, MoreVertical, Download, Trash2, AlertTriangle, ExternalLink, Shield, MailCheck, MailX } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,6 +68,7 @@ interface UnionStats {
   extraMonthlyEmails: number;
   extraMonthlySMS: number;
   extraStorageBytes: number;
+  requireEmailVerification: boolean;
 }
 
 interface PrivilegeForm {
@@ -74,6 +76,7 @@ interface PrivilegeForm {
   extraMonthlyEmails: string;
   extraMonthlySMS: string;
   extraStorageBytes: string;
+  requireEmailVerification: boolean;
 }
 
 export default function UnionManagementPage() {
@@ -90,6 +93,7 @@ export default function UnionManagementPage() {
     extraMonthlyEmails: '0',
     extraMonthlySMS: '0',
     extraStorageBytes: '0',
+    requireEmailVerification: true,
   });
   const [privilegeSuccess, setPrivilegeSuccess] = useState('');
   const [privilegeError, setPrivilegeError] = useState('');
@@ -196,6 +200,7 @@ export default function UnionManagementPage() {
       extraMonthlyEmails: String(union.extraMonthlyEmails ?? 0),
       extraMonthlySMS: String(union.extraMonthlySMS ?? 0),
       extraStorageBytes: String(union.extraStorageBytes ?? 0),
+      requireEmailVerification: union.requireEmailVerification !== false,
     });
     setPrivilegeSuccess('');
     setPrivilegeError('');
@@ -218,6 +223,7 @@ export default function UnionManagementPage() {
           extraMonthlyEmails: parseInt(privilegeForm.extraMonthlyEmails) || 0,
           extraMonthlySMS: parseInt(privilegeForm.extraMonthlySMS) || 0,
           extraStorageBytes: parseInt(privilegeForm.extraStorageBytes) || 0,
+          requireEmailVerification: privilegeForm.requireEmailVerification,
         }),
       });
 
@@ -238,6 +244,7 @@ export default function UnionManagementPage() {
                 extraMonthlyEmails: parseInt(privilegeForm.extraMonthlyEmails) || 0,
                 extraMonthlySMS: parseInt(privilegeForm.extraMonthlySMS) || 0,
                 extraStorageBytes: parseInt(privilegeForm.extraStorageBytes) || 0,
+                requireEmailVerification: privilegeForm.requireEmailVerification,
               }
             : u
         )
@@ -310,6 +317,7 @@ export default function UnionManagementPage() {
                     <TableHead>Activity</TableHead>
                     <TableHead>Onboarding</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Email Verify</TableHead>
                     <TableHead>Privileges</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -387,6 +395,19 @@ export default function UnionManagementPage() {
                             <Badge variant="default">Published</Badge>
                           ) : (
                             <Badge variant="secondary">Draft</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {union.requireEmailVerification !== false ? (
+                            <div className="flex items-center gap-1 text-green-700 text-xs">
+                              <MailCheck className="h-3.5 w-3.5" />
+                              <span>Required</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-amber-600 text-xs">
+                              <MailX className="h-3.5 w-3.5" />
+                              <span>Disabled</span>
+                            </div>
                           )}
                         </TableCell>
                         <TableCell>
@@ -554,6 +575,23 @@ export default function UnionManagementPage() {
                   }))
                 }
                 placeholder="0"
+              />
+            </div>
+
+            <div className="flex items-start justify-between gap-4 pt-2 border-t">
+              <div>
+                <Label htmlFor="requireEmailVerification">Email Verification on Sign-up</Label>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  When disabled, members can join without verifying their email address.
+                  They will still require approval from a union owner or admin.
+                </p>
+              </div>
+              <Switch
+                id="requireEmailVerification"
+                checked={privilegeForm.requireEmailVerification}
+                onCheckedChange={(checked) =>
+                  setPrivilegeForm((prev) => ({ ...prev, requireEmailVerification: checked }))
+                }
               />
             </div>
 

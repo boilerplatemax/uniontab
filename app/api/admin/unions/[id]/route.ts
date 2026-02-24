@@ -64,16 +64,22 @@ export async function PATCH(
     const unionId = parseInt(id);
     const body = await request.json();
 
-    const { extraMemberLimit, extraMonthlyEmails, extraMonthlySMS, extraStorageBytes } = body;
+    const { extraMemberLimit, extraMonthlyEmails, extraMonthlySMS, extraStorageBytes, requireEmailVerification } = body;
+
+    const updateValues: Record<string, unknown> = {
+      extraMemberLimit: Math.max(0, parseInt(extraMemberLimit) || 0),
+      extraMonthlyEmails: Math.max(0, parseInt(extraMonthlyEmails) || 0),
+      extraMonthlySMS: Math.max(0, parseInt(extraMonthlySMS) || 0),
+      extraStorageBytes: Math.max(0, parseInt(extraStorageBytes) || 0),
+    };
+
+    if (typeof requireEmailVerification === 'boolean') {
+      updateValues.requireEmailVerification = requireEmailVerification;
+    }
 
     await db
       .update(unions)
-      .set({
-        extraMemberLimit: Math.max(0, parseInt(extraMemberLimit) || 0),
-        extraMonthlyEmails: Math.max(0, parseInt(extraMonthlyEmails) || 0),
-        extraMonthlySMS: Math.max(0, parseInt(extraMonthlySMS) || 0),
-        extraStorageBytes: Math.max(0, parseInt(extraStorageBytes) || 0),
-      })
+      .set(updateValues)
       .where(eq(unions.id, unionId));
 
     return NextResponse.json({ success: true, message: 'Privileges updated successfully' });

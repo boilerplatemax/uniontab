@@ -86,6 +86,8 @@ export const unions = pgTable('unions', {
   extraMonthlyEmails: integer('extra_monthly_emails').notNull().default(0),
   extraMonthlySMS: integer('extra_monthly_sms').notNull().default(0),
   extraStorageBytes: integer('extra_storage_bytes').notNull().default(0),
+  // Site-master feature flags per union
+  requireEmailVerification: boolean('require_email_verification').notNull().default(true), // When false, members can join without verifying their email
 });
 
 export const members = pgTable('members', {
