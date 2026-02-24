@@ -95,10 +95,15 @@ export async function POST(
     // Hash password
     const passwordHash = await hashPassword(password);
 
-    // Generate email verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpiry = new Date();
-    verificationExpiry.setHours(verificationExpiry.getHours() + 24); // 24 hours from now
+    const emailVerificationRequired = union.requireEmailVerification !== false;
+
+    // Only generate a verification token when email verification is required
+    const verificationToken = emailVerificationRequired
+      ? crypto.randomBytes(32).toString('hex')
+      : null;
+    const verificationExpiry = emailVerificationRequired
+      ? (() => { const d = new Date(); d.setHours(d.getHours() + 24); return d; })()
+      : null;
 
     // Create user with first and last name
     const [newUser] = await db
@@ -108,9 +113,9 @@ export async function POST(
         email,
         passwordHash,
         role: 'member',
-        emailVerified: false,
+        emailVerified: !emailVerificationRequired,
         emailVerificationToken: verificationToken,
-        emailVerificationExpiry: verificationExpiry
+        emailVerificationExpiry: verificationExpiry,
       })
       .returning();
 
@@ -142,26 +147,38 @@ export async function POST(
       startDateWithEmployer: startDateWithEmployer ? new Date(startDateWithEmployer) : null,
     });
 
-    // Send verification email
-    try {
-      await sendEmailVerification(
-        email,
-        verificationToken,
-        newUser.name || firstName,
-        { name: union.name, localNumber: union.localNumber }
-      );
-    } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
-      // Don't fail the signup if email fails, but log it
+    if (emailVerificationRequired) {
+      // Send verification email
+      try {
+        await sendEmailVerification(
+          email,
+          verificationToken!,
+          newUser.name || firstName,
+          { name: union.name, localNumber: union.localNumber }
+        );
+      } catch (emailError) {
+        console.error('Failed to send verification email:', emailError);
+        // Don't fail the signup if email fails, but log it
+      }
+
+      // Don't set session - require email verification first
+      return NextResponse.json({
+        success: true,
+        requiresVerification: true,
+        message: 'Account created successfully. Please check your email to verify your account.',
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email
+        }
+      });
     }
 
-    // Don't set session - require email verification first
-    // Members must verify their email before they can sign in
-
+    // Email verification disabled for this union — account is ready, awaiting admin approval
     return NextResponse.json({
       success: true,
-      requiresVerification: true,
-      message: 'Account created successfully. Please check your email to verify your account.',
+      requiresVerification: false,
+      message: 'Account created successfully. Your membership application is pending approval by a union administrator.',
       user: {
         id: newUser.id,
         name: newUser.name,
