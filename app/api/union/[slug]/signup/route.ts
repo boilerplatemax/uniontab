@@ -174,7 +174,9 @@ export async function POST(
       });
     }
 
-    // Email verification disabled for this union — account is ready, awaiting admin approval
+    // Email verification disabled for this union — log the member in immediately
+    await setSession(newUser);
+
     return NextResponse.json({
       success: true,
       requiresVerification: false,
