@@ -101,11 +101,6 @@ async function getStrikeById(strikeId: number) {
   });
 }
 
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function StrikeDetailPage({
   params
 }: {

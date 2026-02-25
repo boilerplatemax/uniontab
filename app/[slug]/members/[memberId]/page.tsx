@@ -122,11 +122,6 @@ async function getPendingMembersCount(unionId: number) {
   return Number(result.value);
 }
 
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function MemberProfilePage({
   params
 }: {

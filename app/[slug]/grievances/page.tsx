@@ -71,11 +71,6 @@ async function getAdminMembers(unionId: number) {
   return adminMembers.filter(m => m.member.role === 'owner' || m.member.role === 'admin');
 }
 
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function GrievancesPage({
   params
 }: {

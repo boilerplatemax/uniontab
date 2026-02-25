@@ -86,11 +86,6 @@ async function getStrikeSummary(unionId: number) {
   };
 }
 
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function StrikesPage({
   params
 }: {
