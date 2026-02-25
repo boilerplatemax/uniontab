@@ -4,10 +4,6 @@ import { unions, members, users, memberDocuments, memberCertifications, memberPo
 import { eq, and, count, asc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { MemberProfileContent } from './member-profile-content';
-import { UnionNavbar } from '../../union-navbar';
-import { NavbarSpacer } from '../../navbar-spacer';
-import { cookies } from 'next/headers';
-import { getUnionNavigationItems } from '../../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -158,7 +154,6 @@ export default async function MemberProfilePage({
   const isAdminOrOwner = await checkAdminOrOwner(union.id, user.id);
 
   // Check if the current user is viewing their own member profile
-  const navItems = await getUnionNavigationItems(union.id);
   const memberData = await getMemberById(memberId, union.id);
 
   if (!memberData) {
@@ -172,31 +167,16 @@ export default async function MemberProfilePage({
     redirect(`/${slug}`);
   }
 
-  const [documents, certifications, positions, notes, membership, pendingMembersCount] = await Promise.all([
+  const [documents, certifications, positions, notes, membership] = await Promise.all([
     getMemberDocuments(memberId),
     getMemberCertifications(memberId),
     getMemberPositions(memberId),
     getMemberNotes(memberId),
     getMembership(union.id, user.id),
-    getPendingMembersCount(union.id),
   ]);
 
-  const isApprovedMember = membership?.member.status === 'approved' || isAdminOrOwner;
-
   return (
-    <>
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingMembersCount}
-        isApprovedMember={isApprovedMember}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-      <MemberProfileContent
+    <MemberProfileContent
         slug={slug}
         union={union}
         memberData={memberData}
@@ -207,7 +187,6 @@ export default async function MemberProfilePage({
         currentUserId={user.id}
         isAdminOrOwner={isAdminOrOwner}
         isOwnProfile={isOwnProfile}
-      />
-    </>
+    />
   );
 }

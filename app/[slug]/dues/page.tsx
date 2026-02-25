@@ -4,10 +4,6 @@ import { unions, members, users } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
 import { getUser, getDuesForUnion, getDuesSummaryForUnion } from '@/lib/db/queries';
 import { DuesContent } from './dues-content';
-import { UnionNavbar } from '../union-navbar';
-import { getUnionNavigationItems } from '../get-union-page-data';
-import { NavbarSpacer } from '../navbar-spacer';
-import { cookies } from 'next/headers';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -43,15 +39,6 @@ async function getMembership(unionId: number, userId: number) {
   return membership;
 }
 
-async function getPendingMembersCount(unionId: number) {
-  const [result] = await db
-    .select({ value: count() })
-    .from(members)
-    .where(and(eq(members.unionId, unionId), eq(members.status, 'pending')));
-
-  return Number(result.value);
-}
-
 async function getUnionMembers(unionId: number) {
   const unionMembers = await db
     .select({
@@ -67,11 +54,6 @@ async function getUnionMembers(unionId: number) {
     .where(and(eq(members.unionId, unionId), eq(members.status, 'approved')));
 
   return unionMembers;
-}
-
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
 }
 
 export default async function DuesPage({
@@ -92,7 +74,6 @@ export default async function DuesPage({
     notFound();
   }
 
-  const navItems = await getUnionNavigationItems(union.id);
   const isOwnerOrAdmin = await checkOwnerOrAdmin(union.id, user.id);
 
   if (!isOwnerOrAdmin) {
@@ -102,31 +83,16 @@ export default async function DuesPage({
   const duesData = await getDuesForUnion(union.id);
   const summary = await getDuesSummaryForUnion(union.id);
   const membership = await getMembership(union.id, user.id);
-  const pendingMembersCount = await getPendingMembersCount(union.id);
   const unionMembers = await getUnionMembers(union.id);
-  const isApprovedMember = membership?.member.status === 'approved' || isOwnerOrAdmin;
 
   return (
-    <>
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingMembersCount}
-        isApprovedMember={isApprovedMember}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-      <DuesContent
-        slug={slug}
-        union={union}
-        dues={duesData}
-        summary={summary}
-        members={unionMembers}
-        isOwnerOrAdmin={isOwnerOrAdmin}
-      />
-    </>
+    <DuesContent
+      slug={slug}
+      union={union}
+      dues={duesData}
+      summary={summary}
+      members={unionMembers}
+      isOwnerOrAdmin={isOwnerOrAdmin}
+    />
   );
 }

@@ -4,10 +4,6 @@ import { unions, members, users, navigationItems, files } from '@/lib/db/schema'
 import { eq, and, count, asc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { MembersContent } from './members-content';
-import { UnionNavbar } from '../union-navbar';
-import { NavbarSpacer } from '../navbar-spacer';
-import { cookies } from 'next/headers';
-import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -60,20 +56,6 @@ async function getMembership(unionId: number, userId: number) {
   return membership;
 }
 
-async function getPendingMembersCount(unionId: number) {
-  const [result] = await db
-    .select({ value: count() })
-    .from(members)
-    .where(and(eq(members.unionId, unionId), eq(members.status, 'pending')));
-
-  return Number(result.value);
-}
-
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function MembersPage({
   params
 }: {
@@ -98,26 +80,7 @@ export default async function MembersPage({
     redirect(`/${slug}`);
   }
 
-  const navItems = await getUnionNavigationItems(union.id);
   const unionMembers = await getUnionMembers(union.id);
-  const membership = await getMembership(union.id, user.id);
-  const pendingMembersCount = await getPendingMembersCount(union.id);
-  const isApprovedMember = membership?.member.status === 'approved' || isOwner;
 
-  return (
-    <>
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingMembersCount}
-        isApprovedMember={isApprovedMember}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-      <MembersContent slug={slug} union={union} members={unionMembers} isOwner={isOwner} />
-    </>
-  );
+  return <MembersContent slug={slug} union={union} members={unionMembers} isOwner={isOwner} />;
 }

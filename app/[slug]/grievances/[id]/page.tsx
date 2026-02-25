@@ -4,10 +4,6 @@ import { unions, members, users } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser, getGrievanceById, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { GrievanceDetailContent } from './grievance-detail-content';
-import { UnionNavbar } from '../../union-navbar';
-import { getUnionNavigationItems } from '../../get-union-page-data';
-import { NavbarSpacer } from '../../navbar-spacer';
-import { cookies } from 'next/headers';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -88,11 +84,6 @@ async function getAllApprovedMembers(unionId: number) {
   return allMembers;
 }
 
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function GrievanceDetailPage({
   params
 }: {
@@ -110,7 +101,6 @@ export default async function GrievanceDetailPage({
     notFound();
   }
 
-  const navItems = await getUnionNavigationItems(union.id);
   const membership = await getMembership(union.id, user.id);
   if (!membership || membership.member.status !== 'approved') {
     redirect(`/${slug}`);
@@ -132,25 +122,9 @@ export default async function GrievanceDetailPage({
 
   const adminMembers = isOwnerOrAdmin ? await getAdminMembers(union.id) : [];
   const allMembers = isOwnerOrAdmin ? await getAllApprovedMembers(union.id) : [];
-  const grievanceNotificationCount = await getGrievanceNotificationCount(union.id, user.id, isOwnerOrAdmin);
-  const strikeNotificationCount = await getStrikeNotificationCount(union.id, user.id, isOwnerOrAdmin);
 
   return (
-    <>
-      <UnionNavbar
-        slug={union.slug}
-        unionName={union.name}
-        localNumber={union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={0}
-        grievanceNotificationCount={grievanceNotificationCount}
-        strikeNotificationCount={strikeNotificationCount}
-        isApprovedMember={true}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-      <GrievanceDetailContent
+    <GrievanceDetailContent
         union={union}
         user={membership.user}
         role={membership.member.role}
@@ -158,7 +132,6 @@ export default async function GrievanceDetailPage({
         grievance={grievance}
         adminMembers={adminMembers}
         allMembers={allMembers}
-      />
-    </>
+    />
   );
 }

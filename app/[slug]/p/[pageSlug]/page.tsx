@@ -3,7 +3,6 @@ import { db } from '@/lib/db/drizzle';
 import { unions, unionPages, members, users, navigationItems, files } from '@/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
-import { cookies } from 'next/headers';
 import { CustomPageContent } from './custom-page-content';
 import type { Metadata } from 'next';
 
@@ -105,11 +104,6 @@ async function getNavigationItems(unionId: number) {
   return items;
 }
 
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function CustomPage({
   params,
 }: {
@@ -153,9 +147,7 @@ export default async function CustomPage({
       union={union}
       page={page}
       membership={membership}
-      handleSignOut={handleSignOut}
       slug={slug}
-      navigationItems={navItems}
       showBanner={showBanner}
     />
   );

@@ -3,12 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { unions, members, users, files } from '@/lib/db/schema';
 import { eq, and, asc, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
-import { UnionTabProvider } from '../union-tab-context';
-import { UnionNavbar } from '../union-navbar';
-import { NavbarSpacer } from '../navbar-spacer';
-import { signOut } from '@/app/(login)/actions';
 import { GalleryContent } from './gallery-content';
-import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -48,14 +43,6 @@ async function getGalleryImages(unionId: number) {
     .orderBy(asc(files.sortOrder), asc(files.createdAt));
 }
 
-async function getPendingMembersCount(unionId: number) {
-  const [result] = await db
-    .select({ value: count() })
-    .from(members)
-    .where(and(eq(members.unionId, unionId), eq(members.status, 'pending')));
-  return Number(result.value);
-}
-
 export default async function GalleryPage({
   params,
 }: {
@@ -82,30 +69,9 @@ export default async function GalleryPage({
     redirect(`/${slug}`);
   }
 
-  const pendingMembersCount = isOwnerOrAdmin ? await getPendingMembersCount(union.id) : 0;
-  const navItems = await getUnionNavigationItems(union.id);
-
-  async function handleSignOut() {
-    'use server';
-    await signOut();
-  }
-
   return (
-    <UnionTabProvider slug={slug}>
-      <div className="min-h-screen bg-white">
-        <UnionNavbar
-          slug={slug}
-          unionName={union.publicName || union.name}
-          localNumber={union.publicName ? null : union.localNumber}
-          membership={membership}
-          handleSignOut={handleSignOut}
-          pendingMembersCount={pendingMembersCount}
-          isApprovedMember={isApprovedMember}
-          navigationItems={navItems}
-          hasGalleryImages={hasGalleryImages}
-        />
-        <NavbarSpacer />
-        <GalleryContent
+    <div className="min-h-screen bg-white">
+      <GalleryContent
           slug={slug}
           isAdminOrOwner={isOwnerOrAdmin}
           initialImages={galleryImages.map((img) => ({
@@ -131,7 +97,6 @@ export default async function GalleryPage({
             socialLinks: union.socialLinks,
           }}
         />
-      </div>
-    </UnionTabProvider>
+    </div>
   );
 }

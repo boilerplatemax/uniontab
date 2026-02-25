@@ -1,13 +1,9 @@
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, announcements, announcementAttachments, users } from '@/lib/db/schema';
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { AnnouncementsContent } from './announcements-content';
-import { UnionNavbar } from '../union-navbar';
-import { NavbarSpacer } from '../navbar-spacer';
-import { signOut } from '@/app/(login)/actions';
-import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -34,15 +30,6 @@ async function getMembership(unionId: number, userId: number) {
     .limit(1);
 
   return membership;
-}
-
-async function getPendingMembersCount(unionId: number) {
-  const [result] = await db
-    .select({ value: count() })
-    .from(members)
-    .where(and(eq(members.unionId, unionId), eq(members.status, 'pending')));
-
-  return Number(result.value);
 }
 
 async function getUnionAnnouncements(unionId: number) {
@@ -102,30 +89,7 @@ export default async function AnnouncementsPage({
     redirect(`/${slug}`);
   }
 
-  const pendingMembersCount = await getPendingMembersCount(union.id);
-  const navItems = await getUnionNavigationItems(union.id);
   const unionAnnouncements = await getUnionAnnouncements(union.id);
-  const isApprovedMember = membership.member.status === 'approved' || membership.member.role === 'owner';
 
-  async function handleSignOut() {
-    'use server';
-    await signOut();
-  }
-
-  return (
-    <>
-      <UnionNavbar
-        slug={slug}
-        unionName={union.name}
-        localNumber={union.localNumber ?? null}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingMembersCount}
-        isApprovedMember={isApprovedMember}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-      <AnnouncementsContent slug={slug} union={union} announcements={unionAnnouncements} isOwner={true} />
-    </>
-  );
+  return <AnnouncementsContent slug={slug} union={union} announcements={unionAnnouncements} isOwner={true} />;
 }

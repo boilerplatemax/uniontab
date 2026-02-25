@@ -4,10 +4,6 @@ import { unions, members, users, strikes, picketZones, picketShifts, picketAssig
 import { eq, and, count, desc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { StrikeDetailContent } from './strike-detail-content';
-import { UnionNavbar } from '../../union-navbar';
-import { getUnionNavigationItems } from '../../get-union-page-data';
-import { NavbarSpacer } from '../../navbar-spacer';
-import { cookies } from 'next/headers';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -132,7 +128,6 @@ export default async function StrikeDetailPage({
     notFound();
   }
 
-  const navItems = await getUnionNavigationItems(union.id);
   const membership = await getMembership(union.id, user.id);
   if (!membership || membership.member.status !== 'approved') {
     redirect(`/${slug}`);
@@ -144,29 +139,15 @@ export default async function StrikeDetailPage({
   }
 
   const isOwnerOrAdmin = membership.member.role === 'owner' || membership.member.role === 'admin';
-  const pendingCount = await getPendingMembersCount(union.id);
 
   return (
-    <>
-      <UnionNavbar
-        slug={union.slug}
-        unionName={union.name}
-        localNumber={union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingCount}
-        isApprovedMember={true}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-      <StrikeDetailContent
+    <StrikeDetailContent
         union={union}
         user={membership.user}
         role={membership.member.role}
         memberId={membership.member.id}
         strike={strike}
         isAdmin={isOwnerOrAdmin}
-      />
-    </>
+    />
   );
 }

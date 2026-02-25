@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { UnionNavbar } from '../union-navbar';
-import { NavbarSpacer } from '../navbar-spacer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,9 +44,7 @@ import { createClient } from '@supabase/supabase-js';
 interface SupportContentProps {
   union: Union;
   membership: { user: User; member: Member } | null;
-  handleSignOut: () => Promise<void>;
   slug: string;
-  navigationItems?: any[];
 }
 
 interface Ticket {
@@ -112,9 +108,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export function SupportContent({
   union,
   membership,
-  handleSignOut,
   slug,
-  navigationItems,
 }: SupportContentProps) {
   const searchParams = useSearchParams();
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -323,16 +317,6 @@ export function SupportContent({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        navigationItems={navigationItems}
-      />
-      <NavbarSpacer />
-
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
