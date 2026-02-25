@@ -1,13 +1,9 @@
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, users } from '@/lib/db/schema';
-import { eq, and, count } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
-import { UnionNavbar } from '../union-navbar';
-import { NavbarSpacer } from '../navbar-spacer';
-import { signOut } from '@/app/(login)/actions';
 import { SettingsContent } from './settings-content';
-import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -36,15 +32,6 @@ async function getMembership(unionId: number, userId: number) {
   return membership;
 }
 
-async function getPendingMembersCount(unionId: number) {
-  const [result] = await db
-    .select({ value: count() })
-    .from(members)
-    .where(and(eq(members.unionId, unionId), eq(members.status, 'pending')));
-
-  return Number(result.value);
-}
-
 export default async function SettingsPage({
   params
 }: {
@@ -69,29 +56,5 @@ export default async function SettingsPage({
     redirect(`/${slug}`);
   }
 
-  const pendingMembersCount = await getPendingMembersCount(union.id);
-  const navItems = await getUnionNavigationItems(union.id);
-  const isApprovedMember = membership.member.status === 'approved' || membership.member.role === 'owner';
-
-  async function handleSignOut() {
-    'use server';
-    await signOut();
-  }
-
-  return (
-    <>
-      <UnionNavbar
-        slug={slug}
-        unionName={union.name}
-        localNumber={union.localNumber ?? null}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingMembersCount}
-        isApprovedMember={isApprovedMember}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-      <SettingsContent />
-    </>
-  );
+  return <SettingsContent />;
 }

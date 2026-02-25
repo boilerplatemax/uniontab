@@ -1,9 +1,6 @@
 import { Users, Mail, Phone, MapPin, Globe, Settings } from 'lucide-react';
 import Link from 'next/link';
-import { UnionNavbar } from '../union-navbar';
-import { NavbarSpacer } from '../navbar-spacer';
 import { UnionProfileTabs } from '../union-profile-tabs';
-import { AnnouncementClient } from '../announcement-client';
 import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { AdminHelpWidget } from '@/components/admin-help-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
@@ -28,43 +25,10 @@ export function DefaultTheme({
   isApprovedMember,
   userId,
   slug,
-  pendingMembersCount,
-  grievanceNotificationCount,
-  strikeNotificationCount,
-  handleSignOut,
-  activeAnnouncements,
   accessibilityWidgetEnabled,
-  navigationItems: navItems,
-  hasGalleryImages,
 }: ThemeProps) {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Announcement Banner - Above navbar */}
-      <AnnouncementClient
-        popup={activeAnnouncements.popup}
-        banner={activeAnnouncements.banner}
-        themeColor={union.themeColor}
-      />
-
-      {/* Navigation Bar - Fixed */}
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingMembersCount}
-        announcementId={activeAnnouncements.banner?.id}
-        grievanceNotificationCount={grievanceNotificationCount}
-        strikeNotificationCount={strikeNotificationCount}
-        contactEmail={union.email}
-        isApprovedMember={isApprovedMember}
-        navigationItems={navItems}
-        hasGalleryImages={hasGalleryImages}
-      />
-
-      {/* Spacing for fixed navbar and announcement */}
-      <NavbarSpacer announcementId={activeAnnouncements.banner?.id} />
 
       {/* Unapproved User Alert Banner */}
       {membership && membership.member.status === 'pending' && (

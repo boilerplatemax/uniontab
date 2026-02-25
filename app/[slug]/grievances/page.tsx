@@ -4,10 +4,6 @@ import { unions, members, users, navigationItems, files } from '@/lib/db/schema'
 import { eq, and, count, asc } from 'drizzle-orm';
 import { getUser, getGrievancesForUnion, getGrievanceSummaryForUnion, getGrievancesForMember, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { GrievancesContent } from './grievances-content';
-import { UnionNavbar } from '../union-navbar';
-import { NavbarSpacer } from '../navbar-spacer';
-import { cookies } from 'next/headers';
-import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -75,11 +71,6 @@ async function getAdminMembers(unionId: number) {
   return adminMembers.filter(m => m.member.role === 'owner' || m.member.role === 'admin');
 }
 
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function GrievancesPage({
   params
 }: {
@@ -97,7 +88,6 @@ export default async function GrievancesPage({
     notFound();
   }
 
-  const navItems = await getUnionNavigationItems(union.id);
   const membership = await getMembership(union.id, user.id);
   if (!membership || membership.member.status !== 'approved') {
     redirect(`/${slug}`);
@@ -119,26 +109,8 @@ export default async function GrievancesPage({
   // Get admin members for assignment dropdown
   const adminMembers = isOwnerOrAdmin ? await getAdminMembers(union.id) : [];
 
-  const pendingCount = await getPendingMembersCount(union.id);
-  const grievanceNotificationCount = await getGrievanceNotificationCount(union.id, user.id, isOwnerOrAdmin);
-  const strikeNotificationCount = await getStrikeNotificationCount(union.id, user.id, isOwnerOrAdmin);
-
   return (
-    <>
-      <UnionNavbar
-        slug={union.slug}
-        unionName={union.name}
-        localNumber={union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingCount}
-        grievanceNotificationCount={grievanceNotificationCount}
-        strikeNotificationCount={strikeNotificationCount}
-        isApprovedMember={true}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-      <GrievancesContent
+    <GrievancesContent
         union={union}
         user={membership.user}
         role={membership.member.role}
@@ -146,7 +118,6 @@ export default async function GrievancesPage({
         grievances={grievances}
         summary={summary}
         adminMembers={adminMembers}
-      />
-    </>
+    />
   );
 }

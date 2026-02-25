@@ -2,19 +2,14 @@
 
 import Link from 'next/link';
 import { ArrowLeft, Users, Mail, Phone, MapPin, Globe } from 'lucide-react';
-import { UnionNavbar } from '../../union-navbar';
-import { NavbarSpacer } from '../../navbar-spacer';
-import { UnionTabProvider } from '../../union-tab-context';
 import { SocialMediaIcons } from '@/components/social-media-icons';
-import type { Union, UnionPage, Member, User, NavigationItem } from '@/lib/db/schema';
+import type { Union, UnionPage, Member, User } from '@/lib/db/schema';
 
 interface CustomPageContentProps {
   union: Union;
   page: UnionPage;
   membership: { user: User; member: Member } | null;
-  handleSignOut: () => Promise<void>;
   slug: string;
-  navigationItems?: (NavigationItem & { pageSlug?: string | null; fileUrl?: string | null })[];
   showBanner?: boolean;
 }
 
@@ -30,25 +25,11 @@ export function CustomPageContent({
   union,
   page,
   membership,
-  handleSignOut,
   slug,
-  navigationItems,
   showBanner = false,
 }: CustomPageContentProps) {
   return (
-    <UnionTabProvider slug={slug}>
     <div className="min-h-screen bg-white">
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        navigationItems={navigationItems}
-        contactEmail={union.email}
-        isApprovedMember={membership?.member.status === 'approved' || membership?.member.role === 'owner'}
-      />
-      <NavbarSpacer />
 
       {/* Theme Banner */}
       {showBanner && (
@@ -185,6 +166,5 @@ export function CustomPageContent({
         />
       </div>
     </div>
-    </UnionTabProvider>
   );
 }

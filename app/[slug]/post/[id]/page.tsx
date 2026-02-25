@@ -3,18 +3,14 @@ import { db } from '@/lib/db/drizzle';
 import { unions, users, posts, members, postLikes, postAttachments } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
-import { UnionNavbar } from '../../union-navbar';
-import { NavbarSpacer } from '../../navbar-spacer';
 import { Card, CardContent } from '@/components/ui/card';
 import { RichTextContent } from '@/components/ui/rich-text-content';
 import { LikeButton } from '@/components/posts/like-button';
 import { ShareButton } from '@/components/share-button';
 import { ArrowLeft, Paperclip, FileText, Download } from 'lucide-react';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
 import { formatDate } from '@/lib/utils/date';
 import { Button } from '@/components/ui/button';
-import { getUnionNavigationItems } from '../../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -99,11 +95,6 @@ async function checkMembership(unionId: number) {
   return membership;
 }
 
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function PostPage({
   params,
 }: {
@@ -143,20 +134,9 @@ export default async function PostPage({
 
   const membership = await checkMembership(union.id);
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
-  const navItems = await getUnionNavigationItems(union.id);
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link
           href={`/${slug}`}

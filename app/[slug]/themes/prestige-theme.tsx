@@ -1,9 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { UnionNavbar } from '../union-navbar';
-import { NavbarSpacer } from '../navbar-spacer';
-import { AnnouncementClient } from '../announcement-client';
 import { AccessibilityWidget } from '@/components/accessibility-widget';
 import { AdminHelpWidget } from '@/components/admin-help-widget';
 import { OnboardingReminder } from '@/components/onboarding-reminder';
@@ -32,14 +29,7 @@ export function PrestigeTheme({
   isApprovedMember,
   userId,
   slug,
-  pendingMembersCount,
-  grievanceNotificationCount,
-  strikeNotificationCount,
-  handleSignOut,
-  activeAnnouncements,
   accessibilityWidgetEnabled,
-  navigationItems: navItems,
-  hasGalleryImages,
 }: ThemeProps) {
   // Dynamic color palette based on theme color from settings
   const themeColor = union.themeColor || DEFAULT_THEME_COLOR;
@@ -51,32 +41,6 @@ export function PrestigeTheme({
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Announcement Banner - Above navbar */}
-      <AnnouncementClient
-        popup={activeAnnouncements.popup}
-        banner={activeAnnouncements.banner}
-        themeColor={themeColor}
-      />
-
-      {/* Navigation Bar - Fixed */}
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingMembersCount}
-        announcementId={activeAnnouncements.banner?.id}
-        grievanceNotificationCount={grievanceNotificationCount}
-        strikeNotificationCount={strikeNotificationCount}
-        contactEmail={union.email}
-        isApprovedMember={isApprovedMember}
-        navigationItems={navItems}
-        hasGalleryImages={hasGalleryImages}
-      />
-
-      {/* Spacing for fixed navbar and announcement */}
-      <NavbarSpacer announcementId={activeAnnouncements.banner?.id} />
 
       {/* Unapproved User Alert Banner */}
       {membership && membership.member.status === 'pending' && (

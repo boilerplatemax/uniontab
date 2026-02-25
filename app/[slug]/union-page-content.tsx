@@ -17,14 +17,7 @@ export async function UnionPageContent({ slug }: { slug: string }) {
     isApprovedMember: data.isApprovedMember,
     userId: data.currentUser?.id || null,
     slug: data.slug,
-    pendingMembersCount: data.pendingMembersCount,
-    grievanceNotificationCount: data.grievanceNotificationCount,
-    strikeNotificationCount: data.strikeNotificationCount,
-    handleSignOut: data.handleSignOut,
-    activeAnnouncements: data.activeAnnouncements,
     accessibilityWidgetEnabled: data.union.accessibilityWidgetEnabled ?? true,
-    navigationItems: data.navigationItems,
-    hasGalleryImages: data.hasGalleryImages,
   };
 
   const ThemeComponent = (() => {

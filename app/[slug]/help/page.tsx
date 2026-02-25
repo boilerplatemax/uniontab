@@ -3,9 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { unions, members, users } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
-import { cookies } from 'next/headers';
 import { HelpContent } from './help-content';
-import { getUnionNavigationItems } from '../get-union-page-data';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -34,11 +32,6 @@ async function checkMembership(unionId: number) {
   return membership;
 }
 
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function HelpPage({
   params,
 }: {
@@ -60,15 +53,5 @@ export default async function HelpPage({
     redirect(`/${slug}`);
   }
 
-  const navItems = await getUnionNavigationItems(union.id);
-
-  return (
-    <HelpContent
-      union={union}
-      membership={membership}
-      handleSignOut={handleSignOut}
-      slug={slug}
-      navigationItems={navItems}
-    />
-  );
+  return <HelpContent slug={slug} />;
 }

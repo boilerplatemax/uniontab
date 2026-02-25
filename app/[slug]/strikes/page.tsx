@@ -4,10 +4,6 @@ import { unions, members, users, strikes, picketZones, strikeAnnouncements, stri
 import { eq, and, count, desc } from 'drizzle-orm';
 import { getUser, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { StrikesContent } from './strikes-content';
-import { UnionNavbar } from '../union-navbar';
-import { getUnionNavigationItems } from '../get-union-page-data';
-import { NavbarSpacer } from '../navbar-spacer';
-import { cookies } from 'next/headers';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -90,11 +86,6 @@ async function getStrikeSummary(unionId: number) {
   };
 }
 
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function StrikesPage({
   params
 }: {
@@ -112,7 +103,6 @@ export default async function StrikesPage({
     notFound();
   }
 
-  const navItems = await getUnionNavigationItems(union.id);
   const membership = await getMembership(union.id, user.id);
   if (!membership || membership.member.status !== 'approved') {
     redirect(`/${slug}`);
@@ -121,33 +111,14 @@ export default async function StrikesPage({
   const isOwnerOrAdmin = await checkOwnerOrAdmin(union.id, user.id);
   const strikesList = await getStrikesForUnion(union.id);
   const summary = isOwnerOrAdmin ? await getStrikeSummary(union.id) : null;
-  const pendingCount = await getPendingMembersCount(union.id);
-  const grievanceNotificationCount = await getGrievanceNotificationCount(union.id, user.id, isOwnerOrAdmin);
-  const strikeNotificationCount = await getStrikeNotificationCount(union.id, user.id, isOwnerOrAdmin);
-
   return (
-    <>
-      <UnionNavbar
-        slug={union.slug}
-        unionName={union.name}
-        localNumber={union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingCount}
-        grievanceNotificationCount={grievanceNotificationCount}
-        strikeNotificationCount={strikeNotificationCount}
-        isApprovedMember={true}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-      <StrikesContent
+    <StrikesContent
         union={union}
         user={membership.user}
         role={membership.member.role}
         memberId={membership.member.id}
         strikes={strikesList}
         summary={summary}
-      />
-    </>
+    />
   );
 }

@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { UnionNavbar } from '../union-navbar';
-import { NavbarSpacer } from '../navbar-spacer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,14 +23,8 @@ import {
   ExternalLink,
   LifeBuoy,
 } from 'lucide-react';
-import type { Union, Member, User } from '@/lib/db/schema';
-
 interface HelpContentProps {
-  union: Union;
-  membership: { user: User; member: Member } | null;
-  handleSignOut: () => Promise<void>;
   slug: string;
-  navigationItems?: any[];
 }
 
 const tutorials = [
@@ -94,25 +86,9 @@ const faqs = [
   },
 ];
 
-export function HelpContent({
-  union,
-  membership,
-  handleSignOut,
-  slug,
-  navigationItems,
-}: HelpContentProps) {
+export function HelpContent({ slug }: HelpContentProps) {
   return (
     <div className="min-h-screen bg-gray-50">
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        navigationItems={navigationItems}
-      />
-      <NavbarSpacer />
-
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">

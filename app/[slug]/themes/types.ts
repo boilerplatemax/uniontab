@@ -1,4 +1,4 @@
-import type { Union, Post, File as FileType, Event, Member, PostAttachment, NavigationItem } from '@/lib/db/schema';
+import type { Union, Post, File as FileType, Event, Member, PostAttachment } from '@/lib/db/schema';
 
 export interface ThemeProps {
   union: Union;
@@ -16,15 +16,5 @@ export interface ThemeProps {
   isApprovedMember: boolean;
   userId: number | null;
   slug: string;
-  pendingMembersCount: number;
-  grievanceNotificationCount: number;
-  strikeNotificationCount: number;
-  handleSignOut: () => Promise<void>;
-  activeAnnouncements: {
-    popup: any;
-    banner: any;
-  };
   accessibilityWidgetEnabled: boolean;
-  navigationItems?: (NavigationItem & { pageSlug?: string | null; fileUrl?: string | null })[];
-  hasGalleryImages?: boolean;
 }

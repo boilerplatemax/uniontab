@@ -3,11 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { unions, members, users } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
-import { UnionNavbar } from '../union-navbar';
-import { getUnionNavigationItems } from '../get-union-page-data';
-import { NavbarSpacer } from '../navbar-spacer';
 import { MeetingsContent } from './meetings-content';
-import { cookies } from 'next/headers';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -42,22 +38,6 @@ async function checkMembership(unionId: number) {
   return membership;
 }
 
-async function getPendingMembersCount(unionId: number, userRole: string | undefined) {
-  if (userRole !== 'owner') return 0;
-
-  const pendingMembers = await db
-    .select()
-    .from(members)
-    .where(and(eq(members.unionId, unionId), eq(members.status, 'pending')));
-
-  return pendingMembers.length;
-}
-
-async function handleSignOut() {
-  'use server';
-  (await cookies()).delete('session');
-}
-
 export default async function MeetingsPage({
   params,
 }: {
@@ -70,18 +50,12 @@ export default async function MeetingsPage({
     notFound();
   }
 
-  const navItems = await getUnionNavigationItems(union.id);
   const membership = await checkMembership(union.id);
 
   // Meetings require authentication
   if (!membership) {
     redirect(`/${slug}/sign-in`);
   }
-
-  const pendingMembersCount = await getPendingMembersCount(
-    union.id,
-    membership?.member.role
-  );
 
   const unionInfo = {
     id: union.id,
@@ -94,18 +68,6 @@ export default async function MeetingsPage({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <UnionNavbar
-        slug={slug}
-        unionName={union.publicName || union.name}
-        localNumber={union.publicName ? null : union.localNumber}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={pendingMembersCount}
-        isApprovedMember={true}
-        navigationItems={navItems}
-      />
-      <NavbarSpacer />
-
       <div className="max-w-5xl mx-auto px-4 py-8">
         <MeetingsContent unionInfo={unionInfo} />
       </div>

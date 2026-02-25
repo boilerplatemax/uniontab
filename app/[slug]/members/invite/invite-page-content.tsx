@@ -7,24 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { UserPlus, Mail, CheckCircle, Clock, Send, Loader2, AlertCircle, Sparkles } from 'lucide-react';
-import { UnionNavbar } from '../../union-navbar';
-
 interface InvitePageContentProps {
   unionName: string;
   localNumber?: string | null;
   registrationUrl: string;
   slug: string;
-  membership: {
-    user: { name: string | null };
-    member: { role: string };
-  };
-  handleSignOut: () => Promise<void>;
   logoUrl?: string | null;
   themeColor?: string | null;
   unionId: number;
   canBulkInvite: boolean;
-  navigationItems?: any[];
-  isApprovedMember?: boolean;
 }
 
 export default function InvitePageContent({
@@ -32,14 +23,10 @@ export default function InvitePageContent({
   localNumber,
   registrationUrl,
   slug,
-  membership,
-  handleSignOut,
   logoUrl,
   themeColor,
   unionId,
   canBulkInvite,
-  navigationItems,
-  isApprovedMember,
 }: InvitePageContentProps) {
   const fullUnionName = localNumber
     ? `${unionName} Local ${localNumber}`
@@ -123,21 +110,6 @@ export default function InvitePageContent({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation Bar */}
-      <UnionNavbar
-        slug={slug}
-        unionName={unionName}
-        localNumber={localNumber ?? null}
-        membership={membership}
-        handleSignOut={handleSignOut}
-        pendingMembersCount={0}
-        announcementId={null}
-        isApprovedMember={isApprovedMember}
-        navigationItems={navigationItems}
-      />
-
-      {/* Spacing for fixed navbar */}
-      <div className="h-14" />
 
       <div className="container max-w-4xl mx-auto py-8 px-4">
       <div className="mb-8">
