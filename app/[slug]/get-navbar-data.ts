@@ -121,6 +121,7 @@ export async function getNavbarData(slug: string) {
     navItems,
     activeAnnouncements,
     galleryCount,
+    publicFilesCount,
   ] = await Promise.all([
     isOwnerOrAdmin
       ? db.select({ value: count() }).from(members)
@@ -138,6 +139,14 @@ export async function getNavbarData(slug: string) {
     db.select({ value: count() }).from(files)
       .where(and(eq(files.unionId, union.id), eq(files.category, 'gallery')))
       .then(([r]) => Number(r.value)),
+    // Count non-gallery public files (isPrivate = false, not a gallery image)
+    db.select({ value: count() }).from(files)
+      .where(and(
+        eq(files.unionId, union.id),
+        eq(files.isPrivate, false),
+        sql`(${files.category} IS NULL OR ${files.category} != 'gallery')`,
+      ))
+      .then(([r]) => Number(r.value)),
   ]);
 
   return {
@@ -150,6 +159,7 @@ export async function getNavbarData(slug: string) {
     navItems,
     activeAnnouncements,
     hasGalleryImages: galleryCount > 0,
+    hasPublicFiles: publicFilesCount > 0,
     handleSignOut: handleSignOutAction,
   };
 }

@@ -151,3 +151,54 @@ export const strictRateLimit: RateLimitConfig = {
   windowMs: 60 * 60 * 1000, // 1 hour
   prefix: 'strict',
 };
+
+// ── Account-based login rate limiting ─────────────────────────────────────
+
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_TRACKING_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const LOGIN_LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Check whether a login attempt is currently blocked for this email.
+ * Returns { locked: true, retryAfterMs } when locked, { locked: false } otherwise.
+ */
+export function checkLoginLocked(email: string): { locked: boolean; retryAfterMs?: number } {
+  cleanupExpiredEntries();
+  const key = `login-attempt:${email.toLowerCase()}`;
+  const entry = rateLimitStore.get(key);
+  const now = Date.now();
+  if (!entry || entry.resetTime < now) return { locked: false };
+  if (entry.count >= LOGIN_MAX_ATTEMPTS) {
+    return { locked: true, retryAfterMs: entry.resetTime - now };
+  }
+  return { locked: false };
+}
+
+/**
+ * Record a failed login attempt for the given email.
+ * After LOGIN_MAX_ATTEMPTS failures the account is locked for LOGIN_LOCKOUT_MS.
+ */
+export function recordFailedLogin(email: string): void {
+  const key = `login-attempt:${email.toLowerCase()}`;
+  const now = Date.now();
+  const entry = rateLimitStore.get(key);
+
+  if (!entry || entry.resetTime < now) {
+    // Start a fresh tracking window
+    rateLimitStore.set(key, { count: 1, resetTime: now + LOGIN_TRACKING_WINDOW_MS });
+  } else {
+    entry.count++;
+    // On the 5th failure set a hard 5-minute lockout from now
+    if (entry.count >= LOGIN_MAX_ATTEMPTS) {
+      entry.resetTime = now + LOGIN_LOCKOUT_MS;
+    }
+  }
+}
+
+/**
+ * Clear the failed-login counter for an email (call after a successful login).
+ */
+export function clearLoginAttempts(email: string): void {
+  const key = `login-attempt:${email.toLowerCase()}`;
+  rateLimitStore.delete(key);
+}

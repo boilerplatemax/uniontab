@@ -4,6 +4,7 @@ import { db } from '@/lib/db/drizzle';
 import { unions, users, members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { comparePasswords, setSession } from '@/lib/auth/session';
+import { checkLoginLocked, recordFailedLogin, clearLoginAttempts } from '@/lib/utils/rate-limit';
 
 export async function POST(
   request: NextRequest,
@@ -19,6 +20,18 @@ export async function POST(
       return NextResponse.json(
         { error: 'Email and password are required' },
         { status: 400 }
+      );
+    }
+
+    // Check if this account is temporarily locked due to too many failed attempts
+    const lockStatus = checkLoginLocked(email);
+    if (lockStatus.locked) {
+      const minutesLeft = Math.ceil((lockStatus.retryAfterMs ?? 0) / 60000);
+      return NextResponse.json(
+        {
+          error: `Too many failed login attempts. Please try again in ${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}.`,
+        },
+        { status: 429 }
       );
     }
 
@@ -41,6 +54,8 @@ export async function POST(
       .limit(1);
 
     if (!user) {
+      // Still record a failed attempt to prevent email enumeration via timing
+      recordFailedLogin(email);
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
@@ -51,6 +66,14 @@ export async function POST(
     const isPasswordValid = await comparePasswords(password, user.passwordHash);
 
     if (!isPasswordValid) {
+      recordFailedLogin(email);
+      const lockAfter = checkLoginLocked(email);
+      if (lockAfter.locked) {
+        return NextResponse.json(
+          { error: 'Too many failed login attempts. Your account is locked for 5 minutes.' },
+          { status: 429 }
+        );
+      }
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
@@ -72,6 +95,9 @@ export async function POST(
         { status: 403 }
       );
     }
+
+    // Successful login — clear any accumulated failed-attempt counter
+    clearLoginAttempts(email);
 
     // Set session
     await setSession(user);
