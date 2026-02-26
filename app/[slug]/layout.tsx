@@ -42,6 +42,7 @@ export default async function UnionSlugLayout({
           isApprovedMember={data.isApprovedMember}
           navigationItems={data.navItems}
           hasGalleryImages={data.hasGalleryImages}
+          hasPublicFiles={data.hasPublicFiles}
         />
         <NavbarSpacer announcementId={data.activeAnnouncements.banner?.id} />
         {children}

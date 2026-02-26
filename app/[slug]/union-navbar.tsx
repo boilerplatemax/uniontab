@@ -38,6 +38,7 @@ interface UnionNavbarProps {
   isApprovedMember?: boolean;
   navigationItems?: (NavigationItem & { pageSlug?: string | null; fileUrl?: string | null })[];
   hasGalleryImages?: boolean;
+  hasPublicFiles?: boolean;
 }
 
 interface MegaMenuItem {
@@ -69,6 +70,7 @@ export function UnionNavbar({
   isApprovedMember = false,
   navigationItems = [],
   hasGalleryImages = false,
+  hasPublicFiles = false,
 }: UnionNavbarProps) {
   const pathname = usePathname();
   const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
@@ -145,6 +147,10 @@ export function UnionNavbar({
 
   // Gallery link is always visible to admins/owners; visible to others only if there are gallery images
   const showGalleryLink = isOwnerOrAdmin || hasGalleryImages;
+
+  // In fallback (no custom nav) mode: hide "Files" for non-logged-in visitors when there are no public files.
+  // Logged-in members always see Files. Custom nav is handled by isNavItemVisible / DB visibility field.
+  const showFallbackFilesTab = !!membership || hasPublicFiles;
 
   const hasAdminAccess = isOwnerOrAdmin && (
     canAccess('members') || canAccess('communications') || canAccess('dues') ||
@@ -447,7 +453,10 @@ export function UnionNavbar({
 
   if (!membership) {
     const hasPublicNav = useDynamicNav && publicTopLevelNavItems.length > 0;
-    const publicFallbackTabs = hardcodedTabItems.filter((item) => !item.membersOnly);
+    // For non-logged-in visitors: hide the Files tab when there are no public files
+    const publicFallbackTabs = hardcodedTabItems.filter(
+      (item) => !item.membersOnly && (item.key !== 'files' || hasPublicFiles)
+    );
 
     return (
       <>
@@ -498,6 +507,9 @@ export function UnionNavbar({
                           }`}
                       >
                         Gallery
+                        {pathname === `/${slug}/gallery` && (
+                          <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                        )}
                       </Link>
                     )}
                     <button
@@ -637,6 +649,9 @@ export function UnionNavbar({
                       }`}
                   >
                     Gallery
+                    {pathname === `/${slug}/gallery` && (
+                      <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                    )}
                   </Link>
                 )}
 
@@ -692,7 +707,8 @@ export function UnionNavbar({
                       <Link
                         href={`/${slug}/gallery`}
                         onClick={() => setNonMemberMobileOpen(false)}
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors
+                          ${pathname === `/${slug}/gallery` ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
                       >
                         <span className="text-gray-500"><Images className="h-4 w-4" /></span>
                         <span className="text-[15px] font-medium">Gallery</span>
@@ -788,7 +804,8 @@ export function UnionNavbar({
                   <Link
                     href={`/${slug}/gallery`}
                     onClick={() => setNonMemberMobileOpen(false)}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors
+                      ${pathname === `/${slug}/gallery` ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
                   >
                     <span className="text-gray-500"><Images className="h-4 w-4" /></span>
                     <span className="text-[15px] font-medium">Gallery</span>
@@ -861,6 +878,9 @@ export function UnionNavbar({
                         }`}
                     >
                       Gallery
+                      {pathname === `/${slug}/gallery` && (
+                        <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                      )}
                     </Link>
                   )}
                   <button
@@ -1003,6 +1023,9 @@ export function UnionNavbar({
                     }`}
                 >
                   Gallery
+                  {pathname === `/${slug}/gallery` && (
+                    <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
+                  )}
                 </Link>
               )}
 
@@ -1217,7 +1240,8 @@ export function UnionNavbar({
                       <Link
                         href={`/${slug}/gallery`}
                         onClick={closeMobile}
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors
+                          ${pathname === `/${slug}/gallery` ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
                       >
                         <span className="text-gray-500"><Images className="h-4 w-4" /></span>
                         <span className="text-[15px] font-medium">Gallery</span>
@@ -1317,7 +1341,8 @@ export function UnionNavbar({
                   <Link
                     href={`/${slug}/gallery`}
                     onClick={closeMobile}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors text-gray-700 hover:bg-gray-50"
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors
+                      ${pathname === `/${slug}/gallery` ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
                   >
                     <span className="text-gray-500"><Images className="h-4 w-4" /></span>
                     <span className="text-[15px] font-medium">Gallery</span>

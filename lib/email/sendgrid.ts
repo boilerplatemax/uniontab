@@ -110,7 +110,8 @@ export async function sendPasswordResetEmail(
   const resetUrl = `${baseUrl}/auth/reset-password?token=${resetToken}`;
 
   // Include union info in subject line for better UX
-  const unionName = unionInfo ? `${unionInfo.name}${unionInfo.localNumber ? ` Local ${unionInfo.localNumber}` : ''}` : 'UnionTab';
+  // Format: "ATU 1587" (uppercase name, no "Local" prefix)
+  const unionName = unionInfo ? `${unionInfo.name.toUpperCase()}${unionInfo.localNumber ? ` ${unionInfo.localNumber}` : ''}` : 'UnionTab';
   const subject = `Reset Your Password - ${unionName}`;
 
   const text = `
