@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { grievances, members } from '@/lib/db/schema';
+import { grievances, members, grievanceParticipants } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser, getGrievanceById } from '@/lib/db/queries';
 
@@ -59,7 +59,21 @@ export async function GET(request: Request, { params }: RouteParams) {
     const isOwnerOrAdmin = membership.role === 'owner' || membership.role === 'admin';
     const isGrievanceCreator = grievance.memberId === membership.id;
 
+    // Also check if member is a participant
+    let isParticipant = false;
     if (!isOwnerOrAdmin && !isGrievanceCreator) {
+      const [participation] = await db
+        .select()
+        .from(grievanceParticipants)
+        .where(and(
+          eq(grievanceParticipants.grievanceId, grievanceId),
+          eq(grievanceParticipants.memberId, membership.id)
+        ))
+        .limit(1);
+      isParticipant = !!participation;
+    }
+
+    if (!isOwnerOrAdmin && !isGrievanceCreator && !isParticipant) {
       return NextResponse.json(
         { error: 'You do not have permission to view this grievance' },
         { status: 403 }

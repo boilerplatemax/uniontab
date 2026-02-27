@@ -1,6 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, members, users } from '@/lib/db/schema';
+import { unions, members, users, grievanceParticipants } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser, getGrievanceById, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { GrievanceDetailContent } from './grievance-detail-content';
@@ -116,7 +116,21 @@ export default async function GrievanceDetailPage({
   }
 
   // Check if user has permission to view this grievance
-  if (!isOwnerOrAdmin && grievance.memberId !== membership.member.id) {
+  const isGrievanceCreator = grievance.memberId === membership.member.id;
+  let isParticipant = false;
+  if (!isOwnerOrAdmin && !isGrievanceCreator) {
+    const [participation] = await db
+      .select()
+      .from(grievanceParticipants)
+      .where(and(
+        eq(grievanceParticipants.grievanceId, grievance.id),
+        eq(grievanceParticipants.memberId, membership.member.id)
+      ))
+      .limit(1);
+    isParticipant = !!participation;
+  }
+
+  if (!isOwnerOrAdmin && !isGrievanceCreator && !isParticipant) {
     redirect(`/${slug}/grievances`);
   }
 
