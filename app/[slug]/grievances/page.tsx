@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, users, navigationItems, files } from '@/lib/db/schema';
 import { eq, and, count, asc } from 'drizzle-orm';
-import { getUser, getGrievancesForUnion, getGrievanceSummaryForUnion, getGrievancesForMember, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
+import { getUser, getGrievancesForUnion, getGrievanceSummaryForUnion, getGrievancesForMember, getGrievancesForParticipant, getGrievanceNotificationCount, getStrikeNotificationCount } from '@/lib/db/queries';
 import { GrievancesContent } from './grievances-content';
 
 async function getUnionBySlug(slug: string) {
@@ -100,7 +100,22 @@ export default async function GrievancesPage({
   if (isOwnerOrAdmin) {
     grievances = await getGrievancesForUnion(union.id);
   } else {
-    grievances = await getGrievancesForMember(membership.member.id);
+    // Regular members see their own grievances + any they were added to as a grievor
+    const [ownGrievances, participantGrievances] = await Promise.all([
+      getGrievancesForMember(membership.member.id),
+      getGrievancesForParticipant(membership.member.id),
+    ]);
+    const seen = new Set<number>();
+    grievances = [];
+    for (const g of [...ownGrievances, ...participantGrievances]) {
+      if (!seen.has(g.id)) {
+        seen.add(g.id);
+        (grievances as any[]).push(g);
+      }
+    }
+    (grievances as any[]).sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
   }
 
   // Get summary stats (for admins)
@@ -108,6 +123,23 @@ export default async function GrievancesPage({
 
   // Get admin members for assignment dropdown
   const adminMembers = isOwnerOrAdmin ? await getAdminMembers(union.id) : [];
+
+  // Get all approved members for the grievors picker (admin only)
+  const allMembers = isOwnerOrAdmin
+    ? await db
+        .select({
+          member: members,
+          user: {
+            id: users.id,
+            name: users.name,
+            email: users.email,
+          },
+        })
+        .from(members)
+        .innerJoin(users, eq(members.userId, users.id))
+        .where(and(eq(members.unionId, union.id), eq(members.status, 'approved')))
+        .orderBy(users.name)
+    : [];
 
   return (
     <GrievancesContent
@@ -118,6 +150,7 @@ export default async function GrievancesPage({
         grievances={grievances}
         summary={summary}
         adminMembers={adminMembers}
+        allMembers={allMembers}
         grievanceFilingPermission={(union as any).grievanceFilingPermission || 'all'}
     />
   );

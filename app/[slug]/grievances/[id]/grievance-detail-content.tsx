@@ -66,7 +66,15 @@ export function GrievanceDetailContent({
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [newAttachments, setNewAttachments] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [participants, setParticipants] = useState<any[]>(initialGrievance.participants || []);
+  const [participants, setParticipants] = useState<any[]>(
+    (initialGrievance.participants || []).map((p: any) => ({
+      id: p.id,
+      memberId: p.memberId,
+      createdAt: p.createdAt,
+      userName: p.userName ?? p.member?.user?.name ?? '',
+      userEmail: p.userEmail ?? p.member?.user?.email ?? '',
+    }))
+  );
   const [selectedGrievorId, setSelectedGrievorId] = useState<string>('');
   const [grievorSearch, setGrievorSearch] = useState('');
   const [showGrievorDropdown, setShowGrievorDropdown] = useState(false);

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { grievances, members, grievanceAttachments, unions } from '@/lib/db/schema';
+import { grievances, members, grievanceAttachments, grievanceParticipants, unions } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 
@@ -26,7 +26,8 @@ export async function POST(request: Request) {
       category,
       priority,
       status,
-      attachments
+      attachments,
+      grievorMemberIds,
     } = await request.json();
 
     if (!unionId || !title || !description) {
@@ -96,6 +97,31 @@ export async function POST(request: Request) {
           uploadedBy: user.id,
         }))
       );
+    }
+
+    // Add grievors (participants) if provided by an admin/owner
+    if (isOwnerOrAdmin && Array.isArray(grievorMemberIds) && grievorMemberIds.length > 0) {
+      // Validate each memberId belongs to this union and is approved, and is not the grievance filer
+      const validMembers = await db
+        .select({ id: members.id })
+        .from(members)
+        .where(and(eq(members.unionId, unionId), eq(members.status, 'approved')));
+      const validMemberIdSet = new Set(validMembers.map((m) => m.id));
+
+      const participantValues = grievorMemberIds
+        .filter(
+          (mid: number) =>
+            validMemberIdSet.has(mid) && mid !== newGrievance.memberId
+        )
+        .map((mid: number) => ({
+          grievanceId: newGrievance.id,
+          memberId: mid,
+          addedBy: user.id,
+        }));
+
+      if (participantValues.length > 0) {
+        await db.insert(grievanceParticipants).values(participantValues).onConflictDoNothing();
+      }
     }
 
     return NextResponse.json({ success: true, grievance: newGrievance });
