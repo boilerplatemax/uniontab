@@ -45,7 +45,7 @@ export async function GET(request: Request) {
       );
     }
 
-    let grievances;
+    let grievances: any[];
 
     // If user is owner or admin, show all grievances with filters
     if (membership.role === 'owner' || membership.role === 'admin') {
@@ -68,11 +68,11 @@ export async function GET(request: Request) {
       for (const g of [...ownGrievances, ...participantGrievances]) {
         if (!seen.has(g.id)) {
           seen.add(g.id);
-          (grievances as any[]).push(g);
+          grievances.push(g);
         }
       }
       // Re-sort by updatedAt desc
-      (grievances as any[]).sort(
+      grievances.sort(
         (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
     }
