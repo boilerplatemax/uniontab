@@ -416,10 +416,10 @@ export function SettingsContent() {
                   }`}
                 >
                   <p className={`font-semibold mb-1 ${formData.grievanceFilingPermission === 'all' ? 'text-blue-900' : 'text-gray-900'}`}>
-                    Members &amp; Admins
+                    Anyone
                   </p>
                   <p className={`text-sm ${formData.grievanceFilingPermission === 'all' ? 'text-blue-600' : 'text-gray-500'}`}>
-                    Any approved member can file a grievance
+                    Any approved member or admin can file a grievance
                   </p>
                   {formData.grievanceFilingPermission === 'all' && (
                     <Check className="h-4 w-4 text-blue-600 mt-2" />
@@ -435,10 +435,10 @@ export function SettingsContent() {
                   }`}
                 >
                   <p className={`font-semibold mb-1 ${formData.grievanceFilingPermission === 'admins_only' ? 'text-blue-900' : 'text-gray-900'}`}>
-                    Admins &amp; Owners Only
+                    Admins Only
                   </p>
                   <p className={`text-sm ${formData.grievanceFilingPermission === 'admins_only' ? 'text-blue-600' : 'text-gray-500'}`}>
-                    Only admins and owners can file grievances. Members can still view grievances they are added to.
+                    Only admins can file grievances. Members can still view grievances they are added to.
                   </p>
                   {formData.grievanceFilingPermission === 'admins_only' && (
                     <Check className="h-4 w-4 text-blue-600 mt-2" />
