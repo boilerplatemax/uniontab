@@ -238,22 +238,23 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Check permissions - only creator can delete (and only if in draft status)
+    const isOwnerOrAdmin = membership.role === 'owner' || membership.role === 'admin';
     const isGrievanceCreator = existingGrievance.memberId === membership.id;
 
-    if (!isGrievanceCreator) {
-      return NextResponse.json(
-        { error: 'Only the grievance creator can delete it' },
-        { status: 403 }
-      );
-    }
-
-    // Only allow deleting if in draft status
-    if (existingGrievance.status !== 'draft') {
-      return NextResponse.json(
-        { error: 'Only draft grievances can be deleted' },
-        { status: 403 }
-      );
+    // Admins/owners can delete any grievance; regular members can only delete their own drafts
+    if (!isOwnerOrAdmin) {
+      if (!isGrievanceCreator) {
+        return NextResponse.json(
+          { error: 'Only the grievance creator can delete it' },
+          { status: 403 }
+        );
+      }
+      if (existingGrievance.status !== 'draft') {
+        return NextResponse.json(
+          { error: 'Only draft grievances can be deleted' },
+          { status: 403 }
+        );
+      }
     }
 
     // Delete the grievance (cascade will delete comments and attachments)

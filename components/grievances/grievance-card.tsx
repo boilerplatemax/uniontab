@@ -48,7 +48,7 @@ export function GrievanceCard({
 
   const commentCount = grievance.comments?.length || 0;
   const attachmentCount = grievance.attachments?.length || 0;
-  const canDelete = isOwner && grievance.status === 'draft';
+  const canDelete = isAdmin || (isOwner && grievance.status === 'draft');
   const canArchive = isAdmin;
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -235,9 +235,9 @@ export function GrievanceCard({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Draft Grievance</AlertDialogTitle>
+            <AlertDialogTitle>Delete Grievance</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this draft grievance? This action cannot be undone.
+              Are you sure you want to delete this grievance? This action cannot be undone and will permanently remove all comments and attachments.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
