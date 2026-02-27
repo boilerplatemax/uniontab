@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { GrievanceStatusBadge } from '@/components/grievances/grievance-status-badge';
 import { GrievancePriorityBadge } from '@/components/grievances/grievance-priority-badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -28,7 +29,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
-import { ArrowLeft, User, Send, Paperclip, Download, AlertTriangle, Trash2, Edit2, X, Check, Upload, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, User, Send, Paperclip, Download, AlertTriangle, Trash2, Edit2, X, Check, Upload, UserPlus, Users, Search } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { GrievanceStatus } from '@/lib/db/schema';
 
@@ -67,6 +68,8 @@ export function GrievanceDetailContent({
   const [uploading, setUploading] = useState(false);
   const [participants, setParticipants] = useState<any[]>(initialGrievance.participants || []);
   const [selectedGrievorId, setSelectedGrievorId] = useState<string>('');
+  const [grievorSearch, setGrievorSearch] = useState('');
+  const [showGrievorDropdown, setShowGrievorDropdown] = useState(false);
   const [addingGrievor, setAddingGrievor] = useState(false);
   const [removeGrievorId, setRemoveGrievorId] = useState<number | null>(null);
 
@@ -232,6 +235,8 @@ export function GrievanceDetailContent({
 
   const [deleteCommentId, setDeleteCommentId] = useState<number | null>(null);
   const [deleteAttachmentId, setDeleteAttachmentId] = useState<number | null>(null);
+  const [showDeleteGrievanceDialog, setShowDeleteGrievanceDialog] = useState(false);
+  const [deletingGrievance, setDeletingGrievance] = useState(false);
 
   const handleDeleteComment = async (commentId: number) => {
     try {
@@ -268,6 +273,26 @@ export function GrievanceDetailContent({
       }
     } catch (error) {
       console.error('Error deleting attachment:', error);
+    }
+  };
+
+  const handleDeleteGrievance = async () => {
+    setDeletingGrievance(true);
+    try {
+      const response = await fetch(`/api/grievances/${grievance.id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        router.push(`/${union.slug}/grievances`);
+        router.refresh();
+      } else {
+        const data = await response.json();
+        console.error('Error deleting grievance:', data.error);
+      }
+    } catch (error) {
+      console.error('Error deleting grievance:', error);
+    } finally {
+      setDeletingGrievance(false);
     }
   };
 
@@ -320,6 +345,8 @@ export function GrievanceDetailContent({
           setParticipants(data.participants);
         }
         setSelectedGrievorId('');
+        setGrievorSearch('');
+        setShowGrievorDropdown(false);
       } else {
         const data = await response.json();
         console.error('Error adding grievor:', data.error);
@@ -355,6 +382,13 @@ export function GrievanceDetailContent({
       !participantMemberIds.has(m.member.id) &&
       (m.member.role === 'member' || m.member.role === 'admin' || m.member.role === 'owner')
   );
+  const filteredGrievors = grievorSearch
+    ? availableGrievors.filter((m) =>
+        m.user.name.toLowerCase().includes(grievorSearch.toLowerCase()) ||
+        m.user.email.toLowerCase().includes(grievorSearch.toLowerCase())
+      )
+    : availableGrievors;
+  const selectedGrievor = availableGrievors.find((m) => m.member.id.toString() === selectedGrievorId);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -388,9 +422,21 @@ export function GrievanceDetailContent({
                 {formatDistanceToNow(new Date(grievance.createdAt), { addSuffix: true })}
               </CardDescription>
             </div>
-            {isGrievanceOwner && grievance.status === 'draft' && (
-              <Button onClick={handleSubmit}>Submit Grievance</Button>
-            )}
+            <div className="flex gap-2">
+              {isGrievanceOwner && grievance.status === 'draft' && (
+                <Button onClick={handleSubmit}>Submit Grievance</Button>
+              )}
+              {isOwnerOrAdmin && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteGrievanceDialog(true)}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -452,25 +498,57 @@ export function GrievanceDetailContent({
 
               {/* Add grievor */}
               {availableGrievors.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Select value={selectedGrievorId} onValueChange={setSelectedGrievorId}>
-                    <SelectTrigger className="flex-1 max-w-xs">
-                      <SelectValue placeholder="Select a member..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableGrievors.map((m) => (
-                        <SelectItem key={m.member.id} value={m.member.id.toString()}>
-                          {m.user.name}
-                          {m.member.role === 'admin' || m.member.role === 'owner' ? ' (Admin)' : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="flex items-start gap-2">
+                  <div className="relative flex-1 max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                      value={grievorSearch}
+                      onChange={(e) => {
+                        setGrievorSearch(e.target.value);
+                        setShowGrievorDropdown(true);
+                        if (!e.target.value) setSelectedGrievorId('');
+                      }}
+                      onFocus={() => setShowGrievorDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowGrievorDropdown(false), 150)}
+                      placeholder={selectedGrievor ? selectedGrievor.user.name : 'Search members...'}
+                      className="pl-9"
+                    />
+                    {showGrievorDropdown && filteredGrievors.length > 0 && (
+                      <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {filteredGrievors.map((m) => (
+                          <button
+                            key={m.member.id}
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex flex-col"
+                            onMouseDown={() => {
+                              setSelectedGrievorId(m.member.id.toString());
+                              setGrievorSearch('');
+                              setShowGrievorDropdown(false);
+                            }}
+                          >
+                            <span className="font-medium">
+                              {m.user.name}
+                              {m.member.role === 'admin' || m.member.role === 'owner' ? (
+                                <span className="ml-1 text-xs text-muted-foreground font-normal">(Admin)</span>
+                              ) : null}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{m.user.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {showGrievorDropdown && grievorSearch && filteredGrievors.length === 0 && (
+                      <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg px-3 py-2 text-sm text-muted-foreground">
+                        No members found
+                      </div>
+                    )}
+                  </div>
                   <Button
                     type="button"
                     size="sm"
                     onClick={handleAddGrievor}
                     disabled={!selectedGrievorId || addingGrievor}
+                    className="mt-0.5"
                   >
                     <UserPlus className="h-4 w-4 mr-1" />
                     {addingGrievor ? 'Adding...' : '+ Add Grievor'}
@@ -856,6 +934,28 @@ export function GrievanceDetailContent({
             </AlertDialogCancel>
             <AlertDialogAction onClick={confirmNonAdminAssignment}>
               Assign Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Grievance Confirmation Dialog */}
+      <AlertDialog open={showDeleteGrievanceDialog} onOpenChange={setShowDeleteGrievanceDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Grievance</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete this grievance? This will also delete all comments and attachments. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingGrievance}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteGrievance}
+              disabled={deletingGrievance}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deletingGrievance ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
