@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { GrievanceStatusBadge } from '@/components/grievances/grievance-status-badge';
 import { GrievancePriorityBadge } from '@/components/grievances/grievance-priority-badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,8 +28,25 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
-import { ArrowLeft, User, Send, Paperclip, Download, AlertTriangle, Trash2, Edit2, X, Check, Upload, UserPlus, Users, Search } from 'lucide-react';
-import { formatDistanceToNow, format } from 'date-fns';
+import {
+  ArrowLeft,
+  User,
+  Send,
+  Paperclip,
+  Download,
+  AlertTriangle,
+  Trash2,
+  Edit2,
+  X,
+  Check,
+  Upload,
+  UserPlus,
+  Users,
+  Search,
+  MessageSquare,
+  Lock,
+} from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import { GrievanceStatus } from '@/lib/db/schema';
 
 interface GrievanceDetailContentProps {
@@ -80,6 +96,10 @@ export function GrievanceDetailContent({
   const [showGrievorDropdown, setShowGrievorDropdown] = useState(false);
   const [addingGrievor, setAddingGrievor] = useState(false);
   const [removeGrievorId, setRemoveGrievorId] = useState<number | null>(null);
+  const [deleteCommentId, setDeleteCommentId] = useState<number | null>(null);
+  const [deleteAttachmentId, setDeleteAttachmentId] = useState<number | null>(null);
+  const [showDeleteGrievanceDialog, setShowDeleteGrievanceDialog] = useState(false);
+  const [deletingGrievance, setDeletingGrievance] = useState(false);
 
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
   const isGrievanceOwner = grievance.memberId === memberId;
@@ -104,7 +124,6 @@ export function GrievanceDetailContent({
 
       if (response.ok) {
         const data = await response.json();
-        // Update grievance state with new comment
         setGrievance((prev: any) => ({
           ...prev,
           comments: [...(prev.comments || []), data.comment],
@@ -125,7 +144,6 @@ export function GrievanceDetailContent({
       return;
     }
 
-    // Check if the selected user is a non-admin
     const selectedMember = allMembers.find(m => m.user.id.toString() === assignedToId);
     const isNonAdmin = selectedMember && selectedMember.member.role !== 'owner' && selectedMember.member.role !== 'admin';
 
@@ -158,7 +176,6 @@ export function GrievanceDetailContent({
 
       if (response.ok) {
         const data = await response.json();
-        // Update grievance state with new assignment
         setGrievance((prev: any) => ({
           ...prev,
           assignedTo: data.grievance.assignedTo,
@@ -183,14 +200,12 @@ export function GrievanceDetailContent({
 
       if (response.ok) {
         const data = await response.json();
-        // Update grievance state with new status
         setGrievance((prev: any) => ({
           ...prev,
           status: data.grievance.status,
           resolvedAt: data.grievance.resolvedAt,
           closedAt: data.grievance.closedAt,
         }));
-        // Refresh the page data to ensure lists are up to date
         router.refresh();
       }
     } catch (error) {
@@ -202,7 +217,6 @@ export function GrievanceDetailContent({
 
   const handleSubmit = async () => {
     await handleStatusChange(GrievanceStatus.SUBMITTED);
-    // Navigate back to grievances list after successful submission
     router.push(`/${union.slug}/grievances`);
   };
 
@@ -228,7 +242,6 @@ export function GrievanceDetailContent({
 
       if (response.ok) {
         const data = await response.json();
-        // Update the comment in the grievance state
         setGrievance((prev: any) => ({
           ...prev,
           comments: prev.comments.map((c: any) =>
@@ -243,11 +256,6 @@ export function GrievanceDetailContent({
     }
   };
 
-  const [deleteCommentId, setDeleteCommentId] = useState<number | null>(null);
-  const [deleteAttachmentId, setDeleteAttachmentId] = useState<number | null>(null);
-  const [showDeleteGrievanceDialog, setShowDeleteGrievanceDialog] = useState(false);
-  const [deletingGrievance, setDeletingGrievance] = useState(false);
-
   const handleDeleteComment = async (commentId: number) => {
     try {
       const response = await fetch(`/api/grievances/comments/${commentId}`, {
@@ -255,7 +263,6 @@ export function GrievanceDetailContent({
       });
 
       if (response.ok) {
-        // Remove the comment from the grievance state
         setGrievance((prev: any) => ({
           ...prev,
           comments: prev.comments.filter((c: any) => c.id !== commentId),
@@ -274,7 +281,6 @@ export function GrievanceDetailContent({
       });
 
       if (response.ok) {
-        // Remove the attachment from the grievance state
         setGrievance((prev: any) => ({
           ...prev,
           attachments: prev.attachments.filter((a: any) => a.id !== attachmentId),
@@ -311,7 +317,6 @@ export function GrievanceDetailContent({
 
     setUploading(true);
     try {
-      // Upload each attachment
       for (const attachment of newAttachments) {
         const response = await fetch(`/api/grievances/${grievance.id}/attachment`, {
           method: 'POST',
@@ -321,7 +326,6 @@ export function GrievanceDetailContent({
 
         if (response.ok) {
           const data = await response.json();
-          // Add the new attachment to the grievance state
           setGrievance((prev: any) => ({
             ...prev,
             attachments: [...(prev.attachments || []), data.attachment],
@@ -348,7 +352,6 @@ export function GrievanceDetailContent({
         body: JSON.stringify({ memberId: parseInt(selectedGrievorId) }),
       });
       if (response.ok) {
-        // Refresh participants list
         const listRes = await fetch(`/api/grievances/${grievance.id}/participants`);
         if (listRes.ok) {
           const data = await listRes.json();
@@ -384,7 +387,6 @@ export function GrievanceDetailContent({
     }
   };
 
-  // Members who are not already the grievance filer and not already a participant
   const participantMemberIds = new Set(participants.map((p: any) => p.memberId));
   const availableGrievors = allMembers.filter(
     (m) =>
@@ -401,391 +403,127 @@ export function GrievanceDetailContent({
   const selectedGrievor = availableGrievors.find((m) => m.member.id.toString() === selectedGrievorId);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      {/* Back Button */}
-      <Button
-        variant="ghost"
-        onClick={() => router.push(`/${union.slug}/grievances`)}
-        className="mb-4"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Grievances
-      </Button>
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] overflow-hidden bg-background">
 
-      {/* Main Grievance Card */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
+      {/* ── TOP HEADER ─────────────────────────────────────────────── */}
+      <div className="flex-shrink-0 border-b bg-background px-4 py-3">
+        <div className="flex items-start justify-between gap-3 max-w-screen-2xl mx-auto">
+          <div className="flex items-start gap-1 min-w-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/${union.slug}/grievances`)}
+              className="flex-shrink-0 mt-0.5 -ml-2 text-muted-foreground"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
+            <div className="min-w-0 pl-1">
+              <div className="flex items-center flex-wrap gap-1.5 mb-0.5">
                 <GrievanceStatusBadge status={grievance.status} />
                 {grievance.priority && (
                   <GrievancePriorityBadge priority={grievance.priority} />
                 )}
                 {grievance.category && (
-                  <Badge variant="outline">{grievance.category}</Badge>
+                  <Badge variant="outline" className="text-xs">{grievance.category}</Badge>
                 )}
               </div>
-              <CardTitle className="text-2xl mb-2">{grievance.title}</CardTitle>
-              <CardDescription>
-                Grievance #{grievance.id} • Filed{' '}
-                {formatDistanceToNow(new Date(grievance.createdAt), { addSuffix: true })}
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              {isGrievanceOwner && grievance.status === 'draft' && (
-                <Button onClick={handleSubmit}>Submit Grievance</Button>
-              )}
-              {isOwnerOrAdmin && (
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteGrievanceDialog(true)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Description */}
-          <div>
-            <Label className="text-base font-semibold">Description</Label>
-            <p className="mt-2 whitespace-pre-wrap text-muted-foreground">
-              {grievance.description}
-            </p>
-          </div>
-
-          {/* Member Info (for admins) */}
-          {isOwnerOrAdmin && grievance.member && (
-            <div className="border-t pt-4">
-              <Label className="text-base font-semibold">Submitted By</Label>
-              <div className="mt-2 flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span>{grievance.member.user.name}</span>
-                <span className="text-muted-foreground">({grievance.member.user.email})</span>
-              </div>
-            </div>
-          )}
-
-          {/* Grievors / Participants Panel */}
-          {isOwnerOrAdmin && (
-            <div className="border-t pt-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <Label className="text-base font-semibold">Grievors</Label>
-              </div>
-              <p className="text-sm text-muted-foreground mb-3">
-                Members added here can view this grievance in their grievances page. Only they and admins can see it.
+              <h1 className="text-base font-semibold leading-tight">{grievance.title}</h1>
+              <p className="text-xs text-muted-foreground">
+                #{grievance.id} · Filed {formatDistanceToNow(new Date(grievance.createdAt), { addSuffix: true })}
               </p>
-
-              {/* Current participants */}
-              {participants.length > 0 ? (
-                <div className="space-y-2 mb-4">
-                  {participants.map((p: any) => (
-                    <div key={p.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{p.userName}</span>
-                        <span className="text-sm text-muted-foreground">({p.userEmail})</span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setRemoveGrievorId(p.id)}
-                        className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground mb-4">No grievors added yet.</p>
-              )}
-
-              {/* Add grievor */}
-              {availableGrievors.length > 0 && (
-                <div className="flex items-start gap-2">
-                  <div className="relative flex-1 max-w-xs">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                    <Input
-                      value={grievorSearch}
-                      onChange={(e) => {
-                        setGrievorSearch(e.target.value);
-                        setShowGrievorDropdown(true);
-                        if (!e.target.value) setSelectedGrievorId('');
-                      }}
-                      onFocus={() => setShowGrievorDropdown(true)}
-                      onBlur={() => setTimeout(() => setShowGrievorDropdown(false), 150)}
-                      placeholder={selectedGrievor ? selectedGrievor.user.name : 'Search members...'}
-                      className="pl-9"
-                    />
-                    {showGrievorDropdown && filteredGrievors.length > 0 && (
-                      <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                        {filteredGrievors.map((m) => (
-                          <button
-                            key={m.member.id}
-                            type="button"
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex flex-col"
-                            onMouseDown={() => {
-                              setSelectedGrievorId(m.member.id.toString());
-                              setGrievorSearch('');
-                              setShowGrievorDropdown(false);
-                            }}
-                          >
-                            <span className="font-medium">
-                              {m.user.name}
-                              {m.member.role === 'admin' || m.member.role === 'owner' ? (
-                                <span className="ml-1 text-xs text-muted-foreground font-normal">(Admin)</span>
-                              ) : null}
-                            </span>
-                            <span className="text-xs text-muted-foreground">{m.user.email}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {showGrievorDropdown && grievorSearch && filteredGrievors.length === 0 && (
-                      <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg px-3 py-2 text-sm text-muted-foreground">
-                        No members found
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleAddGrievor}
-                    disabled={!selectedGrievorId || addingGrievor}
-                    className="mt-0.5"
-                  >
-                    <UserPlus className="h-4 w-4 mr-1" />
-                    {addingGrievor ? 'Adding...' : '+ Add Grievor'}
-                  </Button>
-                </div>
-              )}
             </div>
-          )}
-
-          {/* For participants: show who else is a grievor (non-admin view) */}
-          {!isOwnerOrAdmin && participants.length > 0 && (
-            <div className="border-t pt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <Label className="text-base font-semibold">Grievors</Label>
-              </div>
-              <div className="space-y-2">
-                {participants.map((p: any) => (
-                  <div key={p.id} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span>{p.userName}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Assignment (for admins) */}
-          {isOwnerOrAdmin && (
-            <div className="border-t pt-4">
-              <Label className="text-base font-semibold">Assigned To</Label>
-              <Select
-                value={grievance.assignedTo?.id.toString() || 'unassigned'}
-                onValueChange={handleAssignmentChange}
-                disabled={assignLoading}
-              >
-                <SelectTrigger className="mt-2 w-full max-w-md">
-                  <SelectValue placeholder="Assign to someone..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {allMembers.map((member) => {
-                    const isAdmin = member.member.role === 'owner' || member.member.role === 'admin';
-                    return (
-                      <SelectItem key={member.user.id} value={member.user.id.toString()}>
-                        {member.user.name} {!isAdmin && '(Member)'}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Status Management (for admins) */}
-          {isOwnerOrAdmin && (
-            <div className="border-t pt-4">
-              <Label className="text-base font-semibold">Update Status</Label>
-              <Select
-                value={grievance.status}
-                onValueChange={handleStatusChange}
-                disabled={statusLoading}
-              >
-                <SelectTrigger className="mt-2 w-full max-w-md">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={GrievanceStatus.SUBMITTED}>Submitted</SelectItem>
-                  <SelectItem value={GrievanceStatus.ASSIGNED}>Assigned</SelectItem>
-                  <SelectItem value={GrievanceStatus.UNDER_REVIEW}>Under Review</SelectItem>
-                  <SelectItem value={GrievanceStatus.AWAITING_RESPONSE}>
-                    Awaiting Response
-                  </SelectItem>
-                  <SelectItem value={GrievanceStatus.RESOLVED}>Resolved</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Attachments */}
-          <div className="border-t pt-4">
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-base font-semibold">Attachments</Label>
-              {canManageFiles && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowFileUpload(!showFileUpload)}
-                >
-                  <Upload className="h-4 w-4 mr-1" />
-                  Upload Files
-                </Button>
-              )}
-            </div>
-
-            {showFileUpload && (
-              <div className="mb-4 p-4 border rounded-lg bg-gray-50">
-                <MultiFileUpload
-                  onFilesChange={(files) => {
-                    setNewAttachments(prev => [...prev, ...files]);
-                  }}
-                  path="grievances"
-                />
-                <div className="flex gap-2 mt-3">
-                  <Button
-                    size="sm"
-                    onClick={handleUploadAttachments}
-                    disabled={uploading || newAttachments.length === 0}
-                  >
-                    {uploading ? 'Uploading...' : `Upload ${newAttachments.length} file(s)`}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setShowFileUpload(false);
-                      setNewAttachments([]);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
+          </div>
+          <div className="flex-shrink-0 flex gap-2">
+            {isGrievanceOwner && grievance.status === 'draft' && (
+              <Button size="sm" onClick={handleSubmit}>Submit Grievance</Button>
             )}
+            {isOwnerOrAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeleteGrievanceDialog(true)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
 
-            {grievance.attachments && grievance.attachments.length > 0 ? (
-              <div className="space-y-2">
-                {grievance.attachments.map((attachment: any) => (
-                  <div
-                    key={attachment.id}
-                    className="flex items-center gap-2 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <Paperclip className="h-4 w-4 text-muted-foreground" />
-                    <a
-                      href={attachment.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 hover:underline"
-                    >
-                      {attachment.fileName}
-                    </a>
-                    <a
-                      href={attachment.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Download className="h-4 w-4 text-muted-foreground" />
-                    </a>
-                    {canManageFiles && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteAttachmentId(attachment.id)}
-                        className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
+      {/* ── MAIN BODY ──────────────────────────────────────────────── */}
+      <div className="flex flex-1 overflow-hidden max-w-screen-2xl mx-auto w-full">
+
+        {/* ── CHAT COLUMN ──────────────────────────────────────────── */}
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+
+          {/* Messages area */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+            {(!grievance.comments || grievance.comments.length === 0) ? (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <MessageSquare className="h-10 w-10 mb-3 opacity-20" />
+                <p className="text-sm">No messages yet. Start the conversation below.</p>
               </div>
             ) : (
-              !showFileUpload && <p className="text-sm text-muted-foreground">No attachments</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Comments/Notes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Comments & Updates</CardTitle>
-          <CardDescription>
-            Communication thread for this grievance
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Existing Comments */}
-          {grievance.comments && grievance.comments.length > 0 ? (
-            <div className="space-y-4">
-              {grievance.comments.map((comment: any) => {
+              grievance.comments.map((comment: any) => {
                 const isAdminComment = comment.createdBy.id !== grievance.member?.user?.id;
                 const isCommentOwner = comment.createdBy.id === user.id;
                 const canEditOrDelete = isCommentOwner || isOwnerOrAdmin;
                 const isEditing = editingCommentId === comment.id;
+                const isMine = comment.createdBy.id === user.id;
 
                 return (
                   <div
                     key={comment.id}
-                    className={`p-4 rounded-lg border ${
-                      comment.isInternal
-                        ? 'bg-yellow-50 border-yellow-200'
-                        : isAdminComment
-                        ? 'bg-blue-50 border-blue-200'
-                        : 'bg-gray-50 border-gray-200'
-                    }`}
+                    className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">{comment.createdBy.name}</span>
+                    <div
+                      className={`max-w-[75%] rounded-2xl px-4 py-3 ${
+                        comment.isInternal
+                          ? 'bg-yellow-50 border border-yellow-200'
+                          : isMine
+                          ? 'bg-primary text-primary-foreground'
+                          : isAdminComment
+                          ? 'bg-blue-50 border border-blue-100'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      {/* Message header */}
+                      <div className={`flex items-center gap-2 mb-1 flex-wrap ${isMine ? 'justify-end' : ''}`}>
+                        {!isMine && (
+                          <span className={`text-xs font-semibold ${
+                            comment.isInternal ? 'text-yellow-900' : isAdminComment ? 'text-blue-900' : ''
+                          }`}>
+                            {comment.createdBy.name}
+                          </span>
+                        )}
                         {comment.isInternal && (
-                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
-                            Internal Note
+                          <Badge variant="outline" className="text-[10px] py-0 h-4 bg-yellow-100 text-yellow-800 border-yellow-300 gap-0.5">
+                            <Lock className="h-2.5 w-2.5" />
+                            Internal
                           </Badge>
                         )}
-                        {isAdminComment && !comment.isInternal && (
-                          <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                            Union Admin
+                        {!comment.isInternal && isAdminComment && !isMine && (
+                          <Badge variant="outline" className="text-[10px] py-0 h-4 bg-blue-100 text-blue-800 border-blue-200">
+                            Admin
                           </Badge>
                         )}
-                        {!isAdminComment && !comment.isInternal && (
-                          <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                            Member
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
+                        <span className={`text-[11px] ${isMine ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                           {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                         </span>
                         {canEditOrDelete && !isEditing && (
-                          <div className="flex gap-1">
+                          <div className="flex gap-0.5">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleEditComment(comment.id, comment.comment)}
-                              className="h-7 w-7 p-0"
+                              className={`h-5 w-5 p-0 ${
+                                isMine
+                                  ? 'text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/10'
+                                  : 'text-muted-foreground hover:text-foreground'
+                              }`}
                             >
                               <Edit2 className="h-3 w-3" />
                             </Button>
@@ -793,92 +531,397 @@ export function GrievanceDetailContent({
                               variant="ghost"
                               size="sm"
                               onClick={() => setDeleteCommentId(comment.id)}
-                              className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                              className={`h-5 w-5 p-0 ${
+                                isMine
+                                  ? 'text-primary-foreground/60 hover:text-red-300 hover:bg-primary-foreground/10'
+                                  : 'text-muted-foreground hover:text-red-600'
+                              }`}
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
                         )}
                       </div>
-                    </div>
-                    {isEditing ? (
-                      <div className="space-y-2">
-                        <Textarea
-                          value={editingCommentText}
-                          onChange={(e) => setEditingCommentText(e.target.value)}
-                          rows={3}
-                          className="w-full"
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleSaveEdit(comment.id)}
-                            disabled={!editingCommentText.trim()}
-                          >
-                            <Check className="h-3 w-3 mr-1" />
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleCancelEdit}
-                          >
-                            <X className="h-3 w-3 mr-1" />
-                            Cancel
-                          </Button>
+
+                      {/* Message content */}
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            value={editingCommentText}
+                            onChange={(e) => setEditingCommentText(e.target.value)}
+                            rows={3}
+                            className="w-full bg-background text-foreground text-sm"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleSaveEdit(comment.id)}
+                              disabled={!editingCommentText.trim()}
+                              className="h-7 text-xs"
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              Save
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={handleCancelEdit} className="h-7 text-xs">
+                              <X className="h-3 w-3 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <p className="whitespace-pre-wrap text-muted-foreground">{comment.comment}</p>
-                    )}
+                      ) : (
+                        <p className={`text-sm whitespace-pre-wrap ${isMine ? 'text-primary-foreground' : ''}`}>
+                          {comment.comment}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 );
-              })}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center py-8">
-              No comments yet. Start the conversation below.
-            </p>
-          )}
+              })
+            )}
+          </div>
 
-          {/* Add Comment Form */}
-          <form onSubmit={handleAddComment} className="border-t pt-4">
-            <Label htmlFor="comment">Add a Comment</Label>
-            <Textarea
-              id="comment"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Type your message here..."
-              rows={4}
-              className="mt-2"
-            />
+          {/* ── INPUT BAR ──────────────────────────────────────────── */}
+          <div className="flex-shrink-0 border-t bg-background px-4 py-3">
             {isOwnerOrAdmin && (
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-2 mb-2">
                 <Switch
                   id="internal"
                   checked={isInternalNote}
                   onCheckedChange={setIsInternalNote}
+                  className="scale-90"
                 />
-                <Label htmlFor="internal" className="text-sm cursor-pointer">
-                  Internal note (visible only to admins)
+                <Label htmlFor="internal" className="text-xs text-muted-foreground cursor-pointer select-none">
+                  Internal note (visible to admins only)
                 </Label>
               </div>
             )}
-            <Button type="submit" className="mt-4" disabled={loading || !newComment.trim()}>
-              {loading ? (
-                'Posting...'
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-2" />
-                  Post Comment
-                </>
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+            <form onSubmit={handleAddComment} className="flex gap-2 items-end">
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (newComment.trim()) handleAddComment(e as any);
+                  }
+                }}
+                placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
+                rows={2}
+                className={`flex-1 resize-none text-sm ${
+                  isInternalNote ? 'bg-yellow-50 border-yellow-300 focus-visible:ring-yellow-400' : ''
+                }`}
+              />
+              <Button
+                type="submit"
+                size="icon"
+                className="flex-shrink-0 self-end h-[4.5rem] w-10 rounded-xl"
+                disabled={loading || !newComment.trim()}
+              >
+                {loading ? (
+                  <span className="text-xs">…</span>
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </form>
+          </div>
+        </div>
 
-      {/* Delete Comment Confirmation Dialog */}
+        {/* ── SIDEBAR ──────────────────────────────────────────────── */}
+        <div className="hidden md:flex flex-col w-72 lg:w-80 flex-shrink-0 border-l overflow-y-auto">
+          <div className="p-4 space-y-5">
+
+            {/* Description */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Description
+              </h3>
+              <p className="text-sm whitespace-pre-wrap text-foreground/80 leading-relaxed">
+                {grievance.description}
+              </p>
+            </div>
+
+            {/* Filed by (admin only) */}
+            {isOwnerOrAdmin && grievance.member && (
+              <div className="border-t pt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  Filed By
+                </h3>
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{grievance.member.user.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{grievance.member.user.email}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Grievors — admin editable */}
+            {isOwnerOrAdmin && (
+              <div className="border-t pt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+                  <Users className="h-3 w-3" /> Grievors
+                </h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Members added here can view this grievance.
+                </p>
+
+                {participants.length > 0 ? (
+                  <div className="space-y-1.5 mb-3">
+                    {participants.map((p: any) => (
+                      <div
+                        key={p.id}
+                        className="flex items-center justify-between px-2 py-1.5 rounded-md bg-muted/50 text-sm"
+                      >
+                        <span className="truncate">{p.userName}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setRemoveGrievorId(p.id)}
+                          className="h-5 w-5 p-0 flex-shrink-0 text-muted-foreground hover:text-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground mb-3">No grievors added yet.</p>
+                )}
+
+                {availableGrievors.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                      <Input
+                        value={grievorSearch}
+                        onChange={(e) => {
+                          setGrievorSearch(e.target.value);
+                          setShowGrievorDropdown(true);
+                          if (!e.target.value) setSelectedGrievorId('');
+                        }}
+                        onFocus={() => setShowGrievorDropdown(true)}
+                        onBlur={() => setTimeout(() => setShowGrievorDropdown(false), 150)}
+                        placeholder={selectedGrievor ? selectedGrievor.user.name : 'Search members…'}
+                        className="pl-8 h-8 text-xs"
+                      />
+                      {showGrievorDropdown && filteredGrievors.length > 0 && (
+                        <div className="absolute z-10 mt-1 w-full bg-background border rounded-md shadow-lg max-h-36 overflow-y-auto">
+                          {filteredGrievors.map((m) => (
+                            <button
+                              key={m.member.id}
+                              type="button"
+                              className="w-full text-left px-2.5 py-1.5 text-xs hover:bg-muted flex flex-col"
+                              onMouseDown={() => {
+                                setSelectedGrievorId(m.member.id.toString());
+                                setGrievorSearch('');
+                                setShowGrievorDropdown(false);
+                              }}
+                            >
+                              <span className="font-medium">
+                                {m.user.name}
+                                {(m.member.role === 'admin' || m.member.role === 'owner') && (
+                                  <span className="ml-1 font-normal text-muted-foreground">(Admin)</span>
+                                )}
+                              </span>
+                              <span className="text-muted-foreground">{m.user.email}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {showGrievorDropdown && grievorSearch && filteredGrievors.length === 0 && (
+                        <div className="absolute z-10 mt-1 w-full bg-background border rounded-md shadow-lg px-2.5 py-1.5 text-xs text-muted-foreground">
+                          No members found
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleAddGrievor}
+                      disabled={!selectedGrievorId || addingGrievor}
+                      className="h-8 w-8 p-0 flex-shrink-0"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Grievors — member read-only */}
+            {!isOwnerOrAdmin && participants.length > 0 && (
+              <div className="border-t pt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+                  <Users className="h-3 w-3" /> Grievors
+                </h3>
+                <div className="space-y-1.5">
+                  {participants.map((p: any) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/50 text-sm"
+                    >
+                      <User className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">{p.userName}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Attachments */}
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Paperclip className="h-3 w-3" /> Attachments
+                </h3>
+                {canManageFiles && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFileUpload(!showFileUpload)}
+                    className="h-6 px-2 text-xs"
+                  >
+                    <Upload className="h-3 w-3 mr-1" />
+                    Upload
+                  </Button>
+                )}
+              </div>
+
+              {showFileUpload && (
+                <div className="mb-3 p-3 border rounded-lg bg-muted/30">
+                  <MultiFileUpload
+                    onFilesChange={(files) => {
+                      setNewAttachments(prev => [...prev, ...files]);
+                    }}
+                    path="grievances"
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      size="sm"
+                      onClick={handleUploadAttachments}
+                      disabled={uploading || newAttachments.length === 0}
+                      className="h-7 text-xs"
+                    >
+                      {uploading ? 'Uploading…' : `Upload ${newAttachments.length} file(s)`}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setShowFileUpload(false);
+                        setNewAttachments([]);
+                      }}
+                      className="h-7 text-xs"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {grievance.attachments && grievance.attachments.length > 0 ? (
+                <div className="space-y-1.5">
+                  {grievance.attachments.map((attachment: any) => (
+                    <div
+                      key={attachment.id}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/50 group"
+                    >
+                      <Paperclip className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                      <a
+                        href={attachment.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 text-xs truncate hover:underline"
+                      >
+                        {attachment.fileName}
+                      </a>
+                      <a href={attachment.fileUrl} target="_blank" rel="noopener noreferrer">
+                        <Download className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                      </a>
+                      {canManageFiles && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteAttachmentId(attachment.id)}
+                          className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                !showFileUpload && <p className="text-xs text-muted-foreground">No attachments</p>
+              )}
+            </div>
+
+            {/* Admin controls */}
+            {isOwnerOrAdmin && (
+              <>
+                {/* Assignment */}
+                <div className="border-t pt-4">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                    Assigned To
+                  </h3>
+                  <Select
+                    value={grievance.assignedTo?.id.toString() || 'unassigned'}
+                    onValueChange={handleAssignmentChange}
+                    disabled={assignLoading}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Assign to someone…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {allMembers.map((member) => {
+                        const isAdminMember = member.member.role === 'owner' || member.member.role === 'admin';
+                        return (
+                          <SelectItem key={member.user.id} value={member.user.id.toString()}>
+                            {member.user.name} {!isAdminMember && '(Member)'}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Status */}
+                <div className="border-t pt-4">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                    Status
+                  </h3>
+                  <Select
+                    value={grievance.status}
+                    onValueChange={handleStatusChange}
+                    disabled={statusLoading}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={GrievanceStatus.SUBMITTED}>Submitted</SelectItem>
+                      <SelectItem value={GrievanceStatus.ASSIGNED}>Assigned</SelectItem>
+                      <SelectItem value={GrievanceStatus.UNDER_REVIEW}>Under Review</SelectItem>
+                      <SelectItem value={GrievanceStatus.AWAITING_RESPONSE}>Awaiting Response</SelectItem>
+                      <SelectItem value={GrievanceStatus.RESOLVED}>Resolved</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+          </div>
+        </div>
+      </div>
+
+      {/* ── DIALOGS ──────────────────────────────────────────────────── */}
+
+      {/* Delete Comment */}
       <AlertDialog open={deleteCommentId !== null} onOpenChange={(open) => !open && setDeleteCommentId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -899,7 +942,7 @@ export function GrievanceDetailContent({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Attachment Confirmation Dialog */}
+      {/* Delete Attachment */}
       <AlertDialog open={deleteAttachmentId !== null} onOpenChange={(open) => !open && setDeleteAttachmentId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -920,7 +963,7 @@ export function GrievanceDetailContent({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Non-Admin Assignment Warning Dialog */}
+      {/* Non-Admin Assignment Warning */}
       <AlertDialog open={showNonAdminWarning} onOpenChange={setShowNonAdminWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -949,7 +992,7 @@ export function GrievanceDetailContent({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Grievance Confirmation Dialog */}
+      {/* Delete Grievance */}
       <AlertDialog open={showDeleteGrievanceDialog} onOpenChange={setShowDeleteGrievanceDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -965,13 +1008,13 @@ export function GrievanceDetailContent({
               disabled={deletingGrievance}
               className="bg-red-600 hover:bg-red-700"
             >
-              {deletingGrievance ? 'Deleting...' : 'Delete'}
+              {deletingGrievance ? 'Deleting…' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Remove Grievor Confirmation Dialog */}
+      {/* Remove Grievor */}
       <AlertDialog open={removeGrievorId !== null} onOpenChange={(open) => !open && setRemoveGrievorId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -991,6 +1034,7 @@ export function GrievanceDetailContent({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
     </div>
   );
 }
