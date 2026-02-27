@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUser, getGrievancesForUnion, getGrievancesForMember } from '@/lib/db/queries';
+import { getUser, getGrievancesForUnion, getGrievancesForMember, getGrievancesForParticipant } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { members } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
       );
     }
 
-    let grievances;
+    let grievances: any[];
 
     // If user is owner or admin, show all grievances with filters
     if (membership.role === 'owner' || membership.role === 'admin') {
@@ -57,12 +57,24 @@ export async function GET(request: Request) {
         includeArchived,
       });
     } else {
-      // Regular members can only see their own grievances (with filters)
-      grievances = await getGrievancesForMember(membership.id, {
-        status,
-        priority,
-        category,
-      });
+      // Regular members see their own grievances + grievances they are participants in
+      const [ownGrievances, participantGrievances] = await Promise.all([
+        getGrievancesForMember(membership.id, { status, priority, category }),
+        getGrievancesForParticipant(membership.id, { status, priority, category }),
+      ]);
+      // Merge and deduplicate by id
+      const seen = new Set<number>();
+      grievances = [];
+      for (const g of [...ownGrievances, ...participantGrievances]) {
+        if (!seen.has(g.id)) {
+          seen.add(g.id);
+          grievances.push(g);
+        }
+      }
+      // Re-sort by updatedAt desc
+      grievances.sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
     }
 
     return NextResponse.json({ success: true, grievances });

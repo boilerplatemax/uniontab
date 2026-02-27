@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { grievances, members, grievanceAttachments } from '@/lib/db/schema';
+import { grievances, members, grievanceAttachments, unions } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 
@@ -50,6 +50,21 @@ export async function POST(request: Request) {
     if (!membership) {
       return NextResponse.json(
         { error: 'You must be an approved member to create a grievance' },
+        { status: 403 }
+      );
+    }
+
+    // Check union's grievance filing permission
+    const [union] = await db
+      .select({ grievanceFilingPermission: unions.grievanceFilingPermission })
+      .from(unions)
+      .where(eq(unions.id, unionId))
+      .limit(1);
+
+    const isOwnerOrAdmin = membership.role === 'owner' || membership.role === 'admin';
+    if (union?.grievanceFilingPermission === 'admins_only' && !isOwnerOrAdmin) {
+      return NextResponse.json(
+        { error: 'Only admins and owners can file grievances for this union' },
         { status: 403 }
       );
     }

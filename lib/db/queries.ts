@@ -1,6 +1,6 @@
-import { desc, and, eq, ne, isNull, gte, lte, or, sql } from 'drizzle-orm';
+import { desc, and, eq, ne, isNull, gte, lte, or, sql, inArray } from 'drizzle-orm';
 import { db } from './drizzle';
-import { activityLogs, members, unions, users, dues, duesReceipts, duesCycles, grievances, grievanceComments, grievanceAttachments, grievanceCategories, GrievanceStatus } from './schema';
+import { activityLogs, members, unions, users, dues, duesReceipts, duesCycles, grievances, grievanceComments, grievanceAttachments, grievanceCategories, grievanceParticipants, GrievanceStatus } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
 
@@ -457,6 +457,72 @@ export async function getGrievancesForMember(memberId: number, filters?: {
       },
       attachments: {
         orderBy: [desc(grievanceAttachments.createdAt)]
+      },
+      participants: {
+        with: {
+          member: {
+            with: {
+              user: { columns: { id: true, name: true, email: true } }
+            }
+          }
+        }
+      }
+    },
+    orderBy: [desc(grievances.updatedAt)]
+  });
+}
+
+/**
+ * Get grievances where a member is a participant (added as grievor by an admin)
+ */
+export async function getGrievancesForParticipant(memberId: number, filters?: {
+  status?: string;
+  priority?: string;
+  category?: string;
+}) {
+  // Find grievance IDs where this member is a participant
+  const participations = await db
+    .select({ grievanceId: grievanceParticipants.grievanceId })
+    .from(grievanceParticipants)
+    .where(eq(grievanceParticipants.memberId, memberId));
+
+  if (participations.length === 0) return [];
+
+  const grievanceIds = participations.map((p) => p.grievanceId);
+
+  let conditions: any[] = [inArray(grievances.id, grievanceIds)];
+
+  if (filters?.status) {
+    conditions.push(eq(grievances.status, filters.status));
+  }
+  if (filters?.priority) {
+    conditions.push(eq(grievances.priority, filters.priority));
+  }
+  if (filters?.category) {
+    conditions.push(eq(grievances.category, filters.category));
+  }
+
+  return await db.query.grievances.findMany({
+    where: and(...conditions),
+    with: {
+      assignedTo: {
+        columns: { id: true, name: true }
+      },
+      comments: {
+        where: eq(grievanceComments.isInternal, false),
+        orderBy: [desc(grievanceComments.createdAt)]
+      },
+      attachments: {
+        orderBy: [desc(grievanceAttachments.createdAt)]
+      },
+      participants: {
+        with: {
+          member: {
+            with: {
+              user: { columns: { id: true, name: true, email: true } }
+            }
+          }
+        }
       }
     },
     orderBy: [desc(grievances.updatedAt)]
@@ -523,6 +589,21 @@ export async function getGrievanceById(grievanceId: number, includeInternal: boo
           }
         },
         orderBy: [desc(grievanceAttachments.createdAt)]
+      },
+      participants: {
+        with: {
+          member: {
+            with: {
+              user: {
+                columns: {
+                  id: true,
+                  name: true,
+                  email: true
+                }
+              }
+            }
+          }
+        }
       }
     }
   });

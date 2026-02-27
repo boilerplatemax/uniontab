@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
-import { ArrowLeft, Calendar, User, Send, Paperclip, Download, AlertTriangle, Trash2, Edit2, X, Check, Upload } from 'lucide-react';
+import { ArrowLeft, User, Send, Paperclip, Download, AlertTriangle, Trash2, Edit2, X, Check, Upload, UserPlus, Users } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { GrievanceStatus } from '@/lib/db/schema';
 
@@ -65,6 +65,10 @@ export function GrievanceDetailContent({
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [newAttachments, setNewAttachments] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [participants, setParticipants] = useState<any[]>(initialGrievance.participants || []);
+  const [selectedGrievorId, setSelectedGrievorId] = useState<string>('');
+  const [addingGrievor, setAddingGrievor] = useState(false);
+  const [removeGrievorId, setRemoveGrievorId] = useState<number | null>(null);
 
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
   const isGrievanceOwner = grievance.memberId === memberId;
@@ -299,6 +303,58 @@ export function GrievanceDetailContent({
     }
   };
 
+  const handleAddGrievor = async () => {
+    if (!selectedGrievorId) return;
+    setAddingGrievor(true);
+    try {
+      const response = await fetch(`/api/grievances/${grievance.id}/participants`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId: parseInt(selectedGrievorId) }),
+      });
+      if (response.ok) {
+        // Refresh participants list
+        const listRes = await fetch(`/api/grievances/${grievance.id}/participants`);
+        if (listRes.ok) {
+          const data = await listRes.json();
+          setParticipants(data.participants);
+        }
+        setSelectedGrievorId('');
+      } else {
+        const data = await response.json();
+        console.error('Error adding grievor:', data.error);
+      }
+    } catch (error) {
+      console.error('Error adding grievor:', error);
+    } finally {
+      setAddingGrievor(false);
+    }
+  };
+
+  const handleRemoveGrievor = async (participantId: number) => {
+    try {
+      const response = await fetch(
+        `/api/grievances/${grievance.id}/participants?participantId=${participantId}`,
+        { method: 'DELETE' }
+      );
+      if (response.ok) {
+        setParticipants((prev) => prev.filter((p) => p.id !== participantId));
+      }
+    } catch (error) {
+      console.error('Error removing grievor:', error);
+    } finally {
+      setRemoveGrievorId(null);
+    }
+  };
+
+  // Members who are not already the grievance filer and not already a participant
+  const participantMemberIds = new Set(participants.map((p: any) => p.memberId));
+  const availableGrievors = allMembers.filter(
+    (m) =>
+      m.member.id !== grievance.memberId &&
+      !participantMemberIds.has(m.member.id) &&
+      (m.member.role === 'member' || m.member.role === 'admin' || m.member.role === 'owner')
+  );
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -354,6 +410,90 @@ export function GrievanceDetailContent({
                 <User className="h-4 w-4 text-muted-foreground" />
                 <span>{grievance.member.user.name}</span>
                 <span className="text-muted-foreground">({grievance.member.user.email})</span>
+              </div>
+            </div>
+          )}
+
+          {/* Grievors / Participants Panel */}
+          {isOwnerOrAdmin && (
+            <div className="border-t pt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-base font-semibold">Grievors</Label>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Members added here can view this grievance in their grievances page. Only they and admins can see it.
+              </p>
+
+              {/* Current participants */}
+              {participants.length > 0 ? (
+                <div className="space-y-2 mb-4">
+                  {participants.map((p: any) => (
+                    <div key={p.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{p.userName}</span>
+                        <span className="text-sm text-muted-foreground">({p.userEmail})</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setRemoveGrievorId(p.id)}
+                        className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground mb-4">No grievors added yet.</p>
+              )}
+
+              {/* Add grievor */}
+              {availableGrievors.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Select value={selectedGrievorId} onValueChange={setSelectedGrievorId}>
+                    <SelectTrigger className="flex-1 max-w-xs">
+                      <SelectValue placeholder="Select a member..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableGrievors.map((m) => (
+                        <SelectItem key={m.member.id} value={m.member.id.toString()}>
+                          {m.user.name}
+                          {m.member.role === 'admin' || m.member.role === 'owner' ? ' (Admin)' : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAddGrievor}
+                    disabled={!selectedGrievorId || addingGrievor}
+                  >
+                    <UserPlus className="h-4 w-4 mr-1" />
+                    {addingGrievor ? 'Adding...' : '+ Add Grievor'}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* For participants: show who else is a grievor (non-admin view) */}
+          {!isOwnerOrAdmin && participants.length > 0 && (
+            <div className="border-t pt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-base font-semibold">Grievors</Label>
+              </div>
+              <div className="space-y-2">
+                {participants.map((p: any) => (
+                  <div key={p.id} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span>{p.userName}</span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -716,6 +856,27 @@ export function GrievanceDetailContent({
             </AlertDialogCancel>
             <AlertDialogAction onClick={confirmNonAdminAssignment}>
               Assign Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Remove Grievor Confirmation Dialog */}
+      <AlertDialog open={removeGrievorId !== null} onOpenChange={(open) => !open && setRemoveGrievorId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Grievor</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this grievor? They will no longer be able to see this grievance.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => removeGrievorId && handleRemoveGrievor(removeGrievorId)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Remove
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

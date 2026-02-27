@@ -118,6 +118,7 @@ export default async function GrievancesPage({
         grievances={grievances}
         summary={summary}
         adminMembers={adminMembers}
+        grievanceFilingPermission={(union as any).grievanceFilingPermission || 'all'}
     />
   );
 }

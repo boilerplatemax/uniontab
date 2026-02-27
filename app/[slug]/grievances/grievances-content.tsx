@@ -25,6 +25,7 @@ interface GrievancesContentProps {
   grievances: any[];
   summary: any;
   adminMembers: any[];
+  grievanceFilingPermission: 'all' | 'admins_only';
 }
 
 export function GrievancesContent({
@@ -35,6 +36,7 @@ export function GrievancesContent({
   grievances: initialGrievances,
   summary,
   adminMembers,
+  grievanceFilingPermission,
 }: GrievancesContentProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,6 +47,7 @@ export function GrievancesContent({
   const [summaryData, setSummaryData] = useState(summary);
 
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
+  const canCreateGrievance = isOwnerOrAdmin || grievanceFilingPermission === 'all';
 
   const handleRefresh = async () => {
     const params = new URLSearchParams({ unionId: union.id.toString() });
@@ -147,10 +150,12 @@ export function GrievancesContent({
               Export CSV
             </Button>
           )}
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Grievance
-          </Button>
+          {canCreateGrievance && (
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Grievance
+            </Button>
+          )}
         </div>
       </div>
 
@@ -290,9 +295,11 @@ export function GrievancesContent({
               ? 'Try adjusting your filters'
               : isOwnerOrAdmin
               ? 'No grievances have been filed yet'
+              : grievanceFilingPermission === 'admins_only'
+              ? 'No grievances have been filed for you yet. Contact your union admin if you have a workplace concern.'
               : "You haven't filed any grievances yet"}
           </p>
-          {!searchQuery && statusFilter === 'all' && priorityFilter === 'all' && (
+          {!searchQuery && statusFilter === 'all' && priorityFilter === 'all' && canCreateGrievance && (
             <Button onClick={() => setShowCreateDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               File Your First Grievance
@@ -316,13 +323,15 @@ export function GrievancesContent({
       )}
 
       {/* Create Grievance Dialog */}
-      <CreateGrievanceDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        unionId={union.id}
-        unionSlug={union.slug}
-        onSuccess={handleRefresh}
-      />
+      {canCreateGrievance && (
+        <CreateGrievanceDialog
+          open={showCreateDialog}
+          onOpenChange={setShowCreateDialog}
+          unionId={union.id}
+          unionSlug={union.slug}
+          onSuccess={handleRefresh}
+        />
+      )}
     </div>
   );
 }

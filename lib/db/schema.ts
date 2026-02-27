@@ -88,6 +88,8 @@ export const unions = pgTable('unions', {
   extraStorageBytes: integer('extra_storage_bytes').notNull().default(0),
   // Site-master feature flags per union
   requireEmailVerification: boolean('require_email_verification').notNull().default(true), // When false, members can join without verifying their email
+  // Grievance settings
+  grievanceFilingPermission: varchar('grievance_filing_permission', { length: 20 }).notNull().default('all'), // 'all' = members and admins can file; 'admins_only' = only admins/owners
 });
 
 export const members = pgTable('members', {
@@ -1371,6 +1373,22 @@ export const grievanceCategories = pgTable('grievance_categories', {
   uniqueUnionCategory: unique().on(table.unionId, table.name),
 }));
 
+export const grievanceParticipants = pgTable('grievance_participants', {
+  id: serial('id').primaryKey(),
+  grievanceId: integer('grievance_id')
+    .notNull()
+    .references(() => grievances.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  addedBy: integer('added_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  uniqueGrievanceParticipant: unique().on(table.grievanceId, table.memberId),
+}));
+
 export const grievancesRelations = relations(grievances, ({ one, many }) => ({
   union: one(unions, {
     fields: [grievances.unionId],
@@ -1394,6 +1412,7 @@ export const grievancesRelations = relations(grievances, ({ one, many }) => ({
   }),
   comments: many(grievanceComments),
   attachments: many(grievanceAttachments),
+  participants: many(grievanceParticipants),
 }));
 
 export const grievanceCommentsRelations = relations(grievanceComments, ({ one }) => ({
@@ -1422,6 +1441,21 @@ export const grievanceCategoriesRelations = relations(grievanceCategories, ({ on
   union: one(unions, {
     fields: [grievanceCategories.unionId],
     references: [unions.id],
+  }),
+}));
+
+export const grievanceParticipantsRelations = relations(grievanceParticipants, ({ one }) => ({
+  grievance: one(grievances, {
+    fields: [grievanceParticipants.grievanceId],
+    references: [grievances.id],
+  }),
+  member: one(members, {
+    fields: [grievanceParticipants.memberId],
+    references: [members.id],
+  }),
+  addedBy: one(users, {
+    fields: [grievanceParticipants.addedBy],
+    references: [users.id],
   }),
 }));
 
