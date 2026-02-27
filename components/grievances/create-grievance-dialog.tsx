@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search, User, Users, UserPlus, X } from 'lucide-react';
 import { GrievancePriority } from '@/lib/db/schema';
 
 interface CreateGrievanceDialogProps {
@@ -31,6 +31,8 @@ interface CreateGrievanceDialogProps {
   unionSlug: string;
   onSuccess: () => void;
   categories?: Array<{ id: number; name: string }>;
+  isAdmin?: boolean;
+  allMembers?: Array<{ member: { id: number; role: string }; user: { id: number; name: string; email: string } }>;
 }
 
 interface GrievanceAttachment {
@@ -47,6 +49,8 @@ export function CreateGrievanceDialog({
   unionSlug,
   onSuccess,
   categories = [],
+  isAdmin = false,
+  allMembers = [],
 }: CreateGrievanceDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -56,6 +60,45 @@ export function CreateGrievanceDialog({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isDraft, setIsDraft] = useState(false);
+
+  // Grievors state (admin-only)
+  const [selectedGrievors, setSelectedGrievors] = useState<Array<{ memberId: number; name: string; email: string }>>([]);
+  const [grievorSearch, setGrievorSearch] = useState('');
+  const [showGrievorDropdown, setShowGrievorDropdown] = useState(false);
+
+  const selectedGrievorMemberIds = new Set(selectedGrievors.map((g) => g.memberId));
+  const availableGrievors = allMembers.filter((m) => !selectedGrievorMemberIds.has(m.member.id));
+  const filteredGrievors = grievorSearch
+    ? availableGrievors.filter(
+        (m) =>
+          m.user.name.toLowerCase().includes(grievorSearch.toLowerCase()) ||
+          m.user.email.toLowerCase().includes(grievorSearch.toLowerCase())
+      )
+    : availableGrievors;
+
+  const handleSelectGrievor = (m: typeof allMembers[0]) => {
+    setSelectedGrievors((prev) => [
+      ...prev,
+      { memberId: m.member.id, name: m.user.name, email: m.user.email },
+    ]);
+    setGrievorSearch('');
+    setShowGrievorDropdown(false);
+  };
+
+  const handleRemoveGrievor = (memberId: number) => {
+    setSelectedGrievors((prev) => prev.filter((g) => g.memberId !== memberId));
+  };
+
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setCategory('');
+    setPriority(GrievancePriority.MEDIUM);
+    setAttachments([]);
+    setSelectedGrievors([]);
+    setGrievorSearch('');
+    setShowGrievorDropdown(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent, saveAsDraft: boolean = false) => {
     e.preventDefault();
@@ -75,6 +118,7 @@ export function CreateGrievanceDialog({
           priority,
           status: saveAsDraft ? 'draft' : 'submitted',
           attachments,
+          grievorMemberIds: isAdmin ? selectedGrievors.map((g) => g.memberId) : [],
         }),
       });
 
@@ -83,13 +127,7 @@ export function CreateGrievanceDialog({
         throw new Error(data.error || 'Failed to create grievance');
       }
 
-      // Reset form
-      setTitle('');
-      setDescription('');
-      setCategory('');
-      setPriority(GrievancePriority.MEDIUM);
-      setAttachments([]);
-
+      resetForm();
       onOpenChange(false);
       onSuccess();
     } catch (err: any) {
@@ -101,7 +139,7 @@ export function CreateGrievanceDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) resetForm(); onOpenChange(o); }}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>File a New Grievance</DialogTitle>
@@ -181,6 +219,86 @@ export function CreateGrievanceDialog({
               </div>
             </div>
 
+            {/* Grievors (admin-only) */}
+            {isAdmin && (
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-base font-semibold">Grievors</Label>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Add members on whose behalf this grievance is being filed. They will be able to see this grievance in their grievances page.
+                </p>
+
+                {/* Selected grievors */}
+                {selectedGrievors.length > 0 && (
+                  <div className="space-y-2 mb-3">
+                    {selectedGrievors.map((g) => (
+                      <div key={g.memberId} className="flex items-center justify-between p-2 rounded-lg bg-white border">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{g.name}</span>
+                          <span className="text-sm text-muted-foreground">({g.email})</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveGrievor(g.memberId)}
+                          className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Search to add grievors */}
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                      value={grievorSearch}
+                      onChange={(e) => {
+                        setGrievorSearch(e.target.value);
+                        setShowGrievorDropdown(true);
+                      }}
+                      onFocus={() => setShowGrievorDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowGrievorDropdown(false), 150)}
+                      placeholder="Search members to add..."
+                      className="pl-9"
+                    />
+                    {showGrievorDropdown && filteredGrievors.length > 0 && (
+                      <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {filteredGrievors.map((m) => (
+                          <button
+                            key={m.member.id}
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex flex-col"
+                            onMouseDown={() => handleSelectGrievor(m)}
+                          >
+                            <span className="font-medium">
+                              {m.user.name}
+                              {m.member.role === 'admin' || m.member.role === 'owner' ? (
+                                <span className="ml-1 text-xs text-muted-foreground font-normal">(Admin)</span>
+                              ) : null}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{m.user.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {showGrievorDropdown && grievorSearch && filteredGrievors.length === 0 && (
+                      <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg px-3 py-2 text-sm text-muted-foreground">
+                        No members found
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div>
               <Label>Supporting Documents</Label>
               <p className="text-sm text-muted-foreground mb-2">
@@ -200,7 +318,7 @@ export function CreateGrievanceDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => { resetForm(); onOpenChange(false); }}
               disabled={loading}
             >
               Cancel

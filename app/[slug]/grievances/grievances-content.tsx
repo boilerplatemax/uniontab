@@ -25,6 +25,7 @@ interface GrievancesContentProps {
   grievances: any[];
   summary: any;
   adminMembers: any[];
+  allMembers?: any[];
   grievanceFilingPermission: 'all' | 'admins_only';
 }
 
@@ -36,6 +37,7 @@ export function GrievancesContent({
   grievances: initialGrievances,
   summary,
   adminMembers,
+  allMembers = [],
   grievanceFilingPermission,
 }: GrievancesContentProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -330,6 +332,8 @@ export function GrievancesContent({
           unionId={union.id}
           unionSlug={union.slug}
           onSuccess={handleRefresh}
+          isAdmin={isOwnerOrAdmin}
+          allMembers={allMembers}
         />
       )}
     </div>
