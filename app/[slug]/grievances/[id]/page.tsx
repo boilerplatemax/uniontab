@@ -117,8 +117,9 @@ export default async function GrievanceDetailPage({
 
   // Check if user has permission to view this grievance
   const isGrievanceCreator = grievance.memberId === membership.member.id;
+  const isAssignedMember = grievance.assignedTo?.id === user.id;
   let isParticipant = false;
-  if (!isOwnerOrAdmin && !isGrievanceCreator) {
+  if (!isOwnerOrAdmin && !isGrievanceCreator && !isAssignedMember) {
     const [participation] = await db
       .select()
       .from(grievanceParticipants)
@@ -130,7 +131,7 @@ export default async function GrievanceDetailPage({
     isParticipant = !!participation;
   }
 
-  if (!isOwnerOrAdmin && !isGrievanceCreator && !isParticipant) {
+  if (!isOwnerOrAdmin && !isGrievanceCreator && !isAssignedMember && !isParticipant) {
     redirect(`/${slug}/grievances`);
   }
 
