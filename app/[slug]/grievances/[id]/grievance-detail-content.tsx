@@ -83,7 +83,9 @@ export function GrievanceDetailContent({
 
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
   const isGrievanceOwner = grievance.memberId === memberId;
-  const canManageFiles = isOwnerOrAdmin || isGrievanceOwner;
+  const isAssignedMember = grievance.assignedTo?.id === user.id;
+  const isParticipant = participants.some((p: any) => p.memberId === memberId);
+  const canManageFiles = isOwnerOrAdmin || isGrievanceOwner || isAssignedMember || isParticipant;
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();

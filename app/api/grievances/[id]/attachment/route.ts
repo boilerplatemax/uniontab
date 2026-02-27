@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { grievances, members, grievanceAttachments } from '@/lib/db/schema';
+import { grievances, members, grievanceAttachments, grievanceParticipants } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 
@@ -71,8 +71,20 @@ export async function POST(request: Request, { params }: RouteParams) {
     // Check permissions
     const isOwnerOrAdmin = membership.role === 'owner' || membership.role === 'admin';
     const isGrievanceCreator = grievance.memberId === membership.id;
+    const isAssignedMember = grievance.assignedTo === user.id;
 
-    if (!isOwnerOrAdmin && !isGrievanceCreator) {
+    // Check if user is a participant (grievor) on this grievance
+    const [participation] = await db
+      .select()
+      .from(grievanceParticipants)
+      .where(and(
+        eq(grievanceParticipants.grievanceId, grievanceId),
+        eq(grievanceParticipants.memberId, membership.id)
+      ))
+      .limit(1);
+    const isParticipant = !!participation;
+
+    if (!isOwnerOrAdmin && !isGrievanceCreator && !isAssignedMember && !isParticipant) {
       return NextResponse.json(
         { error: 'You do not have permission to add attachments to this grievance' },
         { status: 403 }
