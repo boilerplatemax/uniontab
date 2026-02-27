@@ -96,7 +96,7 @@ export default async function GrievancesPage({
   const isOwnerOrAdmin = await checkOwnerOrAdmin(union.id, user.id);
 
   // Get grievances based on role
-  let grievances;
+  let grievances: any[];
   if (isOwnerOrAdmin) {
     grievances = await getGrievancesForUnion(union.id);
   } else {
@@ -110,10 +110,10 @@ export default async function GrievancesPage({
     for (const g of [...ownGrievances, ...participantGrievances]) {
       if (!seen.has(g.id)) {
         seen.add(g.id);
-        (grievances as any[]).push(g);
+        grievances.push(g);
       }
     }
-    (grievances as any[]).sort(
+    grievances.sort(
       (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
   }
