@@ -931,7 +931,9 @@ export async function sendMeetingInviteEmail({
                        meeting.platform === 'google_meet' ? 'Google Meet' :
                        'Video Conference';
 
-  const subject = `Meeting Invitation: ${meeting.title} - ${unionName}`;
+  // Subject uses uppercase name without "Local": e.g. "ATU 2000" instead of "atu Local 2000"
+  const unionNameForSubject = `${unionInfo.name.toUpperCase()}${unionInfo.localNumber ? ` ${unionInfo.localNumber}` : ''}`;
+  const subject = `Meeting Invitation: ${meeting.title} - ${unionNameForSubject}`;
 
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const meetingPageUrl = `${baseUrl}/${unionInfo.slug}/meetings`;
