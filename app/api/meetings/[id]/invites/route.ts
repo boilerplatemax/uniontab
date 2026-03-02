@@ -168,16 +168,53 @@ export async function POST(
         );
       }
     } else if (memberIds && Array.isArray(memberIds) && memberIds.length > 0) {
-      // Specific members selected from the dialog
+      // Custom selection: specific member IDs chosen in the dialog
       targetMemberIds = memberIds;
-    } else if (recipientFilter === 'all' || recipientFilter === 'approved') {
-      // All approved members
+    } else if (recipientFilter === 'all') {
+      // All members regardless of status
+      const allMembers = await db
+        .select({ id: members.id })
+        .from(members)
+        .where(eq(members.unionId, meeting.unionId));
+      targetMemberIds = allMembers.map(m => m.id);
+    } else if (recipientFilter === 'approved') {
+      // Approved members only
       const allMembers = await db
         .select({ id: members.id })
         .from(members)
         .where(and(
           eq(members.unionId, meeting.unionId),
           eq(members.status, 'approved')
+        ));
+      targetMemberIds = allMembers.map(m => m.id);
+    } else if (recipientFilter === 'admin') {
+      // Admins only
+      const allMembers = await db
+        .select({ id: members.id })
+        .from(members)
+        .where(and(
+          eq(members.unionId, meeting.unionId),
+          eq(members.role, 'admin')
+        ));
+      targetMemberIds = allMembers.map(m => m.id);
+    } else if (recipientFilter === 'pending') {
+      // Pending members
+      const allMembers = await db
+        .select({ id: members.id })
+        .from(members)
+        .where(and(
+          eq(members.unionId, meeting.unionId),
+          eq(members.status, 'pending')
+        ));
+      targetMemberIds = allMembers.map(m => m.id);
+    } else if (recipientFilter === 'rejected') {
+      // Rejected members
+      const allMembers = await db
+        .select({ id: members.id })
+        .from(members)
+        .where(and(
+          eq(members.unionId, meeting.unionId),
+          eq(members.status, 'rejected')
         ));
       targetMemberIds = allMembers.map(m => m.id);
     } else {

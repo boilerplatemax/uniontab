@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Calendar, Clock, Video, MoreVertical, ExternalLink, Mail, FileText, Trash, Edit, Users } from 'lucide-react';
+import { Calendar, Clock, Video, MoreVertical, ExternalLink, Mail, FileText, Trash, Edit, Users, Link2 } from 'lucide-react';
 import { MeetingPosterDialog } from './meeting-poster-dialog';
 import { SendInvitesDialog } from './send-invites-dialog';
 import { EditMeetingDialog } from './edit-meeting-dialog';
@@ -55,6 +55,23 @@ export function MeetingCard({ meeting, unionInfo, isOwnerOrAdmin, onMeetingUpdat
   const [showInvites, setShowInvites] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const handleCopyMeetingLink = async () => {
+    const url = `${window.location.origin}/${unionInfo.slug}/meeting/${meeting.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const el = document.createElement('textarea');
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -197,6 +214,10 @@ export function MeetingCard({ meeting, unionInfo, isOwnerOrAdmin, onMeetingUpdat
                     <DropdownMenuItem onClick={() => setShowPoster(true)}>
                       <FileText className="h-4 w-4 mr-2" />
                       Download Poster
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopyMeetingLink}>
+                      <Link2 className="h-4 w-4 mr-2" />
+                      {linkCopied ? 'Link Copied!' : 'Copy Meeting Link'}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem

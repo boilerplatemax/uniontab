@@ -1,9 +1,9 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Printer, Calendar, Clock, Monitor } from 'lucide-react';
+import { Printer, Calendar, Clock, Monitor, Link2, Check } from 'lucide-react';
 import Image from 'next/image';
 import { getContrastColor, DEFAULT_THEME_COLOR } from '@/lib/utils/color';
 
@@ -40,6 +40,30 @@ interface MeetingPosterDialogProps {
 
 export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: MeetingPosterDialogProps) {
   const posterRef = useRef<HTMLDivElement>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const getMeetingUrl = () => {
+    const base = typeof window !== 'undefined' ? window.location.origin : '';
+    return `${base}/${unionInfo.slug}/meeting/${meeting.id}`;
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getMeetingUrl());
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      // Fallback for browsers without clipboard API
+      const el = document.createElement('textarea');
+      el.value = getMeetingUrl();
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }
+  };
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -328,12 +352,28 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
           </DialogDescription>
         </DialogHeader>
 
-        {/* Action Button */}
-        <div className="flex gap-2 mb-4 print:hidden">
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-2 mb-4 print:hidden">
           <Button onClick={handlePrint} variant="outline" size="sm">
             <Printer className="h-4 w-4 mr-2" />
             Print / Save as PDF
           </Button>
+          <Button onClick={handleCopyLink} variant="outline" size="sm">
+            {linkCopied ? (
+              <>
+                <Check className="h-4 w-4 mr-2 text-green-600" />
+                <span className="text-green-600">Link Copied!</span>
+              </>
+            ) : (
+              <>
+                <Link2 className="h-4 w-4 mr-2" />
+                Copy Meeting Link
+              </>
+            )}
+          </Button>
+          <span className="flex items-center text-xs text-gray-400 ml-1">
+            {getMeetingUrl()}
+          </span>
         </div>
 
         {/* Poster Content - uses classes that match the print CSS */}

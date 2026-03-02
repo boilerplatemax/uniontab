@@ -74,7 +74,7 @@ export function UnionNavbar({
 }: UnionNavbarProps) {
   const pathname = usePathname();
   const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
-  const { activeTab, setActiveTab } = useUnionTab();
+  const { activeTab, setActiveTab, isOnTabPage } = useUnionTab();
 
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
@@ -479,7 +479,7 @@ export function UnionNavbar({
                 {!hasPublicNav ? (
                   <>
                     {publicFallbackTabs.filter((t) => t.key !== 'contact').map((item) => {
-                      const isActive = activeTab === item.key;
+                      const isActive = isOnTabPage && activeTab === item.key;
                       return (
                         <button
                           key={item.key}
@@ -515,13 +515,13 @@ export function UnionNavbar({
                     <button
                       onClick={() => setActiveTab('contact')}
                       className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
-                        ${activeTab === 'contact'
+                        ${isOnTabPage && activeTab === 'contact'
                           ? 'text-gray-900 bg-gray-100'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                         }`}
                     >
                       Contact
-                      {activeTab === 'contact' && (
+                      {isOnTabPage && activeTab === 'contact' && (
                         <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
                       )}
                     </button>
@@ -533,7 +533,7 @@ export function UnionNavbar({
 
                     if (isBuiltInTab(navItem)) {
                       const tabKey = routeToTabKey[navItem.builtInRoute!];
-                      const isActive = activeTab === tabKey;
+                      const isActive = isOnTabPage && activeTab === tabKey;
 
                       if (hasChildren) {
                         return (
@@ -690,7 +690,7 @@ export function UnionNavbar({
                 {!hasPublicNav ? (
                   <>
                     {publicFallbackTabs.filter((t) => t.key !== 'contact').map((item) => {
-                      const isActive = activeTab === item.key;
+                      const isActive = isOnTabPage && activeTab === item.key;
                       return (
                         <button
                           key={item.key}
@@ -717,7 +717,7 @@ export function UnionNavbar({
                     <button
                       onClick={() => { setActiveTab('contact'); setNonMemberMobileOpen(false); }}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
-                        ${activeTab === 'contact' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                        ${isOnTabPage && activeTab === 'contact' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
                     >
                       <span className="text-gray-500"><Phone className="h-4 w-4" /></span>
                       <span className="text-[15px] font-medium">Contact</span>
@@ -732,7 +732,7 @@ export function UnionNavbar({
 
                     if (isBuiltInTab(navItem)) {
                       const tabKey = routeToTabKey[navItem.builtInRoute!];
-                      const isActive = activeTab === tabKey;
+                      const isActive = isOnTabPage && activeTab === tabKey;
                       return (
                         <div key={navItem.id}>
                           <div className="flex items-center">
@@ -850,7 +850,7 @@ export function UnionNavbar({
                 <>
                   {tabItems.filter((t) => t.key !== 'contact').map((item) => {
                     if (item.membersOnly && !isApprovedMember) return null;
-                    const isActive = activeTab === item.key;
+                    const isActive = isOnTabPage && activeTab === item.key;
                     return (
                       <button
                         key={item.key}
@@ -886,13 +886,13 @@ export function UnionNavbar({
                   <button
                     onClick={() => setActiveTab('contact')}
                     className={`relative px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer
-                      ${activeTab === 'contact'
+                      ${isOnTabPage && activeTab === 'contact'
                         ? 'text-gray-900 bg-gray-100'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                   >
                     Contact
-                    {activeTab === 'contact' && (
+                    {isOnTabPage && activeTab === 'contact' && (
                       <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gray-900 rounded-full" />
                     )}
                   </button>
@@ -905,7 +905,7 @@ export function UnionNavbar({
 
                   if (isBuiltInTab(navItem)) {
                     const tabKey = routeToTabKey[navItem.builtInRoute!];
-                    const isActive = activeTab === tabKey;
+                    const isActive = isOnTabPage && activeTab === tabKey;
 
                     if (hasChildren) {
                       return (
@@ -1223,7 +1223,7 @@ export function UnionNavbar({
                   <>
                     {tabItems.filter((t) => t.key !== 'contact').map((item) => {
                       if (item.membersOnly && !isApprovedMember) return null;
-                      const isActive = activeTab === item.key;
+                      const isActive = isOnTabPage && activeTab === item.key;
                       return (
                         <button
                           key={item.key}
@@ -1250,7 +1250,7 @@ export function UnionNavbar({
                     <button
                       onClick={() => { setActiveTab('contact'); closeMobile(); }}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors cursor-pointer
-                        ${activeTab === 'contact' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+                        ${isOnTabPage && activeTab === 'contact' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
                     >
                       <span className="text-gray-500"><Phone className="h-4 w-4" /></span>
                       <span className="text-[15px] font-medium">Contact</span>
@@ -1266,7 +1266,7 @@ export function UnionNavbar({
 
                     if (isBuiltInTab(navItem)) {
                       const tabKey = routeToTabKey[navItem.builtInRoute!];
-                      const isActive = activeTab === tabKey;
+                      const isActive = isOnTabPage && activeTab === tabKey;
 
                       return (
                         <div key={navItem.id}>

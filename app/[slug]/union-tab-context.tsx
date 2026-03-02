@@ -10,11 +10,13 @@ const TAB_KEYS: TabKey[] = ['about', 'files', 'events', 'elections', 'contact'];
 interface UnionTabContextType {
   activeTab: TabKey;
   setActiveTab: (tab: TabKey) => void;
+  isOnTabPage: boolean;
 }
 
 const UnionTabContext = createContext<UnionTabContextType>({
   activeTab: 'posts',
   setActiveTab: () => {},
+  isOnTabPage: true,
 });
 
 function getTabFromPath(pathname: string, slug: string): TabKey {
@@ -76,8 +78,11 @@ export function UnionTabProvider({ slug, children }: { slug: string; children: R
     }
   }, [slug]);
 
+  // True only when on a tab-based union page (posts, about, files, events, elections, contact)
+  const isOnTabPage = pathname === `/${slug}` || TAB_KEYS.some(k => pathname === `/${slug}/${k}`);
+
   return (
-    <UnionTabContext.Provider value={{ activeTab, setActiveTab }}>
+    <UnionTabContext.Provider value={{ activeTab, setActiveTab, isOnTabPage }}>
       {children}
     </UnionTabContext.Provider>
   );
