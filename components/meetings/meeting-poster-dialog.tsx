@@ -47,15 +47,21 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
     return `${base}/${unionInfo.slug}/meeting/${meeting.id}`;
   };
 
+  const getJoinUrl = () => {
+    const base = typeof window !== 'undefined' ? window.location.origin : '';
+    return `${base}/${unionInfo.slug}/meeting/${meeting.id}/join`;
+  };
+
   const handleCopyLink = async () => {
+    const url = getJoinUrl();
     try {
-      await navigator.clipboard.writeText(getMeetingUrl());
+      await navigator.clipboard.writeText(url);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     } catch {
       // Fallback for browsers without clipboard API
       const el = document.createElement('textarea');
-      el.value = getMeetingUrl();
+      el.value = url;
       document.body.appendChild(el);
       el.select();
       document.execCommand('copy');
@@ -372,7 +378,7 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
             )}
           </Button>
           <span className="flex items-center text-xs text-gray-400 ml-1">
-            {getMeetingUrl()}
+            {getJoinUrl()}
           </span>
         </div>
 
@@ -472,7 +478,7 @@ export function MeetingPosterDialog({ open, onOpenChange, meeting, unionInfo }: 
                   Join the Meeting
                 </p>
                 <p className="join-link font-mono text-sm break-all text-gray-700 mb-2">
-                  {meeting.meetingLink}
+                  {getJoinUrl()}
                 </p>
                 <div className="join-details">
                   {meeting.meetingId && (
