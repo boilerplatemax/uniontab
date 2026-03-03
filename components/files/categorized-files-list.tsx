@@ -24,6 +24,7 @@ interface CategorizedFilesListProps {
   deletingFile: number | null;
   unionId: number;
   slug: string;
+  showThumbnails?: boolean;
 }
 
 // Get appropriate icon and color based on file extension
@@ -54,6 +55,13 @@ function formatFileSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+const IMAGE_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico']);
+
+function isImageFile(fileName: string) {
+  const ext = fileName.split('.').pop()?.toLowerCase() || '';
+  return IMAGE_EXTS.has(ext);
+}
+
 // File Grid Card Component
 function FileGridCard({
   file,
@@ -61,15 +69,18 @@ function FileGridCard({
   onEdit,
   onDelete,
   deletingFile,
+  showThumbnails = false,
 }: {
   file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } };
   isOwner: boolean;
   onEdit: (file: Omit<FileType, 'createdBy'> & { createdBy: { name: string } }) => void;
   onDelete: (fileId: number) => void;
   deletingFile: number | null;
+  showThumbnails?: boolean;
 }) {
   const { icon: FileIcon, color: iconColor, bg: iconBg } = getFileIcon(file.originalName);
   const ext = file.originalName.split('.').pop()?.toUpperCase() || '';
+  const showImagePreview = showThumbnails && isImageFile(file.originalName);
 
   return (
     <div
@@ -77,8 +88,16 @@ function FileGridCard({
       onClick={() => window.open(file.fileUrl, '_blank')}
     >
       {/* File preview area */}
-      <div className={`${iconBg} rounded-t-xl flex items-center justify-center h-28`}>
-        <FileIcon className={`h-10 w-10 ${iconColor}`} />
+      <div className={`${showImagePreview ? '' : iconBg} rounded-t-xl flex items-center justify-center h-28 overflow-hidden`}>
+        {showImagePreview ? (
+          <img
+            src={file.fileUrl}
+            alt={file.originalName}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <FileIcon className={`h-10 w-10 ${iconColor}`} />
+        )}
       </div>
 
       {/* File info */}
@@ -173,6 +192,7 @@ export function CategorizedFilesList({
   deletingFile,
   unionId,
   slug,
+  showThumbnails = false,
 }: CategorizedFilesListProps) {
   const router = useRouter();
   const [categoryOrders, setCategoryOrders] = useState<FileCategory[]>([]);
@@ -467,6 +487,7 @@ export function CategorizedFilesList({
                   onEdit={onEdit}
                   onDelete={onDelete}
                   deletingFile={deletingFile}
+                  showThumbnails={showThumbnails}
                 />
               ))}
             </div>

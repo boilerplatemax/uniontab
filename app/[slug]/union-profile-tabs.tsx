@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -81,6 +81,7 @@ export function UnionProfileTabs({
   const [eventDetailsOpen, setEventDetailsOpen] = useState(false);
   const [deletingPost, setDeletingPost] = useState<number | null>(null);
   const [deletingFile, setDeletingFile] = useState<number | null>(null);
+  const [showThumbnails, setShowThumbnails] = useState<boolean>(union.fileThumbnailsEnabled ?? false);
 
   const handleTogglePin = async (postId: number, isPinned: boolean) => {
     try {
@@ -920,6 +921,26 @@ export function UnionProfileTabs({
                   </div>
                   <Button
                     size="sm"
+                    variant="outline"
+                    title={showThumbnails ? 'Switch to list view' : 'Switch to thumbnail view'}
+                    onClick={async () => {
+                      const next = !showThumbnails;
+                      setShowThumbnails(next);
+                      await fetch('/api/files/thumbnail-settings', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fileThumbnailsEnabled: next }),
+                      });
+                    }}
+                  >
+                    {showThumbnails ? (
+                      <><List className="h-4 w-4 mr-2" />List View</>
+                    ) : (
+                      <><LayoutGrid className="h-4 w-4 mr-2" />Thumbnails</>
+                    )}
+                  </Button>
+                  <Button
+                    size="sm"
                     className={prestigeMode ? 'bg-rose-600 hover:bg-rose-700 rounded-full px-5' : 'bg-blue-600 hover:bg-blue-700'}
                     onClick={() => setUploadFileOpen(true)}
                   >
@@ -945,6 +966,7 @@ export function UnionProfileTabs({
                     deletingFile={deletingFile}
                     unionId={union.id}
                     slug={union.slug}
+                    showThumbnails={showThumbnails}
                   />
                 </div>
               ) : (
