@@ -336,6 +336,12 @@ export function UnionNavbar({
     if (isApprovedMember) {
       const memberToolsGroup: MegaMenuItem[] = [
         {
+          href: `/${slug}/elections`,
+          icon: <Vote className="h-5 w-5" />,
+          label: 'Elections',
+          description: 'View and participate in union elections',
+        },
+        {
           href: `/${slug}/grievances`,
           icon: <FileText className="h-5 w-5" />,
           label: 'Grievances',
@@ -1032,7 +1038,7 @@ export function UnionNavbar({
                       ${openPanel === 'manage' ? 'text-gray-900 bg-gray-100' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}
                   >
                     <Shield className="h-4 w-4" />
-                    {hasAdminAccess ? 'Manage' : 'Tools'}
+                    {'Tools'}
                     <ChevronDown className={`h-3 w-3 transition-transform ${openPanel === 'manage' ? 'rotate-180' : ''}`} />
                     {(totalAdminBadge + (hasAdminAccess ? 0 : memberToolsBadge)) > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
@@ -1348,7 +1354,7 @@ export function UnionNavbar({
                     className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     <Shield className="h-4 w-4 text-gray-500" />
-                    <span className="text-[15px] font-medium flex-1 text-left">{hasAdminAccess ? 'Manage' : 'Tools'}</span>
+                    <span className="text-[15px] font-medium flex-1 text-left">{'Tools'}</span>
                     {(hasAdminAccess ? totalAdminBadge : memberToolsBadge) > 0 && (
                       <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
                         {hasAdminAccess ? totalAdminBadge : memberToolsBadge}
@@ -1396,7 +1402,7 @@ export function UnionNavbar({
                 >
                   <ArrowLeft className="h-5 w-5 text-gray-600" />
                 </button>
-                <span className="font-semibold text-gray-900 text-lg">{hasAdminAccess ? 'Manage' : 'Tools'}</span>
+                <span className="font-semibold text-gray-900 text-lg">{'Tools'}</span>
                 <div className="flex-1" />
                 <button onClick={closeMobile} className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
                   <X className="h-5 w-5 text-gray-600" />

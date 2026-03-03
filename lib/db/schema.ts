@@ -371,6 +371,7 @@ export const files = pgTable('files', {
   name: varchar('name', { length: 255 }).notNull(),
   originalName: varchar('original_name', { length: 255 }).notNull(),
   fileUrl: text('file_url').notNull(),
+  thumbnailUrl: text('thumbnail_url'),
   fileType: varchar('file_type', { length: 100 }).notNull(),
   fileSize: integer('file_size').notNull(),
   isPrivate: boolean('is_private').notNull().default(false),

@@ -80,7 +80,10 @@ function FileGridCard({
 }) {
   const { icon: FileIcon, color: iconColor, bg: iconBg } = getFileIcon(file.originalName);
   const ext = file.originalName.split('.').pop()?.toUpperCase() || '';
-  const showImagePreview = showThumbnails && isImageFile(file.originalName);
+  const isPdf = file.fileType === 'application/pdf' || file.originalName.toLowerCase().endsWith('.pdf');
+  const previewSrc = showThumbnails
+    ? (isImageFile(file.originalName) ? file.fileUrl : (isPdf && file.thumbnailUrl ? file.thumbnailUrl : null))
+    : null;
 
   return (
     <div
@@ -88,10 +91,10 @@ function FileGridCard({
       onClick={() => window.open(file.fileUrl, '_blank')}
     >
       {/* File preview area */}
-      <div className={`${showImagePreview ? '' : iconBg} rounded-t-xl flex items-center justify-center h-28 overflow-hidden`}>
-        {showImagePreview ? (
+      <div className={`${previewSrc ? '' : iconBg} rounded-t-xl flex items-center justify-center h-28 overflow-hidden`}>
+        {previewSrc ? (
           <img
-            src={file.fileUrl}
+            src={previewSrc}
             alt={file.originalName}
             className="w-full h-full object-cover"
           />
