@@ -14,6 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
 import { Loader2 } from 'lucide-react';
+import { generatePdfThumbnail } from '@/lib/utils/pdf-thumbnail';
+import { createClient } from '@/lib/supabase/client';
 
 interface UploadFileDialogProps {
   open: boolean;
@@ -32,12 +34,14 @@ export function UploadFileDialog({
 }: UploadFileDialogProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState('');
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [fileName, setFileName] = useState('');
   const [category, setCategory] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
+  const [generatingThumbnail, setGeneratingThumbnail] = useState(false);
 
   // Fetch existing categories when dialog opens
   useEffect(() => {
@@ -82,6 +86,7 @@ export function UploadFileDialog({
           name: `${unionSlug}/${Date.now()}_${fileName || uploadedFile.name}`,
           originalName: fileName || uploadedFile.name,
           fileUrl,
+          thumbnailUrl: thumbnailUrl || null,
           fileType: uploadedFile.type || 'application/octet-stream',
           fileSize: uploadedFile.size,
           isPrivate,
@@ -99,6 +104,7 @@ export function UploadFileDialog({
       // Reset form
       setUploadedFile(null);
       setFileUrl('');
+      setThumbnailUrl('');
       setFileName('');
       setCategory('');
       setIsPrivate(false);
@@ -126,10 +132,38 @@ export function UploadFileDialog({
             )}
 
             <FileUpload
-              onFileSelect={(file, url) => {
+              onFileSelect={async (file, url) => {
                 setUploadedFile(file);
                 if (url) setFileUrl(url);
-                if (file) setFileName(file.name);
+                if (file) {
+                  setFileName(file.name);
+                  // Auto-generate thumbnail for PDF files
+                  if (file.type === 'application/pdf') {
+                    setGeneratingThumbnail(true);
+                    try {
+                      const thumbBlob = await generatePdfThumbnail(file);
+                      if (thumbBlob) {
+                        const supabase = createClient();
+                        const thumbName = `thumbnails/${unionSlug}/${Date.now()}_thumb.jpg`;
+                        const { error: thumbError } = await supabase.storage
+                          .from('union-files')
+                          .upload(thumbName, thumbBlob, { contentType: 'image/jpeg', upsert: false });
+                        if (!thumbError) {
+                          const { data: { publicUrl } } = supabase.storage
+                            .from('union-files')
+                            .getPublicUrl(thumbName);
+                          setThumbnailUrl(publicUrl);
+                        }
+                      }
+                    } catch (err) {
+                      console.error('Thumbnail generation failed:', err);
+                    } finally {
+                      setGeneratingThumbnail(false);
+                    }
+                  } else {
+                    setThumbnailUrl('');
+                  }
+                }
               }}
               accept="*"
               maxSize={50}
@@ -138,6 +172,12 @@ export function UploadFileDialog({
               bucket="union-files"
               path={`files/${unionSlug}`}
             />
+            {generatingThumbnail && (
+              <p className="text-sm text-blue-600 flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating PDF preview...
+              </p>
+            )}
 
             <div>
               <Label htmlFor="fileName">Display Name (Optional)</Label>

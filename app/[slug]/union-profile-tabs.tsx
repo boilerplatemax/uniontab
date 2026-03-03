@@ -241,14 +241,6 @@ export function UnionProfileTabs({
           >
             Files
           </button>
-          {isApprovedMember && (
-            <button
-              onClick={() => setActiveTab('elections')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'elections')}`}
-            >
-              Elections
-            </button>
-          )}
           <button
             onClick={() => setActiveTab('events')}
             className={`px-4 sm:px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${getPrestigeTabClass(activeTab === 'events')}`}
@@ -338,16 +330,6 @@ export function UnionProfileTabs({
             >
               Files
             </button>
-            {isApprovedMember && (
-              <button
-                onClick={() => setActiveTab('elections')}
-                className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === 'elections' ? tabActiveClass : tabInactiveClass
-                }`}
-              >
-                Elections
-              </button>
-            )}
             <button
               onClick={() => setActiveTab('events')}
               className={`px-3 sm:px-4 py-2 font-semibold transition-colors cursor-pointer whitespace-nowrap text-sm sm:text-base ${

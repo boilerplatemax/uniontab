@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { unionId, name, originalName, fileUrl, fileType, fileSize, isPrivate, category } =
+    const { unionId, name, originalName, fileUrl, thumbnailUrl, fileType, fileSize, isPrivate, category } =
       await request.json();
 
     if (!unionId || !name || !originalName || !fileUrl || !fileType || !fileSize) {
@@ -64,6 +64,7 @@ export async function POST(request: Request) {
         name,
         originalName,
         fileUrl,
+        thumbnailUrl: thumbnailUrl || null,
         fileType,
         fileSize,
         isPrivate: isPrivate || false,
