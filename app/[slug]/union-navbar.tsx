@@ -359,18 +359,6 @@ export function UnionNavbar({
       groups.push({ title: 'Member Tools', items: memberToolsGroup });
     }
 
-    // Union Activities (admin only - elections)
-    const activitiesGroup: MegaMenuItem[] = [];
-    if (canAccess('elections')) {
-      activitiesGroup.push({
-        href: `/${slug}/elections`,
-        icon: <Vote className="h-5 w-5" />,
-        label: 'Elections',
-        description: 'Create and manage union elections',
-      });
-    }
-    if (activitiesGroup.length) groups.push({ title: 'Union Activities', items: activitiesGroup });
-
     // Finance & Announcements (admin only)
     const financeGroup: MegaMenuItem[] = [];
     if (canAccess('dues')) {
