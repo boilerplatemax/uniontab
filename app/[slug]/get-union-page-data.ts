@@ -124,6 +124,7 @@ async function getUnionFiles(unionId: number) {
       isPrivate: files.isPrivate,
       category: files.category,
       sortOrder: files.sortOrder,
+      thumbnailUrl: files.thumbnailUrl,
       createdAt: files.createdAt,
       createdBy: {
         name: users.name,
