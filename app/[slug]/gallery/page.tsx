@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, users, files } from '@/lib/db/schema';
 import { eq, and, asc, count } from 'drizzle-orm';
@@ -62,12 +62,6 @@ export default async function GalleryPage({
   const isApprovedMember = membership?.member.status === 'approved' || isOwnerOrAdmin;
 
   const galleryImages = await getGalleryImages(union.id);
-  const hasGalleryImages = galleryImages.length > 0;
-
-  // Non-admins can only view if there are images
-  if (!isOwnerOrAdmin && !hasGalleryImages) {
-    redirect(`/${slug}`);
-  }
 
   return (
     <div className="min-h-screen bg-white">

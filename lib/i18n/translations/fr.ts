@@ -14,8 +14,8 @@ export const fr: Translations = {
     hero: {
       badge: 'Créé par des syndicalistes',
       title: {
-        line1: 'Gagnez du temps.',
-        highlight: 'Réduisez les coûts.',
+        line1: 'Réduisez les coûts.',
+        highlight: 'Stimulez l\'engagement.',
         line3: 'Dirigez mieux.',
       },
       subtitle: 'La plateforme tout-en-un que les dirigeants syndicaux utilisent pour optimiser leurs opérations, engager les membres et réduire les tâches administratives — configuration en moins de 30 minutes.',
