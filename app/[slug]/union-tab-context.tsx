@@ -11,12 +11,14 @@ interface UnionTabContextType {
   activeTab: TabKey;
   setActiveTab: (tab: TabKey) => void;
   isOnTabPage: boolean;
+  isDemo: boolean;
 }
 
 const UnionTabContext = createContext<UnionTabContextType>({
   activeTab: 'posts',
   setActiveTab: () => {},
   isOnTabPage: true,
+  isDemo: false,
 });
 
 function getTabFromPath(pathname: string, slug: string): TabKey {
@@ -30,7 +32,15 @@ function getTabFromPath(pathname: string, slug: string): TabKey {
   return 'posts';
 }
 
-export function UnionTabProvider({ slug, children }: { slug: string; children: React.ReactNode }) {
+export function UnionTabProvider({
+  slug,
+  isDemo = false,
+  children,
+}: {
+  slug: string;
+  isDemo?: boolean;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -67,8 +77,6 @@ export function UnionTabProvider({ slug, children }: { slug: string; children: R
   const setActiveTab = useCallback((tab: TabKey) => {
     setActiveTabState(tab);
     const url = tab === 'posts' ? `/${slug}` : `/${slug}/${tab}`;
-    // If we're on the main union page (or a tab sub-page), use pushState for fast tab switching.
-    // If we're on a different page (custom page, tool page, etc.), do a full navigation.
     const currentPath = window.location.pathname;
     const isMainPage = currentPath === `/${slug}` || TAB_KEYS.some(k => currentPath === `/${slug}/${k}`);
     if (isMainPage) {
@@ -82,7 +90,7 @@ export function UnionTabProvider({ slug, children }: { slug: string; children: R
   const isOnTabPage = pathname === `/${slug}` || TAB_KEYS.some(k => pathname === `/${slug}/${k}`);
 
   return (
-    <UnionTabContext.Provider value={{ activeTab, setActiveTab, isOnTabPage }}>
+    <UnionTabContext.Provider value={{ activeTab, setActiveTab, isOnTabPage, isDemo }}>
       {children}
     </UnionTabContext.Provider>
   );

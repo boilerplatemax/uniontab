@@ -39,6 +39,7 @@ interface UnionNavbarProps {
   navigationItems?: (NavigationItem & { pageSlug?: string | null; fileUrl?: string | null })[];
   hasGalleryImages?: boolean;
   hasPublicFiles?: boolean;
+  isDemo?: boolean;
 }
 
 interface MegaMenuItem {
@@ -71,6 +72,7 @@ export function UnionNavbar({
   navigationItems = [],
   hasGalleryImages = false,
   hasPublicFiles = false,
+  isDemo = false,
 }: UnionNavbarProps) {
   const pathname = usePathname();
   const hasVisibleAnnouncement = useAnnouncementVisibility(announcementId);
@@ -650,12 +652,12 @@ export function UnionNavbar({
                 )}
 
                 <div className="h-5 w-px bg-gray-200 mx-1" />
-                <MemberLoginDropdown slug={slug} contactEmail={contactEmail} />
+                <MemberLoginDropdown slug={slug} contactEmail={contactEmail} isDemo={isDemo} />
               </div>
 
               {/* Hamburger (mobile) */}
               <div className="lg:hidden ml-auto flex items-center gap-2">
-                <MemberLoginDropdown slug={slug} contactEmail={contactEmail} />
+                <MemberLoginDropdown slug={slug} contactEmail={contactEmail} isDemo={isDemo} />
                 <Button
                   variant="ghost"
                   size="sm"

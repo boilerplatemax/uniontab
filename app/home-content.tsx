@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video, Menu, X } from 'lucide-react';
+import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video, Menu, X, Eye } from 'lucide-react';
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/ui/language-toggle';
@@ -246,6 +246,24 @@ export default function HomePage() {
                   </Button>
                 </Link>
               </motion.div>
+
+              {/* Demo CTA */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.45 }}
+                className="hidden lg:flex items-center gap-3 pt-1"
+              >
+                <Link href="/cupe100" target="_blank" rel="noopener noreferrer">
+                  <Button
+                    variant="ghost"
+                    className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 gap-2 text-sm px-3 py-2 h-auto"
+                  >
+                    <Eye className="h-4 w-4" />
+                    View live demo
+                  </Button>
+                </Link>
+              </motion.div>
             </div>
 
             {/* Right Column - Hero Image */}
@@ -303,6 +321,17 @@ export default function HomePage() {
                     {landing.hero.cta.seeFeatures}
                   </Button>
                 </Link>
+                <div className="flex justify-center pt-1">
+                  <Link href="/cupe100" target="_blank" rel="noopener noreferrer">
+                    <Button
+                      variant="ghost"
+                      className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 gap-2 text-sm"
+                    >
+                      <Eye className="h-4 w-4" />
+                      View live demo
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </motion.div>
           </div>
