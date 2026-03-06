@@ -1,29 +1,115 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Users, Menu, X, Home } from 'lucide-react';
+import {
+  Users,
+  Menu,
+  X,
+  Home,
+  Mail,
+  MessageSquare,
+  FileText,
+  AlertTriangle,
+  Calendar,
+  Vote,
+  DollarSign,
+  ChevronDown,
+} from 'lucide-react';
 
 interface PublicNavbarProps {
   isLoggedIn?: boolean;
   unionSlug?: string;
 }
 
+const featureLinks = [
+  {
+    slug: 'member-profiles',
+    icon: Users,
+    name: 'Member Profiles',
+    description: 'Manage your full membership directory',
+    color: 'text-blue-600',
+    bg: 'bg-blue-50',
+  },
+  {
+    slug: 'mass-email-text',
+    icon: Mail,
+    name: 'Mass Email & Text',
+    description: 'Reach every member instantly',
+    color: 'text-indigo-600',
+    bg: 'bg-indigo-50',
+  },
+  {
+    slug: 'grievance-tracking',
+    icon: AlertTriangle,
+    name: 'Grievance Tracking',
+    description: 'From filing to resolution',
+    color: 'text-amber-600',
+    bg: 'bg-amber-50',
+  },
+  {
+    slug: 'news-posts',
+    icon: MessageSquare,
+    name: 'News & Posts',
+    description: 'Keep members informed & engaged',
+    color: 'text-purple-600',
+    bg: 'bg-purple-50',
+  },
+  {
+    slug: 'file-sharing',
+    icon: FileText,
+    name: 'File Sharing',
+    description: 'Contracts and docs, secured',
+    color: 'text-emerald-600',
+    bg: 'bg-emerald-50',
+  },
+  {
+    slug: 'events-meetings',
+    icon: Calendar,
+    name: 'Events & Meetings',
+    description: 'Organize and track attendance',
+    color: 'text-cyan-600',
+    bg: 'bg-cyan-50',
+  },
+  {
+    slug: 'elections-voting',
+    icon: Vote,
+    name: 'Elections & Voting',
+    description: 'Secure democratic ballots',
+    color: 'text-rose-600',
+    bg: 'bg-rose-50',
+  },
+  {
+    slug: 'dues-management',
+    icon: DollarSign,
+    name: 'Dues Management',
+    description: 'Track payments & send reminders',
+    color: 'text-teal-600',
+    bg: 'bg-teal-50',
+  },
+];
+
 export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const navLinks = [
-    { name: 'Features', href: '/features' },
-    { name: 'Pricing', href: '/pricing' },
-    { name: 'About', href: '/about' },
-    { name: 'Blog', href: '/blogs' },
-    { name: 'Contact', href: '/contact' },
-  ];
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setFeaturesOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const isActive = (href: string) => pathname === href;
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
   return (
     <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
@@ -41,22 +127,85 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-2 sm:gap-4">
-            {navLinks.map((link) => (
+          <div className="hidden md:flex items-center gap-1">
+            {/* Features Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setFeaturesOpen(!featuresOpen)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/features')
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+              >
+                Features
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-200 ${featuresOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {featuresOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[560px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50">
+                  {/* Dropdown header */}
+                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+                    <div>
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Platform Features</div>
+                    </div>
+                    <Link
+                      href="/features"
+                      onClick={() => setFeaturesOpen(false)}
+                      className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    >
+                      View all features →
+                    </Link>
+                  </div>
+                  {/* Feature grid */}
+                  <div className="grid grid-cols-2 gap-1">
+                    {featureLinks.map((f) => (
+                      <Link
+                        key={f.slug}
+                        href={`/features/${f.slug}`}
+                        onClick={() => setFeaturesOpen(false)}
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                      >
+                        <div className={`w-9 h-9 ${f.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                          <f.icon className={`h-4.5 w-4.5 ${f.color} h-[18px] w-[18px]`} />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                            {f.name}
+                          </div>
+                          <div className="text-xs text-gray-500">{f.description}</div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Other nav links */}
+            {[
+              { name: 'Pricing', href: '/pricing' },
+              { name: 'About', href: '/about' },
+              { name: 'Blog', href: '/blogs' },
+              { name: 'Contact', href: '/contact' },
+            ].map((link) => (
               <Link key={link.href} href={link.href}>
                 <Button
                   variant="ghost"
-                  className={`text-gray-700 hover:text-blue-600 ${
-                    isActive(link.href) ? 'text-blue-600 font-semibold' : ''
+                  className={`text-sm text-gray-700 hover:text-blue-600 ${
+                    isActive(link.href) ? 'text-blue-600 font-semibold bg-blue-50' : ''
                   }`}
                 >
                   {link.name}
                 </Button>
               </Link>
             ))}
+
             {isLoggedIn && unionSlug ? (
               <Link href={`/${unionSlug}`}>
-                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
+                <Button className="ml-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
                   <Home className="h-4 w-4 mr-2" />
                   My Union
                 </Button>
@@ -64,7 +213,7 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
             ) : (
               <>
                 <Link href="/member-login">
-                  <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                  <Button variant="outline" className="ml-2 border-blue-600 text-blue-600 hover:bg-blue-50">
                     Member Login
                   </Button>
                 </Link>
@@ -77,22 +226,8 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
             )}
           </div>
 
-          {/* Mobile Menu Button - Hamburger centered */}
-          <div className="flex md:hidden items-center">
-            <button
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6 text-gray-700" />
-              ) : (
-                <Menu className="h-6 w-6 text-gray-700" />
-              )}
-            </button>
-          </div>
-
-          {/* Mobile CTA Button */}
-          <div className="flex md:hidden items-center">
+          {/* Mobile: hamburger + CTA */}
+          <div className="flex md:hidden items-center gap-2">
             {isLoggedIn && unionSlug ? (
               <Link href={`/${unionSlug}`}>
                 <Button
@@ -113,26 +248,81 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
                 </Button>
               </Link>
             )}
+            <button
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6 text-gray-700" />
+              ) : (
+                <Menu className="h-6 w-6 text-gray-700" />
+              )}
+            </button>
           </div>
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t py-4 space-y-2">
-            {navLinks.map((link) => (
+          <div className="md:hidden border-t py-4 space-y-1">
+            {/* Features accordion */}
+            <button
+              onClick={() => setMobileFeaturesOpen(!mobileFeaturesOpen)}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-left ${
+                isActive('/features') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <span>Features</span>
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ${mobileFeaturesOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {mobileFeaturesOpen && (
+              <div className="ml-4 space-y-1 pb-1">
+                <Link
+                  href="/features"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-50 rounded-lg"
+                >
+                  View All Features →
+                </Link>
+                {featureLinks.map((f) => (
+                  <Link
+                    key={f.slug}
+                    href={`/features/${f.slug}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className={`w-7 h-7 ${f.bg} rounded-md flex items-center justify-center flex-shrink-0`}>
+                      <f.icon className={`h-3.5 w-3.5 ${f.color}`} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-800">{f.name}</div>
+                      <div className="text-xs text-gray-500">{f.description}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {[
+              { name: 'Pricing', href: '/pricing' },
+              { name: 'About', href: '/about' },
+              { name: 'Blog', href: '/blogs' },
+              { name: 'Contact', href: '/contact' },
+            ].map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block px-4 py-3 rounded-lg transition-colors ${
-                  isActive(link.href)
-                    ? 'bg-blue-50 text-blue-600 font-semibold'
-                    : 'text-gray-700 hover:bg-gray-50'
+                  isActive(link.href) ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 {link.name}
               </Link>
             ))}
+
             {!isLoggedIn && (
               <div className="pt-2 border-t mt-2 space-y-2 px-4">
                 <Link
