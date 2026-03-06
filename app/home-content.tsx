@@ -351,6 +351,11 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
+                <div className="pt-4">
+                  <Link href="/features/elections-voting" className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium text-sm">
+                    Learn about Elections & Voting <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
               </div>
             </AnimatedSection>
           </div>
@@ -381,6 +386,11 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
+                <div className="pt-4">
+                  <Link href="/features/mass-email-text" className="inline-flex items-center gap-1 text-violet-400 hover:text-violet-300 font-medium text-sm">
+                    Learn about Mass Email & Text <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
               </div>
             </AnimatedSection>
             <AnimatedSection delay={0.2}>
@@ -433,6 +443,11 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
+                <div className="pt-4">
+                  <Link href="/features" className="inline-flex items-center gap-1 text-cyan-600 hover:text-cyan-700 font-medium text-sm">
+                    Explore all features <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
               </div>
             </AnimatedSection>
           </div>
@@ -465,6 +480,8 @@ export default function HomePage() {
                 description: landing.features.memberPortal.description,
                 points: landing.features.memberPortal.points,
                 dotColor: 'bg-purple-600',
+                linkColor: 'text-purple-600 hover:text-purple-700',
+                href: '/features/member-profiles',
               },
               {
                 icon: Database,
@@ -476,6 +493,8 @@ export default function HomePage() {
                 description: landing.features.storage.description,
                 points: landing.features.storage.points,
                 dotColor: 'bg-emerald-600',
+                linkColor: 'text-emerald-600 hover:text-emerald-700',
+                href: '/features/file-sharing',
               },
               {
                 icon: Calendar,
@@ -487,8 +506,10 @@ export default function HomePage() {
                 description: landing.features.events.description,
                 points: landing.features.events.points,
                 dotColor: 'bg-pink-600',
+                linkColor: 'text-pink-600 hover:text-pink-700',
+                href: '/features/events-meetings',
               },
-            ].map(({ icon: Icon, color, lightColor, textColor, imgSrc, title, description, points, dotColor }, i) => (
+            ].map(({ icon: Icon, color, lightColor, textColor, imgSrc, title, description, points, dotColor, linkColor, href }, i) => (
               <AnimatedSection key={i} delay={i * 0.1}>
                 <div className="group rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white">
                   <div className="relative h-44 overflow-hidden bg-gray-50">
@@ -508,6 +529,11 @@ export default function HomePage() {
                         </li>
                       ))}
                     </ul>
+                    <div className="pt-3">
+                      <Link href={href} className={`inline-flex items-center gap-1 text-sm font-medium ${linkColor}`}>
+                        Learn more <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </AnimatedSection>
