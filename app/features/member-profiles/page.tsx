@@ -82,7 +82,7 @@ const benefits = [
   'Grievance and election participation history',
   'Role-based visibility and editing permissions',
   'Bulk import from existing spreadsheets',
-  'Export to CSV, PDF, or your international's format',
+  "Export to CSV, PDF, or your international's format",
   'Encrypted storage and full audit log',
 ];
 

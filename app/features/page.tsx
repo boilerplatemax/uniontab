@@ -112,7 +112,7 @@ const features = [
     title: 'News & Posts',
     tagline: 'Keep members informed and engaged.',
     description:
-      'Your union's home page deserves a real news feed. Post updates, announcements, and stories with photos and rich text. Members can comment and react, building the kind of engagement that makes a local feel alive.',
+      "Your union's home page deserves a real news feed. Post updates, announcements, and stories with photos and rich text. Members can comment and react, building the kind of engagement that makes a local feel alive.",
     benefits: [
       'Rich text editor with photo support',
       'Scheduled & draft posts',
@@ -200,7 +200,7 @@ const features = [
     title: 'Dues Management',
     tagline: 'Know exactly who's paid and who hasn't.',
     description:
-      'Take the guesswork out of dues collection. Track every member's payment history, send automatic reminders to members who are behind, and generate financial reports for your treasurer at the click of a button.',
+      "Take the guesswork out of dues collection. Track every member's payment history, send automatic reminders to members who are behind, and generate financial reports for your treasurer at the click of a button.",
     benefits: [
       'Full dues payment history per member',
       'Automatic overdue reminders',

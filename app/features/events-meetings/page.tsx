@@ -56,7 +56,7 @@ const detailFeatures = [
     icon: ClipboardList,
     title: 'Agendas & Meeting Minutes',
     description:
-      'Post agendas before the meeting and publish minutes immediately after. Members who couldn't attend stay informed. Your records are always current.',
+      "Post agendas before the meeting and publish minutes immediately after. Members who couldn't attend stay informed. Your records are always current.",
   },
   {
     icon: RefreshCw,
