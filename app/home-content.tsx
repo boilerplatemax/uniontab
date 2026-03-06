@@ -155,56 +155,48 @@ export default function HomePage() {
             src="/assets/landing/hero-workers.jpg"
             alt=""
             fill
-            className="object-cover object-center opacity-25"
+            className="object-cover object-center opacity-40"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0c1628]/60 via-[#0c1628]/75 to-[#0c1628]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0c1628]/35 via-[#0c1628]/55 to-[#0c1628]/85" />
         </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6 lg:px-8 py-28 text-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-28">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: 'easeOut' }}
-            className="space-y-8"
+            className="max-w-2xl xl:max-w-3xl space-y-7"
           >
-            {/* Badge */}
-            <div className="flex justify-center">
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-5 py-2 text-sm text-violet-300 font-medium backdrop-blur-sm">
-                <Zap className="h-4 w-4" />
-                {landing.hero.badge}
-              </div>
-            </div>
-
             {/* Headline */}
-            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.05] tracking-tight">
               <span className="block">{landing.hero.title.line1}</span>
               <span className="block text-violet-400">{landing.hero.title.highlight}</span>
               <span className="block">{landing.hero.title.line3}</span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-lg sm:text-xl lg:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-300 max-w-xl leading-relaxed">
               {landing.hero.subtitle}
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-start gap-4 pt-2">
               <Link href="/sign-up">
                 <Button
                   size="lg"
-                  className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg bg-violet-500 hover:bg-violet-400 text-white font-bold shadow-2xl transition-all transform hover:scale-105 rounded-full"
+                  className="h-12 sm:h-14 px-7 sm:px-10 text-sm sm:text-base bg-violet-500 hover:bg-violet-400 text-white font-bold shadow-2xl transition-all transform hover:scale-105 rounded-full"
                 >
                   {landing.hero.cta.startFree}
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/cupe100" target="_blank" rel="noopener noreferrer">
                 <Button
                   size="lg"
-                  className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg bg-white text-violet-700 hover:bg-violet-50 font-semibold rounded-full transition-all shadow-lg"
+                  className="h-12 sm:h-14 px-7 sm:px-10 text-sm sm:text-base bg-white text-violet-700 hover:bg-violet-50 font-semibold rounded-full transition-all shadow-lg"
                 >
-                  <Eye className="mr-2 h-5 w-5" />
+                  <Eye className="mr-2 h-4 w-4" />
                   {landing.hero.cta.seeFeatures}
                 </Button>
               </Link>

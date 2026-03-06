@@ -14,8 +14,8 @@ export const en: Translations = {
     hero: {
       badge: 'Built by Union Leaders',
       title: {
-        line1: 'Save Time.',
-        highlight: 'Save Money.',
+        line1: 'Cut Costs.',
+        highlight: 'Drive Engagement.',
         line3: 'Lead Better.',
       },
       subtitle: 'The all-in-one platform union executives trust to streamline operations, engage members, and cut admin overhead — set up in under 30 minutes.',
