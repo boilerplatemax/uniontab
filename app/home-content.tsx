@@ -1,13 +1,13 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Users, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video, Menu, X, Eye, TrendingDown, Timer, ChevronDown } from 'lucide-react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Users, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video, Eye, TrendingDown, Timer, ChevronDown } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n';
-import { LanguageToggle } from '@/components/ui/language-toggle';
+import { PublicNavbar } from '@/components/public-navbar';
 
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef(null);
@@ -26,126 +26,12 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
 }
 
 export default function HomePage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const { t } = useLanguage();
   const landing = t.landing;
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navbar */}
-      <nav className="border-b bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity group">
-              <div className="relative">
-                <Users className="h-8 w-8 text-blue-600 group-hover:scale-110 transition-transform" />
-                <div className="absolute -inset-1 bg-blue-600/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <span className="ml-2 text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                UnionTab
-              </span>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden sm:flex items-center gap-2 sm:gap-4">
-              <Link href="/features">
-                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  {landing.nav.features}
-                </Button>
-              </Link>
-              <Link href="/pricing">
-                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  {landing.nav.pricing}
-                </Button>
-              </Link>
-              <Link href="/about">
-                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  {landing.nav.about}
-                </Button>
-              </Link>
-              <Link href="/blogs">
-                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  {landing.nav.blog}
-                </Button>
-              </Link>
-              <Link href="/contact">
-                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  {landing.nav.contact}
-                </Button>
-              </Link>
-              <LanguageToggle variant="pill" />
-              <Link href="/member-login">
-                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                  {landing.nav.memberLogin}
-                </Button>
-              </Link>
-              <Link href="/sign-up">
-                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
-                  {landing.nav.getStarted}
-                </Button>
-              </Link>
-            </div>
-
-            {/* Mobile */}
-            <div className="flex sm:hidden items-center gap-2">
-              <Link href="/sign-up">
-                <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
-                  {landing.nav.getStarted}
-                </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="text-gray-700"
-              >
-                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="sm:hidden bg-white border-t"
-            >
-              <div className="px-4 py-4 space-y-3">
-                {[
-                  { href: '/features', label: landing.nav.features },
-                  { href: '/pricing', label: landing.nav.pricing },
-                  { href: '/about', label: landing.nav.about },
-                  { href: '/blogs', label: landing.nav.blog },
-                  { href: '/contact', label: landing.nav.contact },
-                ].map(({ href, label }) => (
-                  <Link key={href} href={href} onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
-                      {label}
-                    </Button>
-                  </Link>
-                ))}
-                <div className="pt-3 border-t">
-                  <Link href="/member-login" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
-                      {landing.nav.memberLogin}
-                    </Button>
-                  </Link>
-                </div>
-                <div className="pt-3 border-t flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Language</span>
-                  <LanguageToggle variant="pill" />
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
+      <PublicNavbar />
 
       {/* ─── HERO — Full Screen ─── */}
       <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-[#0c1628]">

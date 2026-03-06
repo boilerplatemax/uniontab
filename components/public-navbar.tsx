@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { LanguageToggle } from '@/components/ui/language-toggle';
 import {
   Users,
   Menu,
@@ -265,6 +266,8 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
               </Link>
             ))}
 
+            <LanguageToggle variant="pill" />
+
             {isLoggedIn && unionSlug ? (
               <Link href={`/${unionSlug}`}>
                 <Button className="ml-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
@@ -448,6 +451,10 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
                 </Link>
               </div>
             )}
+            <div className="pt-2 border-t mt-2 px-4 flex items-center justify-between">
+              <span className="text-sm text-gray-600">Language</span>
+              <LanguageToggle variant="pill" />
+            </div>
           </div>
         )}
       </div>
