@@ -90,7 +90,7 @@ const features = [
     title: 'Grievance Tracking',
     tagline: 'Never let a grievance slip through the cracks.',
     description:
-      'Manage every workplace grievance from the moment it's filed to final resolution. Attach documents, track deadlines, record outcomes, and maintain a full audit trail. Know the status of every case without digging through email threads.',
+      "Manage every workplace grievance from the moment it's filed to final resolution. Attach documents, track deadlines, record outcomes, and maintain a full audit trail. Know the status of every case without digging through email threads.",
     benefits: [
       'Structured grievance filing workflow',
       'Step-by-step status tracking',

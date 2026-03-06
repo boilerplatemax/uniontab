@@ -75,7 +75,7 @@ const detailFeatures = [
 
 const benefits = [
   'Searchable member directory with advanced filters',
-  'Custom profile fields for your local's unique data',
+  "Custom profile fields for your local's unique data",
   'Employment history, seniority, and classification tracking',
   'Membership status management (active, retired, suspended)',
   'Dues payment history linked to each profile',

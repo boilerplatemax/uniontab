@@ -44,7 +44,7 @@ const detailFeatures = [
     icon: MessageSquare,
     title: 'SMS Text Blasts',
     description:
-      'When it matters most — a strike vote, an emergency meeting, a contract update — reach every member's phone in seconds with a text message.',
+      "When it matters most — a strike vote, an emergency meeting, a contract update — reach every member's phone in seconds with a text message.",
   },
   {
     icon: Target,

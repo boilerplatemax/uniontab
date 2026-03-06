@@ -44,7 +44,7 @@ const detailFeatures = [
     icon: Shield,
     title: 'Anonymous Voting with Audit Trail',
     description:
-      'Members' votes remain completely anonymous, but every participation is logged. You know who voted — you never know how they voted.',
+      "Members' votes remain completely anonymous, but every participation is logged. You know who voted — you never know how they voted.",
   },
   {
     icon: Users,

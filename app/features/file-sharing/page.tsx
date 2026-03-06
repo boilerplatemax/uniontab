@@ -45,7 +45,7 @@ const detailFeatures = [
     icon: History,
     title: 'Version History',
     description:
-      'Upload a new CBA? The old one doesn't disappear. Every file keeps a full version history so you can always retrieve an older draft or compare changes.',
+      "Upload a new CBA? The old one doesn't disappear. Every file keeps a full version history so you can always retrieve an older draft or compare changes.",
   },
   {
     icon: FolderOpen,

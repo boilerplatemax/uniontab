@@ -50,7 +50,7 @@ const detailFeatures = [
     icon: Users,
     title: 'RSVP & Attendance Tracking',
     description:
-      'Members RSVP in one click. Track attendance in real time and see who showed up versus who RSVP'd — valuable data for understanding engagement.',
+      "Members RSVP in one click. Track attendance in real time and see who showed up versus who RSVP'd — valuable data for understanding engagement.",
   },
   {
     icon: ClipboardList,

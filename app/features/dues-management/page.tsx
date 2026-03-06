@@ -68,7 +68,7 @@ const detailFeatures = [
     icon: FileText,
     title: 'Good Standing Reports',
     description:
-      'Generate a list of members in good standing for meetings, elections, or contract voting. Know instantly who's current and who isn't.',
+      "Generate a list of members in good standing for meetings, elections, or contract voting. Know instantly who's current and who isn't.",
   },
 ];
 
