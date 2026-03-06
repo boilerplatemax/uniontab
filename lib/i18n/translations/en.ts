@@ -12,11 +12,13 @@ export const en: Translations = {
       getStarted: 'Get Started',
     },
     hero: {
+      badge: 'Built by Union Leaders',
       title: {
-        highlight: 'Modern Tools',
-        rest: 'for Modern Unions',
+        line1: 'Save Time.',
+        highlight: 'Save Money.',
+        line3: 'Lead Better.',
       },
-      subtitle: 'One platform to engage members, run secure elections, and save hours every week.',
+      subtitle: 'The all-in-one platform union executives trust to streamline operations, engage members, and cut admin overhead — set up in under 30 minutes.',
       stats: {
         builtByUnion: 'Built by Union Leaders',
         uptime: '99.9% Uptime',
@@ -24,12 +26,27 @@ export const en: Translations = {
       },
       cta: {
         startFree: 'Start Free Today',
-        seeFeatures: 'See All Features',
+        seeFeatures: 'View Live Demo',
       },
       floatingCard: {
         title: 'Free for Small Locals',
         subtitle: 'Under 150 members',
       },
+      disclaimer: 'Free for locals under 150 members · No credit card required',
+    },
+    roi: {
+      stat1: { value: '15+', label: 'Hours saved per month' },
+      stat2: { value: '1', label: 'Platform for all your tools' },
+      stat3: { value: '40%', label: 'Less admin overhead' },
+      stat4: { value: '30 min', label: 'Average setup time' },
+      headline: 'Stop juggling. Start leading.',
+      body: 'Most union executives spend 15+ hours a week chasing spreadsheets, managing email lists, and running paper ballots. UnionTab consolidates all of it into one powerful platform — so you can focus on what matters.',
+      points: [
+        'Replace spreadsheets, email chains, and paper ballots',
+        'One dashboard for elections, communications, and events',
+        'Cut costs with one subscription instead of scattered tools',
+        'Real-time insights into member engagement and activity',
+      ],
     },
     howItWorks: {
       title: 'Get Started in 3 Simple Steps',
@@ -51,35 +68,38 @@ export const en: Translations = {
     },
     features: {
       title: 'Everything You Need to Lead',
-      subtitle: 'Powerful tools designed specifically for union executives to engage members, run elections, and build stronger communities.',
+      subtitle: 'Powerful tools designed specifically for union executives.',
       elections: {
-        title: 'Secure Elections',
-        description: 'Run democratic elections with confidence. Our secure voting platform ensures transparency and integrity for all union decisions.',
-        points: ['Anonymous & verifiable voting', 'Real-time results tracking', 'Audit trails & compliance'],
+        title: 'Run Fair Elections in Minutes',
+        eyebrow: 'Secure Elections',
+        description: 'No more paper ballots, manual counting, or compliance headaches. Run fully democratic elections digitally — with anonymous voting, real-time results, and complete audit trails.',
+        points: ['Anonymous & verifiable voting', 'Real-time results tracking', 'Full audit trail & compliance records'],
       },
       communications: {
-        title: 'Mass Communications',
-        description: 'Send email and SMS updates to your entire membership or specific groups. Keep everyone informed with professional newsletters and urgent alerts.',
-        points: ['Bulk email & SMS messaging', 'Customizable templates', 'Delivery tracking & analytics'],
+        title: 'Reach Every Member Instantly',
+        eyebrow: 'Mass Communications',
+        description: 'Send professional email and SMS updates to your entire membership or specific groups in seconds. No more managing separate email lists or paying for multiple tools.',
+        points: ['Bulk email & SMS in one click', 'Customizable professional templates', 'Delivery tracking & open rates'],
+      },
+      analytics: {
+        title: 'Know What\'s Working',
+        eyebrow: 'Analytics & Insights',
+        description: 'Make data-driven decisions with a real-time dashboard showing member engagement, event attendance, and communication performance. Stop guessing, start knowing.',
+        points: ['Member engagement metrics', 'Custom reports & data exports', 'Trend analysis & comparisons'],
       },
       memberPortal: {
         title: 'Member Portal',
         description: 'Give your members a secure space to access union resources, view their benefits, and stay connected with leadership.',
         points: ['Secure member authentication', 'Document library & resources', 'Personal member dashboard'],
       },
-      analytics: {
-        title: 'Analytics & Insights',
-        description: 'Make data-driven decisions with comprehensive analytics on member engagement, event attendance, and communication effectiveness.',
-        points: ['Engagement metrics', 'Custom reports & exports', 'Trend analysis'],
-      },
       storage: {
         title: 'Secure Document Storage',
-        description: 'Store contracts, bylaws, and important documents in a secure, organized system. Control who can access what with granular permissions.',
+        description: 'Store contracts, bylaws, and important documents in a secure, organized system with granular access controls.',
         points: ['Encrypted cloud storage', 'Version control & history', 'Permission management'],
       },
       events: {
         title: 'Event Management',
-        description: 'Plan meetings, rallies, and events with built-in RSVP tracking and automated reminders for all your union activities.',
+        description: 'Plan meetings, rallies, and events with built-in RSVP tracking and automated reminders.',
         points: ['Event calendar & RSVP', 'Automated reminders', 'Attendance tracking'],
       },
     },

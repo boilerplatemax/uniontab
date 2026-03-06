@@ -12,11 +12,13 @@ export const fr: Translations = {
       getStarted: 'Commencer',
     },
     hero: {
+      badge: 'Créé par des syndicalistes',
       title: {
-        highlight: 'Outils modernes',
-        rest: 'pour syndicats modernes',
+        line1: 'Gagnez du temps.',
+        highlight: 'Réduisez les coûts.',
+        line3: 'Dirigez mieux.',
       },
-      subtitle: 'Une plateforme pour engager les membres, organiser des élections sécurisées et économiser des heures chaque semaine.',
+      subtitle: 'La plateforme tout-en-un que les dirigeants syndicaux utilisent pour optimiser leurs opérations, engager les membres et réduire les tâches administratives — configuration en moins de 30 minutes.',
       stats: {
         builtByUnion: 'Créé par des syndicalistes',
         uptime: 'Disponibilité 99,9%',
@@ -24,12 +26,27 @@ export const fr: Translations = {
       },
       cta: {
         startFree: 'Commencer gratuitement',
-        seeFeatures: 'Voir les fonctionnalités',
+        seeFeatures: 'Voir la démo en direct',
       },
       floatingCard: {
         title: 'Gratuit pour les petites sections',
         subtitle: 'Moins de 150 membres',
       },
+      disclaimer: 'Gratuit pour les sections de moins de 150 membres · Aucune carte de crédit requise',
+    },
+    roi: {
+      stat1: { value: '15+', label: 'Heures économisées par mois' },
+      stat2: { value: '1', label: 'Plateforme pour tous vos outils' },
+      stat3: { value: '40%', label: 'Moins de tâches administratives' },
+      stat4: { value: '30 min', label: 'Temps de configuration moyen' },
+      headline: 'Arrêtez de jongler. Commencez à diriger.',
+      body: 'La plupart des dirigeants syndicaux passent plus de 15 heures par semaine à gérer des feuilles de calcul, des listes de courriels et des bulletins de vote papier. UnionTab regroupe tout cela en une seule plateforme puissante.',
+      points: [
+        'Remplacez les feuilles de calcul, les chaînes de courriels et les bulletins papier',
+        'Un seul tableau de bord pour les élections, les communications et les événements',
+        'Réduisez les coûts avec un seul abonnement au lieu d\'outils dispersés',
+        'Aperçus en temps réel sur l\'engagement et l\'activité des membres',
+      ],
     },
     howItWorks: {
       title: 'Démarrez en 3 étapes simples',
@@ -51,35 +68,38 @@ export const fr: Translations = {
     },
     features: {
       title: 'Tout ce dont vous avez besoin pour diriger',
-      subtitle: 'Des outils puissants conçus spécifiquement pour les dirigeants syndicaux afin d\'engager les membres, organiser des élections et bâtir des communautés plus fortes.',
+      subtitle: 'Des outils puissants conçus spécifiquement pour les dirigeants syndicaux.',
       elections: {
-        title: 'Élections sécurisées',
-        description: 'Organisez des élections démocratiques en toute confiance. Notre plateforme de vote sécurisée garantit la transparence et l\'intégrité de toutes les décisions syndicales.',
-        points: ['Vote anonyme et vérifiable', 'Suivi des résultats en temps réel', 'Pistes d\'audit et conformité'],
+        title: 'Organisez des élections équitables en quelques minutes',
+        eyebrow: 'Élections sécurisées',
+        description: 'Plus de bulletins papier, de décomptes manuels ou de maux de tête liés à la conformité. Organisez des élections entièrement démocratiques par voie numérique — avec vote anonyme, résultats en temps réel et pistes d\'audit complètes.',
+        points: ['Vote anonyme et vérifiable', 'Suivi des résultats en temps réel', 'Pistes d\'audit et dossiers de conformité complets'],
       },
       communications: {
-        title: 'Communications de masse',
-        description: 'Envoyez des mises à jour par courriel et SMS à tous vos membres ou à des groupes spécifiques. Tenez tout le monde informé avec des bulletins professionnels et des alertes urgentes.',
-        points: ['Messagerie courriel et SMS en masse', 'Modèles personnalisables', 'Suivi des livraisons et analytiques'],
+        title: 'Rejoignez chaque membre instantanément',
+        eyebrow: 'Communications de masse',
+        description: 'Envoyez des mises à jour professionnelles par courriel et SMS à tous vos membres ou à des groupes spécifiques en quelques secondes. Plus besoin de gérer des listes de courriels séparées.',
+        points: ['Courriel et SMS en masse en un clic', 'Modèles professionnels personnalisables', 'Suivi des livraisons et taux d\'ouverture'],
+      },
+      analytics: {
+        title: 'Sachez ce qui fonctionne',
+        eyebrow: 'Analytiques et aperçus',
+        description: 'Prenez des décisions éclairées avec un tableau de bord en temps réel montrant l\'engagement des membres, la participation aux événements et les performances des communications.',
+        points: ['Métriques d\'engagement des membres', 'Rapports et exports de données personnalisés', 'Analyse des tendances et comparaisons'],
       },
       memberPortal: {
         title: 'Portail des membres',
         description: 'Offrez à vos membres un espace sécurisé pour accéder aux ressources syndicales, consulter leurs avantages et rester connectés avec la direction.',
         points: ['Authentification sécurisée des membres', 'Bibliothèque de documents et ressources', 'Tableau de bord personnel'],
       },
-      analytics: {
-        title: 'Analytiques et aperçus',
-        description: 'Prenez des décisions basées sur les données avec des analytiques complètes sur l\'engagement des membres, la participation aux événements et l\'efficacité des communications.',
-        points: ['Métriques d\'engagement', 'Rapports et exports personnalisés', 'Analyse des tendances'],
-      },
       storage: {
         title: 'Stockage sécurisé de documents',
-        description: 'Stockez les contrats, statuts et documents importants dans un système sécurisé et organisé. Contrôlez qui peut accéder à quoi avec des permissions granulaires.',
+        description: 'Stockez les contrats, statuts et documents importants dans un système sécurisé et organisé avec des contrôles d\'accès granulaires.',
         points: ['Stockage cloud chiffré', 'Contrôle de version et historique', 'Gestion des permissions'],
       },
       events: {
         title: 'Gestion des événements',
-        description: 'Planifiez des réunions, rassemblements et événements avec suivi RSVP intégré et rappels automatisés pour toutes vos activités syndicales.',
+        description: 'Planifiez des réunions, rassemblements et événements avec suivi RSVP intégré et rappels automatisés.',
         points: ['Calendrier et RSVP', 'Rappels automatisés', 'Suivi des présences'],
       },
     },
