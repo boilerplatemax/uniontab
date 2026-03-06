@@ -92,6 +92,8 @@ export const unions = pgTable('unions', {
   requireEmailVerification: boolean('require_email_verification').notNull().default(true), // When false, members can join without verifying their email
   // Grievance settings
   grievanceFilingPermission: varchar('grievance_filing_permission', { length: 20 }).notNull().default('all'), // 'all' = members and admins can file; 'admins_only' = only admins/owners
+  // Demo mode - when true, this union is a read-only demo site (no mutations allowed)
+  isDemo: boolean('is_demo').notNull().default(false),
 });
 
 export const members = pgTable('members', {
