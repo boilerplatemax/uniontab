@@ -198,7 +198,7 @@ const features = [
     slug: 'dues-management',
     icon: DollarSign,
     title: 'Dues Management',
-    tagline: 'Know exactly who's paid and who hasn't.',
+    tagline: "Know exactly who's paid and who hasn't.",
     description:
       "Take the guesswork out of dues collection. Track every member's payment history, send automatic reminders to members who are behind, and generate financial reports for your treasurer at the click of a button.",
     benefits: [
@@ -232,7 +232,7 @@ const platformHighlights = [
   {
     icon: BarChart3,
     title: 'Built-in Analytics',
-    description: 'See who's engaged, what's working, and where to focus your organizing efforts.',
+    description: "See who's engaged, what's working, and where to focus your organizing efforts.",
   },
 ];
 
