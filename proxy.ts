@@ -11,6 +11,18 @@ export async function proxy(request: NextRequest) {
   const isProtectedRoute = pathname === '/onboarding';
   const isAdminRoute = pathname.startsWith(adminRoutes);
 
+  // Block all mutating API calls in demo mode
+  const isDemo = request.cookies.get('demo_mode')?.value === '1';
+  if (isDemo && request.method !== 'GET' && pathname.startsWith('/api/')) {
+    const allowed = ['/demo-login', '/api/announcements/dismiss'];
+    if (!allowed.some((p) => pathname.includes(p))) {
+      return NextResponse.json(
+        { error: 'This action is disabled in demo mode.' },
+        { status: 403 }
+      );
+    }
+  }
+
   // Handle subdomain routing for info.uniontab.com
   const hostname = request.headers.get('host') || '';
   const url = request.nextUrl.clone();
