@@ -13,6 +13,8 @@
     "seed:atu123-events": "npx tsx lib/db/seed-atu123-events.ts",
     "seed:atu1587-members": "npx tsx lib/db/seed-atu1587-members.ts",
     "seed:cupe100-demo": "npx tsx lib/db/seed-cupe100-demo.ts",
+    "seed:cupe100-events": "npx tsx lib/db/seed-cupe100-events.ts",
+    "seed:cupe100-postlikes": "npx tsx lib/db/seed-cupe100-postlikes.ts",
     "cleanup:mock-users": "npx tsx lib/db/cleanup-mock-data.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
