@@ -46,6 +46,11 @@ export function PublicFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/why-choose-us" className="hover:text-white transition-colors">
+                  Why Choose Us?
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className="hover:text-white transition-colors">
                   Contact
                 </Link>

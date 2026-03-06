@@ -17,6 +17,8 @@ import {
   Vote,
   DollarSign,
   ChevronDown,
+  Award,
+  Info,
 } from 'lucide-react';
 
 interface PublicNavbarProps {
@@ -95,14 +97,20 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
+  const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const aboutDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setFeaturesOpen(false);
+      }
+      if (aboutDropdownRef.current && !aboutDropdownRef.current.contains(event.target as Node)) {
+        setAboutOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -184,10 +192,64 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
               )}
             </div>
 
-            {/* Other nav links */}
+            {/* Pricing */}
+            <Link href="/pricing">
+              <Button
+                variant="ghost"
+                className={`text-sm text-gray-700 hover:text-blue-600 ${isActive('/pricing') ? 'text-blue-600 font-semibold bg-blue-50' : ''}`}
+              >
+                Pricing
+              </Button>
+            </Link>
+
+            {/* About dropdown */}
+            <div className="relative" ref={aboutDropdownRef}>
+              <button
+                onClick={() => setAboutOpen(!aboutOpen)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/about') || isActive('/why-choose-us')
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+              >
+                About
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${aboutOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {aboutOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-50">
+                  <Link
+                    href="/about"
+                    onClick={() => setAboutOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                  >
+                    <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Info className="h-[18px] w-[18px] text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">About Us</div>
+                      <div className="text-xs text-gray-500">Our mission & story</div>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/why-choose-us"
+                    onClick={() => setAboutOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                  >
+                    <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Award className="h-[18px] w-[18px] text-amber-600" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Why Choose Us?</div>
+                      <div className="text-xs text-gray-500">Compare vs competitors</div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Blog & Contact */}
             {[
-              { name: 'Pricing', href: '/pricing' },
-              { name: 'About', href: '/about' },
               { name: 'Blog', href: '/blogs' },
               { name: 'Contact', href: '/contact' },
             ].map((link) => (
@@ -305,9 +367,59 @@ export function PublicNavbar({ isLoggedIn, unionSlug }: PublicNavbarProps = {}) 
               </div>
             )}
 
+            {/* Pricing */}
+            <Link
+              href="/pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`block px-4 py-3 rounded-lg transition-colors ${isActive('/pricing') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`}
+            >
+              Pricing
+            </Link>
+
+            {/* About accordion */}
+            <button
+              onClick={() => setMobileAboutOpen(!mobileAboutOpen)}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-left ${
+                isActive('/about') || isActive('/why-choose-us') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <span>About</span>
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${mobileAboutOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {mobileAboutOpen && (
+              <div className="ml-4 space-y-1 pb-1">
+                <Link
+                  href="/about"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="w-7 h-7 bg-blue-50 rounded-md flex items-center justify-center flex-shrink-0">
+                    <Info className="h-3.5 w-3.5 text-blue-600" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">About Us</div>
+                    <div className="text-xs text-gray-500">Our mission & story</div>
+                  </div>
+                </Link>
+                <Link
+                  href="/why-choose-us"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="w-7 h-7 bg-amber-50 rounded-md flex items-center justify-center flex-shrink-0">
+                    <Award className="h-3.5 w-3.5 text-amber-600" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">Why Choose Us?</div>
+                    <div className="text-xs text-gray-500">Compare vs competitors</div>
+                  </div>
+                </Link>
+              </div>
+            )}
+
+            {/* Blog & Contact */}
             {[
-              { name: 'Pricing', href: '/pricing' },
-              { name: 'About', href: '/about' },
               { name: 'Blog', href: '/blogs' },
               { name: 'Contact', href: '/contact' },
             ].map((link) => (
