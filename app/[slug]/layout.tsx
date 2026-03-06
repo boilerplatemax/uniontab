@@ -5,6 +5,7 @@ import { UnionNavbar } from './union-navbar';
 import { NavbarSpacer } from './navbar-spacer';
 import { AnnouncementClient } from './announcement-client';
 import { DemoBanner } from './demo-banner';
+import { DemoExitWidget } from './demo-exit-widget';
 
 export default async function UnionSlugLayout({
   children,
@@ -27,7 +28,10 @@ export default async function UnionSlugLayout({
     <Suspense>
       <UnionTabProvider slug={slug} isDemo={isDemo}>
         {isDemo && data.membership && (
-          <DemoBanner handleSignOut={data.handleSignOut} />
+          <>
+            <DemoBanner />
+            <DemoExitWidget handleSignOut={data.handleSignOut} />
+          </>
         )}
         <AnnouncementClient
           popup={data.activeAnnouncements.popup}
