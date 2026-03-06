@@ -170,7 +170,7 @@ export default function HomePage() {
           >
             {/* Badge */}
             <div className="flex justify-center">
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-5 py-2 text-sm text-amber-300 font-medium backdrop-blur-sm">
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-5 py-2 text-sm text-violet-300 font-medium backdrop-blur-sm">
                 <Zap className="h-4 w-4" />
                 {landing.hero.badge}
               </div>
@@ -179,7 +179,7 @@ export default function HomePage() {
             {/* Headline */}
             <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight">
               <span className="block">{landing.hero.title.line1}</span>
-              <span className="block text-amber-400">{landing.hero.title.highlight}</span>
+              <span className="block text-violet-400">{landing.hero.title.highlight}</span>
               <span className="block">{landing.hero.title.line3}</span>
             </h1>
 
@@ -193,7 +193,7 @@ export default function HomePage() {
               <Link href="/sign-up">
                 <Button
                   size="lg"
-                  className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold shadow-2xl transition-all transform hover:scale-105 rounded-full"
+                  className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg bg-violet-500 hover:bg-violet-400 text-white font-bold shadow-2xl transition-all transform hover:scale-105 rounded-full"
                 >
                   {landing.hero.cta.startFree}
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -202,8 +202,7 @@ export default function HomePage() {
               <Link href="/cupe100" target="_blank" rel="noopener noreferrer">
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 rounded-full transition-all"
+                  className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg bg-white text-violet-700 hover:bg-violet-50 font-semibold rounded-full transition-all shadow-lg"
                 >
                   <Eye className="mr-2 h-5 w-5" />
                   {landing.hero.cta.seeFeatures}
@@ -245,8 +244,8 @@ export default function HomePage() {
             ].map(({ stat, icon: Icon }, i) => (
               <AnimatedSection key={i} delay={i * 0.1}>
                 <div className="text-center space-y-3">
-                  <Icon className="h-7 w-7 text-amber-400/60 mx-auto" />
-                  <div className="text-4xl sm:text-5xl font-bold text-amber-400">{stat.value}</div>
+                  <Icon className="h-7 w-7 text-violet-400/60 mx-auto" />
+                  <div className="text-4xl sm:text-5xl font-bold text-violet-400">{stat.value}</div>
                   <div className="text-xs sm:text-sm text-slate-400 uppercase tracking-widest leading-snug">
                     {stat.label}
                   </div>
@@ -263,7 +262,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             <AnimatedSection>
               <div className="space-y-8">
-                <p className="text-amber-400 font-semibold uppercase tracking-widest text-sm">
+                <p className="text-violet-400 font-semibold uppercase tracking-widest text-sm">
                   For Union Executives
                 </p>
                 <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
@@ -275,8 +274,8 @@ export default function HomePage() {
                 <ul className="space-y-4 pt-2">
                   {landing.roi.points.map((point, i) => (
                     <li key={i} className="flex items-start gap-4">
-                      <div className="w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-slate-900" />
+                      <div className="w-6 h-6 bg-violet-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-white" />
                       </div>
                       <span className="text-slate-300">{point}</span>
                     </li>
@@ -286,7 +285,7 @@ export default function HomePage() {
                   <Link href="/sign-up">
                     <Button
                       size="lg"
-                      className="h-14 px-10 text-base bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold rounded-full shadow-xl transition-all hover:scale-105"
+                      className="h-14 px-10 text-base bg-violet-500 hover:bg-violet-400 text-white font-bold rounded-full shadow-xl transition-all hover:scale-105"
                     >
                       {landing.hero.cta.startFree}
                       <ArrowRight className="ml-2 h-5 w-5" />
@@ -310,8 +309,8 @@ export default function HomePage() {
                 {/* Floating stat card */}
                 <div className="absolute -bottom-6 -right-4 sm:-right-8 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-5 hidden sm:block">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-amber-400 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Clock className="h-6 w-6 text-slate-900" />
+                    <div className="w-12 h-12 bg-violet-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Clock className="h-6 w-6 text-white" />
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-white">15+ hrs</p>
@@ -385,7 +384,7 @@ export default function HomePage() {
                 <ul className="space-y-3 pt-2">
                   {landing.features.communications.points.map((point, i) => (
                     <li key={i} className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="h-5 w-5 text-amber-400 flex-shrink-0" />
+                      <CheckCircle2 className="h-5 w-5 text-violet-400 flex-shrink-0" />
                       {point}
                     </li>
                   ))}
@@ -543,12 +542,12 @@ export default function HomePage() {
             {[
               { step: '1', color: 'bg-blue-600', data: landing.howItWorks.steps.step1, img: '/assets/landing/step-1-profile.png', alt: 'Profile setup' },
               { step: '2', color: 'bg-indigo-600', data: landing.howItWorks.steps.step2, img: '/assets/landing/step-2-import.png', alt: 'Member import' },
-              { step: '3', color: 'bg-amber-400', textColor: 'text-slate-900', data: landing.howItWorks.steps.step3, img: '/assets/landing/step-3-dashboard.png', alt: 'Dashboard' },
-            ].map(({ step, color, textColor, data, img, alt }, i) => (
+              { step: '3', color: 'bg-violet-500', data: landing.howItWorks.steps.step3, img: '/assets/landing/step-3-dashboard.png', alt: 'Dashboard' },
+            ].map(({ step, color, data, img, alt }, i) => (
               <AnimatedSection key={i} delay={i * 0.15}>
                 <div className="text-center space-y-5 flex flex-col items-center">
                   <div className={`w-16 h-16 ${color} rounded-2xl flex items-center justify-center shadow-lg`}>
-                    <span className={`text-2xl font-bold ${textColor ?? 'text-white'}`}>{step}</span>
+                    <span className="text-2xl font-bold text-white">{step}</span>
                   </div>
                   <h3 className="text-xl font-bold text-white">{data.title}</h3>
                   <p className="text-slate-400 leading-relaxed">{data.description}</p>
@@ -632,8 +631,8 @@ export default function HomePage() {
         <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <AnimatedSection>
             <div className="space-y-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-amber-400/20 rounded-2xl border border-amber-400/30 mb-2">
-                <Users className="h-10 w-10 text-amber-400" />
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-violet-500/20 rounded-2xl border border-violet-400/30 mb-2">
+                <Users className="h-10 w-10 text-violet-400" />
               </div>
               <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
                 {landing.cta.title}
@@ -645,7 +644,7 @@ export default function HomePage() {
                 <Link href="/sign-up">
                   <Button
                     size="lg"
-                    className="h-16 px-12 text-lg bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold shadow-2xl transition-all transform hover:scale-105 rounded-full"
+                    className="h-16 px-12 text-lg bg-violet-500 hover:bg-violet-400 text-white font-bold shadow-2xl transition-all transform hover:scale-105 rounded-full"
                   >
                     {landing.cta.startFree}
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -667,7 +666,7 @@ export default function HomePage() {
                 <p className="text-sm text-slate-400 mb-4">{landing.cta.demoText}</p>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors text-sm font-medium"
+                  className="inline-flex items-center gap-2 text-violet-400 hover:text-violet-300 transition-colors text-sm font-medium"
                 >
                   <Video className="h-4 w-4" />
                   {landing.cta.bookDemo}
