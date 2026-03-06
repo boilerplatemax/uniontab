@@ -543,11 +543,11 @@ export default function HomePage() {
               { step: '1', color: 'bg-blue-600', data: landing.howItWorks.steps.step1, img: '/assets/landing/step-1-profile.png', alt: 'Profile setup' },
               { step: '2', color: 'bg-indigo-600', data: landing.howItWorks.steps.step2, img: '/assets/landing/step-2-import.png', alt: 'Member import' },
               { step: '3', color: 'bg-violet-500', data: landing.howItWorks.steps.step3, img: '/assets/landing/step-3-dashboard.png', alt: 'Dashboard' },
-            ].map(({ step, color, textColor, data, img, alt }, i) => (
+            ].map(({ step, color, data, img, alt }, i) => (
               <AnimatedSection key={i} delay={i * 0.15}>
                 <div className="text-center space-y-5 flex flex-col items-center">
                   <div className={`w-16 h-16 ${color} rounded-2xl flex items-center justify-center shadow-lg`}>
-                    <span className={`text-2xl font-bold ${textColor ?? 'text-white'}`}>{step}</span>
+                    <span className="text-2xl font-bold text-white">{step}</span>
                   </div>
                   <h3 className="text-xl font-bold text-white">{data.title}</h3>
                   <p className="text-slate-400 leading-relaxed">{data.description}</p>
