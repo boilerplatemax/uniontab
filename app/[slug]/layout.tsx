@@ -55,7 +55,7 @@ export default async function UnionSlugLayout({
           hasPublicFiles={data.hasPublicFiles}
           isDemo={isDemo}
         />
-        <NavbarSpacer announcementId={data.activeAnnouncements.banner?.id} />
+        <NavbarSpacer announcementId={data.activeAnnouncements.banner?.id} isDemo={isDemo && !!data.membership} />
         {children}
       </UnionTabProvider>
     </Suspense>

@@ -456,7 +456,7 @@ export function UnionNavbar({
 
     return (
       <>
-        <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
+        <nav className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${isDemo && hasVisibleAnnouncement ? 'top-[84px]' : isDemo ? 'top-9' : hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}>
           <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex items-center h-14 gap-4">
               <Link
@@ -821,7 +821,7 @@ export function UnionNavbar({
     <>
       <nav
         ref={panelRef}
-        className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}
+        className={`fixed left-0 right-0 z-50 bg-white shadow-sm ${isDemo && hasVisibleAnnouncement ? 'top-[84px]' : isDemo ? 'top-9' : hasVisibleAnnouncement ? 'top-12' : 'top-0'}`}
       >
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-14 gap-4">
