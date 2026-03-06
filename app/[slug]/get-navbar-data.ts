@@ -100,7 +100,9 @@ async function getNavNavigationItems(unionId: number) {
 
 async function handleSignOutAction() {
   'use server';
-  (await cookies()).delete('session');
+  const jar = await cookies();
+  jar.delete('session');
+  jar.delete('demo_mode');
 }
 
 export async function getNavbarData(slug: string) {

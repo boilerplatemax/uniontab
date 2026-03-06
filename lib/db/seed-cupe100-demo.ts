@@ -422,7 +422,7 @@ async function seedCUPE100Demo() {
     console.log(`Created demo admin user (id: ${demoAdminUser.id})`);
   }
 
-  // Ensure demo admin is a regular member of the union (no admin controls)
+  // Ensure demo admin is an owner so they can see all features, but mutations are blocked by middleware
   const existingMembership = await db.query.members.findFirst({
     where: and(eq(members.userId, demoAdminUser.id), eq(members.unionId, union.id)),
   });
@@ -430,9 +430,9 @@ async function seedCUPE100Demo() {
   if (existingMembership) {
     console.log(`Demo admin membership already exists`);
     demoAdminMember = existingMembership;
-    // Ensure they're a regular member with no admin controls
-    if (existingMembership.role !== 'member') {
-      await db.update(members).set({ role: 'member', status: 'approved' }).where(eq(members.id, existingMembership.id));
+    // Ensure they're an owner (for full view access) with approved status
+    if (existingMembership.role !== 'owner' || existingMembership.status !== 'approved') {
+      await db.update(members).set({ role: 'owner', status: 'approved' }).where(eq(members.id, existingMembership.id));
     }
   } else {
     const [created] = await db
@@ -440,7 +440,7 @@ async function seedCUPE100Demo() {
       .values({
         userId: demoAdminUser.id,
         unionId: union.id,
-        role: 'member',
+        role: 'owner',
         status: 'approved',
         firstName: 'Demo',
         lastName: 'Admin',

@@ -52,7 +52,7 @@ export async function POST(
     revalidatePath(`/${slug}`, 'layout');
     revalidatePath(`/${slug}`, 'page');
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       user: {
         id: membership.user.id,
@@ -60,6 +60,16 @@ export async function POST(
         email: membership.user.email,
       },
     });
+
+    // Mark this session as demo mode so middleware can block mutations
+    response.cookies.set('demo_mode', '1', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60, // 1 day
+    });
+
+    return response;
   } catch (error) {
     console.error('Demo login error:', error);
     return NextResponse.json({ error: 'Failed to start demo session' }, { status: 500 });
