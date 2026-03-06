@@ -31,12 +31,12 @@ export async function POST(
       );
     }
 
-    // Find the demo admin user (owner of this demo union)
+    // Find the demo admin user by their designated email address
     const [membership] = await db
       .select({ user: users, member: members })
       .from(members)
       .innerJoin(users, eq(members.userId, users.id))
-      .where(and(eq(members.unionId, union.id), eq(members.role, 'owner'), eq(members.status, 'approved')))
+      .where(and(eq(members.unionId, union.id), eq(users.email, 'demo@cupe100.ca'), eq(members.status, 'approved')))
       .limit(1);
 
     if (!membership) {
