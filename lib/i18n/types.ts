@@ -11,9 +11,11 @@ export interface LandingPageTranslations {
     getStarted: string;
   };
   hero: {
+    badge: string;
     title: {
+      line1: string;
       highlight: string;
-      rest: string;
+      line3: string;
     };
     subtitle: string;
     stats: {
@@ -29,6 +31,16 @@ export interface LandingPageTranslations {
       title: string;
       subtitle: string;
     };
+    disclaimer: string;
+  };
+  roi: {
+    stat1: { value: string; label: string };
+    stat2: { value: string; label: string };
+    stat3: { value: string; label: string };
+    stat4: { value: string; label: string };
+    headline: string;
+    body: string;
+    points: string[];
   };
   howItWorks: {
     title: string;
@@ -53,20 +65,23 @@ export interface LandingPageTranslations {
     subtitle: string;
     elections: {
       title: string;
+      eyebrow: string;
       description: string;
       points: string[];
     };
     communications: {
       title: string;
-      description: string;
-      points: string[];
-    };
-    memberPortal: {
-      title: string;
+      eyebrow: string;
       description: string;
       points: string[];
     };
     analytics: {
+      title: string;
+      eyebrow: string;
+      description: string;
+      points: string[];
+    };
+    memberPortal: {
       title: string;
       description: string;
       points: string[];

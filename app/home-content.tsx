@@ -4,23 +4,21 @@ import { useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Users, Globe, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video, Menu, X, Eye } from 'lucide-react';
-import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Users, Shield, Zap, Mail, Vote, Database, BarChart3, Calendar, Lock, CheckCircle2, Clock, FileCheck, UserCheck, Video, Menu, X, Eye, TrendingDown, Timer, ChevronDown } from 'lucide-react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 
-// Animation component for scroll-triggered animations
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-      transition={{ duration: 0.6, delay, ease: "easeOut" }}
+      initial={{ opacity: 0, y: 40 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      transition={{ duration: 0.7, delay, ease: 'easeOut' }}
     >
       {children}
     </motion.div>
@@ -28,23 +26,15 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
 }
 
 export default function HomePage() {
-  const heroRef = useRef(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
-  });
-  // Keep minimum opacity of 1 on mobile to prevent faded/transparent appearance
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 1]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.98]);
 
   const { t } = useLanguage();
   const landing = t.landing;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      {/* Enhanced Navbar */}
-      <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-white">
+      {/* Navbar */}
+      <nav className="border-b bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center hover:opacity-80 transition-opacity group">
@@ -97,8 +87,13 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Mobile Hamburger - Centered */}
-            <div className="flex sm:hidden items-center">
+            {/* Mobile */}
+            <div className="flex sm:hidden items-center gap-2">
+              <Link href="/sign-up">
+                <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
+                  {landing.nav.getStarted}
+                </Button>
+              </Link>
               <Button
                 variant="ghost"
                 size="icon"
@@ -107,15 +102,6 @@ export default function HomePage() {
               >
                 {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
-            </div>
-
-            {/* Mobile CTA Button */}
-            <div className="flex sm:hidden items-center">
-              <Link href="/sign-up">
-                <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
-                  {landing.nav.getStarted}
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
@@ -131,31 +117,19 @@ export default function HomePage() {
               className="sm:hidden bg-white border-t"
             >
               <div className="px-4 py-4 space-y-3">
-                <Link href="/features" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
-                    {landing.nav.features}
-                  </Button>
-                </Link>
-                <Link href="/pricing" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
-                    {landing.nav.pricing}
-                  </Button>
-                </Link>
-                <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
-                    {landing.nav.about}
-                  </Button>
-                </Link>
-                <Link href="/blogs" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
-                    {landing.nav.blog}
-                  </Button>
-                </Link>
-                <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
-                    {landing.nav.contact}
-                  </Button>
-                </Link>
+                {[
+                  { href: '/features', label: landing.nav.features },
+                  { href: '/pricing', label: landing.nav.pricing },
+                  { href: '/about', label: landing.nav.about },
+                  { href: '/blogs', label: landing.nav.blog },
+                  { href: '/contact', label: landing.nav.contact },
+                ].map(({ href, label }) => (
+                  <Link key={href} href={href} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-blue-600">
+                      {label}
+                    </Button>
+                  </Link>
+                ))}
                 <div className="pt-3 border-t">
                   <Link href="/member-login" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
@@ -173,249 +147,177 @@ export default function HomePage() {
         </AnimatePresence>
       </nav>
 
-      {/* Hero Section with Parallax */}
-      <section ref={heroRef} className="relative overflow-hidden">
-        <motion.div
-          style={{ opacity, scale }}
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-16 sm:pb-24"
-        >
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Column - Content */}
-            <div className="space-y-8">
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="space-y-6"
-              >
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                  <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    {landing.hero.title.highlight}
-                  </span>{' '}
-                  {landing.hero.title.rest}
-                </h1>
-                <p className="text-xl text-gray-600 leading-relaxed">
-                  {landing.hero.subtitle}
-                </p>
-              </motion.div>
+      {/* ─── HERO — Full Screen ─── */}
+      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-[#0c1628]">
+        {/* Background image with overlay */}
+        <div className="absolute inset-0">
+          <Image
+            src="/assets/landing/hero-workers.jpg"
+            alt=""
+            fill
+            className="object-cover object-center opacity-25"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0c1628]/60 via-[#0c1628]/75 to-[#0c1628]" />
+        </div>
 
-              {/* Key Stats - Honest early-stage metrics */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="flex flex-wrap gap-6 sm:gap-8 pt-4"
-              >
-                <div className="flex items-center gap-2">
-                  <UserCheck className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-700">{landing.hero.stats.builtByUnion}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-indigo-600" />
-                  <span className="text-sm font-medium text-gray-700">{landing.hero.stats.uptime}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-purple-600" />
-                  <span className="text-sm font-medium text-gray-700">{landing.hero.stats.freeForSmall}</span>
-                </div>
-              </motion.div>
-
-              {/* Desktop CTA Buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                className="hidden lg:flex gap-4 pt-4"
-              >
-                <Link href="/sign-up">
-                  <Button
-                    className="h-14 px-8 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
-                    size="lg"
-                  >
-                    {landing.hero.cta.startFree}
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href="/features">
-                  <Button
-                    variant="outline"
-                    className="h-14 px-8 text-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
-                    size="lg"
-                  >
-                    {landing.hero.cta.seeFeatures}
-                  </Button>
-                </Link>
-              </motion.div>
-
-              {/* Demo CTA */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.45 }}
-                className="hidden lg:flex items-center gap-3 pt-1"
-              >
-                <Link href="/cupe100" target="_blank" rel="noopener noreferrer">
-                  <Button
-                    variant="ghost"
-                    className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 gap-2 text-sm px-3 py-2 h-auto"
-                  >
-                    <Eye className="h-4 w-4" />
-                    View live demo
-                  </Button>
-                </Link>
-              </motion.div>
+        <div className="relative z-10 max-w-5xl mx-auto px-6 lg:px-8 py-28 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, ease: 'easeOut' }}
+            className="space-y-8"
+          >
+            {/* Badge */}
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-5 py-2 text-sm text-amber-300 font-medium backdrop-blur-sm">
+                <Zap className="h-4 w-4" />
+                {landing.hero.badge}
+              </div>
             </div>
 
-            {/* Right Column - Hero Image */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="lg:pl-8"
-            >
-              <div className="relative">
-                {/* Main Hero Image */}
-                <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
-                  <Image
-                    src="/assets/landing/hero-workers.jpg"
-                    alt="Union workers gathered around a laptop reviewing engagement dashboard"
-                    width={600}
-                    height={400}
-                    className="w-full h-auto object-cover"
-                    priority
-                  />
-                </div>
-                {/* Floating CTA Card */}
-                <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-xl p-4 border border-gray-100 hidden sm:block">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                      <CheckCircle2 className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{landing.hero.floatingCard.title}</p>
-                      <p className="text-xs text-gray-500">{landing.hero.floatingCard.subtitle}</p>
-                    </div>
-                  </div>
-                </div>
-                {/* Decorative element */}
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full blur-xl -z-10" />
-              </div>
+            {/* Headline */}
+            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight">
+              <span className="block">{landing.hero.title.line1}</span>
+              <span className="block text-amber-400">{landing.hero.title.highlight}</span>
+              <span className="block">{landing.hero.title.line3}</span>
+            </h1>
 
-              {/* CTA Buttons below image on mobile, beside on desktop */}
-              <div className="mt-8 space-y-4 lg:hidden">
-                <Link href="/sign-up" className="block">
-                  <Button
-                    className="w-full h-14 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
-                    size="lg"
-                  >
-                    {landing.hero.cta.startFree}
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href="/features" className="block">
-                  <Button
-                    variant="outline"
-                    className="w-full h-14 text-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
-                    size="lg"
-                  >
-                    {landing.hero.cta.seeFeatures}
-                  </Button>
-                </Link>
-                <div className="flex justify-center pt-1">
-                  <Link href="/cupe100" target="_blank" rel="noopener noreferrer">
-                    <Button
-                      variant="ghost"
-                      className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 gap-2 text-sm"
-                    >
-                      <Eye className="h-4 w-4" />
-                      View live demo
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+            {/* Subtitle */}
+            <p className="text-lg sm:text-xl lg:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+              {landing.hero.subtitle}
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+              <Link href="/sign-up">
+                <Button
+                  size="lg"
+                  className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold shadow-2xl transition-all transform hover:scale-105 rounded-full"
+                >
+                  {landing.hero.cta.startFree}
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/cupe100" target="_blank" rel="noopener noreferrer">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 rounded-full transition-all"
+                >
+                  <Eye className="mr-2 h-5 w-5" />
+                  {landing.hero.cta.seeFeatures}
+                </Button>
+              </Link>
+            </div>
+
+            <p className="text-sm text-slate-400">
+              {landing.hero.disclaimer}
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          className="absolute bottom-10 left-1/2 -translate-x-1/2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.5 }}
+        >
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+          >
+            <ChevronDown className="h-8 w-8 text-white/30" />
+          </motion.div>
         </motion.div>
-
-        {/* Decorative elements */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl -z-10" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl -z-10" />
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-16 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AnimatedSection>
-            <div className="text-center space-y-4 mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                {landing.howItWorks.title}
-              </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                {landing.howItWorks.subtitle}
-              </p>
-            </div>
-          </AnimatedSection>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <AnimatedSection delay={0.1}>
-              <div className="text-center space-y-4 h-full flex flex-col">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg flex-shrink-0">
-                  <span className="text-2xl font-bold text-white">1</span>
+      {/* ─── ROI STATS STRIP ─── */}
+      <section className="bg-slate-900 py-16 sm:py-20">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
+            {[
+              { stat: landing.roi.stat1, icon: Clock },
+              { stat: landing.roi.stat2, icon: Zap },
+              { stat: landing.roi.stat3, icon: TrendingDown },
+              { stat: landing.roi.stat4, icon: Timer },
+            ].map(({ stat, icon: Icon }, i) => (
+              <AnimatedSection key={i} delay={i * 0.1}>
+                <div className="text-center space-y-3">
+                  <Icon className="h-7 w-7 text-amber-400/60 mx-auto" />
+                  <div className="text-4xl sm:text-5xl font-bold text-amber-400">{stat.value}</div>
+                  <div className="text-xs sm:text-sm text-slate-400 uppercase tracking-widest leading-snug">
+                    {stat.label}
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">{landing.howItWorks.steps.step1.title}</h3>
-                <p className="text-gray-600 flex-grow">
-                  {landing.howItWorks.steps.step1.description}
+              </AnimatedSection>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── VALUE STATEMENT — For Executives ─── */}
+      <section className="bg-[#0f2540] py-24 lg:py-36">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            <AnimatedSection>
+              <div className="space-y-8">
+                <p className="text-amber-400 font-semibold uppercase tracking-widest text-sm">
+                  For Union Executives
                 </p>
-                {/* Screenshot */}
-                <div className="relative h-40 mt-4 rounded-xl overflow-hidden shadow-lg border border-gray-200">
-                  <Image
-                    src="/assets/landing/step-1-profile.png"
-                    alt="Profile setup wizard screenshot"
-                    fill
-                    className="object-cover object-top"
-                  />
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
+                  {landing.roi.headline}
+                </h2>
+                <p className="text-lg sm:text-xl text-slate-300 leading-relaxed">
+                  {landing.roi.body}
+                </p>
+                <ul className="space-y-4 pt-2">
+                  {landing.roi.points.map((point, i) => (
+                    <li key={i} className="flex items-start gap-4">
+                      <div className="w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-slate-900" />
+                      </div>
+                      <span className="text-slate-300">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="pt-4">
+                  <Link href="/sign-up">
+                    <Button
+                      size="lg"
+                      className="h-14 px-10 text-base bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold rounded-full shadow-xl transition-all hover:scale-105"
+                    >
+                      {landing.hero.cta.startFree}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </AnimatedSection>
 
             <AnimatedSection delay={0.2}>
-              <div className="text-center space-y-4 h-full flex flex-col">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg flex-shrink-0">
-                  <span className="text-2xl font-bold text-white">2</span>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900">{landing.howItWorks.steps.step2.title}</h3>
-                <p className="text-gray-600 flex-grow">
-                  {landing.howItWorks.steps.step2.description}
-                </p>
-                {/* Screenshot */}
-                <div className="relative h-40 mt-4 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+              <div className="relative">
+                <div className="rounded-2xl overflow-hidden shadow-2xl border border-white/10">
                   <Image
-                    src="/assets/landing/step-2-import.png"
-                    alt="Member import screen screenshot"
-                    fill
-                    className="object-cover object-top"
+                    src="/assets/landing/save-hours.png"
+                    alt="UnionTab dashboard showing time savings for union executives"
+                    width={640}
+                    height={480}
+                    className="w-full h-auto"
                   />
                 </div>
-              </div>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.3}>
-              <div className="text-center space-y-4 h-full flex flex-col">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg flex-shrink-0">
-                  <span className="text-2xl font-bold text-white">3</span>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900">{landing.howItWorks.steps.step3.title}</h3>
-                <p className="text-gray-600 flex-grow">
-                  {landing.howItWorks.steps.step3.description}
-                </p>
-                {/* Screenshot */}
-                <div className="relative h-40 mt-4 rounded-xl overflow-hidden shadow-lg border border-gray-200">
-                  <Image
-                    src="/assets/landing/step-3-dashboard.png"
-                    alt="Dashboard with features screenshot"
-                    fill
-                    className="object-cover object-top"
-                  />
+                {/* Floating stat card */}
+                <div className="absolute -bottom-6 -right-4 sm:-right-8 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-5 hidden sm:block">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-amber-400 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Clock className="h-6 w-6 text-slate-900" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-white">15+ hrs</p>
+                      <p className="text-xs text-slate-400 uppercase tracking-wide">saved per month</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </AnimatedSection>
@@ -423,455 +325,327 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Showcase Section */}
-      <section className="py-20 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ─── FEATURE BLOCK 1 — Secure Elections (white bg) ─── */}
+      <section className="bg-white py-24 lg:py-36 border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            <AnimatedSection>
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-100">
+                <Image
+                  src="/assets/features/elections.png"
+                  alt="Secure voting interface"
+                  width={640}
+                  height={480}
+                  className="w-full h-auto"
+                />
+              </div>
+            </AnimatedSection>
+            <AnimatedSection delay={0.2}>
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 rounded-full px-4 py-1.5 text-sm font-semibold">
+                  <Vote className="h-4 w-4" />
+                  {landing.features.elections.eyebrow}
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
+                  {landing.features.elections.title}
+                </h2>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  {landing.features.elections.description}
+                </p>
+                <ul className="space-y-3 pt-2">
+                  {landing.features.elections.points.map((point, i) => (
+                    <li key={i} className="flex items-center gap-3 text-gray-700">
+                      <CheckCircle2 className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </AnimatedSection>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FEATURE BLOCK 2 — Communications (dark navy bg) ─── */}
+      <section className="bg-[#0c1628] py-24 lg:py-36 border-b border-slate-800">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            <AnimatedSection>
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 bg-indigo-500/20 text-indigo-300 rounded-full px-4 py-1.5 text-sm font-semibold border border-indigo-500/30">
+                  <Mail className="h-4 w-4" />
+                  {landing.features.communications.eyebrow}
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-bold text-white leading-tight">
+                  {landing.features.communications.title}
+                </h2>
+                <p className="text-lg text-slate-300 leading-relaxed">
+                  {landing.features.communications.description}
+                </p>
+                <ul className="space-y-3 pt-2">
+                  {landing.features.communications.points.map((point, i) => (
+                    <li key={i} className="flex items-center gap-3 text-slate-300">
+                      <CheckCircle2 className="h-5 w-5 text-amber-400 flex-shrink-0" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </AnimatedSection>
+            <AnimatedSection delay={0.2}>
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                <Image
+                  src="/assets/features/communications.png"
+                  alt="Mass communications interface"
+                  width={640}
+                  height={480}
+                  className="w-full h-auto"
+                />
+              </div>
+            </AnimatedSection>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FEATURE BLOCK 3 — Analytics (off-white / light bg) ─── */}
+      <section className="bg-slate-50 py-24 lg:py-36 border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            <AnimatedSection>
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-100">
+                <Image
+                  src="/assets/features/analytics.png"
+                  alt="Analytics dashboard"
+                  width={640}
+                  height={480}
+                  className="w-full h-auto"
+                />
+              </div>
+            </AnimatedSection>
+            <AnimatedSection delay={0.2}>
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 bg-cyan-50 text-cyan-700 rounded-full px-4 py-1.5 text-sm font-semibold">
+                  <BarChart3 className="h-4 w-4" />
+                  {landing.features.analytics.eyebrow}
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
+                  {landing.features.analytics.title}
+                </h2>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  {landing.features.analytics.description}
+                </p>
+                <ul className="space-y-3 pt-2">
+                  {landing.features.analytics.points.map((point, i) => (
+                    <li key={i} className="flex items-center gap-3 text-gray-700">
+                      <CheckCircle2 className="h-5 w-5 text-cyan-600 flex-shrink-0" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </AnimatedSection>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── MORE FEATURES GRID ─── */}
+      <section className="bg-white py-24 lg:py-32">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-4xl sm:text-5xl font-bold text-gray-900">
                 {landing.features.title}
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-500 max-w-2xl mx-auto">
                 {landing.features.subtitle}
               </p>
             </div>
           </AnimatedSection>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 - Secure Elections (Lead with this - key differentiator) */}
-            <AnimatedSection delay={0.1}>
-              <Card className="border-2 hover:border-blue-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-blue-50/30 overflow-hidden">
-                <CardContent className="p-0 h-full flex flex-col">
-                  {/* Feature Screenshot */}
-                  <div className="relative h-36 w-full overflow-hidden">
-                    <Image
-                      src="/assets/features/elections.png"
-                      alt="Voting interface screenshot"
-                      fill
-                      className="object-cover object-top"
-                    />
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Users,
+                color: 'bg-purple-600',
+                lightColor: 'bg-purple-50',
+                textColor: 'text-purple-700',
+                imgSrc: '/assets/features/member-portal.png',
+                title: landing.features.memberPortal.title,
+                description: landing.features.memberPortal.description,
+                points: landing.features.memberPortal.points,
+                dotColor: 'bg-purple-600',
+              },
+              {
+                icon: Database,
+                color: 'bg-emerald-600',
+                lightColor: 'bg-emerald-50',
+                textColor: 'text-emerald-700',
+                imgSrc: '/assets/features/documents.png',
+                title: landing.features.storage.title,
+                description: landing.features.storage.description,
+                points: landing.features.storage.points,
+                dotColor: 'bg-emerald-600',
+              },
+              {
+                icon: Calendar,
+                color: 'bg-pink-600',
+                lightColor: 'bg-pink-50',
+                textColor: 'text-pink-700',
+                imgSrc: '/assets/features/events.png',
+                title: landing.features.events.title,
+                description: landing.features.events.description,
+                points: landing.features.events.points,
+                dotColor: 'bg-pink-600',
+              },
+            ].map(({ icon: Icon, color, lightColor, textColor, imgSrc, title, description, points, dotColor }, i) => (
+              <AnimatedSection key={i} delay={i * 0.1}>
+                <div className="group rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white">
+                  <div className="relative h-44 overflow-hidden bg-gray-50">
+                    <Image src={imgSrc} alt={title} fill className="object-cover object-top" />
                   </div>
-                  <div className="p-6 space-y-4 flex-grow">
-                    <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
-                      <Vote className="h-7 w-7 text-white" />
+                  <div className="p-7 flex flex-col flex-grow space-y-4">
+                    <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center shadow-md -mt-10 border-4 border-white relative z-10`}>
+                      <Icon className="h-6 w-6 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {landing.features.elections.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {landing.features.elections.description}
-                    </p>
+                    <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+                    <p className="text-gray-500 leading-relaxed flex-grow">{description}</p>
                     <ul className="space-y-2 pt-2">
-                      {landing.features.elections.points.map((point, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                      {points.map((point, j) => (
+                        <li key={j} className="flex items-center gap-2.5 text-sm text-gray-600">
+                          <div className={`w-1.5 h-1.5 ${dotColor} rounded-full flex-shrink-0`} />
                           {point}
                         </li>
                       ))}
                     </ul>
                   </div>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-
-            {/* Feature 2 - Mass Communications */}
-            <AnimatedSection delay={0.2}>
-              <Card className="border-2 hover:border-indigo-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-indigo-50/30 overflow-hidden">
-                <CardContent className="p-0 h-full flex flex-col">
-                  {/* Feature Screenshot */}
-                  <div className="relative h-36 w-full overflow-hidden">
-                    <Image
-                      src="/assets/features/communications.png"
-                      alt="Email composer screenshot"
-                      fill
-                      className="object-cover object-top"
-                    />
-                  </div>
-                  <div className="p-6 space-y-4 flex-grow">
-                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
-                      <Mail className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {landing.features.communications.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {landing.features.communications.description}
-                    </p>
-                    <ul className="space-y-2 pt-2">
-                      {landing.features.communications.points.map((point, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                          <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-
-            {/* Feature 3 - Member Portal */}
-            <AnimatedSection delay={0.3}>
-              <Card className="border-2 hover:border-purple-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-purple-50/30 overflow-hidden">
-                <CardContent className="p-0 h-full flex flex-col">
-                  {/* Feature Screenshot */}
-                  <div className="relative h-36 w-full overflow-hidden">
-                    <Image
-                      src="/assets/features/member-portal.png"
-                      alt="Member dashboard screenshot"
-                      fill
-                      className="object-cover object-top"
-                    />
-                  </div>
-                  <div className="p-6 space-y-4 flex-grow">
-                    <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
-                      <Users className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {landing.features.memberPortal.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {landing.features.memberPortal.description}
-                    </p>
-                    <ul className="space-y-2 pt-2">
-                      {landing.features.memberPortal.points.map((point, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                          <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-
-            {/* Feature 4 - Analytics */}
-            <AnimatedSection delay={0.4}>
-              <Card className="border-2 hover:border-cyan-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-cyan-50/30 overflow-hidden">
-                <CardContent className="p-0 h-full flex flex-col">
-                  {/* Feature Screenshot */}
-                  <div className="relative h-36 w-full overflow-hidden">
-                    <Image
-                      src="/assets/features/analytics.png"
-                      alt="Analytics charts screenshot"
-                      fill
-                      className="object-cover object-top"
-                    />
-                  </div>
-                  <div className="p-6 space-y-4 flex-grow">
-                    <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
-                      <BarChart3 className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {landing.features.analytics.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {landing.features.analytics.description}
-                    </p>
-                    <ul className="space-y-2 pt-2">
-                      {landing.features.analytics.points.map((point, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                          <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full" />
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-
-            {/* Feature 5 - Secure Storage */}
-            <AnimatedSection delay={0.5}>
-              <Card className="border-2 hover:border-emerald-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-emerald-50/30 overflow-hidden">
-                <CardContent className="p-0 h-full flex flex-col">
-                  {/* Feature Screenshot */}
-                  <div className="relative h-36 w-full overflow-hidden">
-                    <Image
-                      src="/assets/features/documents.png"
-                      alt="Document library screenshot"
-                      fill
-                      className="object-cover object-top"
-                    />
-                  </div>
-                  <div className="p-6 space-y-4 flex-grow">
-                    <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
-                      <Database className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {landing.features.storage.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {landing.features.storage.description}
-                    </p>
-                    <ul className="space-y-2 pt-2">
-                      {landing.features.storage.points.map((point, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                          <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-
-            {/* Feature 6 - Event Management */}
-            <AnimatedSection delay={0.6}>
-              <Card className="border-2 hover:border-pink-300 hover:shadow-2xl transition-all duration-300 h-full group cursor-pointer bg-gradient-to-br from-white to-pink-50/30 overflow-hidden">
-                <CardContent className="p-0 h-full flex flex-col">
-                  {/* Feature Screenshot */}
-                  <div className="relative h-36 w-full overflow-hidden">
-                    <Image
-                      src="/assets/features/events.png"
-                      alt="Event calendar screenshot"
-                      fill
-                      className="object-cover object-top"
-                    />
-                  </div>
-                  <div className="p-6 space-y-4 flex-grow">
-                    <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg -mt-10 relative z-10 border-4 border-white">
-                      <Calendar className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {landing.features.events.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {landing.features.events.description}
-                    </p>
-                    <ul className="space-y-2 pt-2">
-                      {landing.features.events.points.map((point, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                          <div className="w-1.5 h-1.5 bg-pink-600 rounded-full" />
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
+                </div>
+              </AnimatedSection>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Why Unions Choose Us Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ─── HOW IT WORKS ─── */}
+      <section className="bg-[#0c1628] py-24 lg:py-32">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center space-y-4 mb-16">
-              <h2 className="text-4xl sm:text-5xl font-bold text-gray-900">
-                {landing.whyUs.title}
+              <h2 className="text-4xl sm:text-5xl font-bold text-white">
+                {landing.howItWorks.title}
               </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                {landing.whyUs.subtitle}
+              <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+                {landing.howItWorks.subtitle}
               </p>
             </div>
           </AnimatedSection>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <AnimatedSection delay={0.1}>
-              <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow overflow-hidden">
-                {/* Image: Union steward with tablet */}
-                <div className="relative h-52 overflow-hidden">
-                  <Image
-                    src="/assets/landing/built-by-union-people.jpg"
-                    alt="Union steward with tablet talking to workers on site"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <CardContent className="p-6 pt-0 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg -mt-7 relative z-10 border-4 border-white">
-                    <UserCheck className="h-7 w-7 text-white" />
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+            {[
+              { step: '1', color: 'bg-blue-600', data: landing.howItWorks.steps.step1, img: '/assets/landing/step-1-profile.png', alt: 'Profile setup' },
+              { step: '2', color: 'bg-indigo-600', data: landing.howItWorks.steps.step2, img: '/assets/landing/step-2-import.png', alt: 'Member import' },
+              { step: '3', color: 'bg-amber-400', textColor: 'text-slate-900', data: landing.howItWorks.steps.step3, img: '/assets/landing/step-3-dashboard.png', alt: 'Dashboard' },
+            ].map(({ step, color, textColor, data, img, alt }, i) => (
+              <AnimatedSection key={i} delay={i * 0.15}>
+                <div className="text-center space-y-5 flex flex-col items-center">
+                  <div className={`w-16 h-16 ${color} rounded-2xl flex items-center justify-center shadow-lg`}>
+                    <span className={`text-2xl font-bold ${textColor ?? 'text-white'}`}>{step}</span>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">{landing.whyUs.builtByUnion.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {landing.whyUs.builtByUnion.description}
-                  </p>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.2}>
-              <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow overflow-hidden">
-                {/* Image: Workers gathered around laptop */}
-                <div className="relative h-52 overflow-hidden">
-                  <Image
-                    src="/assets/landing/free-for-small-locals.jpg"
-                    alt="Small group of workers gathered around a laptop reviewing union dashboard"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <CardContent className="p-6 pt-0 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg -mt-7 relative z-10 border-4 border-white">
-                    <Zap className="h-7 w-7 text-white" />
+                  <h3 className="text-xl font-bold text-white">{data.title}</h3>
+                  <p className="text-slate-400 leading-relaxed">{data.description}</p>
+                  <div className="relative w-full h-44 rounded-xl overflow-hidden shadow-lg border border-white/10">
+                    <Image src={img} alt={alt} fill className="object-cover object-top" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">{landing.whyUs.freeForSmall.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {landing.whyUs.freeForSmall.description}
-                  </p>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.3}>
-              <Card className="border-2 h-full bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow overflow-hidden">
-                {/* Image: Before/after comparison */}
-                <div className="relative h-52 overflow-hidden">
-                  <Image
-                    src="/assets/landing/save-hours.png"
-                    alt="Before and after: messy desk with papers versus clean desk with laptop showing dashboard"
-                    fill
-                    className="object-cover"
-                  />
                 </div>
-                <CardContent className="p-6 pt-0 space-y-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg -mt-7 relative z-10 border-4 border-white">
-                    <Clock className="h-7 w-7 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900">{landing.whyUs.saveHours.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {landing.whyUs.saveHours.description}
-                  </p>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
+              </AnimatedSection>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Security & Compliance Section */}
-      <section className="py-16 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ─── SECURITY ─── */}
+      <section className="py-20 bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center space-y-4 mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
                 {landing.security.title}
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="text-lg text-gray-500 max-w-2xl mx-auto">
                 {landing.security.subtitle}
               </p>
             </div>
           </AnimatedSection>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <AnimatedSection delay={0.1}>
-              <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
-                <Shield className="h-10 w-10 text-blue-600 mx-auto mb-3" />
-                <h4 className="font-semibold text-gray-900 mb-2">{landing.security.encryption.title}</h4>
-                <p className="text-sm text-gray-600">{landing.security.encryption.description}</p>
-              </div>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.2}>
-              <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
-                <FileCheck className="h-10 w-10 text-indigo-600 mx-auto mb-3" />
-                <h4 className="font-semibold text-gray-900 mb-2">{landing.security.auditTrails.title}</h4>
-                <p className="text-sm text-gray-600">{landing.security.auditTrails.description}</p>
-              </div>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.3}>
-              <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
-                <Lock className="h-10 w-10 text-purple-600 mx-auto mb-3" />
-                <h4 className="font-semibold text-gray-900 mb-2">{landing.security.anonymousVoting.title}</h4>
-                <p className="text-sm text-gray-600">{landing.security.anonymousVoting.description}</p>
-              </div>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.4}>
-              <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
-                <Globe className="h-10 w-10 text-cyan-600 mx-auto mb-3" />
-                <h4 className="font-semibold text-gray-900 mb-2">{landing.security.uptime.title}</h4>
-                <p className="text-sm text-gray-600">{landing.security.uptime.description}</p>
-              </div>
-            </AnimatedSection>
+            {[
+              { icon: Shield, color: 'text-blue-600', bg: 'bg-blue-50', data: landing.security.encryption },
+              { icon: FileCheck, color: 'text-indigo-600', bg: 'bg-indigo-50', data: landing.security.auditTrails },
+              { icon: Lock, color: 'text-purple-600', bg: 'bg-purple-50', data: landing.security.anonymousVoting },
+              { icon: UserCheck, color: 'text-green-600', bg: 'bg-green-50', data: landing.security.uptime },
+            ].map(({ icon: Icon, color, bg, data }, i) => (
+              <AnimatedSection key={i} delay={i * 0.1}>
+                <div className={`text-center p-7 rounded-2xl ${bg} hover:shadow-md transition-shadow`}>
+                  <Icon className={`h-10 w-10 ${color} mx-auto mb-4`} />
+                  <h4 className="font-bold text-gray-900 mb-2">{data.title}</h4>
+                  <p className="text-sm text-gray-500">{data.description}</p>
+                </div>
+              </AnimatedSection>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Union Logos Banner */}
-      <section className="py-10 bg-gray-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ─── TRUSTED BY ─── */}
+      <section className="py-14 bg-slate-50 border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center">
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-8">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-10">
                 {landing.trustedBy}
               </p>
-              <div className="flex items-center justify-center gap-6 sm:gap-10 md:gap-12">
-                {/* Union logos with consistent sizing */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 relative flex items-center justify-center">
-                  <Image
-                    src="/assets/logos/union-1.png"
-                    alt="Union partner logo"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 relative flex items-center justify-center">
-                  <Image
-                    src="/assets/logos/union-2.png"
-                    alt="Union partner logo"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 relative flex items-center justify-center">
-                  <Image
-                    src="/assets/logos/union-3.png"
-                    alt="Union partner logo"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 relative hidden sm:flex items-center justify-center">
-                  <Image
-                    src="/assets/logos/union-4.png"
-                    alt="Union partner logo"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 relative hidden md:flex items-center justify-center">
-                  <Image
-                    src="/assets/logos/union-5.png"
-                    alt="Union partner logo"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
+              <div className="flex items-center justify-center gap-8 sm:gap-14 flex-wrap">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <div key={n} className={`relative w-16 h-16 sm:w-20 sm:h-20 ${n >= 4 ? 'hidden sm:block' : ''} ${n === 5 ? 'hidden md:block' : ''}`}>
+                    <Image
+                      src={`/assets/logos/union-${n}.png`}
+                      alt="Union partner logo"
+                      fill
+                      className="object-contain opacity-60 hover:opacity-100 transition-opacity"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </AnimatedSection>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTZ6TTI0IDQyYzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNnoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ii8+PC9nPjwvc3ZnPg==')] opacity-20" />
+      {/* ─── CTA SECTION ─── */}
+      <section className="relative py-28 lg:py-40 overflow-hidden bg-[#0c1628]">
+        {/* Background texture */}
+        <div className="absolute inset-0 opacity-5"
+          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}
+        />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl -z-0" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl -z-0" />
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <AnimatedSection>
             <div className="space-y-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-6">
-                <Users className="h-10 w-10 text-white" />
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-amber-400/20 rounded-2xl border border-amber-400/30 mb-2">
+                <Users className="h-10 w-10 text-amber-400" />
               </div>
-              <h2 className="text-4xl sm:text-5xl font-bold text-white">
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
                 {landing.cta.title}
               </h2>
-              <p className="text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
                 {landing.cta.subtitle}
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                 <Link href="/sign-up">
                   <Button
                     size="lg"
-                    className="bg-white text-blue-600 hover:bg-gray-50 h-16 px-10 text-lg font-semibold shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
+                    className="h-16 px-12 text-lg bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold shadow-2xl transition-all transform hover:scale-105 rounded-full"
                   >
                     {landing.cta.startFree}
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -880,22 +654,20 @@ export default function HomePage() {
                 <Link href="/pricing">
                   <Button
                     size="lg"
-                    className="bg-transparent border-2 border-white text-white hover:bg-white/10 hover:text-white hover:border-white h-16 px-10 text-lg font-semibold transition-all"
+                    className="h-16 px-12 text-lg bg-transparent border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 rounded-full transition-all"
                   >
                     {landing.cta.viewPricing}
                   </Button>
                 </Link>
               </div>
-              <p className="text-sm text-blue-100 pt-4">
+              <p className="text-sm text-slate-400 pt-2">
                 {landing.cta.bottomText}
               </p>
-              <div className="pt-6 border-t border-white/20 mt-6">
-                <p className="text-sm text-blue-100 mb-3">
-                  {landing.cta.demoText}
-                </p>
+              <div className="pt-6 border-t border-white/10">
+                <p className="text-sm text-slate-400 mb-4">{landing.cta.demoText}</p>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 text-white hover:text-blue-200 transition-colors text-sm font-medium"
+                  className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors text-sm font-medium"
                 >
                   <Video className="h-4 w-4" />
                   {landing.cta.bookDemo}
@@ -907,73 +679,43 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
+      {/* ─── FOOTER ─── */}
+      <footer className="bg-slate-950 text-slate-400 py-14">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-10">
             <div className="space-y-4">
               <div className="flex items-center">
                 <Users className="h-6 w-6 text-blue-400" />
-                <span className="ml-2 text-lg font-bold text-white">
-                  UnionTab
-                </span>
+                <span className="ml-2 text-lg font-bold text-white">UnionTab</span>
               </div>
-              <p className="text-sm">
+              <p className="text-sm leading-relaxed">
                 {landing.footer.description}
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-4">{landing.footer.product}</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/features" className="hover:text-white transition-colors">
-                    {landing.nav.features}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/pricing" className="hover:text-white transition-colors">
-                    {landing.nav.pricing}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/blogs" className="hover:text-white transition-colors">
-                    {landing.nav.blog}
-                  </Link>
-                </li>
+              <h4 className="font-semibold text-white mb-5">{landing.footer.product}</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/features" className="hover:text-white transition-colors">{landing.nav.features}</Link></li>
+                <li><Link href="/pricing" className="hover:text-white transition-colors">{landing.nav.pricing}</Link></li>
+                <li><Link href="/blogs" className="hover:text-white transition-colors">{landing.nav.blog}</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-4">{landing.footer.company}</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/about" className="hover:text-white transition-colors">
-                    {landing.footer.about}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-white transition-colors">
-                    {landing.nav.contact}
-                  </Link>
-                </li>
+              <h4 className="font-semibold text-white mb-5">{landing.footer.company}</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/about" className="hover:text-white transition-colors">{landing.footer.about}</Link></li>
+                <li><Link href="/contact" className="hover:text-white transition-colors">{landing.nav.contact}</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-4">{landing.footer.legal}</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/privacy" className="hover:text-white transition-colors">
-                    {landing.footer.privacy}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-white transition-colors">
-                    {landing.footer.terms}
-                  </Link>
-                </li>
+              <h4 className="font-semibold text-white mb-5">{landing.footer.legal}</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/privacy" className="hover:text-white transition-colors">{landing.footer.privacy}</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">{landing.footer.terms}</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
+          <div className="border-t border-slate-800 mt-10 pt-8 text-center text-sm text-slate-600">
             <p>{landing.footer.copyright}</p>
           </div>
         </div>
