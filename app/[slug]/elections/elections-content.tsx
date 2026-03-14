@@ -100,7 +100,7 @@ export function ElectionsContent({ slug }: { slug: string }) {
             <Button asChild variant="outline">
               <Link href={`/${slug}/election-committee`}>
                 <ShieldCheck className="h-4 w-4 mr-2" />
-                EC Dashboard
+                Election Committee
               </Link>
             </Button>
           )}
@@ -188,7 +188,7 @@ export function ElectionsContent({ slug }: { slug: string }) {
                         <Button asChild variant="outline" size="sm">
                           <Link href={`/${slug}/election-committee/${election.id}`}>
                             <ShieldCheck className="h-4 w-4 mr-2" />
-                            EC Dashboard
+                            Election Committee
                           </Link>
                         </Button>
                       )}

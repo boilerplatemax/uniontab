@@ -462,8 +462,8 @@ export function UnionProfileTabs({
           {/* Posts Tab */}
           {activeTab === 'posts' && (
             <>
-              {/* Create Post Button (Mobile only - non-prestige) */}
-              {!prestigeMode && canManageContent && (
+              {/* Create Post Button (Mobile only - non-prestige, only when tab nav is visible) */}
+              {!hideTabNav && !prestigeMode && canManageContent && (
                 <div className="flex justify-start sm:hidden">
                   <Button
                     className="bg-blue-600 hover:bg-blue-700"
