@@ -4,6 +4,7 @@ import {
   getUnionElections,
   isUserMemberOfUnion,
   isUserAdminOfUnion,
+  isUserElectionCommittee,
 } from '@/lib/db/election-queries';
 
 export async function GET(req: NextRequest) {
@@ -37,7 +38,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const isAdmin = await isUserAdminOfUnion(user.id, unionIdNum);
+    const [isAdmin, isElectionCommittee] = await Promise.all([
+      isUserAdminOfUnion(user.id, unionIdNum),
+      isUserElectionCommittee(user.id, unionIdNum),
+    ]);
     const elections = await getUnionElections(unionIdNum);
 
     // Filter elections based on user role
@@ -50,6 +54,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       elections: filteredElections,
       isAdmin,
+      isElectionCommittee,
     });
   } catch (error) {
     console.error('Error fetching elections:', error);

@@ -8,6 +8,7 @@ import {
   castVote,
   deleteUserVote,
   updateElectionStatus,
+  hasUserInPersonVote,
 } from '@/lib/db/election-queries';
 
 const responseSchema = z.object({
@@ -78,6 +79,15 @@ export async function POST(
       return NextResponse.json(
         { error: 'This election has not opened yet' },
         { status: 400 }
+      );
+    }
+
+    // Check if member has been marked as voted in person
+    const votedInPerson = await hasUserInPersonVote(election.id, user.id, election.unionId);
+    if (votedInPerson) {
+      return NextResponse.json(
+        { error: 'Your in-person vote has already been recorded for this election. You cannot also vote online.' },
+        { status: 409 }
       );
     }
 

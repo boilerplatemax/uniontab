@@ -8,6 +8,8 @@ import {
   isUserMemberOfUnion,
   hasUserVoted,
   updateElectionStatus,
+  hasUserInPersonVote,
+  isUserElectionCommittee,
 } from '@/lib/db/election-queries';
 import { z } from 'zod';
 
@@ -58,12 +60,18 @@ export async function GET(
       );
     }
 
-    // Check if user has already voted
-    const userHasVoted = await hasUserVoted(election.id, user.id);
+    // Check if user has already voted (online or in person)
+    const [userHasVoted, userVotedInPerson, userIsEC] = await Promise.all([
+      hasUserVoted(election.id, user.id),
+      hasUserInPersonVote(election.id, user.id, election.unionId),
+      isUserElectionCommittee(user.id, election.unionId),
+    ]);
 
     return NextResponse.json({
       election,
       userHasVoted,
+      userVotedInPerson,
+      isElectionCommittee: userIsEC,
     });
   } catch (error) {
     console.error('Error fetching election:', error);
@@ -103,6 +111,28 @@ export async function PATCH(
         { error: 'Only admins can update elections' },
         { status: 403 }
       );
+    }
+
+    // Lock configuration changes once election is active or closed
+    if (election.status === 'active' || election.status === 'closed') {
+      // Allow only status transitions (e.g., manually closing an active election)
+      const body = await req.json();
+      const { status } = body;
+      if (Object.keys(body).some((k) => k !== 'status') || !status) {
+        return NextResponse.json(
+          { error: 'Election configuration cannot be changed once it is active or closed. Only status transitions are permitted.' },
+          { status: 403 }
+        );
+      }
+      if (election.status === 'closed') {
+        return NextResponse.json(
+          { error: 'Closed elections cannot be modified.' },
+          { status: 403 }
+        );
+      }
+      // Allow closing an active election
+      const updatedElection = await updateElection(electionId, { status, updatedBy: user.id } as any);
+      return NextResponse.json({ success: true, election: updatedElection });
     }
 
     const body = await req.json();
@@ -183,6 +213,14 @@ export async function DELETE(
     if (!isAdmin) {
       return NextResponse.json(
         { error: 'Only admins can delete elections' },
+        { status: 403 }
+      );
+    }
+
+    // Prevent deleting active or closed elections (ballot integrity)
+    if (election.status === 'active' || election.status === 'closed') {
+      return NextResponse.json(
+        { error: 'Active or closed elections cannot be deleted. Close the election first if needed.' },
         { status: 403 }
       );
     }
