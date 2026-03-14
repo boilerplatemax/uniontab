@@ -64,6 +64,12 @@ export function UnionTabProvider({
     }
   }, [searchParams, slug]);
 
+  // Sync activeTab when Next.js navigates to a tab page (e.g. via <Link>)
+  useEffect(() => {
+    const tab = getTabFromPath(pathname, slug);
+    setActiveTabState(tab);
+  }, [pathname, slug]);
+
   // Handle browser back/forward
   useEffect(() => {
     const handlePopState = () => {
