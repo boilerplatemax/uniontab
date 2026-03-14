@@ -6,7 +6,7 @@ import useSWR from 'swr';
 import { VotingForm } from '@/components/elections/voting-form';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, CheckCircle, XCircle, Calendar } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Calendar, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -75,7 +75,7 @@ export function ElectionVotePage({
     return <div>Error loading election</div>;
   }
 
-  const { election, userHasVoted } = data;
+  const { election, userHasVoted, userVotedInPerson, isElectionCommittee } = data;
 
   const handleVoteSubmit = async (voteData: any) => {
     try {
@@ -206,7 +206,19 @@ export function ElectionVotePage({
           </div>
         )}
 
-        {userHasVoted && !election.allowRevotes && isOpen && (
+        {userVotedInPerson && isOpen && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center space-x-2 text-amber-800">
+              <ClipboardList className="h-5 w-5" />
+              <span className="font-medium">Your in-person vote has been recorded</span>
+            </div>
+            <p className="text-sm text-amber-700 mt-1">
+              The Election Committee has recorded your in-person vote for this election. Online voting is not available to you.
+            </p>
+          </div>
+        )}
+
+        {userHasVoted && !election.allowRevotes && isOpen && !userVotedInPerson && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <div className="flex items-center space-x-2 text-green-800">
               <CheckCircle className="h-5 w-5" />
@@ -230,7 +242,7 @@ export function ElectionVotePage({
           </div>
         )}
 
-        {isOpen && (!userHasVoted || election.allowRevotes) && (
+        {isOpen && !userVotedInPerson && (!userHasVoted || election.allowRevotes) && (
           <VotingForm
             election={election}
             onSubmit={handleVoteSubmit}

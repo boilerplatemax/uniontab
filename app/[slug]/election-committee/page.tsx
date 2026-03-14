@@ -1,0 +1,25 @@
+import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
+import { getUser } from '@/lib/db/queries';
+import { ElectionCommitteeContent } from './election-committee-content';
+
+export default async function ElectionCommitteePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const user = await getUser();
+
+  if (!user) {
+    redirect(`/${slug}/sign-in?redirect=/${slug}/election-committee`);
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <Suspense fallback={<div>Loading...</div>}>
+        <ElectionCommitteeContent slug={slug} />
+      </Suspense>
+    </div>
+  );
+}

@@ -11,7 +11,7 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { EditMemberDialog } from './edit-member-dialog';
 import { AdminPermissionsDialog } from '@/components/members/admin-permissions-dialog';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign, Eye, Phone, TrendingUp, AlertTriangle, Settings2 } from 'lucide-react';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign, Eye, Phone, TrendingUp, AlertTriangle, Settings2, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import type { AdminPermissions } from '@/lib/db/schema';
 import { getPermissionCount } from '@/lib/admin-permissions';
@@ -413,6 +413,48 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
       setMemberForPermissions(member);
       setPermissionsDialogMode('make-admin');
       setPermissionsDialogOpen(true);
+    }
+  };
+
+  const handleToggleElectionCommittee = async (member: Member) => {
+    const currentRole = member.member.role;
+    const memberId = member.member.id;
+    const action = currentRole === 'election_committee' ? 'remove' : 'assign';
+
+    setLoadingMembers((prev) => ({ ...prev, [memberId]: true }));
+
+    try {
+      const response = await fetch('/api/members/toggle-election-committee', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId, action }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update role');
+      }
+
+      setMembersList((prev) =>
+        prev.map((m) =>
+          m.member.id === memberId
+            ? { ...m, member: { ...m.member, role: data.role, adminPermissions: null } }
+            : m
+        )
+      );
+      setSuccessMessage(
+        action === 'assign'
+          ? `${getUserDisplayName(member.user)} added to Election Committee`
+          : 'Election Committee role removed'
+      );
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error updating election committee role:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to update role');
+      setTimeout(() => setErrorMessage(''), 3000);
+    } finally {
+      setLoadingMembers((prev) => ({ ...prev, [memberId]: false }));
     }
   };
 
@@ -1285,11 +1327,14 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                               ? 'bg-blue-100 text-blue-700'
                               : member.member.role === 'admin'
                               ? 'bg-purple-100 text-purple-700'
+                              : member.member.role === 'election_committee'
+                              ? 'bg-amber-100 text-amber-700'
                               : 'bg-gray-200 text-gray-700'
                           }`}
                         >
-                          {member.member.role.charAt(0).toUpperCase() +
-                            member.member.role.slice(1)}
+                          {member.member.role === 'election_committee'
+                            ? 'Election Committee'
+                            : member.member.role.charAt(0).toUpperCase() + member.member.role.slice(1)}
                         </span>
                         <span
                           className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-medium ${
@@ -1393,8 +1438,8 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                             <span className="hidden sm:inline">Edit</span>
                           </Button>
 
-                          {/* Admin toggle for approved members */}
-                          {member.member.status === 'approved' && (
+                          {/* Admin toggle for approved members (not available for election_committee) */}
+                          {member.member.status === 'approved' && member.member.role !== 'election_committee' && (
                             <>
                               <Button
                                 size="sm"
@@ -1432,6 +1477,35 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                                 </Button>
                               )}
                             </>
+                          )}
+
+                          {/* Election Committee toggle for approved non-admin members */}
+                          {member.member.status === 'approved' && member.member.role !== 'admin' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleToggleElectionCommittee(member)}
+                              disabled={loadingMembers[member.member.id]}
+                              className={`hidden sm:inline-flex ${
+                                member.member.role === 'election_committee'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100'
+                                  : 'text-gray-700'
+                              }`}
+                            >
+                              {loadingMembers[member.member.id] ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : member.member.role === 'election_committee' ? (
+                                <>
+                                  <ClipboardList className="h-4 w-4 mr-1" />
+                                  Remove EC
+                                </>
+                              ) : (
+                                <>
+                                  <ClipboardList className="h-4 w-4 mr-1" />
+                                  Make EC
+                                </>
+                              )}
+                            </Button>
                           )}
 
                           {/* Delete button for non-pending members */}

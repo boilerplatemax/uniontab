@@ -5,7 +5,7 @@ import useSWR, { mutate } from 'swr';
 import { CreateElectionDialog } from '@/components/elections/create-election-dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Calendar, Users, Lock, Globe, Eye } from 'lucide-react';
+import { Calendar, Users, Lock, Globe, Eye, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -42,7 +42,7 @@ export function ElectionsContent({ slug }: { slug: string }) {
     return <div>Error loading elections</div>;
   }
 
-  const { elections, isAdmin } = data;
+  const { elections, isAdmin, isElectionCommittee } = data;
 
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -95,12 +95,22 @@ export function ElectionsContent({ slug }: { slug: string }) {
 
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Elections & Voting</h1>
-        {isAdmin && (
-          <CreateElectionDialog
-            unionId={unionId}
-            onSuccess={() => mutate(`/api/elections/list?unionId=${unionId}`)}
-          />
-        )}
+        <div className="flex items-center gap-2">
+          {(isAdmin || isElectionCommittee) && (
+            <Button asChild variant="outline">
+              <Link href={`/${slug}/election-committee`}>
+                <ClipboardList className="h-4 w-4 mr-2" />
+                Voter Roll
+              </Link>
+            </Button>
+          )}
+          {isAdmin && (
+            <CreateElectionDialog
+              unionId={unionId}
+              onSuccess={() => mutate(`/api/elections/list?unionId=${unionId}`)}
+            />
+          )}
+        </div>
       </div>
 
       {elections.length === 0 ? (

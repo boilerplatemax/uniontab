@@ -5,6 +5,7 @@ import {
   getElectionById,
   isUserMemberOfUnion,
   isUserAdminOfUnion,
+  isUserElectionCommittee,
 } from '@/lib/db/election-queries';
 
 export async function GET(
@@ -42,6 +43,15 @@ export async function GET(
       return NextResponse.json(
         { error: 'You must be logged in to view these results' },
         { status: 401 }
+      );
+    }
+
+    // Election Committee members cannot view ballot responses - redirect them to voter roll
+    const isEC = await isUserElectionCommittee(user.id, election.unionId);
+    if (isEC) {
+      return NextResponse.json(
+        { error: 'Election Committee members cannot view ballot responses. Use the voter roll to view participation data.' },
+        { status: 403 }
       );
     }
 

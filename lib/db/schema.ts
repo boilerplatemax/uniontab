@@ -538,6 +538,28 @@ export const electionResponses = pgTable('election_responses', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// In-Person Vote Tracking Table (Election Committee oversight)
+export const inPersonVotes = pgTable(
+  'in_person_votes',
+  {
+    id: serial('id').primaryKey(),
+    electionId: integer('election_id')
+      .notNull()
+      .references(() => elections.id, { onDelete: 'cascade' }),
+    memberId: integer('member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'cascade' }),
+    markedById: integer('marked_by_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    markedAt: timestamp('marked_at').notNull().defaultNow(),
+    notes: text('notes'),
+  },
+  (table) => ({
+    uniqueInPersonVote: unique('unique_in_person_vote').on(table.electionId, table.memberId),
+  })
+);
+
 // Announcements System Tables
 export const announcements = pgTable('announcements', {
   id: serial('id').primaryKey(),
@@ -1782,6 +1804,8 @@ export type ElectionVote = typeof electionVotes.$inferSelect;
 export type NewElectionVote = typeof electionVotes.$inferInsert;
 export type ElectionResponse = typeof electionResponses.$inferSelect;
 export type NewElectionResponse = typeof electionResponses.$inferInsert;
+export type InPersonVote = typeof inPersonVotes.$inferSelect;
+export type NewInPersonVote = typeof inPersonVotes.$inferInsert;
 export type Announcement = typeof announcements.$inferSelect;
 export type NewAnnouncement = typeof announcements.$inferInsert;
 export type AnnouncementAttachment = typeof announcementAttachments.$inferSelect;
