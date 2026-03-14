@@ -252,6 +252,7 @@ export function UnionNavbar({
   // Resolve href for non-tab built-in routes and other nav items
   const getNavHref = (item: NavigationItem): string | null => {
     if (item.linkType === 'built_in_route' && item.builtInRoute === 'gallery') return `/${slug}/gallery`;
+    if (item.linkType === 'built_in_route' && item.builtInRoute === 'elections') return `/${slug}/elections`;
     if (item.linkType === 'page' && item.pageId && item.pageSlug) return `/${slug}/p/${item.pageSlug}`;
     if (item.linkType === 'file' && item.fileId && item.fileUrl) return item.fileUrl;
     if (item.linkType === 'external_url' && item.externalUrl) return item.externalUrl;
@@ -259,8 +260,10 @@ export function UnionNavbar({
   };
 
   // Is a nav item a built-in tab (renders via setActiveTab)?
+  // Elections is excluded — it routes to its own page instead of switching tabs inline.
   const isBuiltInTab = (item: NavigationItem): boolean =>
-    item.linkType === 'built_in_route' && !!item.builtInRoute && !!routeToTabKey[item.builtInRoute];
+    item.linkType === 'built_in_route' && !!item.builtInRoute &&
+    item.builtInRoute !== 'elections' && !!routeToTabKey[item.builtInRoute];
 
   // Build the final tab items for fallback mode
   const tabItems = hardcodedTabItems;
@@ -347,7 +350,7 @@ export function UnionNavbar({
         ...(isOwnerOrAdmin || isElectionCommittee ? [{
           href: `/${slug}/election-committee`,
           icon: <ClipboardList className="h-5 w-5" />,
-          label: 'EC Dashboard',
+          label: 'Election Committee',
           description: 'Manage voter rolls and record in-person votes',
         }] : []),
         {
