@@ -77,12 +77,13 @@ function VoterRollPanel({
           const data = await res.json();
           setAllMembers(
             (data.members || []).map((m: any) => ({
-              memberId: m.member.id,
+              memberId: m.id,
               displayName:
-                `${m.member.firstName || ''} ${m.member.lastName || ''}`.trim() ||
-                m.user.name ||
-                m.user.email,
-              memberIdNumber: m.member.memberId || null,
+                `${m.firstName || ''} ${m.lastName || ''}`.trim() ||
+                m.user?.name ||
+                m.user?.email ||
+                'Unknown',
+              memberIdNumber: m.memberId || null,
             }))
           );
         }
