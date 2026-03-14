@@ -42,10 +42,11 @@ export async function GET(request: Request) {
     }
 
     const isOwnerOrAdmin = membership.role === 'owner' || membership.role === 'admin';
+    const isElectionCommittee = membership.role === 'election_committee';
 
-    if (!isOwnerOrAdmin) {
+    if (!isOwnerOrAdmin && !isElectionCommittee) {
       return NextResponse.json(
-        { error: 'Only admins and owners can access member list' },
+        { error: 'Only admins, owners, or Election Committee members can access member list' },
         { status: 403 }
       );
     }
@@ -64,6 +65,9 @@ export async function GET(request: Request) {
         userId: members.userId,
         role: members.role,
         status: members.status,
+        firstName: members.firstName,
+        lastName: members.lastName,
+        memberId: members.memberId,
         employer: members.employer,
         jobTitle: members.jobTitle,
         worksite: members.worksite,
