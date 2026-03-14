@@ -5,7 +5,7 @@ import useSWR, { mutate } from 'swr';
 import { CreateElectionDialog } from '@/components/elections/create-election-dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Calendar, Users, Lock, Globe, Eye, ClipboardList } from 'lucide-react';
+import { Calendar, Users, Lock, Globe, Eye, ClipboardList, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -96,14 +96,6 @@ export function ElectionsContent({ slug }: { slug: string }) {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Elections & Voting</h1>
         <div className="flex items-center gap-2">
-          {(isAdmin || isElectionCommittee) && (
-            <Button asChild variant="outline">
-              <Link href={`/${slug}/election-committee`}>
-                <ClipboardList className="h-4 w-4 mr-2" />
-                Voter Roll
-              </Link>
-            </Button>
-          )}
           {isAdmin && (
             <CreateElectionDialog
               unionId={unionId}
@@ -180,6 +172,15 @@ export function ElectionsContent({ slug }: { slug: string }) {
                           >
                             <Eye className="h-4 w-4 mr-2" />
                             View Results
+                          </Link>
+                        </Button>
+                      )}
+                    {(isAdmin || isElectionCommittee) &&
+                      (election.status === 'active' || election.status === 'closed') && (
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/${slug}/election-committee/${election.id}`}>
+                            <ShieldCheck className="h-4 w-4 mr-2" />
+                            EC Dashboard
                           </Link>
                         </Button>
                       )}
