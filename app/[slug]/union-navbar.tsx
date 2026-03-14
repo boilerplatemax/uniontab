@@ -5,7 +5,7 @@ import {
   Users, LogOut, UserCircle, CreditCard, Menu, X, Settings, Megaphone,
   Mail, ChevronDown, ChevronRight, UserPlus, DollarSign, FileText, Zap,
   Video, MessageSquare, BarChart3, Newspaper, Info, FolderOpen, CalendarDays,
-  Vote, Phone, ArrowLeft, Shield, Download, ExternalLink, Images,
+  Vote, Phone, ArrowLeft, Shield, Download, ExternalLink, Images, ClipboardList,
 } from 'lucide-react';
 import { useAnnouncementVisibility } from '@/hooks/use-announcement-visibility';
 import { Button } from '@/components/ui/button';
@@ -80,6 +80,7 @@ export function UnionNavbar({
 
   const isOwner = membership?.member.role === 'owner';
   const isOwnerOrAdmin = membership?.member.role === 'owner' || membership?.member.role === 'admin';
+  const isElectionCommittee = membership?.member.role === 'election_committee';
 
   // Permission helper
   const canAccess = (permission: AdminPermissionKey): boolean => {
@@ -343,6 +344,12 @@ export function UnionNavbar({
           label: 'Elections',
           description: 'View and participate in union elections',
         },
+        ...(isOwnerOrAdmin || isElectionCommittee ? [{
+          href: `/${slug}/election-committee`,
+          icon: <ClipboardList className="h-5 w-5" />,
+          label: 'EC Dashboard',
+          description: 'Manage voter rolls and record in-person votes',
+        }] : []),
         {
           href: `/${slug}/grievances`,
           icon: <FileText className="h-5 w-5" />,

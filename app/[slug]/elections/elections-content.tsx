@@ -96,6 +96,14 @@ export function ElectionsContent({ slug }: { slug: string }) {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Elections & Voting</h1>
         <div className="flex items-center gap-2">
+          {(isAdmin || isElectionCommittee) && (
+            <Button asChild variant="outline">
+              <Link href={`/${slug}/election-committee`}>
+                <ShieldCheck className="h-4 w-4 mr-2" />
+                EC Dashboard
+              </Link>
+            </Button>
+          )}
           {isAdmin && (
             <CreateElectionDialog
               unionId={unionId}
