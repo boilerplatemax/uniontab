@@ -440,7 +440,7 @@ export const blogPosts: BlogPost[] = [
 
       <p>Both features are available under the Tools mega-menu, so you can manage your local's entire schedule from one place.</p>
     `,
-    imageUrl: "/assets/blog/zoom-meetings-and-posters/1.png",
+    imageUrl: "/assets/blog/zoom-meetings-and-posters/0.png",
     author: "UnionTab Team",
     publishedAt: "2025-11-10",
     readTime: "8 min read",
