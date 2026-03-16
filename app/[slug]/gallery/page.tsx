@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
 import { unions, members, users, files } from '@/lib/db/schema';
-import { eq, and, asc, count } from 'drizzle-orm';
+import { eq, and, asc } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { GalleryContent } from './gallery-content';
+import { AccessibilityWidget } from '@/components/accessibility-widget';
+import { AdminHelpWidget } from '@/components/admin-help-widget';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -91,6 +93,8 @@ export default async function GalleryPage({
             socialLinks: union.socialLinks,
           }}
         />
+      <AccessibilityWidget enabled={union.accessibilityWidgetEnabled ?? true} />
+      <AdminHelpWidget slug={slug} isAdmin={isOwnerOrAdmin} />
     </div>
   );
 }

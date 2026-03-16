@@ -2,36 +2,50 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileUpload } from '@/components/ui/file-upload';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Mail,
-  Phone,
-  MapPin,
-  Globe,
   Loader2,
   Save,
   Palette,
-  Check,
   Share2,
   ArrowLeft,
-  Eye,
-  EyeOff,
   Lock,
   Sparkles,
-  Languages,
-  X,
+  Settings,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
 import { themeOptions, canAccessTheme } from '@/lib/themes/config';
+import { GeneralTab } from './tabs/general-tab';
+import { AppearanceTab } from './tabs/appearance-tab';
+import { ContactTab } from './tabs/contact-tab';
+import { SocialTab } from './tabs/social-tab';
+import { PermissionsTab } from './tabs/permissions-tab';
+import { AdvancedTab } from './tabs/advanced-tab';
 
-// Social media platform config
+export interface SettingsFormData {
+  publicName: string;
+  logoUrl: string;
+  coverPhotoUrl: string;
+  email: string;
+  phone: string;
+  address: string;
+  website: string;
+  description: string;
+  about: string;
+  aboutImages: string[];
+  theme: string;
+  themeColor: string;
+  socialLinks: Record<string, string>;
+  showSocialInHero: boolean;
+  hidePoweredBy: boolean;
+  defaultLanguage: string;
+  homePage: string;
+  grievanceFilingPermission: 'all' | 'admins_only';
+}
+
 const socialPlatforms = [
   { id: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/yourpage' },
   { id: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/yourhandle' },
@@ -42,28 +56,11 @@ const socialPlatforms = [
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-// Calculate contrast color (black or white) based on background color for accessibility
-function getContrastColor(hexColor: string): string {
-  // Remove # if present
-  const hex = hexColor.replace('#', '');
-
-  // Parse RGB values
-  const r = parseInt(hex.substr(0, 2), 16);
-  const g = parseInt(hex.substr(2, 2), 16);
-  const b = parseInt(hex.substr(4, 2), 16);
-
-  // Calculate relative luminance using WCAG formula
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-  // Return black for light backgrounds, white for dark backgrounds
-  return luminance > 0.5 ? '#000000' : '#ffffff';
-}
-
 export function SettingsContent() {
   const router = useRouter();
   const { data: union, mutate } = useSWR<UnionDataWithMembers>('/api/team', fetcher);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SettingsFormData>({
     publicName: '',
     logoUrl: '',
     coverPhotoUrl: '',
@@ -73,15 +70,15 @@ export function SettingsContent() {
     website: '',
     description: '',
     about: '',
-    aboutImages: [] as string[],
+    aboutImages: [],
     theme: 'default',
     themeColor: '#2563eb',
-    socialLinks: {} as Record<string, string>,
+    socialLinks: {},
     showSocialInHero: true,
     hidePoweredBy: false,
     defaultLanguage: 'en',
     homePage: 'news',
-    grievanceFilingPermission: 'all' as 'all' | 'admins_only',
+    grievanceFilingPermission: 'all',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -92,7 +89,6 @@ export function SettingsContent() {
     union ? `/api/pages/list` : null,
     fetcher
   );
-
 
   useEffect(() => {
     if (union) {
@@ -129,7 +125,7 @@ export function SettingsContent() {
       const response = await fetch('/api/union/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -154,6 +150,19 @@ export function SettingsContent() {
     }
   };
 
+  const handleChange = (updates: Partial<SettingsFormData>) => {
+    setFormData((prev) => ({ ...prev, ...updates }));
+  };
+
+  const tabs = [
+    { id: 'general', label: 'General', icon: Settings },
+    { id: 'appearance', label: 'Appearance', icon: Palette },
+    { id: 'contact', label: 'Contact', icon: Mail },
+    { id: 'social', label: 'Social', icon: Share2 },
+    { id: 'permissions', label: 'Permissions', icon: Lock },
+    { id: 'advanced', label: 'Advanced', icon: Sparkles },
+  ];
+
   if (!union) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -171,7 +180,7 @@ export function SettingsContent() {
             Edit Union Information
           </h1>
           <p className="mt-2 text-gray-600">
-            Update your union's public profile and contact information
+            Update your union&apos;s public profile and contact information
           </p>
         </div>
 
@@ -220,650 +229,76 @@ export function SettingsContent() {
             </div>
           </div>
 
-          {/* Basic Information */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="description">
-                  Short Description (One-liner)
-                </Label>
-                <Textarea
-                  id="description"
-                  placeholder="A brief description of your union..."
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  maxLength={200}
-                  rows={2}
-                  className="resize-none"
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  {formData.description.length}/200 characters
-                </p>
-              </div>
-
-            </CardContent>
-          </Card>
-
-          {/* Social Media Links */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Share2 className="h-5 w-5" />
-                Social Media Links
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-500">
-                Add your social media profiles to display in the footer and contact page
-              </p>
-
-              <div className="space-y-4">
-                {socialPlatforms.map((platform) => (
-                  <div key={platform.id}>
-                    <Label htmlFor={`social-${platform.id}`}>{platform.label}</Label>
-                    <Input
-                      id={`social-${platform.id}`}
-                      type="url"
-                      placeholder={platform.placeholder}
-                      value={formData.socialLinks[platform.id] || ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          socialLinks: {
-                            ...formData.socialLinks,
-                            [platform.id]: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
+          {/* Tabs */}
+          <Tabs defaultValue="general" className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm border">
+              <TabsList className="w-full justify-start p-1 h-auto flex-wrap gap-1 bg-transparent">
+                {tabs.map((tab) => (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className="flex items-center gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+                  >
+                    <tab.icon className="h-4 w-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </TabsTrigger>
                 ))}
-              </div>
+              </TabsList>
+            </div>
 
-              {/* Show in Hero Toggle */}
-              <div className="border-t pt-4 mt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="showSocialInHero" className="text-base font-medium">
-                      Show in Hero Section
-                    </Label>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Display social icons prominently in your homepage hero area
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    id="showSocialInHero"
-                    role="switch"
-                    aria-checked={formData.showSocialInHero}
-                    onClick={() =>
-                      setFormData({
-                        ...formData,
-                        showSocialInHero: !formData.showSocialInHero,
-                      })
-                    }
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                      formData.showSocialInHero ? 'bg-blue-600' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        formData.showSocialInHero ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <p className="text-xs text-gray-400 mt-2">
-                  Social icons always appear in the footer. This option adds them to the hero section as well.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Language Settings */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Languages className="h-5 w-5" />
-                Language Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="defaultLanguage">Default Language</Label>
-                <p className="text-sm text-gray-500 mb-4">
-                  Set the default language for your union portal. This affects the tab name, navbar, and member-facing content.
-                </p>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, defaultLanguage: 'en' })}
-                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      formData.defaultLanguage === 'en'
-                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                        : 'border-gray-200 hover:border-blue-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-2xl">🇬🇧</span>
-                      <div className="text-left">
-                        <p className={`font-semibold ${formData.defaultLanguage === 'en' ? 'text-blue-900' : 'text-gray-900'}`}>
-                          English
-                        </p>
-                        <p className={`text-sm ${formData.defaultLanguage === 'en' ? 'text-blue-600' : 'text-gray-500'}`}>
-                          Default language
-                        </p>
-                      </div>
-                      {formData.defaultLanguage === 'en' && (
-                        <Check className="h-5 w-5 text-blue-600 ml-auto" />
-                      )}
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, defaultLanguage: 'fr' })}
-                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      formData.defaultLanguage === 'fr'
-                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                        : 'border-gray-200 hover:border-blue-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-2xl">🇫🇷</span>
-                      <div className="text-left">
-                        <p className={`font-semibold ${formData.defaultLanguage === 'fr' ? 'text-blue-900' : 'text-gray-900'}`}>
-                          Français
-                        </p>
-                        <p className={`text-sm ${formData.defaultLanguage === 'fr' ? 'text-blue-600' : 'text-gray-500'}`}>
-                          Langue par défaut
-                        </p>
-                      </div>
-                      {formData.defaultLanguage === 'fr' && (
-                        <Check className="h-5 w-5 text-blue-600 ml-auto" />
-                      )}
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Grievance Settings */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5" />
-                Grievance Filing Permissions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-500">
-                Control who can file grievances for your union.
-              </p>
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, grievanceFilingPermission: 'all' })}
-                  className={`flex-1 p-4 rounded-lg border-2 text-left transition-all ${
-                    formData.grievanceFilingPermission === 'all'
-                      ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                      : 'border-gray-200 hover:border-blue-300'
-                  }`}
-                >
-                  <p className={`font-semibold mb-1 ${formData.grievanceFilingPermission === 'all' ? 'text-blue-900' : 'text-gray-900'}`}>
-                    Anyone
-                  </p>
-                  <p className={`text-sm ${formData.grievanceFilingPermission === 'all' ? 'text-blue-600' : 'text-gray-500'}`}>
-                    Any approved member or admin can file a grievance
-                  </p>
-                  {formData.grievanceFilingPermission === 'all' && (
-                    <Check className="h-4 w-4 text-blue-600 mt-2" />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, grievanceFilingPermission: 'admins_only' })}
-                  className={`flex-1 p-4 rounded-lg border-2 text-left transition-all ${
-                    formData.grievanceFilingPermission === 'admins_only'
-                      ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                      : 'border-gray-200 hover:border-blue-300'
-                  }`}
-                >
-                  <p className={`font-semibold mb-1 ${formData.grievanceFilingPermission === 'admins_only' ? 'text-blue-900' : 'text-gray-900'}`}>
-                    Admins Only
-                  </p>
-                  <p className={`text-sm ${formData.grievanceFilingPermission === 'admins_only' ? 'text-blue-600' : 'text-gray-500'}`}>
-                    Only admins can file grievances. Members can still view grievances they are added to.
-                  </p>
-                  {formData.grievanceFilingPermission === 'admins_only' && (
-                    <Check className="h-4 w-4 text-blue-600 mt-2" />
-                  )}
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Theme Selection */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                Theme
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="theme">Homepage Theme</Label>
-                <p className="text-sm text-gray-500 mb-4">
-                  Choose how your union's homepage and tabs are displayed to visitors
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {themeOptions.map((theme) => {
-                    const hasAccess = canAccessTheme(theme.id, (union as any)?.planName);
-                    const isLocked = theme.isPremium && !hasAccess;
-
-                    return (
-                      <div
-                        key={theme.id}
-                        onClick={() => {
-                          if (!isLocked) {
-                            setFormData({ ...formData, theme: theme.id });
-                          }
-                        }}
-                        className={`relative group rounded-lg overflow-hidden border-2 transition-all ${
-                          isLocked
-                            ? 'cursor-not-allowed opacity-75 border-gray-200'
-                            : 'cursor-pointer'
-                        } ${
-                          !isLocked && formData.theme === theme.id
-                            ? theme.isPremium
-                              ? 'border-amber-500 ring-2 ring-amber-200'
-                              : 'border-blue-500 ring-2 ring-blue-200'
-                            : !isLocked
-                            ? 'border-gray-200 hover:border-blue-300'
-                            : ''
-                        }`}
-                      >
-                        {/* Thumbnail Image */}
-                        <div className="relative aspect-[4/3] bg-gray-100">
-                          <Image
-                            src={`/assets/themes/${theme.id}.svg`}
-                            alt={`${theme.name} theme preview`}
-                            fill
-                            className={`object-cover ${isLocked ? 'grayscale' : ''}`}
-                          />
-
-                          {/* Premium Badge */}
-                          {theme.isPremium && (
-                            <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full px-2.5 py-1 flex items-center gap-1 shadow-lg">
-                              <Sparkles className="h-3 w-3" />
-                              <span className="text-xs font-semibold">PREMIUM</span>
-                            </div>
-                          )}
-
-                          {/* Locked Overlay */}
-                          {isLocked && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                              <div className="bg-white/90 rounded-lg px-4 py-2 flex items-center gap-2 shadow-lg">
-                                <Lock className="h-4 w-4 text-gray-600" />
-                                <span className="text-sm font-medium text-gray-700">Base or Plus Plan</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Selected Badge */}
-                          {formData.theme === theme.id && !isLocked && (
-                            <div className={`absolute top-2 right-2 ${theme.isPremium ? 'bg-amber-500' : 'bg-blue-500'} text-white rounded-full p-1.5`}>
-                              <Check className="h-4 w-4" />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Theme Info */}
-                        <div className={`p-4 ${
-                          formData.theme === theme.id && !isLocked
-                            ? theme.isPremium
-                              ? 'bg-amber-50 border-t-2 border-amber-500'
-                              : 'bg-blue-50 border-t-2 border-blue-500'
-                            : 'bg-white border-t-2 border-gray-100'
-                        }`}>
-                          <h3 className={`font-semibold mb-1 flex items-center gap-2 ${
-                            formData.theme === theme.id && !isLocked
-                              ? theme.isPremium
-                                ? 'text-amber-900'
-                                : 'text-blue-900'
-                              : 'text-gray-900'
-                          }`}>
-                            {theme.name}
-                          </h3>
-                          <p className={`text-sm ${
-                            formData.theme === theme.id && !isLocked
-                              ? theme.isPremium
-                                ? 'text-amber-700'
-                                : 'text-blue-700'
-                              : 'text-gray-600'
-                          }`}>
-                            {theme.description}
-                          </p>
-                          {theme.isPremium && theme.requiredPlans && (
-                            <p className={`text-xs mt-2 ${
-                              formData.theme === theme.id && !isLocked
-                                ? 'text-amber-600'
-                                : 'text-gray-400'
-                            }`}>
-                              Requires {theme.requiredPlans.join(' or ')} plan
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Hidden radio input for form */}
-                        <input
-                          type="radio"
-                          name="theme"
-                          value={theme.id}
-                          checked={formData.theme === theme.id}
-                          onChange={() => {}}
-                          className="sr-only"
-                          disabled={isLocked}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Theme Color Picker */}
-              <div className="border-t pt-6 mt-6">
-                <Label htmlFor="themeColor">Brand Color</Label>
-                <p className="text-sm text-gray-500 mb-4">
-                  Choose a custom brand color for banners, posters, and email headers
-                </p>
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <input
-                      type="color"
-                      id="themeColor"
-                      value={formData.themeColor}
-                      onChange={(e) => setFormData({ ...formData, themeColor: e.target.value })}
-                      className="w-16 h-16 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-blue-300 transition-colors"
-                      style={{ padding: '2px' }}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Input
-                        type="text"
-                        value={formData.themeColor}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (/^#[0-9A-Fa-f]{0,6}$/.test(value)) {
-                            setFormData({ ...formData, themeColor: value });
-                          }
-                        }}
-                        placeholder="#2563eb"
-                        className="w-28 font-mono"
-                        maxLength={7}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setFormData({ ...formData, themeColor: '#2563eb' })}
-                      >
-                        Reset to Default
-                      </Button>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-xs text-gray-500">Color preview:</span>
-                      <div
-                        className="h-8 rounded"
-                        style={{
-                          backgroundColor: formData.themeColor,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* White Label Branding - Only for Paid Plans */}
-          {union && (union as any).planName && (union as any).planName !== 'Free' && (
-            <Card className="shadow-xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {formData.hidePoweredBy ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  White Label
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="hidePoweredBy" className="text-base font-medium">
-                      Hide "Powered by UnionTab"
-                    </Label>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Remove the UnionTab branding from your union's footer
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    id="hidePoweredBy"
-                    role="switch"
-                    aria-checked={formData.hidePoweredBy}
-                    onClick={() =>
-                      setFormData({
-                        ...formData,
-                        hidePoweredBy: !formData.hidePoweredBy,
-                      })
-                    }
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                      formData.hidePoweredBy ? 'bg-blue-600' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        formData.hidePoweredBy ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Branding */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle>Branding</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <FileUpload
-                onFileSelect={(file, url) => {
-                  if (url) {
-                    setFormData({ ...formData, logoUrl: url });
-                  } else if (file === null) {
-                    // Handle removal
-                    setFormData({ ...formData, logoUrl: '' });
-                  }
-                }}
-                accept="image/*"
-                maxSize={5}
-                currentUrl={formData.logoUrl}
-                label="Logo Image"
-                hint="Click to browse or drag and drop your logo"
-                bucket="union-files"
-                path="logos"
-                recommendedDimensions={{ width: 400, height: 400 }}
-                autoResize={true}
-              />
-
-              <FileUpload
-                onFileSelect={(file, url) => {
-                  if (url) {
-                    setFormData({ ...formData, coverPhotoUrl: url });
-                  } else if (file === null) {
-                    // Handle removal
-                    setFormData({ ...formData, coverPhotoUrl: '' });
-                  }
-                }}
-                accept="image/*"
-                maxSize={10}
-                currentUrl={formData.coverPhotoUrl}
-                label="Cover Photo / Banner"
-                hint="Click to browse or drag and drop your cover image"
-                bucket="union-files"
-                path="covers"
-                recommendedDimensions={{ width: 1500, height: 500 }}
-                autoResize={true}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Contact Information */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="contact@union.org"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+            <div className="bg-white rounded-lg shadow-sm border">
+              <TabsContent value="general" className="m-0 p-6">
+                <GeneralTab
+                  formData={formData}
+                  onChange={handleChange}
+                  unionPages={unionPages}
                 />
-              </div>
+              </TabsContent>
 
-              <div>
-                <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  Phone
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="(555) 123-4567"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
+              <TabsContent value="appearance" className="m-0 p-6">
+                <AppearanceTab
+                  formData={formData}
+                  onChange={handleChange}
+                  themeOptions={themeOptions}
+                  canAccessTheme={canAccessTheme}
+                  planName={(union as any)?.planName}
                 />
-              </div>
+              </TabsContent>
 
-              <div>
-                <Label htmlFor="address" className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Address
-                </Label>
-                <Textarea
-                  id="address"
-                  placeholder="123 Union St, City, State 12345"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  rows={3}
+              <TabsContent value="contact" className="m-0 p-6">
+                <ContactTab
+                  formData={formData}
+                  onChange={handleChange}
                 />
-              </div>
+              </TabsContent>
 
-              <div>
-                <Label htmlFor="website" className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
-                  Website
-                </Label>
-                <Input
-                  id="website"
-                  type="url"
-                  placeholder="https://www.union.org"
-                  value={formData.website}
-                  onChange={(e) =>
-                    setFormData({ ...formData, website: e.target.value })
-                  }
+              <TabsContent value="social" className="m-0 p-6">
+                <SocialTab
+                  formData={formData}
+                  onChange={handleChange}
+                  socialPlatforms={socialPlatforms}
                 />
-              </div>
-            </CardContent>
-          </Card>
+              </TabsContent>
 
-          {/* Public Name */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle>Public Name</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="publicName">Display Name</Label>
-                <Input
-                  id="publicName"
-                  placeholder="e.g. Barrie Transit Union"
-                  value={formData.publicName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, publicName: e.target.value })
-                  }
+              <TabsContent value="permissions" className="m-0 p-6">
+                <PermissionsTab
+                  formData={formData}
+                  onChange={handleChange}
                 />
-                <p className="text-sm text-gray-500 mt-1">
-                  A longer display name if you don't want to go by your union + local number (e.g. "CUPE 123")
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+              </TabsContent>
 
-          {/* Gallery */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle>Gallery</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-gray-600">
-                Upload and manage photos for your union&apos;s public gallery. The gallery is visible to all members and is shown in the navigation when images are present.
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push(`/${union.slug}/gallery`)}
-              >
-                Manage Gallery
-              </Button>
-            </CardContent>
-          </Card>
+              <TabsContent value="advanced" className="m-0 p-6">
+                <AdvancedTab
+                  formData={formData}
+                  onChange={handleChange}
+                  onNavigate={(path) => router.push(path)}
+                  slug={union.slug}
+                />
+              </TabsContent>
+            </div>
+          </Tabs>
 
-          {/* Custom Pages & Navigation */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle>Custom Pages & Navigation</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-gray-600">
-                Want to add new pages, rearrange your navigation, or customize your site structure? Our team will set it up for you.
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  router.push(
-                    `/${union.slug}/support?category=site_customization&subject=${encodeURIComponent('Navigation & Page Customization Request')}`
-                  )
-                }
-              >
-                Request Customization
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Actions */}
+          {/* Bottom Actions */}
           <div className="flex justify-between items-center">
             <button
               type="button"

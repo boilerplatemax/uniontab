@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { FileUpload } from '@/components/ui/file-upload';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -242,13 +242,10 @@ export function GalleryContent({
   const lightboxNext = () =>
     setLightboxIndex((i) => (i !== null ? (i + 1) % images.length : null));
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Memoized Banner (prevents re-render on gallery state changes) ───────
 
-  return (
-    <>
-      {/* ── Union Banner ───────────────────────────────────────────────────── */}
-
-      {activeTheme === 'modern' ? (
+  const banner = useMemo(() => (
+      activeTheme === 'modern' ? (
         /* ── Modern Theme Banner ─────────────────────────────────────────── */
         <div
           className="relative overflow-hidden"
@@ -447,7 +444,14 @@ export function GalleryContent({
             </div>
           </div>
         </>
-      )}
+      )
+  ), [activeTheme, themeColor, union, hasCoverPhoto, displayName, heroTextColor, heroTextOpacity, themeColorDark, textSecondary, borderLight]);
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <>
+      {banner}
 
       {/* ── Gallery Body ───────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
