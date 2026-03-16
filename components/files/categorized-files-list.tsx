@@ -105,7 +105,6 @@ function FileGridCard({
   showThumbnails?: boolean;
 }) {
   const { icon: FileIcon, color: iconColor, bg: iconBg } = getFileIcon(file.originalName, file.fileType);
-  const ext = file.originalName.split('.').pop()?.toUpperCase() || '';
   const isPdf = file.fileType === 'application/pdf' || file.originalName.toLowerCase().endsWith('.pdf');
   const previewSrc = showThumbnails
     ? (isImageFile(file.originalName, file.fileType) ? file.fileUrl : (isPdf && file.thumbnailUrl ? file.thumbnailUrl : null))
@@ -136,12 +135,6 @@ function FileGridCard({
         </p>
         <div className="flex items-center gap-1.5 mt-1">
           <span className="text-xs text-gray-400">{formatFileSize(file.fileSize)}</span>
-          {ext && (
-            <>
-              <span className="text-gray-300 text-xs">&middot;</span>
-              <span className="text-xs text-gray-400 uppercase">{ext}</span>
-            </>
-          )}
         </div>
         {file.isPrivate && (
           <span className="inline-block mt-1.5 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">

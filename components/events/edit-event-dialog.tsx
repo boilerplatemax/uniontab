@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -118,7 +118,7 @@ export function EditEventDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-4xl max-h-[85vh] !flex !flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
           <DialogTitle>Edit Event</DialogTitle>
         </DialogHeader>
@@ -267,7 +267,7 @@ export function EditEventDialog({
             </div>
           </div>
 
-          <div className="flex-shrink-0 flex gap-2 justify-end border-t px-6 py-4">
+          <DialogFooter className="flex-shrink-0 border-t px-6 py-4">
             <Button
               type="button"
               variant="outline"
@@ -276,7 +276,7 @@ export function EditEventDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -286,7 +286,7 @@ export function EditEventDialog({
                 'Save Changes'
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

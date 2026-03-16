@@ -111,7 +111,7 @@ export function EditPostDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-4xl max-h-[85vh] !flex !flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
           <DialogTitle>Edit Post</DialogTitle>
         </DialogHeader>
