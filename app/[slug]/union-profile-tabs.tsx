@@ -686,11 +686,11 @@ export function UnionProfileTabs({
                       if (post.isPrivate && !isApprovedMember) return null;
 
                       return (
-                        <Card key={post.id} className={`overflow-hidden transition-shadow ${postsView === 'grid' ? 'flex flex-col h-full shadow-sm hover:shadow-md' : 'shadow-sm hover:shadow-md border-l-4 border-l-blue-500'}`}>
+                        <Card key={post.id} className={`overflow-hidden transition-shadow ${postsView === 'grid' ? 'flex flex-col h-full shadow-sm hover:shadow-md !py-0 !gap-0' : 'shadow-sm hover:shadow-md border-l-4 border-l-blue-500 !py-0 !gap-0'}`}>
                           <CardContent className={postsView === 'grid' ? 'p-4 flex flex-col h-full' : 'p-0'}>
                             {postsView === 'grid' && post.imageUrl && (
                               <Link href={`/${union.slug}/post/${post.id}`} className="block -mx-4 -mt-4 mb-4">
-                                <div className="relative aspect-video overflow-hidden rounded-t-lg bg-gray-100">
+                                <div className="relative aspect-video overflow-hidden bg-gray-100">
                                   <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" loading="lazy" />
                                 </div>
                               </Link>

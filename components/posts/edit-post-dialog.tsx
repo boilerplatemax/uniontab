@@ -111,12 +111,12 @@ export function EditPostDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
           <DialogTitle>Edit Post</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
             {error && (
               <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">
                 {error}
@@ -266,7 +266,7 @@ export function EditPostDialog({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 border-t px-6 py-4">
             <Button
               type="button"
               variant="outline"

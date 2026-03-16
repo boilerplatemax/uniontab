@@ -27,8 +27,31 @@ interface CategorizedFilesListProps {
   showThumbnails?: boolean;
 }
 
-// Get appropriate icon and color based on file extension
-function getFileIcon(fileName: string) {
+// Get appropriate icon and color based on MIME type (primary) with file extension fallback
+function getFileIcon(fileName: string, fileType?: string | null) {
+  // Primary: detect by MIME type if available
+  if (fileType) {
+    const mime = fileType.toLowerCase();
+    if (mime.startsWith('image/')) return { icon: FileImage, color: 'text-pink-500', bg: 'bg-pink-50' };
+    if (mime === 'application/pdf') return { icon: FileText, color: 'text-red-500', bg: 'bg-red-50' };
+    if (mime.startsWith('video/')) return { icon: FileVideo, color: 'text-purple-600', bg: 'bg-purple-50' };
+    if (mime.startsWith('audio/')) return { icon: FileAudio, color: 'text-indigo-600', bg: 'bg-indigo-50' };
+    if (
+      mime.includes('spreadsheet') || mime.includes('excel') ||
+      mime === 'text/csv' || mime === 'application/vnd.ms-excel' ||
+      mime.includes('officedocument.spreadsheetml')
+    ) return { icon: FileSpreadsheet, color: 'text-green-600', bg: 'bg-green-50' };
+    if (
+      mime.includes('zip') || mime.includes('rar') || mime.includes('7z') ||
+      mime.includes('tar') || mime.includes('gzip') || mime.includes('compressed')
+    ) return { icon: FileArchive, color: 'text-amber-600', bg: 'bg-amber-50' };
+    if (
+      mime.includes('msword') || mime.includes('wordprocessingml') ||
+      mime === 'text/plain' || mime.includes('rtf') || mime.includes('opendocument.text')
+    ) return { icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' };
+  }
+
+  // Fallback: detect by file extension
   const ext = fileName.split('.').pop()?.toLowerCase() || '';
   const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'];
   const spreadsheetExts = ['xls', 'xlsx', 'csv', 'numbers'];
@@ -57,7 +80,10 @@ function formatFileSize(bytes: number) {
 
 const IMAGE_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico']);
 
-function isImageFile(fileName: string) {
+function isImageFile(fileName: string, fileType?: string | null) {
+  // Primary: check MIME type
+  if (fileType && fileType.toLowerCase().startsWith('image/')) return true;
+  // Fallback: check file extension
   const ext = fileName.split('.').pop()?.toLowerCase() || '';
   return IMAGE_EXTS.has(ext);
 }
@@ -78,11 +104,11 @@ function FileGridCard({
   deletingFile: number | null;
   showThumbnails?: boolean;
 }) {
-  const { icon: FileIcon, color: iconColor, bg: iconBg } = getFileIcon(file.originalName);
+  const { icon: FileIcon, color: iconColor, bg: iconBg } = getFileIcon(file.originalName, file.fileType);
   const ext = file.originalName.split('.').pop()?.toUpperCase() || '';
   const isPdf = file.fileType === 'application/pdf' || file.originalName.toLowerCase().endsWith('.pdf');
   const previewSrc = showThumbnails
-    ? (isImageFile(file.originalName) ? file.fileUrl : (isPdf && file.thumbnailUrl ? file.thumbnailUrl : null))
+    ? (isImageFile(file.originalName, file.fileType) ? file.fileUrl : (isPdf && file.thumbnailUrl ? file.thumbnailUrl : null))
     : null;
 
   return (

@@ -1062,31 +1062,31 @@ export function UnionNavbar({
                   {/* Mega Menu Panel */}
                   {openPanel === 'manage' && (
                     <div
-                      className="absolute right-0 top-full mt-2 w-[640px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50"
+                      className="absolute right-0 top-full mt-2 w-[720px] max-h-[calc(100vh-120px)] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50"
                       onMouseEnter={cancelClose}
                       onMouseLeave={closeMegaMenu}
                     >
                       {/* Subtle top accent bar */}
                       <div className="h-1 bg-gradient-to-r from-blue-500 via-violet-500 to-rose-500" />
-                      <div className="p-6">
-                        <div className="grid grid-cols-2 gap-6">
+                      <div className="p-5 overflow-y-auto max-h-[calc(100vh-140px)]">
+                        <div className="columns-2 gap-5" style={{ columnFill: 'balance' }}>
                           {manageGroups.map((group) => {
                             const color = getGroupColor(group.title);
                             return (
-                              <div key={group.title}>
-                                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+                              <div key={group.title} className="break-inside-avoid mb-5">
+                                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2 px-1">
                                   {group.title}
                                 </h3>
-                                <div className="space-y-1">
+                                <div className="space-y-0.5">
                                   {group.items.map((item) => (
                                     <Link
                                       key={item.href}
                                       href={item.href}
                                       prefetch={true}
                                       onClick={() => setOpenPanel(null)}
-                                      className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group/item"
+                                      className="flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-gray-50 transition-colors group/item"
                                     >
-                                      <div className={`flex-shrink-0 p-2 rounded-lg ${color.bg} ${color.text} ${color.hoverBg} transition-colors`}>
+                                      <div className={`flex-shrink-0 p-1.5 rounded-lg ${color.bg} ${color.text} ${color.hoverBg} transition-colors`}>
                                         {item.icon}
                                       </div>
                                       <div className="min-w-0 flex-1">
@@ -1098,7 +1098,7 @@ export function UnionNavbar({
                                             </span>
                                           ) : null}
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.description}</p>
+                                        <p className="text-xs text-gray-500 leading-snug">{item.description}</p>
                                       </div>
                                     </Link>
                                   ))}

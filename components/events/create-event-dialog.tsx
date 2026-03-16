@@ -107,151 +107,153 @@ export function CreateEventDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
           <DialogTitle>Create Event</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
 
-          <div>
-            <Label htmlFor="title">
-              Title <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Event title"
-              required
-            />
-          </div>
-
-          <div>
-            <Label>Description</Label>
-            <RichTextEditor
-              content={description}
-              onChange={setDescription}
-              placeholder="Event description"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Event location"
-            />
-          </div>
-
-          <div>
-            <Label>Event Image (Optional)</Label>
-            <FileUpload
-              onFileSelect={(file, url) => {
-                if (url) setMediaUrl(url);
-              }}
-              accept="image/*"
-              maxSize={5}
-              currentUrl={mediaUrl}
-              hint="Upload event image"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="startDate">
-                Start Date <span className="text-red-500">*</span>
+              <Label htmlFor="title">
+                Title <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Event title"
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="endDate">
-                End Date (Optional - defaults to start date)
-              </Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+              <Label>Description</Label>
+              <RichTextEditor
+                content={description}
+                onChange={setDescription}
+                placeholder="Event description"
               />
             </div>
-          </div>
 
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="isAllDay"
-              checked={isAllDay}
-              onCheckedChange={setIsAllDay}
-            />
-            <Label htmlFor="isAllDay" className="cursor-pointer">
-              All day event
-            </Label>
-          </div>
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Event location"
+              />
+            </div>
 
-          {!isAllDay && (
+            <div>
+              <Label>Event Image (Optional)</Label>
+              <FileUpload
+                onFileSelect={(file, url) => {
+                  if (url) setMediaUrl(url);
+                }}
+                accept="image/*"
+                maxSize={5}
+                currentUrl={mediaUrl}
+                hint="Upload event image"
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="startTime">Start Time</Label>
+                <Label htmlFor="startDate">
+                  Start Date <span className="text-red-500">*</span>
+                </Label>
                 <Input
-                  id="startTime"
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  step="900"
-                  className="cursor-pointer"
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  required
                 />
               </div>
 
               <div>
-                <Label htmlFor="endTime">End Time</Label>
+                <Label htmlFor="endDate">
+                  End Date (Optional - defaults to start date)
+                </Label>
                 <Input
-                  id="endTime"
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  step="900"
-                  className="cursor-pointer"
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
             </div>
-          )}
 
-          <div>
-            <Label htmlFor="category">Category</Label>
-            <Input
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g., Meeting, Social, Training"
-            />
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="isAllDay"
+                checked={isAllDay}
+                onCheckedChange={setIsAllDay}
+              />
+              <Label htmlFor="isAllDay" className="cursor-pointer">
+                All day event
+              </Label>
+            </div>
+
+            {!isAllDay && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startTime">Start Time</Label>
+                  <Input
+                    id="startTime"
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    step="900"
+                    className="cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="endTime">End Time</Label>
+                  <Input
+                    id="endTime"
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    step="900"
+                    className="cursor-pointer"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Input
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="e.g., Meeting, Social, Training"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="isPrivate"
+                checked={isPrivate}
+                onCheckedChange={setIsPrivate}
+              />
+              <Label htmlFor="isPrivate" className="cursor-pointer">
+                Private (members only)
+              </Label>
+            </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="isPrivate"
-              checked={isPrivate}
-              onCheckedChange={setIsPrivate}
-            />
-            <Label htmlFor="isPrivate" className="cursor-pointer">
-              Private (members only)
-            </Label>
-          </div>
-
-          <div className="flex gap-2 justify-end pt-4">
+          <div className="flex-shrink-0 flex gap-2 justify-end border-t px-6 py-4">
             <Button
               type="button"
               variant="outline"

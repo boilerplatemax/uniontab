@@ -10,7 +10,7 @@ import {
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   // API version must match the installed stripe package
   // Vercel's pnpm lockfile expects this API version
-  apiVersion: "2025-04-30.basil",
+  apiVersion: "2025-08-27.basil",
 })
 
 export async function createCheckoutSession({
