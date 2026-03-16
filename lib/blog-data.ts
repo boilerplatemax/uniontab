@@ -30,8 +30,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>At the top of the page, you'll immediately see your <strong>Monthly Email Usage</strong> card. This shows a progress bar along with key stats: how many emails you've sent this month, your plan's monthly limit, how many remain, and when the counter resets. This is your at-a-glance check to make sure you have enough capacity for your send.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Tools mega-menu open, showing 'Mass Email' highlighted under the Communications group</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/how-to-send-bulk-emails/1.png" alt="The Tools mega-menu open, showing Mass Email highlighted under the Communications group" class="w-full" />
       </div>
 
       <h2>Step 2: Select Your Recipients</h2>
@@ -53,8 +53,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>If you choose <strong>Custom Selection</strong>, a searchable member table appears with checkboxes beside each member. Each row shows the member's avatar, name, email address, role, and status. You can use <strong>Select All</strong> or <strong>Deselect All</strong> to speed things up, search by name or email, and sort columns to find exactly who you need.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The recipient selection dropdown showing all filter options, with the recipient count displayed below</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/how-to-send-bulk-emails/2.png" alt="The recipient selection dropdown showing all filter options, with the recipient count displayed below" class="w-full" />
       </div>
 
       <h2>Step 3: Compose Your Email</h2>
@@ -70,8 +70,8 @@ export const blogPosts: BlogPost[] = [
       <h3>File Attachments</h3>
       <p>Need to send a collective agreement, meeting minutes, or a flyer? Use the <strong>File Attachments</strong> area to attach up to <strong>10 files</strong>, each up to <strong>50MB</strong>. Simply drag and drop files into the upload area or click to browse your computer.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Compose Email card showing the subject field, rich text editor with formatting toolbar, and file attachment area</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/how-to-send-bulk-emails/3.png" alt="The Compose Email card showing the subject field, rich text editor with formatting toolbar, and file attachment area" class="w-full" />
       </div>
 
       <h2>Step 4: Preview and Send</h2>
@@ -81,8 +81,8 @@ export const blogPosts: BlogPost[] = [
       <h3>Preview Your Recipients</h3>
       <p>Click the <strong>Preview Recipients</strong> button (eye icon) to open a dialog showing the complete list of people who will receive your email. Each recipient is displayed with their avatar, full name, email address, and role badge. Scan through the list to verify the right people are included.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Preview Recipients dialog showing the list of recipients with avatars and role badges</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/how-to-send-bulk-emails/4.png" alt="The Preview Recipients dialog showing the list of recipients with avatars and role badges" class="w-full" />
       </div>
 
       <h3>Send Your Email</h3>
@@ -106,7 +106,7 @@ export const blogPosts: BlogPost[] = [
 
       <p>Here's a workflow shortcut many union leaders love: when you create a new <strong>news post</strong> or schedule a <strong>meeting</strong> in UnionTab, the platform offers to share it with members via email automatically. It pre-fills the subject and content for you, so all you have to do is select your recipients and hit send. It's the fastest way to keep your membership informed.</p>
     `,
-    imageUrl: "/assets/blog/bulk-emails.png",
+    imageUrl: "/assets/blog/how-to-send-bulk-emails/0.png",
     author: "UnionTab Team",
     publishedAt: "2025-12-15",
     readTime: "5 min read",
@@ -129,8 +129,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>Admins can reorder categories using the up/down arrows and rename them using the pencil icon — keeping your file library tidy as it grows.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Files tab showing category folders on the left sidebar and the file card grid on the right</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/uploading-files-and-creating-posts/1.png" alt="The Files tab showing category folders on the left sidebar and the file card grid on the right" class="w-full" />
       </div>
 
       <h3>Uploading a New File</h3>
@@ -146,8 +146,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>Click <strong>Upload File</strong> to save. For PDF files, a thumbnail preview is automatically generated, making it easy for members to identify documents at a glance.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Upload File dialog showing the file upload area, display name field, category input with suggestions, and the Private File toggle</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/uploading-files-and-creating-posts/2.png" alt="The Upload File dialog showing the file upload area, display name field, category input with suggestions, and the Private File toggle" class="w-full" />
       </div>
 
       <h3>Managing Your Files</h3>
@@ -191,8 +191,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>Click the <strong>News</strong> tab in the top navigation bar (the newspaper icon). This is the default landing tab for your union's page — it's the first thing visitors and members see, so keep it active with regular updates.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The News tab showing published posts with titles, content previews, and post images</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/uploading-files-and-creating-posts/3.png" alt="The News tab showing published posts with titles, content previews, and post images" class="w-full" />
       </div>
 
       <h3>Creating a New Post</h3>
@@ -210,8 +210,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>Click <strong>Create Post</strong> to publish immediately.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Create New Post dialog showing the title field, rich text editor, image upload, file attachments, private toggle, and author selector</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/uploading-files-and-creating-posts/4.png" alt="The Create New Post dialog showing the title field, rich text editor, image upload, file attachments, private toggle, and author selector" class="w-full" />
       </div>
 
       <h3>After Creating a Post</h3>
@@ -225,8 +225,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>This integration between posts and email is one of UnionTab's most powerful workflow shortcuts — publish once, distribute everywhere.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The post-creation success dialog asking whether to share the post via email</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/uploading-files-and-creating-posts/5.png" alt="The post-creation success dialog asking whether to share the post via email" class="w-full" />
       </div>
 
       <h3>Public vs. Private Posts</h3>
@@ -256,7 +256,7 @@ export const blogPosts: BlogPost[] = [
         <li><strong>When in doubt, start private</strong> — you can always change a file or post's visibility later. It's easier to make something public than to retract information that's already out there.</li>
       </ul>
     `,
-    imageUrl: "/assets/blog/files-posts.png",
+    imageUrl: "/assets/blog/uploading-files-and-creating-posts/1.png",
     author: "UnionTab Team",
     publishedAt: "2025-11-28",
     readTime: "7 min read",
@@ -284,8 +284,8 @@ export const blogPosts: BlogPost[] = [
         <li><strong>Cancelled</strong> — meetings that were cancelled (this tab is visible to admins only)</li>
       </ul>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Tools mega-menu open, showing 'Meetings' highlighted under the Member Tools group</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/zoom-meetings-and-posters/1.png" alt="The Tools mega-menu open, showing Meetings highlighted under the Member Tools group" class="w-full" />
       </div>
 
       <h2>Step 2: Schedule a New Meeting</h2>
@@ -325,8 +325,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>Click <strong>Create Meeting</strong> to save and publish the meeting.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Schedule Online Meeting dialog showing all form fields including title, date/time, platform selector, and the auto-create Zoom toggle</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/zoom-meetings-and-posters/2.png" alt="The Schedule Online Meeting dialog showing all form fields including title, date/time, platform selector, and the auto-create Zoom toggle" class="w-full" />
       </div>
 
       <h2>Step 3: Generate a Meeting Poster</h2>
@@ -352,8 +352,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>Print the poster for bulletin boards in the workplace, save it as a PDF to attach to emails, or share the image on social media and messaging groups. The poster uses your union's theme colour and logo, so it looks professional and on-brand every time.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Meeting Poster dialog showing the branded poster with union logo, meeting details, join link, and the Print/Save as PDF button</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/zoom-meetings-and-posters/3.png" alt="The Meeting Poster dialog showing the branded poster with union logo, meeting details, join link, and the Print/Save as PDF button" class="w-full" />
       </div>
 
       <h2>Step 4: Send Meeting Invitations</h2>
@@ -375,8 +375,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>Each invitation email includes the meeting details and a direct join link, making it easy for members to join when the time comes.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Send Invites dialog showing the recipient selection dropdown and the existing invite count</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/zoom-meetings-and-posters/4.png" alt="The Send Invites dialog showing the recipient selection dropdown and the existing invite count" class="w-full" />
       </div>
 
       <h2>Meeting Card Actions</h2>
@@ -393,8 +393,8 @@ export const blogPosts: BlogPost[] = [
 
       <p>Regular members see a simplified view with the meeting details and a join button — clean and straightforward.</p>
 
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic text-sm">📸 Screenshot: A meeting card showing the admin dropdown menu with all available actions</p>
+      <div class="my-6 rounded-lg overflow-hidden shadow-md">
+        <img src="/assets/blog/zoom-meetings-and-posters/5.png" alt="A meeting card showing the admin dropdown menu with all available actions" class="w-full" />
       </div>
 
       <h2>Pro Tips for Better Meetings</h2>
@@ -418,7 +418,7 @@ export const blogPosts: BlogPost[] = [
 
       <p>Both features are available under the Tools mega-menu, so you can manage your local's entire schedule from one place.</p>
     `,
-    imageUrl: "/assets/blog/zoom-meetings.png",
+    imageUrl: "/assets/blog/zoom-meetings-and-posters/1.png",
     author: "UnionTab Team",
     publishedAt: "2025-11-10",
     readTime: "8 min read",
