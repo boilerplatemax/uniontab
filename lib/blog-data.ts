@@ -16,61 +16,95 @@ export const blogPosts: BlogPost[] = [
     title: "How to Send Bulk Emails to Members",
     excerpt: "Learn how to efficiently communicate with your entire membership using UnionTab's powerful bulk email feature.",
     content: `
-      <h2>Reaching Your Members at Scale</h2>
-      <p>Effective communication is the backbone of any successful union. Whether you're announcing a contract update, organizing a rally, or sharing important news, getting your message to all members quickly is essential. UnionTab's bulk email feature makes this simple.</p>
+      <p>Effective communication is the backbone of any successful union. Whether you're rallying members for an upcoming vote, sharing bargaining updates, or distributing important documents, getting the right message to the right people matters. UnionTab's Mass Email feature lets you send branded emails to your entire membership — or targeted groups — in just a few clicks.</p>
 
-      <h2>Step 1: Navigate to the Email Tool</h2>
-      <p>From your union dashboard, click on <strong>Communications</strong> in the left sidebar, then select <strong>Send Email</strong>.</p>
+      <p>In this step-by-step tutorial, we'll walk you through the entire process, from opening the Mass Email page to hitting send.</p>
 
-      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic">[Screenshot placeholder: Dashboard showing Communications menu]</p>
+      <h2>Step 1: Open the Mass Email Page</h2>
+
+      <p>From anywhere in your union's dashboard, look at the top navigation bar and click the <strong>Tools</strong> button (the shield icon). This opens the mega-menu — a central hub for all of UnionTab's powerful features.</p>
+
+      <p>Under the <strong>Communications</strong> group, click <strong>Mass Email</strong>.</p>
+
+      <p>You'll land on the Emails page, which displays a Mail icon and the subtitle <em>"Send emails to multiple members at once."</em></p>
+
+      <p>At the top of the page, you'll immediately see your <strong>Monthly Email Usage</strong> card. This shows a progress bar along with key stats: how many emails you've sent this month, your plan's monthly limit, how many remain, and when the counter resets. This is your at-a-glance check to make sure you have enough capacity for your send.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Tools mega-menu open, showing 'Mass Email' highlighted under the Communications group</p>
       </div>
 
       <h2>Step 2: Select Your Recipients</h2>
-      <p>UnionTab gives you flexible options for selecting who receives your email:</p>
+
+      <p>The first card on the page is <strong>Select Recipients</strong>. Here you'll choose exactly who receives your email.</p>
+
+      <p>Use the <strong>"Send to:"</strong> dropdown to pick from the following options:</p>
+
       <ul>
-        <li><strong>All Members</strong> - Send to your entire membership roster</li>
-        <li><strong>Active Members Only</strong> - Exclude members with lapsed dues</li>
-        <li><strong>By Committee</strong> - Target specific groups like stewards or executive board</li>
-        <li><strong>Custom Selection</strong> - Hand-pick individual recipients</li>
+        <li><strong>All Members</strong> — every member in your local's database, regardless of status</li>
+        <li><strong>Approved Members</strong> (default) — only members whose membership has been approved</li>
+        <li><strong>Admins Only</strong> — your executive board and administrators</li>
+        <li><strong>Pending Members</strong> — members awaiting approval</li>
+        <li><strong>Rejected Members</strong> — members whose applications were declined</li>
+        <li><strong>Custom Selection</strong> — hand-pick individual recipients</li>
       </ul>
 
-      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic">[Screenshot placeholder: Recipient selection interface]</p>
+      <p>Once you make your selection, a blue info box appears below the dropdown showing exactly how many recipients are selected — for example, <em>"24 recipients selected."</em></p>
+
+      <p>If you choose <strong>Custom Selection</strong>, a searchable member table appears with checkboxes beside each member. Each row shows the member's avatar, name, email address, role, and status. You can use <strong>Select All</strong> or <strong>Deselect All</strong> to speed things up, search by name or email, and sort columns to find exactly who you need.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The recipient selection dropdown showing all filter options, with the recipient count displayed below</p>
       </div>
 
-      <h2>Step 3: Compose Your Message</h2>
-      <p>Use the rich text editor to craft your message. You can:</p>
-      <ul>
-        <li>Add formatting (bold, italic, headers)</li>
-        <li>Insert links and images</li>
-        <li>Use personalization tokens like {member_name} to address each recipient personally</li>
-        <li>Save drafts to continue later</li>
-      </ul>
+      <h2>Step 3: Compose Your Email</h2>
+
+      <p>Below the recipient card, you'll find the <strong>Compose Email</strong> card. This is where you craft your message.</p>
+
+      <h3>Subject Line</h3>
+      <p>Enter your email subject line in the <strong>Subject</strong> field. This is required — every email needs a clear subject so members know what it's about before they open it.</p>
+
+      <h3>Message Body</h3>
+      <p>Use the <strong>rich text editor</strong> to write and format your message. The toolbar gives you full control over formatting: bold, italic, headers, links, bulleted and numbered lists, and images. Write your message naturally — UnionTab automatically wraps it in your union's branded email template, complete with your logo and colours. No design work needed on your end.</p>
+
+      <h3>File Attachments</h3>
+      <p>Need to send a collective agreement, meeting minutes, or a flyer? Use the <strong>File Attachments</strong> area to attach up to <strong>10 files</strong>, each up to <strong>50MB</strong>. Simply drag and drop files into the upload area or click to browse your computer.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Compose Email card showing the subject field, rich text editor with formatting toolbar, and file attachment area</p>
+      </div>
 
       <h2>Step 4: Preview and Send</h2>
-      <p>Before sending, always use the <strong>Preview</strong> button to see exactly how your email will appear. You can also send a test email to yourself.</p>
 
-      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic">[Screenshot placeholder: Email preview screen]</p>
+      <p>Before you send, take a moment to double-check everything.</p>
+
+      <h3>Preview Your Recipients</h3>
+      <p>Click the <strong>Preview Recipients</strong> button (eye icon) to open a dialog showing the complete list of people who will receive your email. Each recipient is displayed with their avatar, full name, email address, and role badge. Scan through the list to verify the right people are included.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Preview Recipients dialog showing the list of recipients with avatars and role badges</p>
       </div>
 
-      <h2>Tracking Delivery</h2>
-      <p>After sending, UnionTab provides detailed analytics:</p>
+      <h3>Send Your Email</h3>
+      <p>When you're satisfied, click the <strong>Send Email</strong> button (send icon). A confirmation dialog appears showing your subject line, the number of recipients, and a clear warning: <em>"This action cannot be undone."</em></p>
+
+      <p>Click <strong>Send Email</strong> in the confirmation dialog to dispatch your message.</p>
+
+      <p>After sending, a success alert confirms delivery — for example, <em>"Email sent successfully to 47 of 48 recipients!"</em> Your monthly usage counter updates automatically to reflect the send.</p>
+
+      <h2>Best Practices for Union Mass Emails</h2>
+
       <ul>
-        <li>Total emails sent</li>
-        <li>Open rates</li>
-        <li>Click-through rates</li>
-        <li>Bounce reports</li>
+        <li><strong>Keep subject lines clear and concise</strong> — members receive a lot of emails. A subject like "Ratification Vote: Thursday at 7 PM" is far more effective than "Important Update."</li>
+        <li><strong>Use the "Approved Members" filter for most communications</strong> — this ensures you're reaching active, verified members of your local.</li>
+        <li><strong>Attach important documents directly</strong> — rather than linking to external sites, attach contracts, agendas, or reports right to the email so members have them immediately.</li>
+        <li><strong>Check your monthly email usage before large sends</strong> — glance at the usage card at the top of the page to make sure you have enough capacity, especially before sending to your full membership.</li>
+        <li><strong>Let the branded template do the work</strong> — your message is automatically wrapped in a professional template featuring your union's logo and colours. Focus on the content, not the design.</li>
       </ul>
 
-      <h2>Best Practices</h2>
-      <p><strong>Keep subject lines clear and concise</strong> - Members should immediately understand the purpose of your email.</p>
-      <p><strong>Use a consistent sender name</strong> - This builds trust and improves open rates.</p>
-      <p><strong>Segment when appropriate</strong> - Not every message needs to go to everyone.</p>
-      <p><strong>Include a call to action</strong> - What do you want members to do after reading?</p>
+      <h2>Pro Tip: Automatic Email Sharing</h2>
 
-      <p>With UnionTab's bulk email feature, staying connected with your membership has never been easier. Questions? Contact our support team anytime.</p>
+      <p>Here's a workflow shortcut many union leaders love: when you create a new <strong>news post</strong> or schedule a <strong>meeting</strong> in UnionTab, the platform offers to share it with members via email automatically. It pre-fills the subject and content for you, so all you have to do is select your recipients and hit send. It's the fastest way to keep your membership informed.</p>
     `,
     imageUrl: "/assets/blog/bulk-emails.png",
     author: "UnionTab Team",
@@ -83,97 +117,144 @@ export const blogPosts: BlogPost[] = [
     title: "Sharing Files & Posts: Public vs Private",
     excerpt: "Understand the difference between public and private content in UnionTab and learn how to share documents and updates effectively.",
     content: `
-      <h2>Understanding Public vs Private Content</h2>
-      <p>UnionTab gives you complete control over who sees your content. Whether you're uploading important documents or creating posts, understanding the visibility settings is key to effective communication.</p>
+      <p>UnionTab gives you complete control over who sees your content. Whether you're uploading important documents like collective agreements and meeting minutes, or publishing news updates to keep your membership informed, understanding the visibility settings is key to effective communication.</p>
+
+      <p>This tutorial covers two essential workflows: uploading and organising files, and creating news posts — including how to control whether content is public or members-only.</p>
 
       <h2>Part 1: Uploading Files</h2>
 
       <h3>Accessing the File Manager</h3>
-      <p>Navigate to <strong>Documents</strong> in your dashboard sidebar. Here you can upload, organize, and share files with your membership.</p>
 
-      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic">[Screenshot placeholder: Documents section in dashboard]</p>
+      <p>Click the <strong>Files</strong> tab in the top navigation bar (the folder icon). You'll see your files organised in a clean, intuitive layout: <strong>category folders</strong> on the left sidebar and a <strong>grid of file cards</strong> on the right.</p>
+
+      <p>Admins can reorder categories using the up/down arrows and rename them using the pencil icon — keeping your file library tidy as it grows.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Files tab showing category folders on the left sidebar and the file card grid on the right</p>
       </div>
 
       <h3>Uploading a New File</h3>
+
+      <p>Click the <strong>Upload File</strong> button to open the upload dialog. Here's what you'll see:</p>
+
       <ol>
-        <li>Click the <strong>Upload</strong> button</li>
-        <li>Select your file (PDFs, Word docs, images, spreadsheets supported)</li>
-        <li>Choose a folder or create a new one</li>
-        <li>Set the visibility (Public or Private)</li>
-        <li>Click <strong>Upload</strong></li>
+        <li><strong>File upload area</strong> — drag and drop a file or click to browse your computer. Any file type is accepted, up to 50MB per file.</li>
+        <li><strong>Display Name</strong> — optionally rename the file to something more descriptive. If you leave this blank, the original filename is used.</li>
+        <li><strong>Category</strong> — type a category name such as "Bylaws," "Contracts," or "Meeting Minutes." As you type, existing categories are suggested so you can keep things consistent.</li>
+        <li><strong>Private File toggle</strong> — enable this to restrict access so only approved members can view and download the file.</li>
       </ol>
 
-      <h3>Public Files</h3>
-      <p><strong>Who can see them:</strong> Anyone visiting your union's public website - members and non-members alike.</p>
-      <p><strong>Best for:</strong></p>
-      <ul>
-        <li>Public-facing documents (bylaws available to prospective members)</li>
-        <li>Press releases</li>
-        <li>General information about your union</li>
-        <li>Recruitment materials</li>
-      </ul>
+      <p>Click <strong>Upload File</strong> to save. For PDF files, a thumbnail preview is automatically generated, making it easy for members to identify documents at a glance.</p>
 
-      <h3>Private Files</h3>
-      <p><strong>Who can see them:</strong> Only logged-in union members.</p>
-      <p><strong>Best for:</strong></p>
-      <ul>
-        <li>Contract documents</li>
-        <li>Meeting minutes</li>
-        <li>Financial reports</li>
-        <li>Member-only resources</li>
-        <li>Internal communications</li>
-      </ul>
-
-      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic">[Screenshot placeholder: File visibility toggle]</p>
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Upload File dialog showing the file upload area, display name field, category input with suggestions, and the Private File toggle</p>
       </div>
 
-      <h2>Part 2: Creating Posts</h2>
+      <h3>Managing Your Files</h3>
 
-      <h3>What Are Posts?</h3>
-      <p>Posts are updates, announcements, or news items that appear on your union's website. Think of them like a blog or news feed for your organization.</p>
+      <p>Once uploaded, each file appears as a card in the grid. Cards display the file icon (colour-coded by file type), filename, file size, and extension. Files marked as private show a <strong>"Private"</strong> badge so you can tell at a glance what's restricted.</p>
+
+      <p>Hover over any file card to reveal the action menu:</p>
+
+      <ul>
+        <li><strong>Open</strong> — view the file in your browser</li>
+        <li><strong>Download</strong> — save a copy to your computer</li>
+        <li><strong>Edit</strong> — update the display name, category, or visibility (admins only)</li>
+        <li><strong>Delete</strong> — remove the file permanently (admins only)</li>
+      </ul>
+
+      <p>Owners can also see a <strong>storage usage widget</strong> showing how much of your plan's storage has been used — helpful for keeping tabs on capacity.</p>
+
+      <h3>Public vs. Private Files</h3>
+
+      <p>Understanding the difference between public and private files is crucial for managing your union's information:</p>
+
+      <p><strong>Public files</strong> are visible to anyone visiting your union's page, including non-members and the general public. These are ideal for:</p>
+      <ul>
+        <li>Bylaws and constitution</li>
+        <li>Press releases</li>
+        <li>Recruitment materials</li>
+        <li>General information about your local</li>
+      </ul>
+
+      <p><strong>Private files</strong> are only visible to approved, logged-in members of your local. Use these for:</p>
+      <ul>
+        <li>Collective agreements and contracts</li>
+        <li>Meeting minutes</li>
+        <li>Financial reports and budgets</li>
+        <li>Internal communications and strategy documents</li>
+      </ul>
+
+      <h2>Part 2: Publishing News Posts</h2>
+
+      <h3>Accessing the News Feed</h3>
+
+      <p>Click the <strong>News</strong> tab in the top navigation bar (the newspaper icon). This is the default landing tab for your union's page — it's the first thing visitors and members see, so keep it active with regular updates.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The News tab showing published posts with titles, content previews, and post images</p>
+      </div>
 
       <h3>Creating a New Post</h3>
+
+      <p>Click the <strong>Create Post</strong> button (the + icon) to open the post creation dialog. Here's what to fill in:</p>
+
       <ol>
-        <li>Go to <strong>Posts</strong> in your dashboard</li>
-        <li>Click <strong>New Post</strong></li>
-        <li>Add a title and content using the rich text editor</li>
-        <li>Upload a featured image (optional but recommended)</li>
-        <li>Set visibility to <strong>Public</strong> or <strong>Members Only</strong></li>
-        <li>Click <strong>Publish</strong> (or <strong>Save Draft</strong> to continue later)</li>
+        <li><strong>Title</strong> — enter your post title. This is required and will appear as the headline. Make it clear and attention-grabbing.</li>
+        <li><strong>Content</strong> — use the rich text editor to write and format your post. You have full formatting controls: bold, italic, headers, links, lists, and more. This field is required.</li>
+        <li><strong>Post Image</strong> — optionally upload a featured image to accompany your post. Image files only, 10MB maximum, with a recommended size of 1200×800 pixels for the best display.</li>
+        <li><strong>File Attachments</strong> — optionally attach up to 5 files of any type (50MB each). Perfect for attaching related documents, flyers, or forms.</li>
+        <li><strong>Private Post toggle</strong> — enable this to make the post visible only to approved members.</li>
+        <li><strong>Post Author</strong> — choose to publish as your <strong>Union Name</strong> (the default, for official communications) or <strong>Your Name</strong> (for personal messages from leadership). Use the two selector buttons to make your choice.</li>
       </ol>
 
-      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic">[Screenshot placeholder: Post creation interface]</p>
+      <p>Click <strong>Create Post</strong> to publish immediately.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Create New Post dialog showing the title field, rich text editor, image upload, file attachments, private toggle, and author selector</p>
       </div>
 
-      <h3>Public Posts</h3>
-      <p><strong>Who can see them:</strong> Everyone, including search engines (great for SEO).</p>
-      <p><strong>Best for:</strong></p>
+      <h3>After Creating a Post</h3>
+
+      <p>Once your post is published, a confirmation dialog appears: <em>"Post Created Successfully!"</em> Along with it, you'll see a helpful prompt: <em>"Would you like to share this post with members via email?"</em></p>
+
       <ul>
-        <li>Public announcements</li>
-        <li>News about union victories</li>
-        <li>Community events open to all</li>
-        <li>General updates about your industry</li>
+        <li>Click <strong>Yes, Share via Email</strong> to be taken directly to the Mass Email page with your post's content pre-filled as the email body. All you need to do is select your recipients and send.</li>
+        <li>Click <strong>No, Thanks</strong> to dismiss the dialog and return to your news feed.</li>
       </ul>
 
-      <h3>Private Posts (Members Only)</h3>
-      <p><strong>Who can see them:</strong> Only logged-in members.</p>
-      <p><strong>Best for:</strong></p>
+      <p>This integration between posts and email is one of UnionTab's most powerful workflow shortcuts — publish once, distribute everywhere.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The post-creation success dialog asking whether to share the post via email</p>
+      </div>
+
+      <h3>Public vs. Private Posts</h3>
+
+      <p><strong>Public posts</strong> are visible to everyone, including visitors who aren't members and search engines. This makes them excellent for:</p>
+      <ul>
+        <li>Public announcements and press releases</li>
+        <li>Union victories and achievements</li>
+        <li>Community events and outreach</li>
+        <li>Industry updates and commentary</li>
+      </ul>
+
+      <p><strong>Private posts (Members Only)</strong> are visible only to approved, logged-in members. Use these for:</p>
       <ul>
         <li>Contract negotiation updates</li>
         <li>Internal strategy discussions</li>
         <li>Member-specific announcements</li>
-        <li>Sensitive information</li>
+        <li>Sensitive information that shouldn't be public</li>
       </ul>
 
       <h2>Quick Tips</h2>
-      <p><strong>When in doubt, start private.</strong> You can always make content public later, but you can't un-share public content.</p>
-      <p><strong>Use folders to organize files.</strong> Create folders like "Contracts," "Meeting Minutes," and "Training Materials" to keep things tidy.</p>
-      <p><strong>Pin important posts.</strong> Use the pin feature to keep critical announcements at the top of your news feed.</p>
 
-      <p>Need help deciding what should be public vs private? Our support team is happy to discuss best practices for your specific situation.</p>
+      <ul>
+        <li><strong>Pin important posts</strong> — use the pin icon on any post to keep it at the top of your news feed. Perfect for ongoing campaigns, election notices, or critical updates that members shouldn't miss.</li>
+        <li><strong>Share posts via email</strong> — take advantage of the post-creation prompt to notify members instantly. Don't assume everyone checks the website regularly.</li>
+        <li><strong>Use categories for files</strong> — organise documents into clear categories like "Contracts," "Meeting Minutes," and "Training Materials." It makes a huge difference as your file library grows.</li>
+        <li><strong>When in doubt, start private</strong> — you can always change a file or post's visibility later. It's easier to make something public than to retract information that's already out there.</li>
+      </ul>
     `,
     imageUrl: "/assets/blog/files-posts.png",
     author: "UnionTab Team",
@@ -186,102 +267,156 @@ export const blogPosts: BlogPost[] = [
     title: "Schedule Zoom Meetings & Create Posters",
     excerpt: "Learn how to schedule virtual meetings, automatically generate promotional posters, and invite your members with just a few clicks.",
     content: `
-      <h2>Virtual Meetings Made Easy</h2>
-      <p>Running a modern union often means coordinating members across different locations and schedules. UnionTab's Zoom integration lets you schedule meetings, create eye-catching promotional posters, and invite members - all from one place.</p>
+      <p>Running a modern union often means coordinating members across different locations, shifts, and schedules. Whether your local spans multiple job sites, cities, or even provinces, getting everyone in the same room isn't always possible. UnionTab's Online Meetings feature lets you schedule video meetings, generate branded posters, and send invitations to members — all from one place.</p>
 
-      <h2>Step 1: Schedule a New Meeting</h2>
-      <p>From your dashboard, navigate to <strong>Events</strong> and click <strong>Create Event</strong>. Select <strong>Zoom Meeting</strong> as the event type.</p>
+      <p><strong>Important:</strong> In UnionTab, <strong>Meetings</strong> and <strong>Events</strong> are separate features. Events are for general calendar items — in-person gatherings, socials, community activities, and the like. Meetings are specifically for <strong>online video conferences</strong> with Zoom, Google Meet, or custom meeting links. This tutorial covers the Meetings feature.</p>
 
-      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic">[Screenshot placeholder: Event creation screen with Zoom option]</p>
+      <h2>Step 1: Navigate to Online Meetings</h2>
+
+      <p>From the top navigation bar, click the <strong>Tools</strong> button (the shield icon) to open the mega-menu. Under the <strong>Member Tools</strong> group, click <strong>Meetings</strong> (the video icon).</p>
+
+      <p>You'll land on the Online Meetings page, which displays a Video icon and the subtitle <em>"View and join scheduled online meetings."</em></p>
+
+      <p>The page is organised into tabs:</p>
+      <ul>
+        <li><strong>Upcoming</strong> — meetings that haven't happened yet</li>
+        <li><strong>Past</strong> — meetings that have already taken place</li>
+        <li><strong>Cancelled</strong> — meetings that were cancelled (this tab is visible to admins only)</li>
+      </ul>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Tools mega-menu open, showing 'Meetings' highlighted under the Member Tools group</p>
       </div>
 
-      <h3>Fill in Meeting Details</h3>
+      <h2>Step 2: Schedule a New Meeting</h2>
+
+      <p>Click the <strong>Create Meeting</strong> button (available to admins and owners only). The dialog title reads <em>"Schedule Online Meeting"</em> with the description <em>"Create a new online meeting and send invites to members."</em></p>
+
+      <p>Fill in the following fields:</p>
+
       <ul>
-        <li><strong>Title</strong> - e.g., "Monthly Membership Meeting"</li>
-        <li><strong>Date and Time</strong> - Select your meeting date and time</li>
-        <li><strong>Duration</strong> - How long the meeting will last</li>
-        <li><strong>Description</strong> - Agenda or meeting purpose</li>
-        <li><strong>Recurring</strong> - Set up weekly/monthly recurring meetings</li>
+        <li><strong>Meeting Title</strong> (required) — give your meeting a clear, descriptive name. For example: "Contract Ratification Discussion" or "Monthly Stewards' Meeting."</li>
+        <li><strong>Description</strong> (optional) — add context about the purpose of the meeting.</li>
+        <li><strong>Agenda</strong> (optional) — outline the topics to be covered. This will appear on the meeting poster, so members know what to expect.</li>
+        <li><strong>Date</strong> (required) — select the meeting date.</li>
+        <li><strong>Timezone</strong> — choose from Eastern, Central, Mountain, Pacific, Alaska, Hawaii, or UTC. This is especially important for locals with members in multiple time zones.</li>
+        <li><strong>Start Time</strong> (required) and <strong>End Time</strong> (optional) — set when the meeting begins and, optionally, when it's expected to wrap up.</li>
       </ul>
 
-      <p>UnionTab automatically creates the Zoom meeting link for you - no need to log into Zoom separately!</p>
+      <h3>Choosing Your Platform</h3>
 
-      <h2>Step 2: Generate a Meeting Poster</h2>
-      <p>One of UnionTab's most popular features is automatic poster generation. Once you've created your meeting, click the <strong>Generate Poster</strong> button.</p>
+      <p>Under <strong>Platform</strong>, select one of three options:</p>
+      <ul>
+        <li><strong>Zoom</strong></li>
+        <li><strong>Google Meet</strong></li>
+        <li><strong>Other / Custom Link</strong></li>
+      </ul>
 
-      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic">[Screenshot placeholder: Poster generation button]</p>
+      <p>If your union has configured the <strong>Zoom API integration</strong>, an <strong>"Auto-create Zoom meeting"</strong> toggle appears when you select Zoom. Enable it and UnionTab will automatically generate the Zoom meeting link, meeting ID, and password for you — no need to open Zoom separately.</p>
+
+      <p>If you're not using auto-create (or you've chosen Google Meet or a custom link), you'll manually enter the <strong>Meeting Link</strong>, <strong>Meeting ID</strong>, and <strong>Meeting Password</strong>.</p>
+
+      <h3>Visibility and Participants</h3>
+
+      <ul>
+        <li><strong>Members Only toggle</strong> (default: on) — when enabled, only approved members can view the meeting details and join link. Disable it if you want the meeting to be visible to all visitors.</li>
+        <li><strong>Participant Selection</strong> — choose <strong>All members</strong> to invite everyone, or <strong>Selected members</strong> to hand-pick specific people using the member picker.</li>
+      </ul>
+
+      <p>Click <strong>Create Meeting</strong> to save and publish the meeting.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Schedule Online Meeting dialog showing all form fields including title, date/time, platform selector, and the auto-create Zoom toggle</p>
       </div>
 
-      <h3>Customize Your Poster</h3>
-      <p>The poster generator lets you:</p>
+      <h2>Step 3: Generate a Meeting Poster</h2>
+
+      <p>One of UnionTab's most popular features is the automatic <strong>meeting poster generator</strong>. It creates a professional, branded poster for any meeting — ready to print, email, or share on social media.</p>
+
+      <p>On any meeting card, open the action menu and click <strong>Download Poster</strong>. A poster dialog opens with a fully designed poster featuring:</p>
+
       <ul>
-        <li>Choose from multiple professional templates</li>
-        <li>Add your union logo</li>
-        <li>Customize colors to match your branding</li>
-        <li>Include a QR code that links directly to the meeting</li>
-        <li>Download in multiple formats (PNG, PDF)</li>
+        <li><strong>Coloured header banner</strong> with your union's logo and name</li>
+        <li><strong>Meeting title and description</strong> prominently displayed</li>
+        <li><strong>Info grid</strong> showing the date, time (with timezone), and platform</li>
+        <li><strong>"Join the Meeting" section</strong> with the meeting URL, Meeting ID, and password</li>
+        <li><strong>Agenda section</strong> (if you provided an agenda when creating the meeting)</li>
+        <li><strong>Union footer</strong> for a polished, professional finish</li>
       </ul>
 
-      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic">[Screenshot placeholder: Poster customization interface]</p>
+      <p>At the bottom of the dialog, you'll find two action buttons:</p>
+      <ul>
+        <li><strong>Print / Save as PDF</strong> — opens your browser's print dialog, where you can print the poster directly or save it as a PDF file</li>
+        <li><strong>Copy Meeting Link</strong> — copies the meeting URL to your clipboard for quick sharing</li>
+      </ul>
+
+      <p>Print the poster for bulletin boards in the workplace, save it as a PDF to attach to emails, or share the image on social media and messaging groups. The poster uses your union's theme colour and logo, so it looks professional and on-brand every time.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Meeting Poster dialog showing the branded poster with union logo, meeting details, join link, and the Print/Save as PDF button</p>
       </div>
 
-      <p>Use these posters in your email announcements, post them on bulletin boards, or share on social media to boost attendance.</p>
+      <h2>Step 4: Send Meeting Invitations</h2>
 
-      <h2>Step 3: Invite Members</h2>
-      <p>UnionTab makes inviting members simple and flexible.</p>
+      <p>Once your meeting is scheduled, you'll want to make sure members know about it. UnionTab lets you send email invitations directly from the meeting card.</p>
 
-      <h3>Option 1: Invite All Members</h3>
-      <p>Click <strong>Invite All</strong> to send the meeting invitation to your entire membership. Everyone will receive an email with:</p>
+      <p>Open the action menu on any meeting card and click <strong>Send Invites</strong>. The Send Invites dialog lets you select recipients using the <strong>"Send to:"</strong> dropdown:</p>
+
       <ul>
-        <li>Meeting details (date, time, agenda)</li>
-        <li>Direct link to join the Zoom meeting</li>
-        <li>Option to add to their calendar</li>
-        <li>The poster image as an attachment</li>
+        <li><strong>All Members</strong></li>
+        <li><strong>Approved Members</strong> (default)</li>
+        <li><strong>Admins Only</strong></li>
+        <li><strong>Pending Members</strong></li>
+        <li><strong>Rejected Members</strong></li>
+        <li><strong>Custom Selection</strong> — shows a searchable member table with checkboxes so you can pick specific people</li>
       </ul>
 
-      <h3>Option 2: Invite Specific Groups</h3>
-      <p>Need to invite only certain members? Use the <strong>Select Recipients</strong> option to:</p>
-      <ul>
-        <li>Invite by committee (Stewards, Executive Board, etc.)</li>
-        <li>Invite by work location</li>
-        <li>Invite by department</li>
-        <li>Hand-pick individual members</li>
-      </ul>
+      <p>The dialog also shows how many invites have already been sent for this meeting. When you click <strong>Send Invites</strong>, new invitations are only dispatched to members who haven't received one yet — so you never have to worry about sending duplicate emails.</p>
 
-      <div class="bg-gray-100 p-4 rounded-lg my-6 text-center">
-        <p class="text-gray-500 italic">[Screenshot placeholder: Member invitation selection]</p>
+      <p>Each invitation email includes the meeting details and a direct join link, making it easy for members to join when the time comes.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: The Send Invites dialog showing the recipient selection dropdown and the existing invite count</p>
       </div>
 
-      <h3>Option 3: Share the Link</h3>
-      <p>Copy the meeting link to share via text message, social media, or any other channel. The public link can also be posted on your union website.</p>
+      <h2>Meeting Card Actions</h2>
 
-      <h2>Managing RSVPs</h2>
-      <p>Track who's planning to attend:</p>
+      <p>For admins, each meeting card includes a dropdown menu with the full set of management actions:</p>
+
       <ul>
-        <li>View RSVP counts in real-time</li>
-        <li>See a list of confirmed attendees</li>
-        <li>Send reminders to those who haven't responded</li>
-        <li>Send last-minute reminders before the meeting</li>
+        <li><strong>Edit Meeting</strong> — update the title, description, time, link, or any other details</li>
+        <li><strong>Send Invites</strong> — email meeting invitations to selected members</li>
+        <li><strong>Download Poster</strong> — generate and download the branded meeting poster</li>
+        <li><strong>Copy Meeting Link</strong> — copy the join URL to your clipboard</li>
+        <li><strong>Delete</strong> — permanently remove the meeting</li>
       </ul>
 
-      <h2>After the Meeting</h2>
-      <p>UnionTab automatically tracks attendance for members who joined via the link. You can:</p>
+      <p>Regular members see a simplified view with the meeting details and a join button — clean and straightforward.</p>
+
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-lg my-6 text-center">
+        <p class="text-gray-500 italic text-sm">📸 Screenshot: A meeting card showing the admin dropdown menu with all available actions</p>
+      </div>
+
+      <h2>Pro Tips for Better Meetings</h2>
+
       <ul>
-        <li>View attendance reports</li>
-        <li>Follow up with members who missed the meeting</li>
-        <li>Share meeting recordings (if recorded)</li>
+        <li><strong>Schedule meetings in advance</strong> — give members at least a week's notice for better attendance. Last-minute meetings tend to have low turnout, especially for members working shifts.</li>
+        <li><strong>Use the poster</strong> — print it for bulletin boards in the workplace, share it in group chats, or post it on social media. A visual reminder is far more effective than a text-only notification.</li>
+        <li><strong>Set up Zoom API integration</strong> — if your local uses Zoom regularly, connect the Zoom API in your union settings. The auto-create feature generates meeting links, IDs, and passwords automatically without you ever leaving UnionTab.</li>
+        <li><strong>Copy the meeting link</strong> — share it via text message, WhatsApp, Facebook groups, or any other channel your members use. The more places you share it, the better your attendance.</li>
+        <li><strong>Use Send Invites strategically</strong> — send an initial invitation when the meeting is created, then send again a day or two before the meeting to catch anyone who missed the first one. UnionTab only sends to members who haven't received an invite yet, so there's no risk of spamming.</li>
       </ul>
 
-      <h2>Pro Tips</h2>
-      <p><strong>Schedule meetings in advance.</strong> Give members at least a week's notice for better attendance.</p>
-      <p><strong>Send multiple reminders.</strong> UnionTab can automatically send reminders 1 week before, 1 day before, and 1 hour before the meeting.</p>
-      <p><strong>Use the poster!</strong> Visual announcements get 3x more engagement than text-only emails.</p>
-      <p><strong>Record important meetings.</strong> Members who can't attend live can catch up later.</p>
+      <h2>Meetings vs. Events: A Quick Recap</h2>
 
-      <p>Ready to run your first virtual meeting? The whole process takes less than 10 minutes. If you need help, our support team is always here.</p>
+      <p>To avoid confusion, here's the key distinction:</p>
+
+      <ul>
+        <li><strong>Meetings</strong> (covered in this tutorial) are for <strong>online video conferences</strong> — they include a platform, join link, meeting ID, and password. Use these for virtual general membership meetings, steward check-ins, committee calls, and bargaining updates.</li>
+        <li><strong>Events</strong> are for <strong>general calendar items</strong> — in-person gatherings, social events, training sessions, rallies, and anything that doesn't require a video link.</li>
+      </ul>
+
+      <p>Both features are available under the Tools mega-menu, so you can manage your local's entire schedule from one place.</p>
     `,
     imageUrl: "/assets/blog/zoom-meetings.png",
     author: "UnionTab Team",
