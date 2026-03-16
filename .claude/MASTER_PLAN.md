@@ -226,11 +226,51 @@ Per-union `themeColor` (hex) for accent. Stored on `unions.theme`.
 
 ---
 
-## 9. Dev Commands
+## 9. Deployment Safety — Pre-Push Checklist
+
+**CRITICAL: Local builds can pass while Vercel builds fail.** Vercel uses the
+`pnpm-lock.yaml` lockfile strictly, so dependency versions may differ from your
+local `node_modules/`. Before every commit/push, verify:
+
+### Known Pitfalls
+
+1. **Stripe API version mismatch** — The `apiVersion` string in
+   `lib/payments/stripe.ts` is a **typed literal** that must match the exact
+   Stripe SDK version installed. The lockfile pins `stripe@18.1.0` which expects
+   `"2025-04-30.basil"`. If your local `node_modules` has a newer version
+   (e.g. `18.5.0` → `"2025-08-27.basil"`), the build passes locally but
+   **fails on Vercel**. The file uses `@ts-expect-error` to handle this drift.
+   - **Rule:** Never change the `apiVersion` string unless you also update the
+     lockfile (`pnpm update stripe`) and commit `pnpm-lock.yaml`.
+   - **Rule:** If upgrading Stripe, run `pnpm install` then check what API
+     version the new package expects:
+     `node -e "const fs=require('fs'); console.log(JSON.parse(fs.readFileSync('node_modules/stripe/package.json','utf8')).version)"`
+
+2. **Lockfile drift** — If `pnpm-lock.yaml` is not committed after adding or
+   upgrading a dependency, Vercel will install the old versions. Always commit
+   the lockfile alongside `package.json` changes.
+
+3. **TypeScript strict mode** — Vercel runs `tsc` during build. A local build
+   with `--noEmit` may skip errors that Vercel catches. Always run `pnpm build`
+   (not just `pnpm dev`) before pushing.
+
+### Pre-Push Verification
+
+```bash
+pnpm build        # Must pass cleanly — this is what Vercel runs
+```
+
+If `pnpm build` passes locally, Vercel should also pass. If it doesn't, the
+most likely cause is a dependency version mismatch between local `node_modules`
+and `pnpm-lock.yaml`.
+
+---
+
+## 10. Dev Commands
 
 ```bash
 pnpm dev          # Dev server (Turbopack)
-pnpm build        # Production build
+pnpm build        # Production build (MUST pass before pushing)
 pnpm db:generate  # Generate Drizzle migrations
 pnpm db:migrate   # Run migrations
 pnpm db:studio    # Drizzle Studio

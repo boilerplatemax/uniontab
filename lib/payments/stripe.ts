@@ -8,9 +8,11 @@ import {
 } from "@/lib/db/queries"
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  // API version must match the installed stripe package
-  // Vercel's pnpm lockfile expects this API version
-  apiVersion: "2025-08-27.basil",
+  // API version must match the installed stripe package version in pnpm-lock.yaml.
+  // Currently pinned to stripe@18.1.0 → "2025-04-30.basil".
+  // If you upgrade stripe, update this string to match the new package's expected version.
+  // @ts-expect-error - Local node_modules may have a newer stripe version than the lockfile; Vercel uses the lockfile.
+  apiVersion: "2025-04-30.basil",
 })
 
 export async function createCheckoutSession({
