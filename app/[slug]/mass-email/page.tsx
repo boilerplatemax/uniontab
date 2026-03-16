@@ -7,7 +7,11 @@ import { MassEmailContent } from './mass-email-content';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
-    .select()
+    .select({
+      id: unions.id,
+      name: unions.name,
+      localNumber: unions.localNumber,
+    })
     .from(unions)
     .where(eq(unions.slug, slug))
     .limit(1);
@@ -17,7 +21,7 @@ async function getUnionBySlug(slug: string) {
 
 async function checkOwnerOrAdmin(unionId: number, userId: number) {
   const [membership] = await db
-    .select()
+    .select({ role: members.role })
     .from(members)
     .where(and(eq(members.unionId, unionId), eq(members.userId, userId)))
     .limit(1);
@@ -28,7 +32,14 @@ async function checkOwnerOrAdmin(unionId: number, userId: number) {
 async function getUnionMembers(unionId: number) {
   const unionMembers = await db
     .select({
-      member: members,
+      member: {
+        id: members.id,
+        userId: members.userId,
+        unionId: members.unionId,
+        role: members.role,
+        status: members.status,
+        joinedAt: members.joinedAt,
+      },
       user: {
         id: users.id,
         name: users.name,
