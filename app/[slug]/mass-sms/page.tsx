@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, members, users } from '@/lib/db/schema';
-import { eq, and, isNull } from 'drizzle-orm';
+import { unions, members, users, memberGroups, memberGroupAssignments } from '@/lib/db/schema';
+import { eq, and, isNull, sql } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { MassSMSContent } from './mass-sms-content';
 
@@ -42,6 +42,37 @@ async function getUnionMembersWithPhone(unionId: number) {
   return unionMembers;
 }
 
+async function getGroups(unionId: number) {
+  const groups = await db
+    .select({
+      id: memberGroups.id,
+      name: memberGroups.name,
+      description: memberGroups.description,
+      createdAt: memberGroups.createdAt,
+      memberCount: sql<number>`count(${memberGroupAssignments.id})::int`,
+    })
+    .from(memberGroups)
+    .leftJoin(memberGroupAssignments, eq(memberGroups.id, memberGroupAssignments.groupId))
+    .where(eq(memberGroups.unionId, unionId))
+    .groupBy(memberGroups.id)
+    .orderBy(memberGroups.name);
+
+  return groups;
+}
+
+async function getGroupAssignments(unionId: number) {
+  const assignments = await db
+    .select({
+      memberId: memberGroupAssignments.memberId,
+      groupId: memberGroupAssignments.groupId,
+    })
+    .from(memberGroupAssignments)
+    .innerJoin(memberGroups, eq(memberGroupAssignments.groupId, memberGroups.id))
+    .where(eq(memberGroups.unionId, unionId));
+
+  return assignments;
+}
+
 export default async function MassSMSPage({
   params
 }: {
@@ -66,13 +97,19 @@ export default async function MassSMSPage({
     redirect(`/${slug}`);
   }
 
-  const unionMembers = await getUnionMembersWithPhone(union.id);
+  const [unionMembers, groups, groupAssignments] = await Promise.all([
+    getUnionMembersWithPhone(union.id),
+    getGroups(union.id),
+    getGroupAssignments(union.id),
+  ]);
 
   return (
     <MassSMSContent
       slug={slug}
       union={union}
       members={unionMembers}
+      groups={groups}
+      groupAssignments={groupAssignments}
     />
   );
 }

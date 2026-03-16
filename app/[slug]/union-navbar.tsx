@@ -317,12 +317,6 @@ export function UnionNavbar({
         label: 'Invite Members',
         description: 'Send invitations to new members',
       });
-      membersGroup.push({
-        href: `/${slug}/groups`,
-        icon: <FolderOpen className="h-5 w-5" />,
-        label: 'Member Groups',
-        description: 'Organize members into custom groups',
-      });
     }
     if (membersGroup.length) groups.push({ title: 'Members & Outreach', items: membersGroup });
 

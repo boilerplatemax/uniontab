@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { RichTextContent } from '@/components/ui/rich-text-content';
@@ -59,6 +59,19 @@ interface Member {
   };
 }
 
+interface GroupData {
+  id: number;
+  name: string;
+  description: string | null;
+  memberCount: number;
+  createdAt: Date;
+}
+
+interface GroupAssignment {
+  memberId: number;
+  groupId: number;
+}
+
 interface MassEmailContentProps {
   slug: string;
   union: {
@@ -67,14 +80,16 @@ interface MassEmailContentProps {
     localNumber: string | null;
   };
   members: Member[];
+  groups: GroupData[];
+  groupAssignments: GroupAssignment[];
 }
 
-export function MassEmailContent({ slug, union, members }: MassEmailContentProps) {
+export function MassEmailContent({ slug, union, members, groups, groupAssignments }: MassEmailContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [subject, setSubject] = useState('');
   const [htmlContent, setHtmlContent] = useState('');
-  const [recipientFilter, setRecipientFilter] = useState<'all' | 'approved' | 'admin' | 'pending' | 'rejected' | 'custom'>('approved');
+  const [recipientFilter, setRecipientFilter] = useState<string>('approved');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<Set<number>>(new Set());
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -214,6 +229,12 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
         matchesFilter = m.member.status === 'pending';
       } else if (recipientFilter === 'rejected') {
         matchesFilter = m.member.status === 'rejected';
+      } else if (recipientFilter.startsWith('group-')) {
+        const groupId = parseInt(recipientFilter.replace('group-', ''));
+        const groupMemberIds = new Set(
+          groupAssignments.filter(a => a.groupId === groupId).map(a => a.memberId)
+        );
+        matchesFilter = groupMemberIds.has(m.member.id);
       }
       // For 'custom' and 'all', show all members (no filter)
 
@@ -245,7 +266,7 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
     });
 
     return filtered;
-  }, [members, recipientFilter, searchQuery, selectedMembers, sortBy, sortDirection]);
+  }, [members, recipientFilter, searchQuery, selectedMembers, sortBy, sortDirection, groupAssignments]);
 
   const toggleSelectAll = () => {
     if (selectedMembers.size === filteredMembers.length && filteredMembers.length > 0) {
@@ -273,6 +294,9 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
     return filteredMembers;
   }, [members, filteredMembers, recipientFilter, selectedMembers]);
 
+  // Check if current filter is a group filter
+  const isGroupFilter = recipientFilter.startsWith('group-');
+
   const handlePreview = () => {
     setShowPreviewDialog(true);
   };
@@ -298,6 +322,16 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
       .trim();
 
     try {
+      // For group filters, resolve member IDs client-side and send as custom
+      const isGroup = recipientFilter.startsWith('group-');
+      const sendFilter = isGroup ? 'custom' : recipientFilter;
+      let customIds: number[] | null = null;
+      if (recipientFilter === 'custom') {
+        customIds = Array.from(selectedMembers);
+      } else if (isGroup) {
+        customIds = actualRecipients.map((m) => m.member.id);
+      }
+
       const response = await fetch('/api/mass-email/send', {
         method: 'POST',
         headers: {
@@ -308,8 +342,8 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
           subject,
           htmlContent: finalHtmlContent,
           textContent,
-          recipientFilter,
-          customRecipientIds: recipientFilter === 'custom' ? Array.from(selectedMembers) : null,
+          recipientFilter: sendFilter,
+          customRecipientIds: customIds,
           attachments: attachments.length > 0 ? attachments.map(a => ({
             filename: a.fileName,
             url: a.fileUrl,
@@ -513,7 +547,7 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="filter">Send to:</Label>
-                <Select value={recipientFilter} onValueChange={(value: any) => {
+                <Select value={recipientFilter} onValueChange={(value: string) => {
                   setRecipientFilter(value);
                   if (value !== 'custom') {
                     setSelectedMembers(new Set());
@@ -537,6 +571,17 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
                       Rejected Members ({members.filter((m) => m.member.status === 'rejected').length})
                     </SelectItem>
                     <SelectItem value="custom">Custom Selection</SelectItem>
+                    {groups.length > 0 && (
+                      <>
+                        <SelectSeparator />
+                        <SelectLabel className="text-xs text-muted-foreground px-2">Groups</SelectLabel>
+                        {groups.map((g) => (
+                          <SelectItem key={`group-${g.id}`} value={`group-${g.id}`}>
+                            {g.name} ({g.memberCount})
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -833,7 +878,7 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
                     </div>
                   </div>
                   <Link
-                    href={`/${slug}/signature`}
+                    href={`/${slug}/profile`}
                     className="text-sm text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap"
                   >
                     Create Signature

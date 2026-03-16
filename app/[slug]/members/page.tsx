@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, members, users, navigationItems, files } from '@/lib/db/schema';
-import { eq, and, count, asc } from 'drizzle-orm';
+import { unions, members, users, navigationItems, files, memberGroups, memberGroupAssignments } from '@/lib/db/schema';
+import { eq, and, count, asc, sql } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { MembersContent } from './members-content';
 
@@ -56,6 +56,37 @@ async function getMembership(unionId: number, userId: number) {
   return membership;
 }
 
+async function getGroups(unionId: number) {
+  const groups = await db
+    .select({
+      id: memberGroups.id,
+      name: memberGroups.name,
+      description: memberGroups.description,
+      createdAt: memberGroups.createdAt,
+      memberCount: sql<number>`count(${memberGroupAssignments.id})::int`,
+    })
+    .from(memberGroups)
+    .leftJoin(memberGroupAssignments, eq(memberGroups.id, memberGroupAssignments.groupId))
+    .where(eq(memberGroups.unionId, unionId))
+    .groupBy(memberGroups.id)
+    .orderBy(memberGroups.name);
+
+  return groups;
+}
+
+async function getGroupAssignments(unionId: number) {
+  const assignments = await db
+    .select({
+      memberId: memberGroupAssignments.memberId,
+      groupId: memberGroupAssignments.groupId,
+    })
+    .from(memberGroupAssignments)
+    .innerJoin(memberGroups, eq(memberGroupAssignments.groupId, memberGroups.id))
+    .where(eq(memberGroups.unionId, unionId));
+
+  return assignments;
+}
+
 export default async function MembersPage({
   params
 }: {
@@ -80,7 +111,21 @@ export default async function MembersPage({
     redirect(`/${slug}`);
   }
 
-  const unionMembers = await getUnionMembers(union.id);
+  const [unionMembers, groups, groupAssignments] = await Promise.all([
+    getUnionMembers(union.id),
+    getGroups(union.id),
+    getGroupAssignments(union.id),
+  ]);
 
-  return <MembersContent slug={slug} union={union} members={unionMembers} isOwner={isOwner} />;
+  return (
+    <MembersContent
+      slug={slug}
+      union={union}
+      members={unionMembers}
+      isOwner={isOwner}
+      groups={groups}
+      groupAssignments={groupAssignments}
+      isDemo={union.isDemo}
+    />
+  );
 }

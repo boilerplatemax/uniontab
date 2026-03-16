@@ -19,6 +19,7 @@ import {
   Settings,
   LayoutDashboard,
   Shield,
+  PenLine,
 } from 'lucide-react';
 import type { Union, Member, MemberDocument, MemberCertification, MemberPosition, MemberNote } from '@/lib/db/schema';
 import { OverviewTab } from './tabs/overview-tab';
@@ -30,6 +31,7 @@ import { CertificationsTab } from './tabs/certifications-tab';
 import { PositionsTab } from './tabs/positions-tab';
 import { NotesTab } from './tabs/notes-tab';
 import { SettingsTab } from './tabs/settings-tab';
+import { SignatureTab } from './tabs/signature-tab';
 import { PrivacyTab } from './tabs/privacy-tab';
 
 interface MemberData {
@@ -174,6 +176,10 @@ export function MemberProfileContent({
     { id: 'certifications', label: 'Training', icon: Award },
     { id: 'positions', label: 'Positions', icon: Users },
     ...(isAdminOrOwner ? [{ id: 'notes', label: 'Notes', icon: StickyNote }] : []),
+    // Signature tab is shown only when viewing your own profile AND you are admin/owner
+    ...(isOwnProfile && (memberData.member.role === 'owner' || memberData.member.role === 'admin')
+      ? [{ id: 'signature', label: 'Signature', icon: PenLine }]
+      : []),
     // Settings tab is shown to admins/owners AND to members viewing their own profile
     ...((isAdminOrOwner || isOwnProfile) ? [{ id: 'settings', label: 'Settings', icon: Settings }] : []),
     // Privacy tab is shown to admins/owners AND to members viewing their own profile
@@ -317,6 +323,14 @@ export function MemberProfileContent({
                 unionId={union.id}
                 currentUserId={currentUserId}
                 onUpdate={() => router.refresh()}
+              />
+            </TabsContent>
+
+            <TabsContent value="signature" className="m-0 p-6">
+              <SignatureTab
+                member={member}
+                unionId={union.id}
+                slug={slug}
               />
             </TabsContent>
 

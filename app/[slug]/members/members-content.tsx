@@ -5,13 +5,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { EditMemberDialog } from './edit-member-dialog';
 import { AdminPermissionsDialog } from '@/components/members/admin-permissions-dialog';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign, Eye, Phone, TrendingUp, AlertTriangle, Settings2, ClipboardList } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ArrowLeft, Users as UsersIcon, UserCheck, Clock, UserPlus, CheckCircle, XCircle, Loader2, Trash2, Shield, ShieldOff, Search, ChevronLeft, ChevronRight, AlertCircle, UserMinus, Edit, Download, Upload, X, DollarSign, Eye, Phone, TrendingUp, AlertTriangle, Settings2, ClipboardList, FolderPlus, FolderOpen, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 import type { AdminPermissions } from '@/lib/db/schema';
 import { getPermissionCount } from '@/lib/admin-permissions';
@@ -50,6 +67,35 @@ interface Member {
   };
 }
 
+interface GroupData {
+  id: number;
+  name: string;
+  description: string | null;
+  memberCount: number;
+  createdAt: Date;
+}
+
+interface GroupAssignment {
+  memberId: number;
+  groupId: number;
+}
+
+interface GroupDetailMember {
+  assignmentId: number;
+  assignedAt: Date;
+  member: {
+    id: number;
+    role: string;
+    status: string;
+    memberId: string | null;
+  };
+  user: {
+    id: number;
+    name: string | null;
+    email: string;
+  };
+}
+
 interface MembersContentProps {
   slug: string;
   union: {
@@ -59,9 +105,12 @@ interface MembersContentProps {
   };
   members: Member[];
   isOwner: boolean;
+  groups: GroupData[];
+  groupAssignments: GroupAssignment[];
+  isDemo: boolean;
 }
 
-export function MembersContent({ slug, union, members, isOwner }: MembersContentProps) {
+export function MembersContent({ slug, union, members, isOwner, groups, groupAssignments, isDemo }: MembersContentProps) {
   const [loadingMembers, setLoadingMembers] = useState<Record<number, boolean>>({});
   const [membersList, setMembersList] = useState<Member[]>(members);
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'rejected' | 'admin'>('all');
@@ -80,6 +129,32 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
   const [bargainingUnitFilter, setBargainingUnitFilter] = useState<string>('all');
   const [employerFilter, setEmployerFilter] = useState<string>('all');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Group filter state
+  const [groupFilter, setGroupFilter] = useState<string>('all');
+  const [localGroups, setLocalGroups] = useState<GroupData[]>(groups);
+  const [localGroupAssignments, setLocalGroupAssignments] = useState<GroupAssignment[]>(groupAssignments);
+
+  // Group CRUD dialog states
+  const [createGroupOpen, setCreateGroupOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<GroupData | null>(null);
+  const [groupFormName, setGroupFormName] = useState('');
+  const [groupFormDescription, setGroupFormDescription] = useState('');
+  const [groupFormError, setGroupFormError] = useState('');
+  const [savingGroup, setSavingGroup] = useState(false);
+  const [deleteGroupOpen, setDeleteGroupOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<GroupData | null>(null);
+  const [deletingGroup, setDeletingGroup] = useState(false);
+
+  // Manage group members dialog states
+  const [manageGroupOpen, setManageGroupOpen] = useState(false);
+  const [managingGroup, setManagingGroup] = useState<GroupData | null>(null);
+  const [groupDetailMembers, setGroupDetailMembers] = useState<GroupDetailMember[]>([]);
+  const [groupMemberSearchQuery, setGroupMemberSearchQuery] = useState('');
+  const [selectedGroupMemberIds, setSelectedGroupMemberIds] = useState<Set<number>>(new Set());
+  const [isLoadingGroupMembers, setIsLoadingGroupMembers] = useState(false);
+  const [isAddingGroupMembers, setIsAddingGroupMembers] = useState(false);
+  const [removingGroupMemberId, setRemovingGroupMemberId] = useState<number | null>(null);
 
   // CSV import state
   const [isImporting, setIsImporting] = useState(false);
@@ -184,10 +259,22 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
     return Array.from(units).sort();
   }, [membersList]);
 
+  // Group member IDs for the selected group filter
+  const groupFilterMemberIds = useMemo(() => {
+    if (groupFilter === 'all') return null;
+    const gId = parseInt(groupFilter);
+    return new Set(localGroupAssignments.filter(a => a.groupId === gId).map(a => a.memberId));
+  }, [groupFilter, localGroupAssignments]);
+
   // Filtered, sorted, and paginated members
   const { filteredMembers, paginatedMembers, totalPages } = useMemo(() => {
     // Filter by status and search
     let filtered = membersList.filter((m) => {
+      // Group filter
+      if (groupFilterMemberIds && !groupFilterMemberIds.has(m.member.id)) {
+        return false;
+      }
+
       // Status filter
       const matchesStatus =
         statusFilter === 'all' ||
@@ -251,7 +338,7 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
     const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
 
     return { filteredMembers: filtered, paginatedMembers: paginated, totalPages: total };
-  }, [membersList, statusFilter, sortBy, searchQuery, currentPage, employmentStatusFilter, membershipStatusFilter, localChapterFilter, bargainingUnitFilter, employerFilter]);
+  }, [membersList, statusFilter, sortBy, searchQuery, currentPage, employmentStatusFilter, membershipStatusFilter, localChapterFilter, bargainingUnitFilter, employerFilter, groupFilterMemberIds]);
 
   // Reset to page 1 when filters change
   const handleFilterChange = (newFilter: typeof statusFilter) => {
@@ -763,6 +850,283 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
     reader.readAsText(file);
   };
 
+  // ── Group CRUD Handlers ──────────────────────────────────────────────
+
+  const openCreateGroupDialog = () => {
+    setEditingGroup(null);
+    setGroupFormName('');
+    setGroupFormDescription('');
+    setGroupFormError('');
+    setCreateGroupOpen(true);
+  };
+
+  const openEditGroupDialog = (group: GroupData) => {
+    setEditingGroup(group);
+    setGroupFormName(group.name);
+    setGroupFormDescription(group.description || '');
+    setGroupFormError('');
+    setCreateGroupOpen(true);
+  };
+
+  const handleSaveGroup = async () => {
+    if (!groupFormName.trim()) {
+      setGroupFormError('Group name is required');
+      return;
+    }
+
+    setSavingGroup(true);
+    setGroupFormError('');
+
+    try {
+      if (editingGroup) {
+        const response = await fetch(`/api/groups/${editingGroup.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: groupFormName.trim(),
+            description: groupFormDescription.trim() || null,
+          }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          if (response.status === 409) {
+            setGroupFormError(data.error || 'A group with this name already exists');
+          } else {
+            setGroupFormError(data.error || 'Failed to update group');
+          }
+          return;
+        }
+
+        const data = await response.json();
+        setLocalGroups((prev) =>
+          prev.map((g) =>
+            g.id === editingGroup.id
+              ? { ...g, name: data.group.name, description: data.group.description }
+              : g
+          )
+        );
+      } else {
+        const response = await fetch('/api/groups', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            unionId: union.id,
+            name: groupFormName.trim(),
+            description: groupFormDescription.trim() || null,
+          }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          if (response.status === 409) {
+            setGroupFormError(data.error || 'A group with this name already exists');
+          } else {
+            setGroupFormError(data.error || 'Failed to create group');
+          }
+          return;
+        }
+
+        const data = await response.json();
+        setLocalGroups((prev) =>
+          [...prev, { ...data.group, memberCount: 0 }].sort((a, b) => a.name.localeCompare(b.name))
+        );
+      }
+
+      setCreateGroupOpen(false);
+      setSuccessMessage(editingGroup ? 'Group updated successfully' : 'Group created successfully');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch {
+      setGroupFormError('An unexpected error occurred');
+    } finally {
+      setSavingGroup(false);
+    }
+  };
+
+  const openDeleteGroupDialog = (group: GroupData) => {
+    setGroupToDelete(group);
+    setDeleteGroupOpen(true);
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!groupToDelete) return;
+
+    setDeletingGroup(true);
+    try {
+      const response = await fetch(`/api/groups/${groupToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.error || 'Failed to delete group');
+        setTimeout(() => setErrorMessage(''), 3000);
+        return;
+      }
+
+      setLocalGroups((prev) => prev.filter((g) => g.id !== groupToDelete.id));
+      setLocalGroupAssignments((prev) => prev.filter((a) => a.groupId !== groupToDelete.id));
+      if (groupFilter === String(groupToDelete.id)) {
+        setGroupFilter('all');
+      }
+      setDeleteGroupOpen(false);
+      setGroupToDelete(null);
+      setSuccessMessage('Group deleted successfully');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch {
+      setErrorMessage('Failed to delete group');
+      setTimeout(() => setErrorMessage(''), 3000);
+    } finally {
+      setDeletingGroup(false);
+    }
+  };
+
+  const openManageGroupMembers = async (group: GroupData) => {
+    setManagingGroup(group);
+    setGroupMemberSearchQuery('');
+    setSelectedGroupMemberIds(new Set());
+    setManageGroupOpen(true);
+    setIsLoadingGroupMembers(true);
+
+    try {
+      const response = await fetch(`/api/groups/${group.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setGroupDetailMembers(data.group.members || []);
+      } else {
+        setGroupDetailMembers([]);
+      }
+    } catch {
+      setGroupDetailMembers([]);
+    } finally {
+      setIsLoadingGroupMembers(false);
+    }
+  };
+
+  const handleAddGroupMembers = async () => {
+    if (!managingGroup || selectedGroupMemberIds.size === 0) return;
+
+    setIsAddingGroupMembers(true);
+    try {
+      const response = await fetch(`/api/groups/${managingGroup.id}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberIds: Array.from(selectedGroupMemberIds) }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.error || 'Failed to add members');
+        setTimeout(() => setErrorMessage(''), 3000);
+        return;
+      }
+
+      // Refresh group members
+      const detailResponse = await fetch(`/api/groups/${managingGroup.id}`);
+      if (detailResponse.ok) {
+        const data = await detailResponse.json();
+        setGroupDetailMembers(data.group.members || []);
+      }
+
+      // Update member count and assignments
+      const addedCount = selectedGroupMemberIds.size;
+      setLocalGroups((prev) =>
+        prev.map((g) =>
+          g.id === managingGroup.id
+            ? { ...g, memberCount: g.memberCount + addedCount }
+            : g
+        )
+      );
+      const newAssignments = Array.from(selectedGroupMemberIds).map((memberId) => ({
+        memberId,
+        groupId: managingGroup.id,
+      }));
+      setLocalGroupAssignments((prev) => [...prev, ...newAssignments]);
+
+      setSelectedGroupMemberIds(new Set());
+      setSuccessMessage(`Added ${addedCount} member${addedCount !== 1 ? 's' : ''} to group`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch {
+      setErrorMessage('Failed to add members');
+      setTimeout(() => setErrorMessage(''), 3000);
+    } finally {
+      setIsAddingGroupMembers(false);
+    }
+  };
+
+  const handleRemoveGroupMember = async (memberId: number) => {
+    if (!managingGroup) return;
+
+    setRemovingGroupMemberId(memberId);
+    try {
+      const response = await fetch(`/api/groups/${managingGroup.id}/members`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberIds: [memberId] }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.error || 'Failed to remove member');
+        setTimeout(() => setErrorMessage(''), 3000);
+        return;
+      }
+
+      setGroupDetailMembers((prev) => prev.filter((gm) => gm.member.id !== memberId));
+      setLocalGroups((prev) =>
+        prev.map((g) =>
+          g.id === managingGroup.id
+            ? { ...g, memberCount: Math.max(0, g.memberCount - 1) }
+            : g
+        )
+      );
+      setLocalGroupAssignments((prev) =>
+        prev.filter((a) => !(a.groupId === managingGroup.id && a.memberId === memberId))
+      );
+    } catch {
+      setErrorMessage('Failed to remove member');
+      setTimeout(() => setErrorMessage(''), 3000);
+    } finally {
+      setRemovingGroupMemberId(null);
+    }
+  };
+
+  const toggleGroupMemberSelection = (memberId: number) => {
+    setSelectedGroupMemberIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(memberId)) {
+        next.delete(memberId);
+      } else {
+        next.add(memberId);
+      }
+      return next;
+    });
+  };
+
+  // Available members for adding to a group (approved members not already in the group)
+  const availableGroupMembers = useMemo(() => {
+    const groupMemberIds = new Set(groupDetailMembers.map((gm) => gm.member.id));
+    return membersList.filter(
+      (m) => m.member.status === 'approved' && !groupMemberIds.has(m.member.id)
+    );
+  }, [membersList, groupDetailMembers]);
+
+  const filteredAvailableGroupMembers = useMemo(() => {
+    if (!groupMemberSearchQuery) return availableGroupMembers;
+    const q = groupMemberSearchQuery.toLowerCase();
+    return availableGroupMembers.filter(
+      (m) =>
+        (m.user.name && m.user.name.toLowerCase().includes(q)) ||
+        m.user.email.toLowerCase().includes(q)
+    );
+  }, [availableGroupMembers, groupMemberSearchQuery]);
+
+  // The currently selected group object (for action buttons)
+  const selectedGroup = useMemo(() => {
+    if (groupFilter === 'all') return null;
+    return localGroups.find((g) => g.id === parseInt(groupFilter)) || null;
+  }, [groupFilter, localGroups]);
+
   // Clear all advanced filters
   const clearAdvancedFilters = () => {
     setEmploymentStatusFilter('all');
@@ -878,75 +1242,40 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
           </Card>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card
-            className={`cursor-pointer transition-all ${statusFilter === 'all' ? 'ring-2 ring-blue-500' : 'hover:shadow-md'}`}
+        {/* Compact Stats Badges */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Badge
+            variant="outline"
+            className={`cursor-pointer px-3 py-1.5 text-sm transition-all ${statusFilter === 'all' ? 'ring-2 ring-blue-500 bg-blue-50 text-blue-700 border-blue-300' : 'hover:bg-gray-100'}`}
             onClick={() => handleFilterChange('all')}
           >
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <UsersIcon className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{membersList.length}</p>
-                  <p className="text-sm text-gray-600">All Members</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className={`cursor-pointer transition-all ${statusFilter === 'approved' ? 'ring-2 ring-green-500' : 'hover:shadow-md'}`}
+            <UsersIcon className="h-3.5 w-3.5 mr-1.5" />
+            All: {membersList.length}
+          </Badge>
+          <Badge
+            variant="outline"
+            className={`cursor-pointer px-3 py-1.5 text-sm transition-all ${statusFilter === 'approved' ? 'ring-2 ring-green-500 bg-green-50 text-green-700 border-green-300' : 'hover:bg-gray-100'}`}
             onClick={() => handleFilterChange('approved')}
           >
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <UserCheck className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{approvedCount}</p>
-                  <p className="text-sm text-gray-600">Approved</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className={`cursor-pointer transition-all ${statusFilter === 'pending' ? 'ring-2 ring-yellow-500' : 'hover:shadow-md'}`}
+            <UserCheck className="h-3.5 w-3.5 mr-1.5" />
+            Approved: {approvedCount}
+          </Badge>
+          <Badge
+            variant="outline"
+            className={`cursor-pointer px-3 py-1.5 text-sm transition-all ${statusFilter === 'pending' ? 'ring-2 ring-yellow-500 bg-yellow-50 text-yellow-700 border-yellow-300' : 'hover:bg-gray-100'}`}
             onClick={() => handleFilterChange('pending')}
           >
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-yellow-100 rounded-lg">
-                  <UserPlus className="h-6 w-6 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
-                  <p className="text-sm text-gray-600">Pending</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className={`cursor-pointer transition-all ${statusFilter === 'admin' ? 'ring-2 ring-purple-500' : 'hover:shadow-md'}`}
+            <Clock className="h-3.5 w-3.5 mr-1.5" />
+            Pending: {pendingCount}
+          </Badge>
+          <Badge
+            variant="outline"
+            className={`cursor-pointer px-3 py-1.5 text-sm transition-all ${statusFilter === 'admin' ? 'ring-2 ring-purple-500 bg-purple-50 text-purple-700 border-purple-300' : 'hover:bg-gray-100'}`}
             onClick={() => handleFilterChange('admin')}
           >
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <Shield className="h-6 w-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{adminCount}</p>
-                  <p className="text-sm text-gray-600">Admins</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <Shield className="h-3.5 w-3.5 mr-1.5" />
+            Admins: {adminCount}
+          </Badge>
         </div>
 
         {/* Search and Sort Controls */}
@@ -973,11 +1302,27 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                 <SelectItem value="z-a">Name (Z-A)</SelectItem>
               </SelectContent>
             </Select>
+            {localGroups.length > 0 && (
+              <Select value={groupFilter} onValueChange={(value) => { setGroupFilter(value); setCurrentPage(1); }}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="All Groups" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Groups</SelectItem>
+                  <SelectSeparator />
+                  {localGroups.map((g) => (
+                    <SelectItem key={g.id} value={String(g.id)}>
+                      {g.name} ({g.memberCount})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
-          {/* Advanced Filters and CSV Actions Row */}
+          {/* Advanced Filters, Group Actions, and CSV Actions Row */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -998,10 +1343,51 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
                   Clear Filters
                 </Button>
               )}
+              {/* Group action buttons when a group is selected */}
+              {selectedGroup && isOwner && !isDemo && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openEditGroupDialog(selectedGroup)}
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit Group
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openManageGroupMembers(selectedGroup)}
+                  >
+                    <UserPlus className="h-4 w-4 mr-1" />
+                    Manage Members
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openDeleteGroupDialog(selectedGroup)}
+                    className="text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete Group
+                  </Button>
+                </>
+              )}
             </div>
 
             {isOwner && (
               <div className="flex gap-2">
+                {!isDemo && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={openCreateGroupDialog}
+                    className="gap-2"
+                  >
+                    <FolderPlus className="h-4 w-4" />
+                    New Group
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -1669,6 +2055,245 @@ export function MembersContent({ slug, union, members, isOwner }: MembersContent
         currentPermissions={memberForPermissions?.member.adminPermissions}
         onConfirm={handlePermissionsConfirm}
       />
+
+      {/* Create / Edit Group Dialog */}
+      <Dialog open={createGroupOpen} onOpenChange={setCreateGroupOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingGroup ? 'Edit Group' : 'Create Group'}</DialogTitle>
+            <DialogDescription>
+              {editingGroup
+                ? 'Update the group name and description.'
+                : 'Create a new group to organize your members.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="group-name">Name *</Label>
+              <Input
+                id="group-name"
+                placeholder="e.g., Executive Committee"
+                value={groupFormName}
+                onChange={(e) => {
+                  setGroupFormName(e.target.value);
+                  setGroupFormError('');
+                }}
+                maxLength={100}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="group-description">Description</Label>
+              <Textarea
+                id="group-description"
+                placeholder="Optional description for this group..."
+                value={groupFormDescription}
+                onChange={(e) => setGroupFormDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+            {groupFormError && (
+              <p className="text-sm text-red-600">{groupFormError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreateGroupOpen(false)}
+              disabled={savingGroup}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveGroup} disabled={savingGroup}>
+              {savingGroup ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : editingGroup ? (
+                'Save Changes'
+              ) : (
+                'Create Group'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Group Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteGroupOpen}
+        onOpenChange={setDeleteGroupOpen}
+        onConfirm={handleDeleteGroup}
+        title="Delete Group"
+        description={
+          groupToDelete
+            ? `Are you sure you want to delete "${groupToDelete.name}"? This group has ${groupToDelete.memberCount} ${groupToDelete.memberCount === 1 ? 'member' : 'members'}. Members will not be deleted, only removed from this group.`
+            : 'Are you sure you want to delete this group?'
+        }
+        confirmText="Delete"
+        variant="destructive"
+        isLoading={deletingGroup}
+      />
+
+      {/* Manage Group Members Dialog */}
+      <Dialog open={manageGroupOpen} onOpenChange={setManageGroupOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>
+              Manage Members — {managingGroup?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Add or remove members from this group.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto space-y-6 py-2">
+            {/* Current Members */}
+            <div>
+              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <UsersIcon className="h-4 w-4" />
+                Current Members ({groupDetailMembers.length})
+              </h4>
+              {isLoadingGroupMembers ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : groupDetailMembers.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-3">
+                  No members in this group yet.
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {groupDetailMembers.map((gm) => (
+                    <div
+                      key={gm.member.id}
+                      className="flex items-center justify-between p-2 rounded-md border bg-gray-50"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {gm.user.name || gm.user.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {gm.user.email}
+                          </p>
+                        </div>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          gm.member.role === 'owner'
+                            ? 'bg-purple-100 text-purple-700'
+                            : gm.member.role === 'admin'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-200 text-gray-700'
+                        }`}>
+                          {gm.member.role.charAt(0).toUpperCase() + gm.member.role.slice(1)}
+                        </span>
+                      </div>
+                      {!isDemo && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
+                          onClick={() => handleRemoveGroupMember(gm.member.id)}
+                          disabled={removingGroupMemberId === gm.member.id}
+                        >
+                          {removingGroupMemberId === gm.member.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <X className="h-4 w-4" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Add Members */}
+            {!isDemo && (
+              <div>
+                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Add Members
+                </h4>
+                <div className="relative mb-3">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Search members to add..."
+                    value={groupMemberSearchQuery}
+                    onChange={(e) => setGroupMemberSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                {filteredAvailableGroupMembers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-3">
+                    {groupMemberSearchQuery
+                      ? 'No matching members found'
+                      : 'All approved members are already in this group'}
+                  </p>
+                ) : (
+                  <>
+                    <div className="space-y-1 max-h-48 overflow-y-auto border rounded-md p-2">
+                      {filteredAvailableGroupMembers.map((m) => (
+                        <label
+                          key={m.member.id}
+                          className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 cursor-pointer"
+                        >
+                          <Checkbox
+                            checked={selectedGroupMemberIds.has(m.member.id)}
+                            onCheckedChange={() => toggleGroupMemberSelection(m.member.id)}
+                          />
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium truncate">
+                                {m.user.name || m.user.email}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {m.user.email}
+                              </p>
+                            </div>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              m.member.role === 'owner'
+                                ? 'bg-purple-100 text-purple-700'
+                                : m.member.role === 'admin'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-gray-200 text-gray-700'
+                            }`}>
+                              {m.member.role.charAt(0).toUpperCase() + m.member.role.slice(1)}
+                            </span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    {selectedGroupMemberIds.size > 0 && (
+                      <div className="mt-3">
+                        <Button
+                          onClick={handleAddGroupMembers}
+                          disabled={isAddingGroupMembers}
+                          size="sm"
+                        >
+                          {isAddingGroupMembers ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Adding...
+                            </>
+                          ) : (
+                            <>
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Add {selectedGroupMemberIds.size} Selected
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -17,6 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { RichTextContent } from '@/components/ui/rich-text-content';
 import { Loader2, Mail, User, Building2, PenLine } from 'lucide-react';
 
 interface CreatePostDialogProps {
@@ -59,6 +61,7 @@ export function CreatePostDialog({
     attachments: PostAttachment[];
   } | null>(null);
   const [signatureHtml, setSignatureHtml] = useState<string | null>(null);
+  const [appendSignature, setAppendSignature] = useState(false);
 
   // Fetch user's email signature
   useEffect(() => {
@@ -77,16 +80,16 @@ export function CreatePostDialog({
     fetchSignature();
   }, [unionId, open]);
 
-  const handleInsertSignature = () => {
-    if (!signatureHtml) return;
-    const signatureBlock = `<hr style="margin-top:20px;border:none;border-top:1px solid #e5e7eb"><div>${signatureHtml}</div>`;
-    setContent((prev) => prev + signatureBlock);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Append signature if toggle is on
+    let finalContent = content;
+    if (appendSignature && signatureHtml) {
+      finalContent = `${content}<hr style="margin-top:20px;border:none;border-top:1px solid #e5e7eb"><div>${signatureHtml}</div>`;
+    }
 
     try {
       const response = await fetch('/api/posts/create', {
@@ -95,7 +98,7 @@ export function CreatePostDialog({
         body: JSON.stringify({
           unionId,
           title,
-          content,
+          content: finalContent,
           imageUrl: imageUrl || null,
           isPrivate,
           authorType,
@@ -111,7 +114,7 @@ export function CreatePostDialog({
       // Store created post data for sharing
       setCreatedPost({
         title,
-        content,
+        content: finalContent,
         attachments,
       });
 
@@ -149,6 +152,7 @@ export function CreatePostDialog({
     setAttachments([]);
     setIsPrivate(false);
     setAuthorType('union');
+    setAppendSignature(false);
     setCreatedPost(null);
     setShowShareDialog(false);
     onSuccess();
@@ -187,18 +191,6 @@ export function CreatePostDialog({
                 onChange={setContent}
                 placeholder="Write your post content..."
               />
-              {signatureHtml && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleInsertSignature}
-                  className="mt-2"
-                >
-                  <PenLine className="mr-2 h-3 w-3" />
-                  Insert Signature
-                </Button>
-              )}
             </div>
 
             <div>
@@ -288,6 +280,57 @@ export function CreatePostDialog({
                 </button>
               </div>
             </div>
+
+            {/* Email Signature Toggle */}
+            {signatureHtml ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <PenLine className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <Label htmlFor="appendSignature" className="text-base">
+                        Append Signature
+                      </Label>
+                      <p className="text-sm text-gray-600">
+                        Add your email signature to the end of this post
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="appendSignature"
+                    checked={appendSignature}
+                    onCheckedChange={setAppendSignature}
+                  />
+                </div>
+
+                {/* Signature Preview */}
+                {appendSignature && signatureHtml && (
+                  <div className="border rounded-lg p-4 bg-white">
+                    <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Signature Preview</p>
+                    <hr className="border-t border-gray-300 my-2" />
+                    <RichTextContent content={signatureHtml} />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <PenLine className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">No email signature set</p>
+                    <p className="text-sm text-gray-500">
+                      Create a signature to append to your posts.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={`/${slug}/profile`}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap"
+                >
+                  Create Signature
+                </Link>
+              </div>
+            )}
           </div>
 
           <DialogFooter className="flex-shrink-0 border-t px-6 py-4">
