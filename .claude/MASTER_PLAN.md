@@ -239,18 +239,30 @@ local `node_modules/`. Before every commit/push, verify:
    Stripe SDK version installed. The lockfile pins `stripe@18.1.0` which expects
    `"2025-04-30.basil"`. If your local `node_modules` has a newer version
    (e.g. `18.5.0` → `"2025-08-27.basil"`), the build passes locally but
-   **fails on Vercel**. The file uses `@ts-expect-error` to handle this drift.
+   **fails on Vercel**. The file uses `@ts-ignore` to handle this drift.
    - **Rule:** Never change the `apiVersion` string unless you also update the
      lockfile (`pnpm update stripe`) and commit `pnpm-lock.yaml`.
    - **Rule:** If upgrading Stripe, run `pnpm install` then check what API
      version the new package expects:
      `node -e "const fs=require('fs'); console.log(JSON.parse(fs.readFileSync('node_modules/stripe/package.json','utf8')).version)"`
 
-2. **Lockfile drift** — If `pnpm-lock.yaml` is not committed after adding or
+2. **`@ts-expect-error` vs `@ts-ignore`** — When suppressing a type error that
+   only exists in **some** environments (e.g. local has newer types than Vercel),
+   **always use `@ts-ignore`**, never `@ts-expect-error`. The reason:
+   `@ts-expect-error` **fails the build if the error doesn't exist** (it treats
+   an "unused" suppression as an error). Since Vercel's lockfile may resolve a
+   different package version where the type matches perfectly, the directive
+   becomes "unused" and breaks the build. `@ts-ignore` silently does nothing
+   when there's no error to suppress.
+   - **Rule:** Use `@ts-ignore` for environment-dependent type mismatches.
+   - **Rule:** Only use `@ts-expect-error` when the error is guaranteed to exist
+     in ALL environments (local, CI, Vercel).
+
+3. **Lockfile drift** — If `pnpm-lock.yaml` is not committed after adding or
    upgrading a dependency, Vercel will install the old versions. Always commit
    the lockfile alongside `package.json` changes.
 
-3. **TypeScript strict mode** — Vercel runs `tsc` during build. A local build
+4. **TypeScript strict mode** — Vercel runs `tsc` during build. A local build
    with `--noEmit` may skip errors that Vercel catches. Always run `pnpm build`
    (not just `pnpm dev`) before pushing.
 
