@@ -167,6 +167,9 @@ export const members = pgTable('members', {
   // Admin-only notes field
   notes: text('notes'), // Only visible to admins/owners
 
+  // Rich text HTML signature for posts and emails (owner/admin only)
+  signatureHtml: text('signature_html'),
+
   // Admin permissions (only applicable when role is 'admin')
   // JSON object with permission flags: { members, communications, dues, strikes, grievances, meetings, announcements, elections, settings, analytics }
   adminPermissions: json('admin_permissions').$type<{
@@ -274,6 +277,40 @@ export const memberNotes = pgTable('member_notes', {
     .notNull()
     .references(() => users.id, { onDelete: 'set null' }),
 });
+
+// Custom Member Groups
+export const memberGroups = pgTable('member_groups', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 100 }).notNull(),
+  description: text('description'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+}, (table) => ({
+  uniqueUnionGroupName: unique('unique_union_group_name').on(table.unionId, table.name),
+}));
+
+// Member Group Assignments (many-to-many between members and groups)
+export const memberGroupAssignments = pgTable('member_group_assignments', {
+  id: serial('id').primaryKey(),
+  groupId: integer('group_id')
+    .notNull()
+    .references(() => memberGroups.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  assignedAt: timestamp('assigned_at').notNull().defaultNow(),
+  assignedBy: integer('assigned_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+}, (table) => ({
+  uniqueGroupMember: unique('unique_group_member').on(table.groupId, table.memberId),
+}));
 
 export const activityLogs = pgTable('activity_logs', {
   id: serial('id').primaryKey(),
@@ -825,6 +862,7 @@ export const unionsRelations = relations(unions, ({ one, many }) => ({
   contactInfo: one(unionContactInfo),
   executives: many(unionExecutives),
   contactFormSubmissions: many(contactFormSubmissions),
+  memberGroups: many(memberGroups),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -858,6 +896,7 @@ export const membersRelations = relations(members, ({ one, many }) => ({
   certifications: many(memberCertifications),
   positions: many(memberPositions),
   memberNotes: many(memberNotes),
+  groupAssignments: many(memberGroupAssignments),
 }));
 
 // Member Documents Relations
@@ -920,6 +959,34 @@ export const memberNotesRelations = relations(memberNotes, ({ one }) => ({
   }),
   createdBy: one(users, {
     fields: [memberNotes.createdBy],
+    references: [users.id],
+  }),
+}));
+
+// Member Groups Relations
+export const memberGroupsRelations = relations(memberGroups, ({ one, many }) => ({
+  union: one(unions, {
+    fields: [memberGroups.unionId],
+    references: [unions.id],
+  }),
+  creator: one(users, {
+    fields: [memberGroups.createdBy],
+    references: [users.id],
+  }),
+  assignments: many(memberGroupAssignments),
+}));
+
+export const memberGroupAssignmentsRelations = relations(memberGroupAssignments, ({ one }) => ({
+  group: one(memberGroups, {
+    fields: [memberGroupAssignments.groupId],
+    references: [memberGroups.id],
+  }),
+  member: one(members, {
+    fields: [memberGroupAssignments.memberId],
+    references: [members.id],
+  }),
+  assignedByUser: one(users, {
+    fields: [memberGroupAssignments.assignedBy],
     references: [users.id],
   }),
 }));
@@ -1774,6 +1841,10 @@ export type MemberPosition = typeof memberPositions.$inferSelect;
 export type NewMemberPosition = typeof memberPositions.$inferInsert;
 export type MemberNote = typeof memberNotes.$inferSelect;
 export type NewMemberNote = typeof memberNotes.$inferInsert;
+export type MemberGroup = typeof memberGroups.$inferSelect;
+export type NewMemberGroup = typeof memberGroups.$inferInsert;
+export type MemberGroupAssignment = typeof memberGroupAssignments.$inferSelect;
+export type NewMemberGroupAssignment = typeof memberGroupAssignments.$inferInsert;
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type NewActivityLog = typeof activityLogs.$inferInsert;
 export type Invitation = typeof invitations.$inferSelect;

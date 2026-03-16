@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Dialog,
@@ -17,7 +17,7 @@ import { Switch } from '@/components/ui/switch';
 import { FileUpload } from '@/components/ui/file-upload';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { Loader2, Mail, User, Building2 } from 'lucide-react';
+import { Loader2, Mail, User, Building2, PenLine } from 'lucide-react';
 
 interface CreatePostDialogProps {
   open: boolean;
@@ -58,6 +58,30 @@ export function CreatePostDialog({
     content: string;
     attachments: PostAttachment[];
   } | null>(null);
+  const [signatureHtml, setSignatureHtml] = useState<string | null>(null);
+
+  // Fetch user's email signature
+  useEffect(() => {
+    if (!open) return;
+    const fetchSignature = async () => {
+      try {
+        const response = await fetch(`/api/signature?unionId=${unionId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSignatureHtml(data.signatureHtml || null);
+        }
+      } catch (error) {
+        console.error('Error fetching signature:', error);
+      }
+    };
+    fetchSignature();
+  }, [unionId, open]);
+
+  const handleInsertSignature = () => {
+    if (!signatureHtml) return;
+    const signatureBlock = `<hr style="margin-top:20px;border:none;border-top:1px solid #e5e7eb"><div>${signatureHtml}</div>`;
+    setContent((prev) => prev + signatureBlock);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,6 +187,18 @@ export function CreatePostDialog({
                 onChange={setContent}
                 placeholder="Write your post content..."
               />
+              {signatureHtml && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleInsertSignature}
+                  className="mt-2"
+                >
+                  <PenLine className="mr-2 h-3 w-3" />
+                  Insert Signature
+                </Button>
+              )}
             </div>
 
             <div>

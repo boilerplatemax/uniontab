@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { RichTextContent } from '@/components/ui/rich-text-content';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import {
   Dialog,
@@ -36,6 +38,7 @@ import {
   TrendingUp,
   FileText,
   Paperclip,
+  PenLine,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -99,6 +102,24 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
     fileSize: number;
     fileType?: string;
   }>>([]);
+  const [signatureHtml, setSignatureHtml] = useState<string | null>(null);
+  const [appendSignature, setAppendSignature] = useState(false);
+
+  // Fetch user's email signature
+  useEffect(() => {
+    const fetchSignature = async () => {
+      try {
+        const response = await fetch(`/api/signature?unionId=${union.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSignatureHtml(data.signatureHtml || null);
+        }
+      } catch (error) {
+        console.error('Error fetching signature:', error);
+      }
+    };
+    fetchSignature();
+  }, [union.id]);
 
   // Pre-fill email content from URL parameters (for sharing from posts/files/events)
   useEffect(() => {
@@ -264,8 +285,14 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
     setIsSending(true);
     setSendResult(null);
 
+    // Append signature if toggle is on
+    let finalHtmlContent = htmlContent;
+    if (appendSignature && signatureHtml) {
+      finalHtmlContent = `${htmlContent}<hr style="margin-top:20px;border:none;border-top:1px solid #e5e7eb"><div>${signatureHtml}</div>`;
+    }
+
     // Convert HTML to plain text for text content
-    const textContent = htmlContent
+    const textContent = finalHtmlContent
       .replace(/<[^>]*>/g, '')
       .replace(/&nbsp;/g, ' ')
       .trim();
@@ -279,7 +306,7 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
         body: JSON.stringify({
           unionId: union.id,
           subject,
-          htmlContent,
+          htmlContent: finalHtmlContent,
           textContent,
           recipientFilter,
           customRecipientIds: recipientFilter === 'custom' ? Array.from(selectedMembers) : null,
@@ -769,6 +796,57 @@ export function MassEmailContent({ slug, union, members }: MassEmailContentProps
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+            </div>
+
+            {/* Email Signature Toggle */}
+            <div className="space-y-3">
+              {signatureHtml ? (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <PenLine className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <Label htmlFor="appendSignature" className="text-base">
+                        Append Signature
+                      </Label>
+                      <p className="text-sm text-gray-600">
+                        Add your email signature to the end of this message
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="appendSignature"
+                    checked={appendSignature}
+                    onCheckedChange={setAppendSignature}
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <PenLine className="h-5 w-5 text-gray-400" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">No email signature set</p>
+                      <p className="text-sm text-gray-500">
+                        Create a signature to append to your emails.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/${slug}/signature`}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap"
+                  >
+                    Create Signature
+                  </Link>
+                </div>
+              )}
+
+              {/* Signature Preview */}
+              {appendSignature && signatureHtml && (
+                <div className="border rounded-lg p-4 bg-white">
+                  <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Signature Preview</p>
+                  <hr className="border-t border-gray-300 my-2" />
+                  <RichTextContent content={signatureHtml} />
                 </div>
               )}
             </div>
