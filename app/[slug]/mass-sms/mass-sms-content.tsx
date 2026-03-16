@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectGroup, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -552,12 +552,14 @@ export function MassSMSContent({ slug, union, members, groups, groupAssignments 
                     {groups.length > 0 && (
                       <>
                         <SelectSeparator />
-                        <SelectLabel className="text-xs text-muted-foreground px-2">Groups</SelectLabel>
-                        {groups.map((g) => (
-                          <SelectItem key={`group-${g.id}`} value={`group-${g.id}`}>
-                            {g.name} ({g.memberCount})
-                          </SelectItem>
-                        ))}
+                        <SelectGroup>
+                          <SelectLabel className="text-xs text-muted-foreground px-2">Groups</SelectLabel>
+                          {groups.map((g) => (
+                            <SelectItem key={`group-${g.id}`} value={`group-${g.id}`}>
+                              {g.name} ({g.memberCount})
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       </>
                     )}
                   </SelectContent>

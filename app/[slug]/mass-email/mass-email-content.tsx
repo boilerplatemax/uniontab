@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectGroup, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { RichTextContent } from '@/components/ui/rich-text-content';
@@ -574,12 +574,14 @@ export function MassEmailContent({ slug, union, members, groups, groupAssignment
                     {groups.length > 0 && (
                       <>
                         <SelectSeparator />
-                        <SelectLabel className="text-xs text-muted-foreground px-2">Groups</SelectLabel>
-                        {groups.map((g) => (
-                          <SelectItem key={`group-${g.id}`} value={`group-${g.id}`}>
-                            {g.name} ({g.memberCount})
-                          </SelectItem>
-                        ))}
+                        <SelectGroup>
+                          <SelectLabel className="text-xs text-muted-foreground px-2">Groups</SelectLabel>
+                          {groups.map((g) => (
+                            <SelectItem key={`group-${g.id}`} value={`group-${g.id}`}>
+                              {g.name} ({g.memberCount})
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       </>
                     )}
                   </SelectContent>
