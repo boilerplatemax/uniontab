@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock, Check } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Lock, Check, MessageSquare } from 'lucide-react';
 import type { SettingsFormData } from '../settings-content';
 
 interface PermissionsTabProps {
@@ -10,6 +11,27 @@ interface PermissionsTabProps {
 export function PermissionsTab({ formData, onChange }: PermissionsTabProps) {
   return (
     <div className="space-y-6">
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5" />
+            Post Comments
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div>
+              <h4 className="font-medium">Post Comments</h4>
+              <p className="text-sm text-gray-500">Allow approved members to comment on news posts</p>
+            </div>
+            <Switch
+              checked={formData.commentsEnabled}
+              onCheckedChange={(checked) => onChange({ commentsEnabled: checked })}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

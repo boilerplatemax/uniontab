@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db/drizzle';
-import { unions, users, members, posts, files, events, postLikes, postAttachments } from '@/lib/db/schema';
-import { eq, and, desc, count, sql } from 'drizzle-orm';
+import { unions, users, members, posts, files, events, postLikes, postAttachments, postComments } from '@/lib/db/schema';
+import { eq, and, desc, count, sql, isNull } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import type { ThemeId } from '@/lib/themes/config';
 import { canAccessTheme } from '@/lib/themes/config';
@@ -43,6 +43,7 @@ async function getUnionPosts(unionId: number, userId?: number) {
       imageUrl: posts.imageUrl,
       isPrivate: posts.isPrivate,
       isPinned: posts.isPinned,
+      commentsEnabled: posts.commentsEnabled,
       authorType: posts.authorType,
       createdAt: posts.createdAt,
       updatedAt: posts.updatedAt,
@@ -87,6 +88,27 @@ async function getUnionPosts(unionId: number, userId?: number) {
     likeCounts.map(({ postId, count }) => [postId, Number(count)])
   );
 
+  // Get comment counts (excluding soft-deleted)
+  const commentCounts = postIds.length > 0
+    ? await db
+        .select({
+          postId: postComments.postId,
+          count: count(),
+        })
+        .from(postComments)
+        .where(
+          and(
+            sql`${postComments.postId} IN (${sql.join(postIds.map(id => sql`${id}`), sql`, `)})`,
+            isNull(postComments.deletedAt)
+          )
+        )
+        .groupBy(postComments.postId)
+    : [];
+
+  const commentCountMap = Object.fromEntries(
+    commentCounts.map(({ postId, count }) => [postId, Number(count)])
+  );
+
   // Get user's likes if logged in
   let userLikes: number[] = [];
   if (userId) {
@@ -106,6 +128,7 @@ async function getUnionPosts(unionId: number, userId?: number) {
   return postsWithCreator.map(post => ({
     ...post,
     likeCount: likeCountMap[post.id] || 0,
+    commentCount: commentCountMap[post.id] || 0,
     isLikedByUser: userLikes.includes(post.id),
     attachments: attachmentsByPost[post.id] || [],
   }));

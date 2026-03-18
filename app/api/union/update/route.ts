@@ -54,6 +54,9 @@ export async function PUT(request: NextRequest) {
     if ('hidePoweredBy' in body) updateData.hidePoweredBy = body.hidePoweredBy ?? false;
     if ('defaultLanguage' in body) updateData.defaultLanguage = body.defaultLanguage || 'en';
     if ('homePage' in body) updateData.homePage = body.homePage || 'news';
+    if ('commentsEnabled' in body) {
+      updateData.commentsEnabled = body.commentsEnabled ?? true;
+    }
     if ('grievanceFilingPermission' in body) {
       const allowed = ['all', 'admins_only'];
       updateData.grievanceFilingPermission = allowed.includes(body.grievanceFilingPermission)

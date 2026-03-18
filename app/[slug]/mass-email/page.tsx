@@ -39,6 +39,7 @@ async function getUnionMembers(unionId: number) {
         role: members.role,
         status: members.status,
         joinedAt: members.joinedAt,
+        profilePhotoUrl: members.profilePhotoUrl,
       },
       user: {
         id: users.id,

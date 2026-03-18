@@ -43,6 +43,7 @@ export interface SettingsFormData {
   hidePoweredBy: boolean;
   defaultLanguage: string;
   homePage: string;
+  commentsEnabled: boolean;
   grievanceFilingPermission: 'all' | 'admins_only';
 }
 
@@ -78,6 +79,7 @@ export function SettingsContent() {
     hidePoweredBy: false,
     defaultLanguage: 'en',
     homePage: 'news',
+    commentsEnabled: true,
     grievanceFilingPermission: 'all',
   });
   const [loading, setLoading] = useState(false);
@@ -110,6 +112,7 @@ export function SettingsContent() {
         hidePoweredBy: (union as any).hidePoweredBy || false,
         defaultLanguage: (union as any).defaultLanguage || 'en',
         homePage: (union as any).homePage || 'news',
+        commentsEnabled: (union as any).commentsEnabled ?? true,
         grievanceFilingPermission: (union as any).grievanceFilingPermission || 'all',
       });
     }

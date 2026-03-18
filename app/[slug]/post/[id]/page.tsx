@@ -11,6 +11,7 @@ import { ArrowLeft, Paperclip, FileText, Download } from 'lucide-react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils/date';
 import { Button } from '@/components/ui/button';
+import { CommentSection } from '@/components/posts/comment-section';
 
 async function getUnionBySlug(slug: string) {
   const [union] = await db
@@ -32,6 +33,7 @@ async function getPost(postId: number, userId?: number) {
       imageUrl: posts.imageUrl,
       isPrivate: posts.isPrivate,
       isPinned: posts.isPinned,
+      commentsEnabled: posts.commentsEnabled,
       createdAt: posts.createdAt,
       updatedAt: posts.updatedAt,
       authorType: posts.authorType,
@@ -230,6 +232,17 @@ export default async function PostPage({
                 </div>
               </div>
             </div>
+
+            {/* Comments Section */}
+            <CommentSection
+              postId={post.id}
+              commentsEnabled={union.commentsEnabled}
+              postCommentsEnabled={post.commentsEnabled}
+              currentUserId={currentUser?.id || null}
+              isApprovedMember={!!membership && (membership.member.status === 'approved' || membership.member.role === 'owner')}
+              isOwnerOrAdmin={isOwnerOrAdmin}
+              unionSlug={slug}
+            />
           </CardContent>
         </Card>
       </div>

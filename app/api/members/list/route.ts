@@ -74,6 +74,7 @@ export async function GET(request: Request) {
         employmentStatus: members.employmentStatus,
         localChapter: members.localChapter,
         bargainingUnit: members.bargainingUnit,
+        profilePhotoUrl: members.profilePhotoUrl,
         user: {
           id: users.id,
           name: users.name,

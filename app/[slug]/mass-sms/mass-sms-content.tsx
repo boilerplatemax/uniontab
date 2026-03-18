@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,6 +49,7 @@ interface Member {
     status: string;
     joinedAt: Date;
     phone: string | null;
+    profilePhotoUrl: string | null;
   };
   user: {
     id: number;
@@ -696,6 +697,9 @@ export function MassSMSContent({ slug, union, members, groups, groupAssignments 
                               </td>
                               <td className="px-4 py-3">
                                 <Avatar className="h-10 w-10">
+                                  {member.member.profilePhotoUrl && (
+                                    <AvatarImage src={member.member.profilePhotoUrl} alt={getUserDisplayName(member.user)} />
+                                  )}
                                   <AvatarFallback>
                                     {getInitials(getUserDisplayName(member.user))}
                                   </AvatarFallback>
@@ -816,6 +820,9 @@ export function MassSMSContent({ slug, union, members, groups, groupAssignments 
                   className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
                 >
                   <Avatar className="h-10 w-10">
+                    {member.member.profilePhotoUrl && (
+                      <AvatarImage src={member.member.profilePhotoUrl} alt={getUserDisplayName(member.user)} />
+                    )}
                     <AvatarFallback>
                       {getInitials(getUserDisplayName(member.user))}
                     </AvatarFallback>

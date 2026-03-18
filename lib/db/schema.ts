@@ -94,6 +94,8 @@ export const unions = pgTable('unions', {
   grievanceFilingPermission: varchar('grievance_filing_permission', { length: 20 }).notNull().default('all'), // 'all' = members and admins can file; 'admins_only' = only admins/owners
   // Demo mode - when true, this union is a read-only demo site (no mutations allowed)
   isDemo: boolean('is_demo').notNull().default(false),
+  // Post comments toggle - when false, comments are disabled on all posts
+  commentsEnabled: boolean('comments_enabled').notNull().default(true),
 });
 
 export const members = pgTable('members', {
@@ -169,6 +171,9 @@ export const members = pgTable('members', {
 
   // Rich text HTML signature for posts and emails (owner/admin only)
   signatureHtml: text('signature_html'),
+
+  // Profile photo URL (per-union member avatar)
+  profilePhotoUrl: text('profile_photo_url'),
 
   // Admin permissions (only applicable when role is 'admin')
   // JSON object with permission flags: { members, communications, dues, strikes, grievances, meetings, announcements, elections, settings, analytics }
@@ -393,6 +398,7 @@ export const posts = pgTable('posts', {
   imageUrl: text('image_url'),
   isPrivate: boolean('is_private').notNull().default(false),
   isPinned: boolean('is_pinned').notNull().default(false),
+  commentsEnabled: boolean('comments_enabled').notNull().default(true),
   authorType: varchar('author_type', { length: 20 }).notNull().default('union'), // 'user' or 'union'
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -479,6 +485,23 @@ export const postAttachments = pgTable('post_attachments', {
   fileType: varchar('file_type', { length: 100 }).notNull(),
   fileSize: integer('file_size').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// Post Comments Table
+export const postComments = pgTable('post_comments', {
+  id: serial('id').primaryKey(),
+  postId: integer('post_id')
+    .notNull()
+    .references(() => posts.id, { onDelete: 'cascade' }),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  parentId: integer('parent_id'), // nullable, for future threading (no FK constraint)
+  content: text('content').notNull(),
+  isEdited: boolean('is_edited').notNull().default(false),
+  deletedAt: timestamp('deleted_at'), // soft-delete
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
 // Election/Voting System Tables
@@ -1055,6 +1078,7 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
   }),
   likes: many(postLikes),
   attachments: many(postAttachments),
+  comments: many(postComments),
 }));
 
 export const filesRelations = relations(files, ({ one }) => ({
@@ -1105,6 +1129,17 @@ export const postAttachmentsRelations = relations(postAttachments, ({ one }) => 
   post: one(posts, {
     fields: [postAttachments.postId],
     references: [posts.id],
+  }),
+}));
+
+export const postCommentsRelations = relations(postComments, ({ one }) => ({
+  post: one(posts, {
+    fields: [postComments.postId],
+    references: [posts.id],
+  }),
+  user: one(users, {
+    fields: [postComments.userId],
+    references: [users.id],
   }),
 }));
 
@@ -1865,6 +1900,8 @@ export type PostLike = typeof postLikes.$inferSelect;
 export type NewPostLike = typeof postLikes.$inferInsert;
 export type PostAttachment = typeof postAttachments.$inferSelect;
 export type NewPostAttachment = typeof postAttachments.$inferInsert;
+export type PostComment = typeof postComments.$inferSelect;
+export type NewPostComment = typeof postComments.$inferInsert;
 export type Election = typeof elections.$inferSelect;
 export type NewElection = typeof elections.$inferInsert;
 export type ElectionQuestion = typeof electionQuestions.$inferSelect;

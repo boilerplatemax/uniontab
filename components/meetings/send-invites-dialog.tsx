@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Mail, Users, CheckCircle, Search, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface Member {
@@ -16,6 +16,7 @@ interface Member {
     userId: number;
     role: string;
     status: string;
+    profilePhotoUrl?: string | null;
   };
   user: {
     id: number;
@@ -97,7 +98,7 @@ export function SendInvitesDialog({ open, onOpenChange, meetingId, meetingTitle,
       if (data.success) {
         // Transform flat format { id, userId, role, status, user } → nested { member, user }
         const transformed: Member[] = data.members.map((m: any) => ({
-          member: { id: m.id, userId: m.userId, role: m.role, status: m.status },
+          member: { id: m.id, userId: m.userId, role: m.role, status: m.status, profilePhotoUrl: m.profilePhotoUrl },
           user: { id: m.user.id, name: m.user.name, email: m.user.email },
         }));
         setMembers(transformed);
@@ -394,6 +395,9 @@ export function SendInvitesDialog({ open, onOpenChange, meetingId, meetingTitle,
                               </td>
                               <td className="px-3 py-2">
                                 <Avatar className="h-7 w-7">
+                                  {m.member.profilePhotoUrl && (
+                                    <AvatarImage src={m.member.profilePhotoUrl} alt={getUserDisplayName(m.user)} />
+                                  )}
                                   <AvatarFallback className="text-xs">
                                     {getInitials(getUserDisplayName(m.user))}
                                   </AvatarFallback>

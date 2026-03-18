@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutGrid, List } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, FileText, Image, Plus, Edit, Trash2, Loader2, Download, Eye, Calendar, Pin, Vote, Paperclip, LayoutGrid, List, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePostDialog } from '@/components/posts/create-post-dialog';
 import { EditPostDialog } from '@/components/posts/edit-post-dialog';
@@ -536,6 +536,10 @@ export function UnionProfileTabs({
                                     initialCount={(post as any).likeCount || 0}
                                     userId={userId || null}
                                   />
+                                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                                    <MessageSquare className="h-3.5 w-3.5" />
+                                    {(post as any).commentCount || 0}
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -618,6 +622,10 @@ export function UnionProfileTabs({
                                     initialCount={(post as any).likeCount || 0}
                                     userId={userId || null}
                                   />
+                                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                                    <MessageSquare className="h-3.5 w-3.5" />
+                                    {(post as any).commentCount || 0}
+                                  </span>
                                   <ShareButton
                                     itemType="post"
                                     itemId={post.id}
@@ -819,6 +827,10 @@ export function UnionProfileTabs({
                               <div className="flex items-center justify-between gap-3 border-t px-4 sm:px-6 py-3">
                                 <div className="flex items-center gap-3">
                                   <LikeButton postId={post.id} initialLiked={(post as any).isLikedByUser || false} initialCount={(post as any).likeCount || 0} userId={userId || null} />
+                                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                                    <MessageSquare className="h-3.5 w-3.5" />
+                                    {(post as any).commentCount || 0}
+                                  </span>
                                   <ShareButton itemType="post" itemId={post.id} itemTitle={post.title} itemUrl={`/${union.slug}/post/${post.id}`} slug={union.slug} isOwnerOrAdmin={isOwner} itemContent={post.content} itemImageUrl={post.imageUrl || undefined} itemAttachments={post.attachments} />
                                 </div>
                                 <div className="text-xs text-gray-400">
@@ -836,6 +848,10 @@ export function UnionProfileTabs({
                               <div className="flex flex-col gap-2 mt-auto pt-3 border-t">
                                 <div className="flex items-center gap-3">
                                   <LikeButton postId={post.id} initialLiked={(post as any).isLikedByUser || false} initialCount={(post as any).likeCount || 0} userId={userId || null} />
+                                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                                    <MessageSquare className="h-3.5 w-3.5" />
+                                    {(post as any).commentCount || 0}
+                                  </span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                   <div className="text-xs text-gray-500">{formatDate(post.createdAt)}</div>

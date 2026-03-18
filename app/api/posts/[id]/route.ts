@@ -58,7 +58,7 @@ export async function PUT(
 
     // Update the post
     const body = await request.json();
-    const { title, content, imageUrl, isPrivate, authorType, attachments } = body;
+    const { title, content, imageUrl, isPrivate, commentsEnabled, authorType, attachments } = body;
 
     await db
       .update(posts)
@@ -67,6 +67,7 @@ export async function PUT(
         content,
         imageUrl,
         isPrivate,
+        commentsEnabled: commentsEnabled ?? true,
         authorType: authorType || 'union',
         updatedAt: new Date(),
         updatedBy: user.id,

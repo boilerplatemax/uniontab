@@ -40,6 +40,7 @@ async function getUnionMembersWithPhone(unionId: number) {
         status: members.status,
         joinedAt: members.joinedAt,
         phone: members.phone,
+        profilePhotoUrl: members.profilePhotoUrl,
       },
       user: {
         id: users.id,

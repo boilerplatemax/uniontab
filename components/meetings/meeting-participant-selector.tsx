@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Search, Users, UserCheck, X, ChevronDown, ChevronUp, Filter } from 'lucide-react';
 
@@ -22,6 +22,7 @@ interface Member {
   employmentStatus: string | null;
   localChapter: string | null;
   bargainingUnit: string | null;
+  profilePhotoUrl?: string | null;
   user: {
     id: number | null;
     name: string | null;
@@ -457,6 +458,9 @@ export function MeetingParticipantSelector({
                         disabled={disabled}
                       />
                       <Avatar className="h-8 w-8">
+                        {member.profilePhotoUrl && (
+                          <AvatarImage src={member.profilePhotoUrl} alt={displayName} />
+                        )}
                         <AvatarFallback className="bg-blue-600 text-white text-xs">
                           {getInitials(displayName)}
                         </AvatarFallback>

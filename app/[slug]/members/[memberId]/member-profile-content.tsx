@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   ArrowLeft,
   User,
@@ -33,6 +33,7 @@ import { NotesTab } from './tabs/notes-tab';
 import { SettingsTab } from './tabs/settings-tab';
 import { SignatureTab } from './tabs/signature-tab';
 import { PrivacyTab } from './tabs/privacy-tab';
+import { ProfilePhotoUpload } from '@/components/members/profile-photo-upload';
 
 interface MemberData {
   member: Member;
@@ -203,6 +204,9 @@ export function MemberProfileContent({
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16">
+                  {member.member.profilePhotoUrl && (
+                    <AvatarImage src={member.member.profilePhotoUrl} alt={displayName} />
+                  )}
                   <AvatarFallback className="bg-blue-100 text-blue-700 text-xl">
                     {initials}
                   </AvatarFallback>
@@ -232,6 +236,25 @@ export function MemberProfileContent({
                 <p>Joined: {new Date(member.member.joinedAt).toLocaleDateString()}</p>
               </div>
             </div>
+            {/* Profile Photo Upload */}
+            {(isOwnProfile || isAdminOrOwner) && (
+              <div className="mt-4 pt-4 border-t">
+                <ProfilePhotoUpload
+                  memberId={member.member.id}
+                  unionId={union.id}
+                  currentPhotoUrl={member.member.profilePhotoUrl}
+                  memberName={displayName}
+                  initials={initials}
+                  onPhotoChange={(url) => {
+                    setMember({
+                      ...member,
+                      member: { ...member.member, profilePhotoUrl: url },
+                    });
+                  }}
+                  isDemo={union.isDemo}
+                />
+              </div>
+            )}
           </div>
         </div>
 

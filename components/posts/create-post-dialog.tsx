@@ -51,6 +51,7 @@ export function CreatePostDialog({
   const [imageUrl, setImageUrl] = useState('');
   const [attachments, setAttachments] = useState<PostAttachment[]>([]);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [commentsEnabled, setCommentsEnabled] = useState(true);
   const [authorType, setAuthorType] = useState<'user' | 'union'>('union');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -101,6 +102,7 @@ export function CreatePostDialog({
           content: finalContent,
           imageUrl: imageUrl || null,
           isPrivate,
+          commentsEnabled,
           authorType,
           attachments,
         }),
@@ -151,6 +153,7 @@ export function CreatePostDialog({
     setImageUrl('');
     setAttachments([]);
     setIsPrivate(false);
+    setCommentsEnabled(true);
     setAuthorType('union');
     setAppendSignature(false);
     setCreatedPost(null);
@@ -243,6 +246,22 @@ export function CreatePostDialog({
                 id="isPrivate"
                 checked={isPrivate}
                 onCheckedChange={setIsPrivate}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div>
+                <Label htmlFor="commentsEnabled" className="text-base">
+                  Allow Comments
+                </Label>
+                <p className="text-sm text-gray-600">
+                  Members can comment on this post
+                </p>
+              </div>
+              <Switch
+                id="commentsEnabled"
+                checked={commentsEnabled}
+                onCheckedChange={setCommentsEnabled}
               />
             </div>
 

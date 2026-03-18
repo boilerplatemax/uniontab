@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +59,7 @@ interface Member {
     isDelinquent: boolean;
     delinquentSince: Date | null;
     adminPermissions: AdminPermissions | null;
+    profilePhotoUrl: string | null;
   };
   user: {
     id: number;
@@ -1669,6 +1670,9 @@ export function MembersContent({ slug, union, members, isOwner, groups, groupAss
                       {/* Avatar and User Info */}
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
+                          {member.member.profilePhotoUrl && (
+                            <AvatarImage src={member.member.profilePhotoUrl} alt={getUserDisplayName(member.user)} />
+                          )}
                           <AvatarFallback className="bg-blue-600 text-white text-sm">
                             {getInitials(getUserDisplayName(member.user))}
                           </AvatarFallback>

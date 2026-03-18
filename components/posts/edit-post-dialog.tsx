@@ -30,6 +30,7 @@ interface Post {
   content: string;
   imageUrl: string | null;
   isPrivate: boolean;
+  commentsEnabled?: boolean;
   authorType?: string;
   attachments?: PostAttachment[];
 }
@@ -54,6 +55,7 @@ export function EditPostDialog({
   const [imageUrl, setImageUrl] = useState('');
   const [attachments, setAttachments] = useState<PostAttachment[]>([]);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [commentsEnabled, setCommentsEnabled] = useState(true);
   const [authorType, setAuthorType] = useState<'user' | 'union'>('union');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -65,6 +67,7 @@ export function EditPostDialog({
       setImageUrl(post.imageUrl || '');
       setAttachments(post.attachments || []);
       setIsPrivate(post.isPrivate);
+      setCommentsEnabled(post.commentsEnabled ?? true);
       setAuthorType((post.authorType as 'user' | 'union') || 'union');
     }
   }, [post]);
@@ -90,6 +93,7 @@ export function EditPostDialog({
           content,
           imageUrl: imageUrl || null,
           isPrivate,
+          commentsEnabled,
           authorType,
           attachments,
         }),
@@ -227,6 +231,22 @@ export function EditPostDialog({
                 id="isPrivate"
                 checked={isPrivate}
                 onCheckedChange={setIsPrivate}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div>
+                <Label htmlFor="commentsEnabled" className="text-base">
+                  Allow Comments
+                </Label>
+                <p className="text-sm text-gray-600">
+                  Members can comment on this post
+                </p>
+              </div>
+              <Switch
+                id="commentsEnabled"
+                checked={commentsEnabled}
+                onCheckedChange={setCommentsEnabled}
               />
             </div>
 
