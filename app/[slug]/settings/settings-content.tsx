@@ -14,6 +14,7 @@ import {
   Lock,
   Sparkles,
   Settings,
+  Shield,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { UnionDataWithMembers } from '@/lib/db/schema';
@@ -24,6 +25,7 @@ import { ContactTab } from './tabs/contact-tab';
 import { SocialTab } from './tabs/social-tab';
 import { PermissionsTab } from './tabs/permissions-tab';
 import { AdvancedTab } from './tabs/advanced-tab';
+import { StewardsTab } from './tabs/stewards-tab';
 
 export interface SettingsFormData {
   publicName: string;
@@ -163,6 +165,7 @@ export function SettingsContent() {
     { id: 'contact', label: 'Contact', icon: Mail },
     { id: 'social', label: 'Social', icon: Share2 },
     { id: 'permissions', label: 'Permissions', icon: Lock },
+    { id: 'stewards', label: 'Stewards', icon: Shield },
     { id: 'advanced', label: 'Advanced', icon: Sparkles },
   ];
 
@@ -288,6 +291,10 @@ export function SettingsContent() {
                   formData={formData}
                   onChange={handleChange}
                 />
+              </TabsContent>
+
+              <TabsContent value="stewards" className="m-0 p-6">
+                <StewardsTab unionId={union.id} />
               </TabsContent>
 
               <TabsContent value="advanced" className="m-0 p-6">

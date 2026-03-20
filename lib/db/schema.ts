@@ -886,6 +886,7 @@ export const unionsRelations = relations(unions, ({ one, many }) => ({
   executives: many(unionExecutives),
   contactFormSubmissions: many(contactFormSubmissions),
   memberGroups: many(memberGroups),
+  stewardAssignments: many(stewardAssignments),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -920,6 +921,7 @@ export const membersRelations = relations(members, ({ one, many }) => ({
   positions: many(memberPositions),
   memberNotes: many(memberNotes),
   groupAssignments: many(memberGroupAssignments),
+  stewardAssignments: many(stewardAssignments),
 }));
 
 // Member Documents Relations
@@ -2403,6 +2405,41 @@ export const supportTicketAttachments = pgTable('support_ticket_attachments', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// Steward Assignments Table (maps members as stewards for organizational scopes)
+export const stewardAssignments = pgTable('steward_assignments', {
+  id: serial('id').primaryKey(),
+  unionId: integer('union_id')
+    .notNull()
+    .references(() => unions.id, { onDelete: 'cascade' }),
+  memberId: integer('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  scopeType: varchar('scope_type', { length: 50 }).notNull(), // 'bargaining_unit', 'department', 'sub_unit'
+  scopeValue: varchar('scope_value', { length: 255 }).notNull(), // The actual value, e.g. "Unit A"
+  assignedAt: timestamp('assigned_at').notNull().defaultNow(),
+  assignedBy: integer('assigned_by')
+    .notNull()
+    .references(() => users.id, { onDelete: 'set null' }),
+}, (table) => ({
+  uniqueStewardScope: unique('unique_steward_scope').on(table.unionId, table.scopeType, table.scopeValue),
+}));
+
+// Steward Assignment Relations
+export const stewardAssignmentsRelations = relations(stewardAssignments, ({ one }) => ({
+  union: one(unions, {
+    fields: [stewardAssignments.unionId],
+    references: [unions.id],
+  }),
+  member: one(members, {
+    fields: [stewardAssignments.memberId],
+    references: [members.id],
+  }),
+  assignedByUser: one(users, {
+    fields: [stewardAssignments.assignedBy],
+    references: [users.id],
+  }),
+}));
+
 // Support Ticket Relations
 export const supportTicketsRelations = relations(supportTickets, ({ one, many }) => ({
   union: one(unions, {
@@ -2451,6 +2488,8 @@ export type UnionExecutive = typeof unionExecutives.$inferSelect;
 export type NewUnionExecutive = typeof unionExecutives.$inferInsert;
 export type ContactFormSubmission = typeof contactFormSubmissions.$inferSelect;
 export type NewContactFormSubmission = typeof contactFormSubmissions.$inferInsert;
+export type StewardAssignment = typeof stewardAssignments.$inferSelect;
+export type NewStewardAssignment = typeof stewardAssignments.$inferInsert;
 export type SupportTicket = typeof supportTickets.$inferSelect;
 export type NewSupportTicket = typeof supportTickets.$inferInsert;
 export type SupportTicketReply = typeof supportTicketReplies.$inferSelect;

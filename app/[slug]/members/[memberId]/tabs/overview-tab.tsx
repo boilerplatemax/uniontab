@@ -14,6 +14,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import type { Member, MemberDocument, MemberCertification, MemberPosition } from '@/lib/db/schema';
+import { StewardCard } from '@/components/members/steward-card';
 
 interface MemberData {
   member: Member;
@@ -53,9 +54,11 @@ interface OverviewTabProps {
   documents: DocumentWithUploader[];
   certifications: CertificationWithCreator[];
   positions: PositionWithCreator[];
+  unionId?: number;
+  isOwnProfile?: boolean;
 }
 
-export function OverviewTab({ member, documents, certifications, positions }: OverviewTabProps) {
+export function OverviewTab({ member, documents, certifications, positions, unionId, isOwnProfile }: OverviewTabProps) {
   const expiredCertifications = certifications.filter(
     (c) => c.certification.expiryDate && new Date(c.certification.expiryDate) < new Date()
   );
@@ -245,6 +248,11 @@ export function OverviewTab({ member, documents, certifications, positions }: Ov
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Steward Card - shown when viewing own profile */}
+      {isOwnProfile && unionId && (
+        <StewardCard unionId={unionId} />
       )}
     </div>
   );
