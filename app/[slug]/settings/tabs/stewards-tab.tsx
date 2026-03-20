@@ -97,24 +97,25 @@ export function StewardsTab({ unionId }: StewardsTabProps) {
       try {
         const res = await fetch(`/api/members/list?unionId=${unionId}&status=approved`);
         if (res.ok) {
-          const allMembers = await res.json();
+          const data = await res.json();
+          const allMembers = data.members || [];
           const query = memberSearch.toLowerCase();
           const filtered = allMembers
             .filter((m: any) => {
               const name = (m.user?.name || '').toLowerCase();
-              const firstName = (m.member?.firstName || '').toLowerCase();
-              const lastName = (m.member?.lastName || '').toLowerCase();
+              const firstName = (m.firstName || '').toLowerCase();
+              const lastName = (m.lastName || '').toLowerCase();
               const email = (m.user?.email || '').toLowerCase();
               return name.includes(query) || firstName.includes(query) || lastName.includes(query) || email.includes(query);
             })
             .slice(0, 10)
             .map((m: any) => ({
               member: {
-                id: m.member.id,
-                firstName: m.member.firstName,
-                lastName: m.member.lastName,
-                personalEmail: m.member.personalEmail,
-                profilePhotoUrl: m.member.profilePhotoUrl,
+                id: m.id,
+                firstName: m.firstName,
+                lastName: m.lastName,
+                personalEmail: m.personalEmail || null,
+                profilePhotoUrl: m.profilePhotoUrl,
               },
               user: {
                 id: m.user.id,
