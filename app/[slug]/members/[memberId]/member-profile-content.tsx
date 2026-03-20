@@ -282,6 +282,8 @@ export function MemberProfileContent({
                 documents={documents}
                 certifications={certifications}
                 positions={positions}
+                unionId={union.id}
+                isOwnProfile={isOwnProfile}
               />
             </TabsContent>
 

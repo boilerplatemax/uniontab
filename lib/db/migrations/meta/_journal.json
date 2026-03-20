@@ -57,6 +57,13 @@
       "when": 1771357403965,
       "tag": "0007_broad_preak",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774039861435,
+      "tag": "0008_aspiring_mephistopheles",
+      "breakpoints": true
     }
   ]
 }
