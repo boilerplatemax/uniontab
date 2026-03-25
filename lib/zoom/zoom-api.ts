@@ -28,6 +28,7 @@ interface ZoomMeetingSettings {
   waiting_room?: boolean;
   audio?: 'both' | 'telephony' | 'voip';
   auto_recording?: 'local' | 'cloud' | 'none';
+  alternative_hosts?: string; // Comma-separated email addresses
 }
 
 interface ZoomCreateMeetingRequest {
@@ -143,6 +144,7 @@ export async function createZoomMeeting(params: {
   timezone?: string;
   agenda?: string;
   password?: string;
+  alternativeHosts?: string; // Comma-separated email addresses
   settings?: ZoomMeetingSettings;
 }): Promise<ZoomMeetingResponse> {
   const accessToken = await getAccessToken();
@@ -163,6 +165,7 @@ export async function createZoomMeeting(params: {
       waiting_room: false, // Disable waiting room for easier access
       audio: 'both',
       auto_recording: 'none',
+      ...(params.alternativeHosts ? { alternative_hosts: params.alternativeHosts } : {}),
       ...params.settings,
     },
   };
