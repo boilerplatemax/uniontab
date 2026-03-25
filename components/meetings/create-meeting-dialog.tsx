@@ -354,7 +354,7 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
                           <div className="flex items-center gap-2 mb-1.5">
                             <UserCheck className="h-4 w-4 text-blue-600" />
                             <Label htmlFor="hostEmail" className="text-blue-900 font-medium text-sm">
-                              Host Email *
+                              Host Email (optional)
                             </Label>
                           </div>
                           <Input
@@ -364,10 +364,9 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
                             onChange={(e) => setHostEmail(e.target.value)}
                             placeholder="host@example.com"
                             className="bg-white"
-                            required
                           />
                           <p className="text-xs text-blue-600 mt-1">
-                            This person will automatically get host controls when they join. Must match their Zoom account email.
+                            Only works if this person is on the same Zoom account. Otherwise, use the &quot;Start as Host&quot; link from the meeting card.
                           </p>
                         </div>
 
