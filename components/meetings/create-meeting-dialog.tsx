@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Video, Calendar, Clock, Link, Lock, Zap, Loader2, Users } from 'lucide-react';
+import { Plus, Video, Calendar, Clock, Link, Lock, Zap, Loader2, Users, KeyRound } from 'lucide-react';
 import { MeetingParticipantSelector } from './meeting-participant-selector';
 
 interface CreateMeetingDialogProps {
@@ -32,6 +32,7 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
   const [error, setError] = useState<string | null>(null);
   const [zoomConfigured, setZoomConfigured] = useState(false);
   const [autoCreateZoom, setAutoCreateZoom] = useState(false);
+  const [usePassword, setUsePassword] = useState(false);
   const [creatingZoom, setCreatingZoom] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -95,6 +96,7 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
             startTime: formData.startTime,
             endTime: formData.endTime,
             timezone: formData.timezone,
+            usePassword,
           }),
         });
 
@@ -110,7 +112,7 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
           ...formData,
           meetingLink: zoomData.zoomMeeting.joinUrl,
           meetingId: String(zoomData.zoomMeeting.id),
-          meetingPassword: zoomData.zoomMeeting.password || '',
+          meetingPassword: usePassword ? (zoomData.zoomMeeting.password || '') : '',
         };
       }
 
@@ -149,6 +151,7 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
       setParticipantMode('all');
       setSelectedMemberIds([]);
       setAutoCreateZoom(zoomConfigured); // Reset to default
+      setUsePassword(false);
       onMeetingCreated();
     } catch (err: any) {
       setError(err.message);
@@ -327,9 +330,25 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
                   </div>
                   <p className="text-xs text-blue-700 mt-2">
                     {autoCreateZoom
-                      ? 'A Zoom meeting will be automatically created with the details above. Meeting link, ID, and password will be generated for you.'
+                      ? 'A Zoom meeting will be automatically created with the details above. Meeting link and ID will be generated for you.'
                       : 'Turn this on to automatically create a Zoom meeting, or paste your own meeting link below.'}
                   </p>
+
+                  {autoCreateZoom && (
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-blue-200">
+                      <div className="flex items-center gap-2">
+                        <KeyRound className="h-4 w-4 text-blue-600" />
+                        <Label htmlFor="usePassword" className="text-blue-900 font-medium text-sm">
+                          Require meeting password
+                        </Label>
+                      </div>
+                      <Switch
+                        id="usePassword"
+                        checked={usePassword}
+                        onCheckedChange={setUsePassword}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
