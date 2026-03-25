@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Calendar, Clock, Video, MoreVertical, ExternalLink, Mail, FileText, Trash, Edit, Users, Link2 } from 'lucide-react';
+import { Calendar, Clock, Video, MoreVertical, ExternalLink, Mail, FileText, Trash, Edit, Users, Link2, KeyRound } from 'lucide-react';
 import { MeetingPosterDialog } from './meeting-poster-dialog';
 import { SendInvitesDialog } from './send-invites-dialog';
 import { EditMeetingDialog } from './edit-meeting-dialog';
@@ -174,6 +174,12 @@ export function MeetingCard({ meeting, unionInfo, isOwnerOrAdmin, onMeetingUpdat
                   <Video className="h-4 w-4 flex-shrink-0" />
                   <span>{getPlatformName(meeting.platform)}</span>
                 </div>
+                {meeting.meetingPassword && (
+                  <div className="flex items-center gap-2">
+                    <KeyRound className="h-4 w-4 flex-shrink-0" />
+                    <span>Password: <span className="font-medium">{meeting.meetingPassword}</span></span>
+                  </div>
+                )}
               </div>
 
               {meeting.description && (

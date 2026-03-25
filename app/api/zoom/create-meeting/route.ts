@@ -29,6 +29,7 @@ export async function POST(request: Request) {
       startTime,
       endTime,
       timezone,
+      usePassword = false,
     } = await request.json();
 
     if (!unionId || !title || !scheduledDate || !startTime) {
@@ -79,12 +80,14 @@ export async function POST(request: Request) {
     }
 
     // Create the Zoom meeting
+    // When usePassword is false, pass empty string to disable password
     const zoomMeeting = await createZoomMeeting({
       topic: title,
       startTime: meetingDate,
       duration,
       timezone: timezone || 'America/New_York',
       agenda: agenda || undefined,
+      password: usePassword ? undefined : '',
     });
 
     return NextResponse.json({
