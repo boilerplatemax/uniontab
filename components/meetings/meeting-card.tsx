@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Calendar, Clock, Video, MoreVertical, ExternalLink, Mail, FileText, Trash, Edit, Users, Link2, KeyRound } from 'lucide-react';
+import { Calendar, Clock, Video, MoreVertical, ExternalLink, Mail, FileText, Trash, Edit, Users, Link2, KeyRound, Shield, Loader2 } from 'lucide-react';
 import { MeetingPosterDialog } from './meeting-poster-dialog';
 import { SendInvitesDialog } from './send-invites-dialog';
 import { EditMeetingDialog } from './edit-meeting-dialog';
@@ -56,6 +56,7 @@ export function MeetingCard({ meeting, unionInfo, isOwnerOrAdmin, onMeetingUpdat
   const [showEdit, setShowEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [loadingHostLink, setLoadingHostLink] = useState(false);
 
   const handleCopyMeetingLink = async () => {
     const url = `${window.location.origin}/${unionInfo.slug}/meeting/${meeting.id}`;
@@ -71,6 +72,26 @@ export function MeetingCard({ meeting, unionInfo, isOwnerOrAdmin, onMeetingUpdat
     }
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  const handleStartAsHost = async () => {
+    setLoadingHostLink(true);
+    try {
+      const response = await fetch('/api/zoom/start-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meetingId: meeting.id }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get host link');
+      }
+      window.open(data.startUrl, '_blank');
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setLoadingHostLink(false);
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -201,6 +222,23 @@ export function MeetingCard({ meeting, unionInfo, isOwnerOrAdmin, onMeetingUpdat
                 </Button>
               )}
 
+              {isOwnerOrAdmin && meeting.platform === 'zoom' && meeting.meetingId && meeting.status !== 'cancelled' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1"
+                  onClick={handleStartAsHost}
+                  disabled={loadingHostLink}
+                >
+                  {loadingHostLink ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Shield className="h-3 w-3" />
+                  )}
+                  Start as Host
+                </Button>
+              )}
+
               {isOwnerOrAdmin && (
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
@@ -209,6 +247,12 @@ export function MeetingCard({ meeting, unionInfo, isOwnerOrAdmin, onMeetingUpdat
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    {meeting.platform === 'zoom' && meeting.meetingId && meeting.status !== 'cancelled' && (
+                      <DropdownMenuItem onClick={handleStartAsHost} disabled={loadingHostLink}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        {loadingHostLink ? 'Loading...' : 'Start as Host'}
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => setShowEdit(true)}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Meeting

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Video, Calendar, Clock, Link, Lock, Zap, Loader2, Users, KeyRound, UserCheck } from 'lucide-react';
+import { Plus, Video, Calendar, Clock, Link, Lock, Zap, Loader2, Users, KeyRound } from 'lucide-react';
 import { MeetingParticipantSelector } from './meeting-participant-selector';
 
 interface CreateMeetingDialogProps {
@@ -33,8 +33,6 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
   const [zoomConfigured, setZoomConfigured] = useState(false);
   const [autoCreateZoom, setAutoCreateZoom] = useState(false);
   const [usePassword, setUsePassword] = useState(false);
-  const [hostEmail, setHostEmail] = useState('');
-  const [defaultHostEmail, setDefaultHostEmail] = useState('');
   const [creatingZoom, setCreatingZoom] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -55,33 +53,23 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
   const [participantMode, setParticipantMode] = useState<'all' | 'selected'>('all');
   const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
 
-  // Check if Zoom API is configured and fetch current user email
+  // Check if Zoom API is configured
   useEffect(() => {
-    async function init() {
+    async function checkZoomStatus() {
       try {
-        const [zoomRes, userRes] = await Promise.all([
-          fetch('/api/zoom/status'),
-          fetch('/api/user'),
-        ]);
-        if (zoomRes.ok) {
-          const data = await zoomRes.json();
+        const response = await fetch('/api/zoom/status');
+        if (response.ok) {
+          const data = await response.json();
           setZoomConfigured(data.configured);
           if (data.configured && formData.platform === 'zoom') {
             setAutoCreateZoom(true);
           }
         }
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          if (userData?.email) {
-            setDefaultHostEmail(userData.email);
-            setHostEmail(userData.email);
-          }
-        }
       } catch (err) {
-        console.error('Failed to initialize:', err);
+        console.error('Failed to check Zoom status:', err);
       }
     }
-    init();
+    checkZoomStatus();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -108,7 +96,6 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
             endTime: formData.endTime,
             timezone: formData.timezone,
             usePassword,
-            alternativeHostEmail: hostEmail,
           }),
         });
 
@@ -164,7 +151,6 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
       setSelectedMemberIds([]);
       setAutoCreateZoom(zoomConfigured); // Reset to default
       setUsePassword(false);
-      setHostEmail(defaultHostEmail);
       onMeetingCreated();
     } catch (err: any) {
       setError(err.message);
@@ -348,44 +334,19 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
                   </p>
 
                   {autoCreateZoom && (
-                    <>
-                      <div className="mt-3 pt-3 border-t border-blue-200 space-y-3">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <UserCheck className="h-4 w-4 text-blue-600" />
-                            <Label htmlFor="hostEmail" className="text-blue-900 font-medium text-sm">
-                              Host Email *
-                            </Label>
-                          </div>
-                          <Input
-                            id="hostEmail"
-                            type="email"
-                            value={hostEmail}
-                            onChange={(e) => setHostEmail(e.target.value)}
-                            placeholder="host@example.com"
-                            className="bg-white"
-                            required
-                          />
-                          <p className="text-xs text-blue-600 mt-1">
-                            This person will automatically get host controls when they join. Must match their Zoom account email.
-                          </p>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <KeyRound className="h-4 w-4 text-blue-600" />
-                            <Label htmlFor="usePassword" className="text-blue-900 font-medium text-sm">
-                              Require meeting password
-                            </Label>
-                          </div>
-                          <Switch
-                            id="usePassword"
-                            checked={usePassword}
-                            onCheckedChange={setUsePassword}
-                          />
-                        </div>
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-blue-200">
+                      <div className="flex items-center gap-2">
+                        <KeyRound className="h-4 w-4 text-blue-600" />
+                        <Label htmlFor="usePassword" className="text-blue-900 font-medium text-sm">
+                          Require meeting password
+                        </Label>
                       </div>
-                    </>
+                      <Switch
+                        id="usePassword"
+                        checked={usePassword}
+                        onCheckedChange={setUsePassword}
+                      />
+                    </div>
                   )}
                 </div>
               )}
