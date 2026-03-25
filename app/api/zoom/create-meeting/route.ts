@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       endTime,
       timezone,
       usePassword = false,
+      alternativeHostEmail,
     } = await request.json();
 
     if (!unionId || !title || !scheduledDate || !startTime) {
@@ -88,6 +89,7 @@ export async function POST(request: Request) {
       timezone: timezone || 'America/New_York',
       agenda: agenda || undefined,
       password: usePassword ? undefined : '',
+      alternativeHosts: alternativeHostEmail ? alternativeHostEmail.trim() : undefined,
     });
 
     return NextResponse.json({

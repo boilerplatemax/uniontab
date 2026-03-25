@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Video, Calendar, Clock, Link, Lock, Zap, Loader2, Users, KeyRound } from 'lucide-react';
+import { Plus, Video, Calendar, Clock, Link, Lock, Zap, Loader2, Users, KeyRound, UserCheck } from 'lucide-react';
 import { MeetingParticipantSelector } from './meeting-participant-selector';
 
 interface CreateMeetingDialogProps {
@@ -33,6 +33,7 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
   const [zoomConfigured, setZoomConfigured] = useState(false);
   const [autoCreateZoom, setAutoCreateZoom] = useState(false);
   const [usePassword, setUsePassword] = useState(false);
+  const [alternativeHostEmail, setAlternativeHostEmail] = useState('');
   const [creatingZoom, setCreatingZoom] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -97,6 +98,7 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
             endTime: formData.endTime,
             timezone: formData.timezone,
             usePassword,
+            alternativeHostEmail: alternativeHostEmail || undefined,
           }),
         });
 
@@ -152,6 +154,7 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
       setSelectedMemberIds([]);
       setAutoCreateZoom(zoomConfigured); // Reset to default
       setUsePassword(false);
+      setAlternativeHostEmail('');
       onMeetingCreated();
     } catch (err: any) {
       setError(err.message);
@@ -335,19 +338,43 @@ export function CreateMeetingDialog({ unionId, onMeetingCreated }: CreateMeeting
                   </p>
 
                   {autoCreateZoom && (
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-blue-200">
-                      <div className="flex items-center gap-2">
-                        <KeyRound className="h-4 w-4 text-blue-600" />
-                        <Label htmlFor="usePassword" className="text-blue-900 font-medium text-sm">
-                          Require meeting password
-                        </Label>
+                    <>
+                      <div className="mt-3 pt-3 border-t border-blue-200 space-y-3">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <UserCheck className="h-4 w-4 text-blue-600" />
+                            <Label htmlFor="alternativeHostEmail" className="text-blue-900 font-medium text-sm">
+                              Alternative Host Email
+                            </Label>
+                          </div>
+                          <Input
+                            id="alternativeHostEmail"
+                            type="email"
+                            value={alternativeHostEmail}
+                            onChange={(e) => setAlternativeHostEmail(e.target.value)}
+                            placeholder="host@example.com"
+                            className="bg-white"
+                          />
+                          <p className="text-xs text-blue-600 mt-1">
+                            This person will automatically get host controls when they join. Must match their Zoom account email.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <KeyRound className="h-4 w-4 text-blue-600" />
+                            <Label htmlFor="usePassword" className="text-blue-900 font-medium text-sm">
+                              Require meeting password
+                            </Label>
+                          </div>
+                          <Switch
+                            id="usePassword"
+                            checked={usePassword}
+                            onCheckedChange={setUsePassword}
+                          />
+                        </div>
                       </div>
-                      <Switch
-                        id="usePassword"
-                        checked={usePassword}
-                        onCheckedChange={setUsePassword}
-                      />
-                    </div>
+                    </>
                   )}
                 </div>
               )}
