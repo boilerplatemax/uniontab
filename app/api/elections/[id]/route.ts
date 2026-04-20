@@ -208,19 +208,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Election not found' }, { status: 404 });
     }
 
-    // Check if user is admin
+    // Check if user is admin (owner or admin role)
     const isAdmin = await isUserAdminOfUnion(user.id, election.unionId);
     if (!isAdmin) {
       return NextResponse.json(
         { error: 'Only admins can delete elections' },
-        { status: 403 }
-      );
-    }
-
-    // Prevent deleting active or closed elections (ballot integrity)
-    if (election.status === 'active' || election.status === 'closed') {
-      return NextResponse.json(
-        { error: 'Active or closed elections cannot be deleted. Close the election first if needed.' },
         { status: 403 }
       );
     }
