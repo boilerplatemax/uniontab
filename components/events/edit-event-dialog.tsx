@@ -71,11 +71,15 @@ export function EditEventDialog({
       return;
     }
 
-    // Validate dates
-    const start = new Date(startDate + (startTime ? `T${startTime}` : ''));
-    // If no end date provided, use start date (one-day event)
+    // Validate dates. Parse both start/end in the same local-time format so
+    // the comparison is apples-to-apples (bare "YYYY-MM-DD" parses as UTC,
+    // while "YYYY-MM-DDTHH:mm" parses as local). If no end time is given,
+    // default it to the start time so a same-day event is never "backwards".
+    const startTimeStr = startTime || '00:00';
+    const endTimeStr = endTime || startTimeStr;
     const effectiveEndDate = endDate || startDate;
-    const end = new Date(effectiveEndDate + (endTime ? `T${endTime}` : ''));
+    const start = new Date(`${startDate}T${startTimeStr}`);
+    const end = new Date(`${effectiveEndDate}T${endTimeStr}`);
 
     if (end < start) {
       setError('End date cannot be before start date');
