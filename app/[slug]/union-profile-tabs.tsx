@@ -544,7 +544,7 @@ export function UnionProfileTabs({
                               </div>
                             </div>
                           </Link>
-                          {isOwner && (
+                          {canManageContent && (
                             <div className="flex items-center gap-1 px-4 pb-3 opacity-0 group-hover:opacity-100 transition-opacity border-t border-gray-100">
                               <button
                                 onClick={(e) => { e.preventDefault(); handleTogglePin(post.id, (post as any).isPinned || false); }}
@@ -640,7 +640,7 @@ export function UnionProfileTabs({
                                 </div>
                               </div>
 
-                              {isOwner && (
+                              {canManageContent && (
                                 <div className="flex items-center gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button
                                     onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)}
@@ -733,7 +733,7 @@ export function UnionProfileTabs({
                                     {post.isPrivate && (
                                       <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Private</span>
                                     )}
-                                    {isOwner && (
+                                    {canManageContent && (
                                       <div className="flex items-center gap-1 ml-auto">
                                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin' : 'Pin'}>
                                           <Pin className={`h-3.5 w-3.5 ${(post as any).isPinned ? 'fill-current text-blue-600' : 'text-gray-400'}`} />
@@ -855,7 +855,7 @@ export function UnionProfileTabs({
                                 </div>
                                 <div className="flex items-center justify-between">
                                   <div className="text-xs text-gray-500">{formatDate(post.createdAt)}</div>
-                                  {isOwner && (
+                                  {canManageContent && (
                                     <div className="flex items-center gap-1">
                                       <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => handleTogglePin(post.id, (post as any).isPinned || false)} title={(post as any).isPinned ? 'Unpin post' : 'Pin post'}>
                                         <Pin className={`h-3.5 w-3.5 ${(post as any).isPinned ? 'fill-current' : ''}`} />
