@@ -39,9 +39,9 @@ export async function POST(request: Request) {
       .where(and(eq(members.unionId, post.unionId), eq(members.userId, user.id)))
       .limit(1);
 
-    if (!membership || membership.role !== 'owner') {
+    if (!membership || (membership.role !== 'owner' && membership.role !== 'admin')) {
       return NextResponse.json(
-        { error: 'Only union owners can pin/unpin posts' },
+        { error: 'Only union owners and admins can pin/unpin posts' },
         { status: 403 }
       );
     }

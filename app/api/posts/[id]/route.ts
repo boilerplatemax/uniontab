@@ -39,21 +39,20 @@ export async function PUT(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    // Check if user is owner of the union
+    // Owners and admins can edit posts (matches create permissions)
     const [membership] = await db
       .select()
       .from(members)
       .where(
         and(
           eq(members.unionId, post.unionId),
-          eq(members.userId, user.id),
-          eq(members.role, 'owner')
+          eq(members.userId, user.id)
         )
       )
       .limit(1);
 
-    if (!membership) {
-      return NextResponse.json({ error: 'Unauthorized - Only union owners can edit posts' }, { status: 403 });
+    if (!membership || (membership.role !== 'owner' && membership.role !== 'admin')) {
+      return NextResponse.json({ error: 'Unauthorized - Only union owners and admins can edit posts' }, { status: 403 });
     }
 
     // Update the post
