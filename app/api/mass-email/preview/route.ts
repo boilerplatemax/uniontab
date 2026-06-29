@@ -3,9 +3,18 @@ import { db } from '@/lib/db/drizzle';
 import { members, users } from '@/lib/db/schema';
 import { eq, and, inArray, isNull } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
+import { MASS_EMAIL_ENABLED, MASS_EMAIL_DISABLED_MESSAGE } from '@/lib/features';
 
 export async function POST(request: Request) {
   try {
+    // Feature temporarily disabled.
+    if (!MASS_EMAIL_ENABLED) {
+      return NextResponse.json(
+        { error: MASS_EMAIL_DISABLED_MESSAGE },
+        { status: 503 }
+      );
+    }
+
     const user = await getUser();
 
     if (!user) {
