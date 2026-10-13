@@ -1,7 +1,5 @@
 # UnionTab Overview
 
-A memory refresher on how the app actually works, written for talking it through out loud.
-
 ## What it is
 
 UnionTab is a hosted website and membership platform for labor union locals. Each local gets its own public site at a URL like `/atu123`, plus a members-only area and an admin dashboard behind it. The people using it are union officers and admins who run the local, and the rank-and-file members who log in to read news, vote in elections, pay dues, file grievances, and so on. It is a multi-tenant SaaS: one codebase and one database serve every union, each isolated by its own slug.
